@@ -85,7 +85,7 @@ struct tm *tm;
 		}
 		add_Timer(&timerq, logrotate_timer);
 	}
-	t = time(NULL);
+	t = rtc;
 	tm = localtime(&t);
 /*
 	sleep exactly till midnight
@@ -121,7 +121,7 @@ time_t t;
 struct tm *tm;
 char buf[4096];
 
-	t = time(NULL);
+	t = rtc;
 	tm = localtime(&t);		/* logging goes in localtime */
 
 	sprintf(buf, "%c%c%c %2d %02d:%02d:%02d %c ", Months[tm->tm_mon][0], Months[tm->tm_mon][1], Months[tm->tm_mon][2],
@@ -190,6 +190,9 @@ va_list ap;
 	va_end(ap);
 }
 
+/*
+	move_log() archives the logfile in the PARAM_ARCHIVEDIR directory
+*/
 static void move_log(char *logfile) {
 char filename[MAX_PATHLEN], *p;
 time_t t;
@@ -198,7 +201,7 @@ struct tm *tm;
 	t = rtc;
 	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
 	tm = localtime(&t);
-	sprintf(filename, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year, tm->tm_mon);
+	sprintf(filename, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
 	if (mkdir_p(filename) < 0)
 		return;
 
@@ -210,13 +213,16 @@ struct tm *tm;
 		if (!*p)
 			p = logfile;
 	}
-	sprintf(filename, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year, tm->tm_mon,
-		p, tm->tm_year, tm->tm_mon, tm->tm_mday);
+	sprintf(filename, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
+		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 
 	if (rename(logfile, filename) == -1)
 		log_err("failed to rename %s to %s", logfile, filename);
 }
 
+/*
+	rotate: close the logfile and start a new one
+*/
 void log_rotate(void) {
 	log_entry(stdout, "switching to new log", 'I', NULL);
 	log_entry(stderr, "switching to new log", 'I', NULL);

@@ -732,7 +732,7 @@ int r;
 		strcpy(usr->passwd, crypted);
 
 		sprintf(usr->edit_buf, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
-		if (mkdir(usr->edit_buf, (mode_t)0700)) {
+		if (mkdir(usr->edit_buf, (mode_t)0750)) {
 			Perror(usr, "Failed to create user directory");
 		}
 		log_auth("NEWUSER %s (%s)", usr->name, usr->from_ip);

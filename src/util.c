@@ -982,21 +982,38 @@ struct dirent *direntp;
 int mkdir_p(char *pathname) {
 char *p;
 
+	if (pathname == NULL)
+		return -1;
+
+	if (!*pathname)
+		return 0;
+
 	p = pathname;
 	while((p = cstrchr(p, '/')) != NULL) {
 		*p = 0;
 		if (!*pathname) {
-			*pathname = '/';
+			*p = '/';
 			p++;
 			continue;
 		}
-		if (mkdir(pathname, (mode_t)0640) == -1) {
+		if (mkdir(pathname, (mode_t)0750) == -1) {
 			*p = '/';
-			log_err("mkdir_p(): failed to create directory %s", pathname);
+			p++;
+			if (errno == EEXIST)
+				continue;
+
+			log_err("mkdir_p(): failed to create directory %s : %s", pathname, strerror(errno));
 			return -1;
 		}
 		*p = '/';
 		p++;
+	}
+	if (mkdir(pathname, (mode_t)0750) == -1) {
+		if (errno == EEXIST)
+			return 0;
+
+		log_err("mkdir_p(): failed to create directory %s : %s", pathname, strerror(errno));
+		return -1;
 	}
 	return 0;
 }

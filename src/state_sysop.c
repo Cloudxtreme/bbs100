@@ -867,7 +867,7 @@ int r;
 					break;
 		}
 		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
-		if (mkdir(buf, (mode_t)0700) < 0) {
+		if (mkdir(buf, (mode_t)0750) < 0) {
 			log_err("failed to create new room directory %s", buf);
 			Perror(usr, "failed to create room directory");
 			destroy_Room(room);
