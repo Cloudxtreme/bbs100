@@ -165,6 +165,8 @@ Credits for bug fixes et al after public release
   in again
   fixed in 1.2.1
 
+- Ove <ove@swedishchef.org> reported problems with building on Solaris
+
 - Stephan van Beerschoten <stephanb@whacky.net> did testing of
   version 1.2.2 (development version) on Solaris 8
 
