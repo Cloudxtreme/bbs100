@@ -105,7 +105,7 @@ static int update_timerqueue(Timer **queue, void *arg, int tdiff) {
 int nap;
 Timer *t, *t_next;
 
-	nap = 0;
+	nap = 10 * SECS_IN_MIN;
 	for(t = *queue; t != NULL; t = t_next) {
 		t_next = t->next;
 
@@ -158,7 +158,7 @@ User *usr, *usr_next;
 	tdiff = (int)((unsigned long)rtc - (unsigned long)old_rtc);
 	old_rtc = rtc;
 
-	nap = 10 * SECS_IN_MIN;	/* 10 minutes */
+	nap = 10 * SECS_IN_MIN;			/* 10 minutes */
 
 /* update the user timers */
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {

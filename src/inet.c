@@ -723,7 +723,9 @@ char k;
 	To make things perfect, we should check if write() causes EWOULDBLOCK,
 	setup an output buffer, and call select() with a write-set as well
 */
-		if ((err = select(highest_fd, &fds, NULL, NULL, &timeout)) > 0) {
+		errno = 0;
+		err = select(highest_fd, &fds, NULL, NULL, &timeout);
+		if (err > 0) {
 /*
 	handle new connections
 */

@@ -1,3 +1,6 @@
+Changes as of December 28th 2003
+- users can select personal timezone in the config menu
+
 Changes as of December 13th 2003
 - rewrote worldclock to use new Timezone structure
 
