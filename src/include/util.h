@@ -94,7 +94,7 @@ char *print_date(User *, time_t, char *);
 char *print_total_time(unsigned long, char *);
 char *print_number(unsigned long, char *);
 char *print_numberth(unsigned long, char *);
-char *name_with_s(char *);
+char *name_with_s(char *, char *);
 char *room_name(User *, Room *);
 unsigned long get_mail_top(char *);
 char *get_basename(char *);

@@ -996,10 +996,10 @@ void PrintPrompt(User *usr) {
 			else
 				Put(usr, "\n<white>> ");
 		} else {
-			char roomname[MAX_LINE];
+			char roomname[MAX_LINE], name_buf[MAX_NAME+3];
 
 			if (usr->curr_room == usr->mail)
-				sprintf(roomname, "%s Mail", name_with_s(usr->name));
+				sprintf(roomname, "%s Mail", name_with_s(usr->name, name_buf));
 			else
 				strcpy(roomname, usr->curr_room->name);
 
@@ -1275,9 +1275,9 @@ void loop_ping(User *usr, char c) {
 		}
 /*
 		if (in_StringList(u->friends, usr->name) != NULL)
-			Print(usr, "You are on <yellow>%s<green> friend list\n", name_with_s(u->name));
+			Print(usr, "You are on <yellow>%s<green> friend list\n", name_with_s(u->name, name_buf));
 		if (in_StringList(u->enemies, usr->name) != NULL)
-			Print(usr, "<red>You are on <yellow>%s<red> enemy list\n", name_with_s(u->name));
+			Print(usr, "<red>You are on <yellow>%s<red> enemy list\n", name_with_s(u->name, name_buf));
 */
 	}
 	Return;
@@ -1457,7 +1457,7 @@ int r;
 			usr->more_text = add_String(&usr->more_text, "<red>%s has message reception turned off", u->name);
 
 		if (in_StringList(u->friends, usr->name) != NULL)
-			usr->more_text = add_String(&usr->more_text, "<green>You are on <yellow>%s<green> friend list", name_with_s(u->name));
+			usr->more_text = add_String(&usr->more_text, "<green>You are on <yellow>%s<green> friend list", name_with_s(u->name, total_buf));
 
 		if (in_StringList(u->enemies, usr->name) != NULL)
 			usr->more_text = add_String(&usr->more_text, "<yellow>%s<red> does not wish to receive any messages from you", u->name);
@@ -3332,7 +3332,7 @@ PList *p;
 }
 
 void enter_chatroom(User *usr) {
-char buf[3 * MAX_LINE], *str;
+char buf[3 * MAX_LINE], name_buf[MAX_NAME+3], *str;
 StringList *sl;
 
 	if (usr == NULL)
@@ -3341,7 +3341,7 @@ StringList *sl;
 	Enter(enter_chatroom);
 
 	if (usr->curr_room->number == 2) {
-		sprintf(buf, "%s Home", name_with_s(usr->name));
+		sprintf(buf, "%s Home", name_with_s(usr->name, name_buf));
 
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);

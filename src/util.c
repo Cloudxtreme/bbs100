@@ -952,11 +952,13 @@ char add[3];
 
 
 /*
-	Note: returns a static buffer
+	Note: buf must be large enough (MAX_NAME+3 bytes in size)
 */
-char *name_with_s(char *name) {
-static char buf[MAX_NAME+3];
+char *name_with_s(char *name, char *buf) {
 int i, j;
+
+	if (buf == NULL)
+		return NULL;
 
 	if (name == NULL || !*name) {
 		strcpy(buf, "(NULL)");
