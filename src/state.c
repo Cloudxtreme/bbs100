@@ -2409,17 +2409,27 @@ User *u;
 						stat = '+';			/* indicate friend /wo colors */
 				}
 
-		if (u->flags & USR_X_DISABLED)
-			stat = '*';
-
 		if (u->flags & USR_HELPING_HAND)
 			stat = '%';
 
 		if (u->runtime_flags & RTF_SYSOP)
 			stat = '$';
 
+		if (u->flags & USR_X_DISABLED)
+			stat = '*';
+
 		if (u->runtime_flags & RTF_LOCKED)
 			stat = '#';
+/*
+	you can see it when someone is X-ing or Mail>-ing you
+	this is after a (good) idea by Richard of MatrixBBS, who implemented
+	lots of flags more on there
+*/
+		if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringList(u->recipients, usr->name) != NULL)
+			stat = 'x';
+
+		if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_StringList(u->new_message->to, usr->name) != NULL)
+			stat = 'm';
 
 		t = time_now - u->login_time;
 		hrs = t / 3600;

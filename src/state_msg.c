@@ -141,9 +141,10 @@ void state_post_as_anon(User *usr, char c) {
 			Put(usr, "<white>Default-anonymous\n");
 			usr->runtime_flags |= RTF_DEFAULT_ANON;
 
-			if (usr->default_anon != NULL && usr->default_anon[0])
+			if (usr->default_anon != NULL && usr->default_anon[0]) {
+				cstrlwr(usr->default_anon);
 				strcpy(usr->new_message->anon, usr->default_anon);
-			else
+			} else
 				strcpy(usr->new_message->anon, "anonymous");
 
 			if (usr->curr_room->flags & ROOM_SUBJECTS)
@@ -172,7 +173,7 @@ int r;
 		Return;
 	}
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter alias: <cyan>");
+		Put(usr, "<green>Enter alias<yellow>: <cyan>");
 
 	r = edit_name(usr, c);
 	if (r == EDIT_BREAK) {

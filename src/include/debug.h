@@ -29,15 +29,17 @@
 
 #ifdef DEBUG
 
+#include "log.h"
+
 #include <stdio.h>
 
 #ifdef __GNUC__
-  #define TD		fprintf(stderr, "TD %d %s %s\n", __LINE__, __FILE__, __PRETTY_FUNCTION__ "()");
+  #define TD		log_debug("%d %s %s()\n", __LINE__, __FILE__, __PRETTY_FUNCTION__);
 #else
-  #define TD		fprintf(stderr, "TD %d %s\n", __LINE__, __FILE__);
+  #define TD		log_debug("%d %s\n", __LINE__, __FILE__);
 #endif
 
-#define TDC			fprintf(stderr, "TD %d\n", __LINE__);
+#define TDC			log_debug("%d\n", __LINE__);
 
 #define Enter(x)	if (debug_stackp < DEBUG_STACK_SIZE) debug_stack[debug_stackp++] = (unsigned long)(x)
 #define Leave		if (debug_stackp) debug_stack[--debug_stackp] = 0UL

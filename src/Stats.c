@@ -395,7 +395,7 @@ unsigned long num;
 	usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>User statistics"));
 
 	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s<green>", stats.youngest, print_date(usr, stats.youngest_birth));
-	usr->more_text = add_String(&usr->more_text, "Oldest user is <white>%s<green> ;", stats.oldest);
+	usr->more_text = add_String(&usr->more_text, "Oldest user is <white>%s<green>,", stats.oldest);
 	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s<green>", print_total_time(stats.oldest_age));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 

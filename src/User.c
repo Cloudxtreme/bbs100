@@ -738,7 +738,7 @@ User *u;
 */
 void process(User *usr, char c) {
 	if (usr == NULL || usr->callstack == NULL || usr->callstack->ip == NULL
-		|| (c = telnet_negotiations(usr, c)) == -1)
+		|| (c = telnet_negotiations(usr, (unsigned char)c)) == (char)-1)
 		return;
 
 /* user is doing something, reset idle timer */

@@ -505,6 +505,10 @@ User *u;
 				Print(usr, "<green>There are <yellow>%d<green> other users online\n", num_users);
 		}
 	}
+/* as suggested by Richard of MatrixBBS */
+	if (usr->flags & USR_X_DISABLED)
+		Put(usr, "<magenta>Message reception is turned off\n");
+
 	if (usr->reminder != NULL && usr->reminder[0])
 		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
 

@@ -39,33 +39,13 @@
 #define SECS_IN_DAY			(24 * SECS_IN_HOUR)
 #define SECS_IN_WEEK		(7 * SECS_IN_DAY)
 
-/*
-#define logmsg				fprintf(stderr, "MSG ");  LogMsg
-#define logauth				fprintf(stderr, "AUTH "); LogMsg
-
-#define UserError(a,b,c,d)	Put((a), "\027ERROR: \022" b "\n\n");	\
-							fprintf(stderr, "ERR %d %s  %s\n", (c), (d), (b))
+#define UserError(a,b,c,d,e,f)	Put((a), "<red>ERROR: <yellow>" b "\n\n");	\
+								log_err("%d %s %s%s: %s\n", (c), (d), (e), (b))
 
 #ifdef __GNUC__
-  #define logerr			fprintf(stderr, "ERR %d %s %s  ", __LINE__, __FILE__, __PRETTY_FUNCTION__ "()"); LogMsg
-  #define logerror			fprintf(stderr, "ERR %d %s %s  ", __LINE__, __FILE__, __PRETTY_FUNCTION__ "()"); LogError
-
-  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__ " " __PRETTY_FUNCTION__ "()")
+  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__, __PRETTY_FUNCTION__, "()")
 #else
-  #define logerr			fprintf(stderr, "ERR %d %s  ", __LINE__, __FILE__); LogMsg
-  #define logerror			fprintf(stderr, "ERR %d %s  ", __LINE__, __FILE__); LogError
-
-  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__)
-#endif
-*/
-
-#define UserError(a,b,c,d)	Put((a), "\027ERROR: \022" b "\n\n");	\
-							log_err("%d %s  %s\n", (c), (d), (b))
-
-#ifdef __GNUC__
-  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__ " " __PRETTY_FUNCTION__ "()")
-#else
-  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__)
+  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__, "", "")
 #endif
 
 

@@ -1,9 +1,17 @@
-Changes as of October 30th
+Changes as of November 2nd 2003
+- fixed bug in edit_name(!)  pressing backspace mess it up, as noted by Richard
+  of MatrixBBS
+- anon aliases should always be forced to lowercase
+- added 'x' flag in who list when someone is sending you a message
+- added 'm' flag in who list when someone is mailing you a message
+- tell user at logon that (s)he has message reception turned off
+
+Changes as of October 30th 2003
 - crash recovery : protection against looping and crashing again and again
 - option in param file: 'oncrash' can be 'recover' or 'dumpcore' or 'whatever'
 - savecore : archiving of core files
 
-Changes as of October 28th
+Changes as of October 28th 2003
 - Timers have void* argument instead of User* argument
 - timerq is now sorted and works with 'relative' time; more efficient
 

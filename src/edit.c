@@ -393,6 +393,9 @@ int edit_name(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 			usr->edit_pos = 0;
 			usr->edit_buf[0] = 0;
+
+			listdestroy_StringList(usr->recipients);
+			usr->recipients = NULL;
 			break;
 
 		case KEY_CTRL('C'):

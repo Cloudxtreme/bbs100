@@ -386,6 +386,8 @@ int r;
 				}
 				Free(usr->default_anon);
 				usr->default_anon = s;
+				cstrlwr(usr->default_anon);
+				Print(usr, "<green>Default anonymous alias set to: <cyan>%s\n", usr->default_anon);
 			}
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 		} else
