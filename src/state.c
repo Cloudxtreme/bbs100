@@ -3479,7 +3479,10 @@ char zone_color[16], zone_color2[16];
 	memcpy(&ut, user_time(usr, (time_t)0UL), sizeof(struct tm));
 
 	t = tz_time(worldclock[item].tz, (time_t)0UL);
-
+	if (worldclock[item].tz == NULL) {
+		t->tm_hour = 0;			/* reset, don't even display GMT because this is the world clock */
+		t->tm_min = 0;
+	}
 	if (t->tm_hour == ut.tm_hour && t->tm_min == ut.tm_min) {
 		strcpy(zone_color, "white");
 		strcpy(zone_color2, "white");
