@@ -16,38 +16,34 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+#ifndef LOG_H_WJ103
+#define LOG_H_WJ103	1
+
+#include <stdio.h>
+#include <stdarg.h>
+
+#define MAX_INTERNAL_LOG	50
+
 /*
-	Process.h	WJ99
-
-	for background processes
+	these defines are needed for the code conversion from old to new logging code
 */
+#define logmsg		log_msg
+#define logerr		log_err
+#define logerror	log_err
+#define logauth		log_auth
+#define loginfo		log_info
+#define logdebug	log_debug
 
-#ifndef PROCESS_H_WJ99
-#define PROCESS_H_WJ99 1
 
-#include <config.h>
-#include <sys/types.h>
+int init_log(void);
+void log_entry(FILE *, char *, char, va_list);
+void log_msg(char *, ...);
+void log_info(char *, ...);
+void log_err(char *, ...);
+void log_auth(char *, ...);
+void log_rotate(void);
 
-#include "sys_time.h"
-
-#define PROC_RESTART	1
-#define PROC_RESOLVER	2
-
-typedef struct {
-	char *name, *path, **argv;
-	pid_t pid;
-	int flags, died_times;
-	time_t start_time;
-} Process;
-
-int fork_process(Process *);
-void restart_process(Process *);
-void wait_process(void);
-void process_sigpipe(int);
-void process_sigchld(int);
-int init_process(void);
-void kill_process(void);
-
-#endif	/* PROCESS_H_WJ99 */
+#endif	/* LOG_H_WJ103 */
 
 /* EOB */

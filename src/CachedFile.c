@@ -29,8 +29,7 @@
 	and thus the user only sees the local copy of the File object
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "CachedFile.h"
 #include "Timer.h"

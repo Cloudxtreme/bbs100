@@ -21,7 +21,7 @@
 	inet.c
 */
 
-#include <config.h>
+#include "config.h"
 
 #ifndef HAVE_SELECT
 #error This package relies on select(), which is not available on this platform
@@ -32,6 +32,7 @@
 #include "debug.h"
 #include "inet.h"
 #include "util.h"
+#include "log.h"
 #include "state_login.h"
 #include "CallStack.h"
 #include "Stats.h"

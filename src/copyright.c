@@ -20,8 +20,7 @@
 	copyright.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "copyright.h"
 #include "version.h"
 

@@ -20,8 +20,7 @@
 	StringList.c	WJ98
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "StringList.h"
 #include "cstring.h"
 #include "Memory.h"

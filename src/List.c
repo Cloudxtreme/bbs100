@@ -20,8 +20,7 @@
 	List.c	WJ98
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "List.h"
 #include "Memory.h"

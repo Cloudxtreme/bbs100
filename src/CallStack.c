@@ -20,12 +20,12 @@
 	CallStack.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "CallStack.h"
 #include "debug.h"
 #include "User.h"
 #include "util.h"
+#include "log.h"
 #include "state.h"
 #include "cstring.h"
 #include "Memory.h"

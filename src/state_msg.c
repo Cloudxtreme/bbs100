@@ -20,14 +20,14 @@
 	state_msg.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "state_msg.h"
 #include "state.h"
 #include "edit.h"
 #include "access.h"
 #include "util.h"
+#include "log.h"
 #include "debug.h"
 #include "Stats.h"
 #include "screens.h"

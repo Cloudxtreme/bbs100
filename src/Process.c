@@ -17,14 +17,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Process.c
+	Process.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Process.h"
 #include "inet.h"
 #include "util.h"
+#include "log.h"
 #include "Signal.h"
 #include "cstring.h"
 #include "Param.h"
@@ -39,12 +39,10 @@
 #include <sys/wait.h>
 #endif
 
-static char *logd_argv[2] =		{ "(bbs100 logd)",		NULL	};
 static char *resolver_argv[3] =	{ "(bbs100 resolver)",	NULL,	NULL	};
 
-static Process process_table[2] = {
-	{	"logd",		NULL,	logd_argv,		(pid_t)-1L,	PROC_RESTART | PROC_LOGD,		0,	(time_t)0UL	},
-	{	"resolver",	NULL,	resolver_argv,	(pid_t)-1L,	PROC_RESTART | PROC_RESOLVER,	0,	(time_t)0UL	}
+static Process process_table[1] = {
+	{	"resolver",	NULL,	resolver_argv,	(pid_t)-1L,	PROC_RESTART | PROC_RESOLVER,	0,	(time_t)0UL	},
 };
 
 
@@ -53,8 +51,7 @@ int i, num;
 
 	set_Signal(SIGCHLD, process_sigchld);
 
-	process_table[0].path = PARAM_PROGRAM_LOGD;
-	process_table[1].path = PARAM_PROGRAM_RESOLVER;
+	process_table[0].path = PARAM_PROGRAM_RESOLVER;
 
 	num = sizeof(process_table)/sizeof(Process);	/* start all children */
 	for(i = 0; i < num; i++) {
@@ -71,8 +68,6 @@ int i, num;
 	If the process is the logger, create a stderr <-> stdin pipe
 */
 int fork_process(Process *proc) {
-int pipe_fds[2] = { -1, -1 };
-
 	if (proc == NULL)
 		return -1;
 
@@ -91,38 +86,18 @@ int pipe_fds[2] = { -1, -1 };
 		logmsg("starting resolver with socket %s", buf);
 		proc->argv[1] = buf;
 	}
-	if (proc->flags & PROC_LOGD) {
-		if (pipe(pipe_fds) < 0) {
-			logerror("failed to pipe()");
-			return -1;
-		}
-	}
 	proc->pid = fork();
 	if (proc->pid == (pid_t)-1L) {
 		logerror("failed to fork()");
 		return -1;
 	}
 	if (!proc->pid) {
-		if (proc->flags & PROC_LOGD) {
-			close(pipe_fds[1]);				/* child closes write end */
-
-			dup2(pipe_fds[0], fileno(stdin));
-			close(pipe_fds[0]);
-		}
 		execv(proc->path, proc->argv);
 		logerror("exec(\"%s\") failed", proc->path);
 		exit(-1);
 	}
 	waitpid(-1, NULL, WNOHANG);
 
-	if (proc->flags & PROC_LOGD) {
-		close(pipe_fds[0]);					/* parent closes read end */
-
-		dup2(pipe_fds[1], fileno(stderr));
-		close(pipe_fds[1]);
-
-		kill(proc->pid, SIGCONT);			/* signal we're done connecting pipes */
-	}
 	proc->start_time = time(NULL);
 
 	logmsg("%s started, pid %u", proc->name, proc->pid);

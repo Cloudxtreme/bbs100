@@ -16,7 +16,6 @@ trashdir               trash/
 
 program_main           bin/main
 program_resolver       bin/resolver
-program_logd           bin/logd
 
 gpl_screen             etc/GPL
 mods_screen            etc/local_mods
@@ -42,6 +41,9 @@ su_passwd_file         etc/su_passwd
 license_file           etc/license
 pid_file               etc/pid
 symtab_file            etc/symtab
+
+syslog                 log/bbslog
+authlog                log/authlog
 
 max_cached             256
 max_messages           50

@@ -20,8 +20,7 @@
 	Feelings.c	WJ100
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "Feeling.h"
 #include "PList.h"

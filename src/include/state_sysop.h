@@ -59,7 +59,6 @@
 #define STATE_PARAM_TRASHDIR			state_param_trashdir
 #define STATE_PARAM_PROGRAM_MAIN		state_param_program_main
 #define STATE_PARAM_PROGRAM_RESOLVER	state_param_program_resolver
-#define STATE_PARAM_PROGRAM_LOGD		state_param_program_logd
 #define STATE_PARAM_NAME_SYSOP			state_param_name_sysop
 #define STATE_PARAM_NAME_ROOMAIDE		state_param_name_roomaide
 #define STATE_PARAM_NAME_HELPER			state_param_name_helper
@@ -153,7 +152,6 @@ void state_param_roomdir(User *, char);
 void state_param_trashdir(User *, char);
 void state_param_program_main(User *, char);
 void state_param_program_resolver(User *, char);
-void state_param_program_logd(User *, char);
 
 void state_config_files_menu(User *, char);
 void state_param_gpl_screen(User *, char);

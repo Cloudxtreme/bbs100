@@ -20,8 +20,7 @@
 	MsgIndex.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "MsgIndex.h"
 #include "cstring.h"
 #include "Memory.h"

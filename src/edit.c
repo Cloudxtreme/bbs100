@@ -20,12 +20,12 @@
 	edit.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "edit.h"
 #include "access.h"
 #include "util.h"
+#include "log.h"
 #include "cstring.h"
 #include "Param.h"
 #include "OnlineUser.h"

@@ -20,8 +20,7 @@
 	Message.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Message.h"
 #include "cstring.h"
 #include "Timer.h"

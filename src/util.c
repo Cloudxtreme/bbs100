@@ -20,8 +20,7 @@
 	util.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "util.h"
 #include "edit.h"
 #include "cstring.h"

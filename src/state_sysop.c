@@ -22,8 +22,7 @@
 	Sysop menu
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "state_sysop.h"
 #include "state_msg.h"
@@ -32,6 +31,7 @@
 #include "state.h"
 #include "edit.h"
 #include "util.h"
+#include "log.h"
 #include "inet.h"
 #include "Stats.h"
 #include "Timer.h"
@@ -1460,11 +1460,9 @@ void state_system_config_menu(User *usr, char c) {
 			);
 			Print(usr, "\n"
 				"<hotkey>Main program        <white>%s<magenta>\n"
-				"Resol<hotkey>ver program    <white>%s<magenta>\n"
-				"<hotkey>Logd program        <white>%s<magenta>\n",
+				"Resol<hotkey>ver program    <white>%s<magenta>\n",
 				PARAM_PROGRAM_MAIN,
-				PARAM_PROGRAM_RESOLVER,
-				PARAM_PROGRAM_LOGD
+				PARAM_PROGRAM_RESOLVER
 			);
 			break;
 
@@ -1548,13 +1546,6 @@ void state_system_config_menu(User *usr, char c) {
 			Put(usr, "Resolver program\n");
 			CALL(usr, STATE_PARAM_PROGRAM_RESOLVER);
 			Return;
-
-		case 'l':
-		case 'L':
-			Put(usr, "Logd program\n");
-			CALL(usr, STATE_PARAM_PROGRAM_LOGD);
-			Return;
-
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Sysconf<white># ", PARAM_NAME_SYSOP);
 	Return;
@@ -1630,12 +1621,6 @@ void state_param_program_main(User *usr, char c) {
 void state_param_program_resolver(User *usr, char c) {
 	Enter(state_param_program_resolver);
 	change_string_param(usr, c, &PARAM_PROGRAM_RESOLVER, "<green>Enter resolver program<yellow>: ");
-	Return;
-}
-
-void state_param_program_logd(User *usr, char c) {
-	Enter(state_param_program_logd);
-	change_string_param(usr, c, &PARAM_PROGRAM_LOGD, "<green>Enter logd program<yellow>: ");
 	Return;
 }
 

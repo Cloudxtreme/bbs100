@@ -20,12 +20,12 @@
 	access.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "access.h"
 #include "state.h"
 #include "util.h"
+#include "log.h"
 #include "cstring.h"
 #include "Param.h"
 #include "OnlineUser.h"

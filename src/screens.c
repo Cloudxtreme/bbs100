@@ -20,8 +20,7 @@
 	screens.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "screens.h"
 
 #ifndef NULL

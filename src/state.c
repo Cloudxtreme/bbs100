@@ -23,12 +23,12 @@
 
 /* #include "*.h" :P */
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "debug.h"
 #include "User.h"
 #include "util.h"
+#include "log.h"
 #include "edit.h"
 #include "state.h"
 #include "state_msg.h"

@@ -22,8 +22,7 @@
 	crypt_phrase() routine or just plain crypt().
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "passwd.h"
 #include "Timer.h"
 #include "sys_time.h"

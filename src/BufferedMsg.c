@@ -20,8 +20,7 @@
 	BufferedMsg.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "BufferedMsg.h"
 #include "cstring.h"
 #include "Memory.h"

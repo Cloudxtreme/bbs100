@@ -26,6 +26,7 @@
 #include <config.h>
 
 #include "User.h"
+#include "log.h"
 #include "sys_time.h"
 
 #include <stdarg.h>
@@ -38,6 +39,7 @@
 #define SECS_IN_DAY			(24 * SECS_IN_HOUR)
 #define SECS_IN_WEEK		(7 * SECS_IN_DAY)
 
+/*
 #define logmsg				fprintf(stderr, "MSG ");  LogMsg
 #define logauth				fprintf(stderr, "AUTH "); LogMsg
 
@@ -53,6 +55,16 @@
   #define logerr			fprintf(stderr, "ERR %d %s  ", __LINE__, __FILE__); LogMsg
   #define logerror			fprintf(stderr, "ERR %d %s  ", __LINE__, __FILE__); LogError
 
+  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__)
+#endif
+*/
+
+#define UserError(a,b,c,d)	Put((a), "\027ERROR: \022" b "\n\n");	\
+							log_err("%d %s  %s\n", (c), (d), (b))
+
+#ifdef __GNUC__
+  #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__ " " __PRETTY_FUNCTION__ "()")
+#else
   #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__)
 #endif
 

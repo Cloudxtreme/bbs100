@@ -21,8 +21,7 @@
 	cstring.c
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "cstring.h"
 #include "Memory.h"
 

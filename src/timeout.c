@@ -20,12 +20,12 @@
 	timeout.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "timeout.h"
 #include "User.h"
 #include "inet.h"
 #include "util.h"
+#include "log.h"
 #include "Stats.h"
 #include "Process.h"
 #include "main.h"

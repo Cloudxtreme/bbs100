@@ -1,3 +1,6 @@
+Changes as of October 26th 2003
+- changed logging; now done to log/bbslog and log/authlog
+
 Changes as of October 25th 2003
 - added timezone information for the world clock function
   which is exciting, because tonight we switch from CEST to CET again

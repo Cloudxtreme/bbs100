@@ -22,12 +22,12 @@
 	just like tcp wrappers ; 'allow' and 'deny'
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Wrapper.h"
 #include "defines.h"
 #include "cstring.h"
 #include "util.h"
+#include "log.h"
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"

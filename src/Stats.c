@@ -20,8 +20,7 @@
 	Stats.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "Stats.h"
 #include "state_msg.h"

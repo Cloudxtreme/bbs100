@@ -24,8 +24,7 @@
 	through a Unix domain socket 
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "copyright.h"
 #include "sys_time.h"
 #include "cstring.h"

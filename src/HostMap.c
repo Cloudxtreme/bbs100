@@ -2,8 +2,7 @@
 	hostmap.c	WJ100
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "HostMap.h"
 #include "cstring.h"
 #include "Memory.h"

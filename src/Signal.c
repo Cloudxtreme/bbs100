@@ -20,13 +20,13 @@
 	Signal.c	WJ97
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Signal.h"
 #include "debug.h"
 #include "User.h"
 #include "screens.h"
 #include "util.h"
+#include "log.h"
 #include "inet.h"
 #include "Process.h"
 #include "main.h"

@@ -45,59 +45,61 @@
 
 #define PARAM_PROGRAM_MAIN			param[10].val.s
 #define PARAM_PROGRAM_RESOLVER		param[11].val.s
-#define PARAM_PROGRAM_LOGD			param[12].val.s
 
-#define PARAM_GPL_SCREEN			param[13].val.s
-#define PARAM_MODS_SCREEN			param[14].val.s
-#define PARAM_LOGIN_SCREEN			param[15].val.s
-#define PARAM_LOGOUT_SCREEN			param[16].val.s
-#define PARAM_NOLOGIN_SCREEN		param[17].val.s
-#define PARAM_MOTD_SCREEN			param[18].val.s
-#define PARAM_REBOOT_SCREEN			param[19].val.s
-#define PARAM_SHUTDOWN_SCREEN		param[20].val.s
-#define PARAM_CRASH_SCREEN			param[21].val.s
+#define PARAM_GPL_SCREEN			param[12].val.s
+#define PARAM_MODS_SCREEN			param[13].val.s
+#define PARAM_LOGIN_SCREEN			param[14].val.s
+#define PARAM_LOGOUT_SCREEN			param[15].val.s
+#define PARAM_NOLOGIN_SCREEN		param[16].val.s
+#define PARAM_MOTD_SCREEN			param[17].val.s
+#define PARAM_REBOOT_SCREEN			param[18].val.s
+#define PARAM_SHUTDOWN_SCREEN		param[19].val.s
+#define PARAM_CRASH_SCREEN			param[20].val.s
 
-#define PARAM_FIRST_LOGIN			param[22].val.s
-#define PARAM_HELP_STD				param[23].val.s
-#define PARAM_HELP_CONFIG			param[24].val.s
-#define PARAM_HELP_ROOMCONFIG		param[25].val.s
-#define PARAM_HELP_SYSOP			param[26].val.s
+#define PARAM_FIRST_LOGIN			param[21].val.s
+#define PARAM_HELP_STD				param[22].val.s
+#define PARAM_HELP_CONFIG			param[23].val.s
+#define PARAM_HELP_ROOMCONFIG		param[24].val.s
+#define PARAM_HELP_SYSOP			param[25].val.s
 
-#define PARAM_HOSTMAP_FILE			param[27].val.s
-#define PARAM_HOSTS_ACCESS_FILE		param[28].val.s
-#define PARAM_BANISHED_FILE			param[29].val.s
-#define PARAM_STAT_FILE				param[30].val.s
-#define PARAM_SU_PASSWD_FILE		param[31].val.s
-#define PARAM_PID_FILE				param[32].val.s
-#define PARAM_SYMTAB_FILE			param[33].val.s
+#define PARAM_HOSTMAP_FILE			param[26].val.s
+#define PARAM_HOSTS_ACCESS_FILE		param[27].val.s
+#define PARAM_BANISHED_FILE			param[28].val.s
+#define PARAM_STAT_FILE				param[29].val.s
+#define PARAM_SU_PASSWD_FILE		param[30].val.s
+#define PARAM_PID_FILE				param[31].val.s
+#define PARAM_SYMTAB_FILE			param[32].val.s
 
-#define PARAM_MAX_CACHED			param[34].val.u
-#define PARAM_MAX_MESSAGES			param[35].val.u
-#define PARAM_MAX_MAIL_MSGS			param[36].val.u
-#define PARAM_MAX_MSG_LINES			param[37].val.u
-#define PARAM_MAX_XMSG_LINES		param[38].val.u
-#define PARAM_MAX_HISTORY			param[39].val.u
-#define PARAM_MAX_CHAT_HISTORY		param[40].val.u
-#define PARAM_MAX_FRIEND			param[41].val.u
-#define PARAM_MAX_ENEMY				param[42].val.u
-#define PARAM_IDLE_TIMEOUT			param[43].val.u
-#define PARAM_LOCK_TIMEOUT			param[44].val.u
-#define PARAM_SAVE_TIMEOUT			param[45].val.u
-#define PARAM_USERHASH_SIZE			param[46].val.u
+#define PARAM_SYSLOG				param[33].val.s
+#define PARAM_AUTHLOG				param[34].val.s
 
-#define PARAM_NAME_SYSOP			param[47].val.s
-#define PARAM_NAME_ROOMAIDE			param[48].val.s
-#define PARAM_NAME_HELPER			param[49].val.s
-#define PARAM_NAME_GUEST			param[50].val.s
+#define PARAM_MAX_CACHED			param[35].val.u
+#define PARAM_MAX_MESSAGES			param[36].val.u
+#define PARAM_MAX_MAIL_MSGS			param[37].val.u
+#define PARAM_MAX_MSG_LINES			param[38].val.u
+#define PARAM_MAX_XMSG_LINES		param[39].val.u
+#define PARAM_MAX_HISTORY			param[40].val.u
+#define PARAM_MAX_CHAT_HISTORY		param[41].val.u
+#define PARAM_MAX_FRIEND			param[42].val.u
+#define PARAM_MAX_ENEMY				param[43].val.u
+#define PARAM_IDLE_TIMEOUT			param[44].val.u
+#define PARAM_LOCK_TIMEOUT			param[45].val.u
+#define PARAM_SAVE_TIMEOUT			param[46].val.u
+#define PARAM_USERHASH_SIZE			param[47].val.u
 
-#define PARAM_NOTIFY_LOGIN			param[51].val.s
-#define PARAM_NOTIFY_LOGOUT			param[52].val.s
-#define PARAM_NOTIFY_LINKDEAD		param[53].val.s
-#define PARAM_NOTIFY_IDLE			param[54].val.s
-#define PARAM_NOTIFY_LOCKED			param[55].val.s
-#define PARAM_NOTIFY_UNLOCKED		param[56].val.s
-#define PARAM_NOTIFY_ENTER_CHAT		param[57].val.s
-#define PARAM_NOTIFY_LEAVE_CHAT		param[58].val.s
+#define PARAM_NAME_SYSOP			param[48].val.s
+#define PARAM_NAME_ROOMAIDE			param[49].val.s
+#define PARAM_NAME_HELPER			param[50].val.s
+#define PARAM_NAME_GUEST			param[51].val.s
+
+#define PARAM_NOTIFY_LOGIN			param[52].val.s
+#define PARAM_NOTIFY_LOGOUT			param[53].val.s
+#define PARAM_NOTIFY_LINKDEAD		param[54].val.s
+#define PARAM_NOTIFY_IDLE			param[55].val.s
+#define PARAM_NOTIFY_LOCKED			param[56].val.s
+#define PARAM_NOTIFY_UNLOCKED		param[57].val.s
+#define PARAM_NOTIFY_ENTER_CHAT		param[58].val.s
+#define PARAM_NOTIFY_LEAVE_CHAT		param[59].val.s
 
 #define DEFAULT_PORT_1234			1234	/* default port number */
 

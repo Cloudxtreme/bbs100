@@ -22,14 +22,14 @@
 	The Room Config menu
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "state_roomconfig.h"
 #include "state_msg.h"
 #include "state.h"
 #include "edit.h"
 #include "util.h"
+#include "log.h"
 #include "screens.h"
 #include "CachedFile.h"
 #include "Param.h"

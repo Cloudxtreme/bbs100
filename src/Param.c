@@ -20,8 +20,7 @@
 	Param.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Param.h"
 #include "defines.h"
 #include "cstring.h"
@@ -47,9 +46,8 @@ Param param[] = {
 					"trashdir",			{ NULL },	{ "trash/" },					},
 
 	{ PARAM_STRING, "program_main",		{ NULL },	{ "bin/main" },					},
-	{ PARAM_STRING, "program_resolver",	{ NULL },	{ "bin/resolver" },				},
 	{ PARAM_STRING | PARAM_SEPARATOR,
-					"program_logd",		{ NULL },	{ "bin/logd" },					},
+					"program_resolver",	{ NULL },	{ "bin/resolver" },				},
 
 	{ PARAM_STRING, "gpl_screen",		{ NULL },	{ "etc/GPL" },					},
 	{ PARAM_STRING, "mods_screen",		{ NULL },	{ "etc/local_mods" },			},
@@ -77,6 +75,10 @@ Param param[] = {
 	{ PARAM_STRING,	"pid_file",			{ NULL },	{ "etc/pid" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,
 					"symtab_file",		{ NULL },	{ "etc/symtab" },				},
+
+	{ PARAM_STRING, "syslog",			{ NULL },	{ "log/bbslog" },				},
+	{ PARAM_STRING | PARAM_SEPARATOR,
+					"authlog",			{ NULL },	{ "log/authlog" },				},
 
 	{ PARAM_INT,	"max_cached",		{ NULL },	{ (char *)DEFAULT_MAX_CACHED },		},
 	{ PARAM_INT,	"max_messages",		{ NULL },	{ (char *)DEFAULT_MAX_MESSAGES },	},

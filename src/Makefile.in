@@ -55,7 +55,7 @@ INCLUDE = include
 	$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
 OBJS = List.o PList.o StringList.o cstring.o CallStack.o \
-	inet.o util.o screens.o edit.o access.o \
+	log.o inet.o util.o screens.o edit.o access.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
 	state.o state_login.o state_msg.o state_friendlist.o \
@@ -65,11 +65,11 @@ OBJS = List.o PList.o StringList.o cstring.o CallStack.o \
 	debug.o SymbolTable.o Types.o HostMap.o ZoneInfo.o \
 	main.o
 
-MORE_OBJS = mkpasswd.o resolver.o logd.o readlogs.o ccat.o
+MORE_OBJS = mkpasswd.o resolver.o ccat.o
 
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
-TARGETS = main mkpasswd resolver logd readlogs ccat
+TARGETS = main mkpasswd resolver ccat
 SCRIPTS = bbs expire_accounts.sh stats.pl
 
 all: .depend $(TARGETS)
@@ -106,12 +106,6 @@ mkpasswd: mkpasswd.o passwd.o copyright.o
 
 resolver: resolver.o copyright.o
 	$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
-
-logd: logd.o copyright.o
-	$(CC) -I$(INCLUDE) $(CFLAGS) logd.o copyright.o -o logd $(LFLAGS)
-
-readlogs: readlogs.o copyright.o
-	$(CC) -I$(INCLUDE) $(CFLAGS) readlogs.o copyright.o -o readlogs $(LFLAGS)
 
 ccat: ccat.o copyright.o
 	$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o copyright.o -o ccat $(LFLAGS)

@@ -24,8 +24,7 @@
 	of allocated objects. The number does not represent the number of open files.
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "AtomicFile.h"
 #include "Memory.h"
 #include "cstring.h"

@@ -20,8 +20,7 @@
 	Room.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "Room.h"
 #include "cstring.h"

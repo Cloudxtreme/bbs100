@@ -24,6 +24,7 @@
 #include "ZoneInfo.h"
 #include "defines.h"
 #include "util.h"
+#include "log.h"
 #include "cstring.h"
 #include "Memory.h"
 #include "Param.h"

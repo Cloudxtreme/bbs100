@@ -20,8 +20,7 @@
 	mkpasswd.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "copyright.h"
 #include "passwd.h"
 #include "sys_time.h"

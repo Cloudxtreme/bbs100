@@ -20,8 +20,7 @@
 	SignalVector.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "SignalVector.h"
 #include "cstring.h"
 #include "Memory.h"

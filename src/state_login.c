@@ -20,8 +20,7 @@
 	state_login.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "debug.h"
 #include "state_login.h"
@@ -31,6 +30,7 @@
 #include "edit.h"
 #include "inet.h"
 #include "util.h"
+#include "log.h"
 #include "passwd.h"
 #include "Stats.h"
 #include "timeout.h"

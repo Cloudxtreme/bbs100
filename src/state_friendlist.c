@@ -20,13 +20,13 @@
 	state_friendlist.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "state_friendlist.h"
 #include "state.h"
 #include "edit.h"
 #include "util.h"
+#include "log.h"
 #include "debug.h"
 #include "cstring.h"
 #include "Param.h"

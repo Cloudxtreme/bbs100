@@ -22,8 +22,7 @@
 	the joined room
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Joined.h"
 #include "cstring.h"
 #include "Memory.h"

@@ -22,8 +22,7 @@
 	The Config Menu
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "state_config.h"
 #include "state_friendlist.h"
@@ -31,6 +30,7 @@
 #include "state.h"
 #include "edit.h"
 #include "util.h"
+#include "log.h"
 #include "cstring.h"
 #include "passwd.h"
 #include "screens.h"

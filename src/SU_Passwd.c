@@ -20,8 +20,7 @@
 	SU_Passwd.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "SU_Passwd.h"
 #include "cstring.h"
 #include "Memory.h"

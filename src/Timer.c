@@ -20,8 +20,7 @@
 	Timer.c	WJ99
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Timer.h"
 #include "User.h"
 #include "Signal.h"

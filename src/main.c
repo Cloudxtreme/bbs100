@@ -21,8 +21,7 @@
 	main.c
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "debug.h"
 #include "copyright.h"
 #include "defines.h"
@@ -36,6 +35,7 @@
 #include "Signal.h"
 #include "Timer.h"
 #include "util.h"
+#include "log.h"
 #include "Param.h"
 #include "SymbolTable.h"
 #include "Feeling.h"
@@ -320,6 +320,17 @@ int main(int argc, char **argv) {
 	}
 	init_crypt();			/* init salt table for passwd encryption */
 
+	if ((main_socket = inet_sock(PARAM_PORT_NUMBER)) < 0) {		/* startup inet */
+		printf("failed to listen on port %d\n", PARAM_PORT_NUMBER);
+		exit_program(SHUTDOWN);
+	}
+	printf("up and running pid %lu, listening at port %d\n", (unsigned long)getpid(), PARAM_PORT_NUMBER);
+
+	init_log();				/* start logging to files */
+
+	log_info("bbs restart");
+	log_entry(stderr, "bbs restart", 'I', NULL);
+
 /*
 	Note: You will want to comment this line out when you compile with -g
 	      in order to be able to use a debugger
@@ -327,15 +338,7 @@ int main(int argc, char **argv) {
 	goto_background();
 
 	if (init_process())
-		printf("\nhelper daemons startup failed, ignored\n\n");
-
-	if ((main_socket = inet_sock(PARAM_PORT_NUMBER)) < 0) {		/* startup inet */
-		printf("failed to listen on port %d\n", PARAM_PORT_NUMBER);
-		logerr("failed to listen on port %d\n", PARAM_PORT_NUMBER);
-		exit_program(SHUTDOWN);
-	}
-	logmsg("up and running pid %lu, listening at port %d\n", (unsigned long)getpid(), PARAM_PORT_NUMBER);
-	logerr("up and running pid %lu, listening at port %d\n", (unsigned long)getpid(), PARAM_PORT_NUMBER);
+		logerr("helper daemons startup failed");
 
 	stats.uptime = rtc = time(NULL);
 

@@ -4,8 +4,7 @@
 	Memory types table
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "Types.h"
 #include "StringList.h"
 #include "PList.h"

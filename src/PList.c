@@ -22,8 +22,7 @@
 	List of pointers
 */
 
-#include <config.h>
-
+#include "config.h"
 #include "PList.h"
 #include "Memory.h"
 
