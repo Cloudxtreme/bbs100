@@ -19,7 +19,7 @@
 #
 #! /bin/sh
 #
-#	bbs100 1.2.0 rc.bbs script	WJ99
+#	bbs100 rc.bbs script	WJ99
 #
 
 TEST=@TEST@

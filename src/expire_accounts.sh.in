@@ -13,7 +13,7 @@ AWK=@AWK@
 PATH=/bin:/usr/bin
 
 PROG=`basename $0`
-echo "bbs100 1.2.0 ${PROG} by Walter de Jong <walter@heiho.net> (C) 2002"
+echo "bbs100 ${PROG} by Walter de Jong <walter@heiho.net> (C) 2002"
 
 DEFAULT_PARAM=etc/param
 

@@ -19,12 +19,12 @@
 #
 #! @PERL@
 #
-#	bbs100 1.2.0 stats.pl	WJ99
+#	bbs100 stats.pl	WJ99
 #
 #	Extract statistics from logs
 #
 
-print "bbs100 1.2.0 stats.pl by Walter de Jong (walter\@heiho.net) (c) 1999\n";
+print "bbs100 stats.pl by Walter de Jong (walter\@heiho.net) (c) 1999\n";
 
 @auth_files = `/bin/ls log/auth/auth.??`;
 
