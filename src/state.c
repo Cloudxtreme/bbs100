@@ -2520,7 +2520,7 @@ PList *pl_cols[16];
 
 			if (u == usr)
 				col = (char)color_by_name("white");
-			else
+			else {
 				if (in_StringList(u->enemies, usr->name) != NULL
 					|| ((usr->flags & USR_SHOW_ENEMIES)
 						&& in_StringList(usr->enemies, u->name) != NULL)) {
@@ -2535,18 +2535,24 @@ PList *pl_cols[16];
 							stat = '+';			/* indicate friend /wo colors */
 					}
 				}
-
-			if (u->flags & USR_X_DISABLED)
-				stat = '*';
-
+			}
 			if (u->flags & USR_HELPING_HAND)
 				stat = '%';
 
 			if (u->runtime_flags & RTF_SYSOP)
 				stat = '$';
 
+			if (u->flags & USR_X_DISABLED)
+				stat = '*';
+
 			if (u->runtime_flags & RTF_LOCKED)
 				stat = '#';
+
+			if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringList(u->recipients, usr->name) != NULL)
+				stat = 'x';
+
+			if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_StringList(u->new_message->to, usr->name) != NULL)
+				stat = 'm';
 
 			sprintf(buf+buflen, "<white>%c%c%-18s", stat, col, u->name);
 			buflen = strlen(buf);
@@ -2643,12 +2649,10 @@ int read_it = 1;
 	}
 	read_it = 1;
 
-	if ((j = in_Joined(usr->rooms, r->number)) != NULL) {
-		if (j->zapped) {
-			status[0] = (char)color_by_name("red");
-			status[1] = 'Z';
-			read_it = 0;
-		}
+	if ((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped) {
+		status[0] = (char)color_by_name("red");
+		status[1] = 'Z';
+		read_it = 0;
 	}
 	if (read_it) {
 		if (r->flags & ROOM_ANONYMOUS) {

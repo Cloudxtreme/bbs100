@@ -1194,11 +1194,11 @@ char lastcolor = 0;
 
 /* Eat until there's a character left of us */
 	for (where = usr->edit_pos; where > 0; where--) {
-		if (!isspace(usr->edit_buf[(where-1)]))
+		if (!isspace((int)usr->edit_buf[(where-1)] & 0xff))
 			break;
 
 		usr->edit_pos--;
-		if (isprint(usr->edit_buf[usr->edit_pos]))
+		if (isprint((int)usr->edit_buf[usr->edit_pos] & 0xff))
 			Put(usr, "\b \b");
 
 		usr->edit_buf[usr->edit_pos] = 0;
@@ -1206,11 +1206,11 @@ char lastcolor = 0;
 
 /* Then eat until we're in the space to the right of a char */
 	for (where = usr->edit_pos; where > 0; where--) {
-		if (isspace(usr->edit_buf[(where-1)]))
+		if (isspace((int)usr->edit_buf[(where-1)] & 0xff))
 			break;
 
 		usr->edit_pos--;
-		if (isprint(usr->edit_buf[usr->edit_pos]))
+		if (isprint((int)usr->edit_buf[usr->edit_pos] & 0xff))
 			Put(usr, "\b \b");
 
 		usr->edit_buf[usr->edit_pos] = 0;
@@ -1218,7 +1218,7 @@ char lastcolor = 0;
 
 /* Restore our last color code */
 	for (where=usr->edit_pos; where > 0; where--) {
-		if (iscntrl(usr->edit_buf[(where-1)])) {
+		if (iscntrl((int)usr->edit_buf[(where-1)] & 0xff)) {
 			lastcolor = usr->edit_buf[(where-1)];
 			break;
 		}
