@@ -51,15 +51,13 @@ int init_Lang(void) {
 
 	languages->hashaddr = hashaddr_ascii;
 
-	log_debug("init_Lang(): default lang == %s", PARAM_DEFAULT_LANGUAGE);
 	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100"))
 		return 0;
 
-	log_debug("init_Lang(): loading %s", PARAM_DEFAULT_LANGUAGE);
-	if (load_Language(PARAM_DEFAULT_LANGUAGE) == NULL)
+	if (load_Language(PARAM_DEFAULT_LANGUAGE) == NULL) {
+		log_err("failed to load default language %s", PARAM_DEFAULT_LANGUAGE);
 		return -1;
-
-	log_debug("init_Lang(): success");
+	}
 	return 0;
 }
 
@@ -96,16 +94,13 @@ HashList *hl;
 */
 	for(i = 0; i < l->hash->size; i++) {
 		for(hl = l->hash->hash[i]; hl != NULL; hl = hl->next) {
-			log_debug("destroy_Lang(): Free(%s)", (char *)hl->value);
 			Free((char *)hl->value);
-			log_debug("destroy_Lang(): freed");
 			hl->value = NULL;
 		}
 	}
-	log_debug("destroy_Lang(): destroying Hash");
 	destroy_Hash(l->hash);
-	log_debug("destroy_Lang(): destroyed");
 	l->hash = NULL;
+	Free(l);
 }
 
 /*
