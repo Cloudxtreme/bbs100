@@ -303,9 +303,12 @@ int i;
 					Put(usr, "<magenta>You now are available to help others\n");
 				}
 				break;
-			} else
+			} else {
 				if (PARAM_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Questions<red> and <yellow>Helpers<red> are not enabled on this server\n");
+
+				usr->flags &= ~USR_HELPING_HAND;
+			}
 			break;
 
 		case 'x':

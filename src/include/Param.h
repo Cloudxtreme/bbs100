@@ -137,8 +137,8 @@
 #define PARAM_HAVE_CALENDAR			param[PARAM_HAVE_N+9].val.bool
 #define PARAM_HAVE_WORLDCLOCK		param[PARAM_HAVE_N+10].val.bool
 #define PARAM_HAVE_CHATROOMS		param[PARAM_HAVE_N+11].val.bool
-#define PARAM_HAVE_MAILROOM			param[PARAM_HAVE_N+12].val.bool
-#define PARAM_HAVE_HOMEROOM			param[PARAM_HAVE_N+13].val.bool
+#define PARAM_HAVE_HOMEROOM			param[PARAM_HAVE_N+12].val.bool
+#define PARAM_HAVE_MAILROOM			param[PARAM_HAVE_N+13].val.bool
 #define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+14].val.bool
 
 

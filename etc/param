@@ -83,11 +83,14 @@ have_feelings			yes
 have_questions			yes
 have_quick_x			yes
 have_talkedto			yes
-have_hold				yes
+have_hold_msgs			yes
 have_followup			yes
 have_x_reply			yes
 have_calendar           yes
 have_worldclock			yes
+have_chatrooms          yes
+have_homeroom           yes
+have_mailroom           yes
 disabled_msg			yes
 
 # EOB

@@ -2536,10 +2536,10 @@ void state_param_notify_leave_chat(User *usr, char c) {
 }
 
 
-#define TOGGLE_FEATURE(x)	(x) ^= PARAM_TRUE;	\
-	usr->runtime_flags |= RTF_PARAM_EDITED;		\
-	Put(usr, "\n");								\
-	CURRENT_STATE(usr);							\
+#define TOGGLE_FEATURE(x, y)	(x) ^= PARAM_TRUE;	\
+	Print(usr, "<white>%s %s\n", ((x) == PARAM_FALSE) ? "Disabling" : "Enabling", (y));		\
+	usr->runtime_flags |= RTF_PARAM_EDITED;			\
+	CURRENT_STATE(usr);								\
 	Return
 
 void state_features_menu(User *usr, char c) {
@@ -2571,8 +2571,8 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"X <hotkey>Reply              <white>%-3s<magenta>        Ch<hotkey>at rooms           <white>%s<magenta>\n"
-				"                                <hotkey>Mail> room           <white>%s<magenta>\n"
-				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Home> room           <white>%s<magenta>\n"
+				"                                <hotkey>Home> room           <white>%s<magenta>\n"
+				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Mail> room           <white>%s<magenta>\n"
 				"<hotkey>World clock          <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
@@ -2597,63 +2597,63 @@ void state_features_menu(User *usr, char c) {
 
 		case 'x':
 		case 'X':
-			TOGGLE_FEATURE(PARAM_HAVE_XMSGS);
+			TOGGLE_FEATURE(PARAM_HAVE_XMSGS, "eXpress Messages");
 
 		case 'e':
 		case 'E':
-			TOGGLE_FEATURE(PARAM_HAVE_EMOTES);
+			TOGGLE_FEATURE(PARAM_HAVE_EMOTES, "Emotes");
 
 		case 'f':
 		case 'F':
-			TOGGLE_FEATURE(PARAM_HAVE_FEELINGS);
+			TOGGLE_FEATURE(PARAM_HAVE_FEELINGS, "Feelings");
 
 		case 'q':
 		case 'Q':
-			TOGGLE_FEATURE(PARAM_HAVE_QUESTIONS);
+			TOGGLE_FEATURE(PARAM_HAVE_QUESTIONS, "Questions");
 
 		case 'k':
 		case 'K':
-			TOGGLE_FEATURE(PARAM_HAVE_QUICK_X);
+			TOGGLE_FEATURE(PARAM_HAVE_QUICK_X, "Quick X messaging");
 
 		case 't':
 		case 'T':
-			TOGGLE_FEATURE(PARAM_HAVE_TALKEDTO);
+			TOGGLE_FEATURE(PARAM_HAVE_TALKEDTO, "Talked To lists");
 
 		case 'o':
 		case 'O':
-			TOGGLE_FEATURE(PARAM_HAVE_HOLD);
+			TOGGLE_FEATURE(PARAM_HAVE_HOLD, "Hold message mode");
 
 		case 'u':
 		case 'U':
-			TOGGLE_FEATURE(PARAM_HAVE_FOLLOWUP);
+			TOGGLE_FEATURE(PARAM_HAVE_FOLLOWUP, "Follow-up mode");
 
 		case 'r':
 		case 'R':
-			TOGGLE_FEATURE(PARAM_HAVE_X_REPLY);
+			TOGGLE_FEATURE(PARAM_HAVE_X_REPLY, "X Reply");
 
 		case 'c':
 		case 'C':
-			TOGGLE_FEATURE(PARAM_HAVE_CALENDAR);
+			TOGGLE_FEATURE(PARAM_HAVE_CALENDAR, "Calendar");
 
 		case 'w':
 		case 'W':
-			TOGGLE_FEATURE(PARAM_HAVE_WORLDCLOCK);
+			TOGGLE_FEATURE(PARAM_HAVE_WORLDCLOCK, "World clock");
 
 		case 'a':
 		case 'A':
-			TOGGLE_FEATURE(PARAM_HAVE_CHATROOMS);
+			TOGGLE_FEATURE(PARAM_HAVE_CHATROOMS, "Chat rooms");
 
 		case 'm':
 		case 'M':
-			TOGGLE_FEATURE(PARAM_HAVE_MAILROOM);
+			TOGGLE_FEATURE(PARAM_HAVE_MAILROOM, "the Mail> room");
 
 		case 'h':
 		case 'H':
-			TOGGLE_FEATURE(PARAM_HAVE_HOMEROOM);
+			TOGGLE_FEATURE(PARAM_HAVE_HOMEROOM, "the Home> room");
 
 		case 'd':
 		case 'D':
-			TOGGLE_FEATURE(PARAM_DISABLED_MSG);
+			TOGGLE_FEATURE(PARAM_DISABLED_MSG, "warnings");
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
 	Return;

@@ -352,6 +352,9 @@ char many_buf[MAX_LINE*3];
 		case '9':
 		case '0':
 			if (!usr->edit_pos) {
+				if (!PARAM_HAVE_QUICK_X)
+					break;
+
 				if (c == '0')
 					i = 9;
 				else
@@ -1354,6 +1357,9 @@ Joined *j;
 		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 			if ((r = find_Roombynumber(usr, r->number)) == NULL)
 				continue;
+
+		if ((r->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS)
+			continue;
 
 		j = in_Joined(usr->rooms, r->number);
 

@@ -494,6 +494,9 @@ char num_buf[25];
 		Free(usr->tmpbuf[i]);
 		usr->tmpbuf[i] = NULL;
 	}
+	if (!PARAM_HAVE_QUESTIONS)
+		usr->flags &= ~USR_HELPING_HAND;
+
 	if (usr->flags & USR_HELPING_HAND)
 		Put(usr, "<magenta>You are available to help others\n");
 

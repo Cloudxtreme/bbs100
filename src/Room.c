@@ -512,6 +512,9 @@ Room *r;
 			if (!strcmp(r->name, name)) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
+
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					return NULL;
 				return r;
 			}
 		}
@@ -536,6 +539,9 @@ Room *r;
 			if (!(r->flags & ROOM_HIDDEN) && !strncmp(r->name, name, l)) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
+
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					continue;
 				return r;
 			}
 		}
@@ -546,6 +552,9 @@ Room *r;
 			if (!(r->flags & ROOM_HIDDEN) && cstrstr(r->name, name) != NULL) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
+
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					continue;
 				return r;
 			}
 		}
@@ -568,12 +577,21 @@ Room *r;
 		case 2:
 			if (!PARAM_HAVE_HOMEROOM)
 				break;
-			return find_Home(usr->name);
+
+			if ((r = find_Home(usr->name)) != NULL) {
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					return NULL;
+				return r;
+			}
+			break;
 
 		default:
 			for(r = AllRooms; r != NULL; r = r->next)
-				if (r->number == u)
+				if (r->number == u) {
+					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+						break;
 					return r;
+				}
 	}
 	return NULL;
 }
@@ -593,12 +611,21 @@ Room *r;
 		case 2:
 			if (!PARAM_HAVE_HOMEROOM)
 				break;
-			return find_Home(username);
+
+			if ((r = find_Home(username)) != NULL) {
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					return NULL;
+				return r;
+			}
+			break;
 
 		default:
 			for(r = AllRooms; r != NULL; r = r->next)
-				if (r->number == u)
+				if (r->number == u) {
+					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+						break;
 					return r;
+				}
 	}
 	return NULL;
 }
@@ -653,6 +680,9 @@ char *p;
 				if (r->number == HOME_ROOM && !PARAM_HAVE_HOMEROOM)
 					return 0;
 
+				if ((r->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS)
+					return 0;
+
 				return 1;
 			}
 	}
@@ -676,8 +706,12 @@ Room *r;
 		return 0;
 	}
 	for(r = AllRooms; r != NULL; r = r->next)
-		if (r->number == u)
+		if (r->number == u) {
+			if ((r->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS)
+				return 0;
+
 			return 1;
+		}
 	return 0;
 }
 

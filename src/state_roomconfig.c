@@ -87,12 +87,15 @@ void state_room_config_menu(User *usr, char c) {
 					);
 					Print(usr,
 						"<hotkey>5 <magenta>Room is not zappable      <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>6 <magenta>Room is hidden            <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>7 <magenta>Room is a chat room       <white>[<yellow>%-3s<white>]\n",
+						"<hotkey>6 <magenta>Room is hidden            <white>[<yellow>%-3s<white>]\n",
 						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
+						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No"
 					);
+					if (PARAM_HAVE_CHATROOMS)
+						Print(usr,
+							"<hotkey>7 <magenta>Room is a chat room       <white>[<yellow>%-3s<white>]\n",
+							(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
+						);
 				}
 			}
 			break;
@@ -338,15 +341,17 @@ void state_room_config_menu(User *usr, char c) {
 			break;
 
 		case '7':
-			if (usr->curr_room->flags & ROOM_HOME)
-				break;
+			if (PARAM_HAVE_CHATROOMS) {
+				if (usr->curr_room->flags & ROOM_HOME)
+					break;
 
-			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>7 (chat)\n");
-				usr->curr_room->flags ^= ROOM_CHATROOM;
-				usr->runtime_flags |= RTF_ROOM_EDITED;
-				CURRENT_STATE(usr);
-				Return;
+				if (usr->runtime_flags & RTF_SYSOP) {
+					Put(usr, "<white>7 (chat)\n");
+					usr->curr_room->flags ^= ROOM_CHATROOM;
+					usr->runtime_flags |= RTF_ROOM_EDITED;
+					CURRENT_STATE(usr);
+					Return;
+				}
 			}
 			break;
 	}
