@@ -2521,10 +2521,10 @@ User *u;
 			sprintf(buf, "%c%s<cyan>", col, u->name);
 		else {
 			sprintf(buf, "%c%s <cyan>%s", col, u->name, u->doing);
-			expand_center(buf, buf2, width, width);
-			expand_hline(buf2, buf, width);
+			expand_center(buf, buf2, PRINT_BUF - 32, width);
+			expand_hline(buf2, buf, PRINT_BUF - 32);		/* expand as far as possible */
 		}
-		l = color_index(buf, width - 9);
+		l = color_index(buf, usr->term_width - 9);
 		buf[l] = 0;
 
 		c = color_strlen(buf);
