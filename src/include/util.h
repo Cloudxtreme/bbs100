@@ -72,11 +72,11 @@ typedef struct {
 
 
 void Put(User *, char *);
-void Out(User *, char *);
+void Out(User *, char *, int *);
 int Putbuf(User *, char *, char *, int);
 int hackerz_mode(int);
 int color_by_name(char *);
-int long_color_code(User *, char *);
+int long_color_code(User *, char *, int *);
 int expand_color_code(User *, char *, char *, int *, int);
 void expand_hline(char *, char *, int);
 void expand_center(char *, char *, int, int);

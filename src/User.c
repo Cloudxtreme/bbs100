@@ -184,6 +184,7 @@ void Flush(User *usr) {
 void Print(User *usr, char *fmt, ...) {
 va_list args;
 char buf[PRINT_BUF];
+int cpos = 0;
 
 	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
 		return;
@@ -194,7 +195,7 @@ char buf[PRINT_BUF];
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	Out(usr, buf);
+	Out(usr, buf, &cpos);
 }
 
 void Tell(User *usr, char *fmt, ...) {
@@ -223,8 +224,11 @@ char buf[PRINT_BUF];
 			return;
 		}
 		add_BufferedMsg(&usr->busy_msgs, m);
-	} else
-		Out(usr, buf);
+	} else {
+		int cpos = 0;
+
+		Out(usr, buf, &cpos);
+	}
 }
 
 

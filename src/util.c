@@ -66,16 +66,19 @@ static char last_helping_hand[MAX_NAME] = "";
 	Put() translates all texts on the fly
 */
 void Put(User *usr, char *str) {
-	Out(usr, translate(usr->lang, str));
+int cpos = 0;
+
+	Out(usr, translate(usr->lang, str), &cpos);
 }
 
 /*
 	Out() puts texts without translating them
+	it takes the cursor position into account for <hline> and <center> tags
 */
-void Out(User *usr, char *str) {
+void Out(User *usr, char *str, int *cpos) {
 char buf[20], c;
 
-	if (usr == NULL || str == NULL || usr->socket < 0)
+	if (usr == NULL || str == NULL || cpos == NULL || usr->socket < 0)
 		return;
 
 	while(*str) {
@@ -84,13 +87,21 @@ char buf[20], c;
 			c = hackerz_mode(c);
 
 		switch(c) {
+			case '\b':
+				Writechar(usr, '\b');
+				if (*cpos)
+					(*cpos)--;
+				break;
+
 			case '\n':
 				Writechar(usr, '\r');
 				Writechar(usr, '\n');
+				*cpos = 0;
 				break;
 
 			case KEY_CTRL('X'):
 				Writechar(usr, '\r');
+				*cpos = 0;
 				break;
 
 			case KEY_CTRL('A'):
@@ -127,8 +138,11 @@ char buf[20], c;
 						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
 					else
 						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
-				} else
+					(*cpos)++;
+				} else {
 					sprintf(buf, "<%c>", *str);
+					*cpos += 3;
+				}
 				Write(usr, buf);
 				break;
 
@@ -153,11 +167,12 @@ char buf[20], c;
 /* long codes are specified as '<yellow>', '<beep>', etc. */
 
 			case '<':
-				str += long_color_code(usr, str);
+				str += long_color_code(usr, str, cpos);
 				break;
 
 			default:
 				Writechar(usr, c);
+				(*cpos)++;
 		}
 		if (*str)
 			str++;
@@ -414,10 +429,16 @@ int colors, i;
 
 	it's more or less sorted in order of most frequent appearance to make
 	it less slow
+
+	cpos is the cursor position, which is used in <hline> and <center> tags
+	for <hline>, the function recurses with Out()
 */
-int long_color_code(User *usr, char *code) {
+int long_color_code(User *usr, char *code, int *cpos) {
 int i, c, colors;
 char colorbuf[20], buf[20];
+
+	if (code == NULL || !*code || usr == NULL || cpos == NULL)
+		return 0;
 
 	colors = sizeof(color_table)/sizeof(ColorTable);
 	for(i = 0; i < colors; i++) {
@@ -467,8 +488,12 @@ char colorbuf[20], buf[20];
 				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
 			else
 				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
-		} else
+
+			(*cpos)++;
+		} else {
 			sprintf(buf, "<%c>", c);
+			*cpos += 3;
+		}
 		Write(usr, buf);
 		return 8;
 	}
@@ -497,14 +522,17 @@ char colorbuf[20], buf[20];
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
 		Writechar(usr, '<');
+		(*cpos)++;
 		return 3;
 	}
 	if (!cstrnicmp(code, "<gt>", 4)) {
 		Writechar(usr, '>');
+		(*cpos)++;
 		return 3;
 	}
 	if (!cstrnicmp(code, "<cr>", 4)) {
 		Writechar(usr, '\r');
+		*cpos = 0;
 		return 3;
 	}
 
@@ -513,56 +541,50 @@ char colorbuf[20], buf[20];
 	<hline> and <center>
 */
 	if (!cstrnicmp(code, "<hline>", 7)) {
-		char *p, *base;
+		char *base;
 
-		p = base = code + 7;
-		if (*p) {
-			while(*p && (*p < ' ' || *p > '~'))
-				p++;
-			base = p;
+		base = code + 7;
+		if (*base) {
+			int n;
 
+			n = color_strlen(base);
+			if (n > 0) {
+				char buf[PRINT_BUF], *p;
+				int m;
+
+				m = ((usr->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->term_width-1);
+				strncpy(buf, base, m);
+				buf[m-1] = 0;
 /*
-	this is merely a check that it contains a valid line
-	otherwise we might run into an endless loop later
+	it stinks, but you have to remove all chars that can reset the cursor pos
 */
-			while(*p) {
-				if (*p >= ' ' && *p <= '~')
-					break;
-				p++;
-			}
-			if (!*p)
-				return strlen(code)-1;
-
-			p = base;
-			if (*p) {
-				int n;
-/*
-	here...
-	this loop would be endless if we hadn't checked the string for
-	valid characters before
-	Note that you cannot use color codes after a <hline> tag
-	because of the way this has been implemented
-*/
-				n = 1;
-				while(n < usr->term_width) {
-					if (*p >= ' ' && *p <= '~') {
-						Writechar(usr, *p);
-						n++;
-					}
-					p++;
-					if (!*p)
-						p = base;
+				p = buf;
+				while(*p) {
+					if (*p == KEY_CTRL('X') || *p == '\r' || *p == '\n' || *p == '\b')
+						memmove(p, p+1, strlen(p+1)+1);
+					else
+						p++;
 				}
-				Writechar(usr, '\r');
-				Writechar(usr, '\n');
+				while(*cpos + n < usr->term_width-1)
+					Out(usr, buf, cpos);
+
+				if (*cpos + n > usr->term_width-1) {
+					buf[color_index(buf, m - *cpos)] = 0;
+					Out(usr, buf, cpos);
+				}
 			}
+			Writechar(usr, '\r');
+			Writechar(usr, '\n');
+/*			*cpos = 0;				don't do this for recursive hlines(!) (creates endless loops) */
 		}
 		return strlen(code)-1;
 	}
 	if (!cstrnicmp(code, "<center>", 8)) {
-		i = (usr->term_width-1)/2 - color_strlen(code+8)/2;
+		code += 8;
+		i = (usr->term_width-1)/2 - color_strlen(code)/2 - *cpos;
 		while(i > 0) {
 			Writechar(usr, ' ');
+			(*cpos)++;
 			i--;
 		}
 		return 7;
