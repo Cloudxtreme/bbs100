@@ -1,3 +1,7 @@
+Changes as of December 30th 2003
+- tiny IRIX fixes
+- new user and Guest get default timezone as specified in etc/param file
+
 Changes as of December 29th 2003
 - removed static buffers from functions
 - added the new parameters to the sysop menu

@@ -40,7 +40,7 @@ stat_file               etc/stats
 su_passwd_file          etc/su_passwd
 pid_file                etc/pid
 symtab_file             etc/symtab
-default_timezone        Europe/Amsterdam
+default_timezone        other/GMT
 
 syslog                  log/bbslog
 authlog                 log/authlog

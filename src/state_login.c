@@ -44,6 +44,7 @@
 #include "Memory.h"
 #include "OnlineUser.h"
 #include "SU_Passwd.h"
+#include "Timezone.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,6 +164,12 @@ int r;
 			usr->flags |= USR_X_DISABLED;
 			usr->login_time = usr->online_timer = (unsigned long)rtc;
 
+/* give Guest a default timezone */
+			if (usr->timezone == NULL)
+				usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
+			if (usr->tz == NULL)
+				usr->tz = load_Timezone(usr->timezone);
+
 			JMP(usr, STATE_ANSI_PROMPT);
 			Return;
 		}
@@ -175,9 +182,8 @@ int r;
 				Return;
 			}
 /* I said, it's possible to banish 'New', so no new users can be added */
-			if (in_StringList(banished, "New") == NULL) {
+			if (in_StringList(banished, "New") == NULL)
 				JMP(usr, STATE_NEW_ACCOUNT_YESNO);		/* unknown user; create new account? */
-			}
 		} else {
 			if (load_User(usr, usr->tmpbuf[TMP_NAME], LOAD_USER_PASSWORD)) {
 				Perror(usr, "Failed to load user file");
@@ -755,15 +761,21 @@ int r;
 
 		sprintf(usr->edit_buf, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
 		path_strip(usr->edit_buf);
-		if (mkdir(usr->edit_buf, (mode_t)0750)) {
+		if (mkdir(usr->edit_buf, (mode_t)0750))
 			Perror(usr, "Failed to create user directory");
-		}
+
 		log_auth("NEWUSER %s (%s)", usr->name, usr->from_ip);
 
+/* new user gets default timezone */
+		if (usr->timezone == NULL)
+			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
+		if (usr->tz == NULL)
+			usr->tz = load_Timezone(usr->timezone);
+
 /* save user here, or we're not able to X/profile him yet! */
-		if (usr->logins <= 1 && save_User(usr)) {
+		if (usr->logins <= 1 && save_User(usr))
 			Perror(usr, "Failed to save userfile");
-		}
+
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;
@@ -801,9 +813,15 @@ User *u;
 	u->callstack = usr->callstack;		/* steal a callstack ;) */
 	usr->callstack = NULL;
 
-	usr->socket = -1;		/* dangling user will be removed by mainloop() */
+	usr->socket = -1;					/* dangling user will be removed by mainloop() */
 
 	default_colors(u);
+
+/* give user the default timezone */
+	if (usr->timezone == NULL)
+		usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
+	if (usr->tz == NULL)
+		usr->tz = load_Timezone(usr->timezone);
 
 	add_User(&AllUsers, u);
 	Return u;
