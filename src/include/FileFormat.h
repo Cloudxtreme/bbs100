@@ -41,6 +41,15 @@
 		return -1;			\
 	} while(0)
 
+#define FF1_PARSE	do {						\
+		if ((p = cstrchr(buf, '=')) == NULL)	\
+			FF1_ERROR;							\
+		*p = 0;									\
+		p++;									\
+		if (!*p)								\
+			continue;							\
+	} while(0)
+
 #define FF1_LOAD_LEN(x,y,z)		if (!strcmp(buf, (x))) {	\
 		if (!*p)											\
 			(y)[0] = 0;										\
@@ -91,16 +100,28 @@
 		continue;											\
 	}
 
+#define FF1_LOAD_UINT(x,y)		if (!strcmp(buf, (x))) {	\
+		if (!*p)											\
+			(y) = 0;										\
+		else												\
+			(y) = (unsigned int)strtoul(p, NULL, 10);		\
+		continue;											\
+	}
+
 #define FF1_LOAD_STRINGLIST(x,y)	if (!strcmp(buf, (x))) {	\
-		if (*p)													\
+		if (*p) {												\
 			(y) = add_StringList(&(y), new_StringList(p));		\
+			(y) = rewind_StringList((y));						\
+		}														\
 		continue;												\
 	}
 
-#define FF1_LOAD_USERLIST(x,y)		if (!strcmp(buf, (x))) {		\
-		if (*p && user_exists(p) && in_StringList((y), p) == NULL)	\
-			add_StringList(&(y), new_StringList(p));				\
-		continue;													\
+#define FF1_LOAD_USERLIST(x,y)		if (!strcmp(buf, (x))) {			\
+		if (*p && user_exists(p) && in_StringList((y), p) == NULL) {	\
+			(y) = add_StringList(&(y), new_StringList(p));				\
+			(y) = rewind_StringList((y));								\
+		}																\
+		continue;														\
 	}
 
 
@@ -108,7 +129,7 @@
 	Note: this macro only saves non-null values
 */
 #define FF1_SAVE_STR(x,y)	do {			\
-		if ((y) != NULL)					\
+		if ((y) != NULL && (y)[0])			\
 			Fprintf(f, "%s=%s", (x), (y));	\
 	} while(0)
 

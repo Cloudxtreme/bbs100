@@ -29,6 +29,7 @@
 #include "StringList.h"
 #include "MsgIndex.h"
 #include "sys_time.h"
+#include "CachedFile.h"
 
 #define MSG_FROM_SYSOP				1
 #define MSG_FROM_ROOMAIDE			2
@@ -54,6 +55,13 @@ void destroy_Message(Message *);
 
 Message *load_Message(char *, MsgIndex *);
 int save_Message(Message *, char *);
+
+int load_Message_version0(File *, Message *);
+int load_Message_version1(File *, Message *);
+
+int save_Message_version0(Message *, char *);
+int save_Message_version1(Message *, char *);
+
 Message *copy_Message(Message *);
 
 #endif	/* MESSAGE_H_WJ99 */

@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "strtoul.h"
 #include "Memory.h"
+#include "FileFormat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,12 +58,14 @@ void destroy_Message(Message *m) {
 
 Message *load_Message(char *filename, MsgIndex *idx) {
 Message *m;
-char buf[MAX_LINE];
 File *f;
+int (*load_func)(File *, Message *) = NULL;
+int version;
 
 	if (filename == NULL || (f = Fopen(filename)) == NULL)
 		return NULL;
 
+/* first fill in the message number */
 	if ((m = new_Message()) == NULL) {
 		Fclose(f);
 		return NULL;
@@ -70,11 +73,65 @@ File *f;
 	if (idx == NULL) {
 		char *p;
 
-		if ((p = cstrrchr(filename, '/')) == NULL)
+		if ((p = cstrrchr(filename, '/')) == NULL)		/* get msg number from filename */
 			p = filename;
+
 		m->number = strtoul(p, NULL, 10);
 	} else
 		m->number = idx->number;
+
+/* get file format version */
+	version = fileformat_version(f);
+	switch(version) {
+		case -1:
+			load_func = NULL;
+			break;
+
+		case 0:
+			Fclose(f);
+			if ((f = Fopen(filename)) == NULL)		/* re-open file (stupid version check) */
+				break;
+
+			load_func = load_Message_version0;
+			break;
+
+		case 1:
+			load_func = load_Message_version1;
+			break;
+	}
+	if (load_func != NULL && !load_func(f, m)) {
+		Fclose(f);
+		return m;
+	}
+	destroy_Message(m);
+	Fclose(f);
+	return NULL;
+}
+
+int load_Message_version1(File *f, Message *m) {
+char buf[MAX_LINE], *p;
+
+	while(Fgets(f, buf, MAX_LINE) != NULL) {
+		FF1_PARSE;
+
+		FF1_LOAD_LEN("from", m->from, MAX_NAME);
+		FF1_LOAD_LEN("anon", m->anon, MAX_NAME);
+		FF1_LOAD_LEN("subject", m->subject, MAX_LINE);
+		FF1_LOAD_LEN("deleted_by", m->deleted_by, MAX_NAME);
+
+		FF1_LOAD_ULONG("reply_number", m->reply_number);
+		FF1_LOAD_ULONG("mtime", m->mtime);
+		FF1_LOAD_ULONG("deleted", m->deleted);
+		FF1_LOAD_HEX("flags", m->flags);
+
+		FF1_LOAD_STRINGLIST("to", m->to);
+		FF1_LOAD_STRINGLIST("msg", m->msg);
+	}
+	return 0;
+}
+
+int load_Message_version0(File *f, Message *m) {
+char buf[MAX_LINE];
 
 /* mtime */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -156,16 +213,49 @@ File *f;
 		if (*buf)
 			m->reply_number = strtoul(buf, NULL, 10);
 	}
-	Fclose(f);
-	return m;
+	return 0;
 
 err_load_message:
-	Fclose(f);
-	destroy_Message(m);
-	return NULL;
+	return -1;
 }
 
+
 int save_Message(Message *m, char *filename) {
+	return save_Message_version1(m, filename);
+}
+
+int save_Message_version1(Message *m, char *filename) {
+File *f;
+StringList *sl;
+
+	if (m == NULL || filename == NULL || !*filename
+		|| (f = Fcreate(filename)) == NULL)
+		return -1;
+
+	Fputs(f, "version=1");
+
+	FF1_SAVE_STR("from", m->from);
+	FF1_SAVE_STR("anon", m->anon);
+	FF1_SAVE_STR("subject", m->subject);
+	FF1_SAVE_STR("deleted_by", m->deleted_by);
+
+	Fprintf(f, "reply_number=%lu", m->reply_number);
+	Fprintf(f, "mtime=%lu", m->mtime);
+	Fprintf(f, "deleted=%lu", m->deleted);
+	Fprintf(f, "flags=%X", m->flags);
+
+	for(sl = m->to; sl != NULL; sl = sl->next)
+		FF1_SAVE_STR("to", sl->str);
+
+	m->msg = rewind_StringList(m->msg);
+	for(sl = m->msg; sl != NULL; sl = sl->next)
+		FF1_SAVE_STR("msg", sl->str);
+
+	Fclose(f);
+	return 0;
+}
+
+int save_Message_version0(Message *m, char *filename) {
 File *f;
 
 	if (m == NULL || filename == NULL || !*filename

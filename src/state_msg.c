@@ -941,7 +941,7 @@ char filename[MAX_PATHLEN];
 	if (save_Message(usr->message, filename)) {
 		Perror(usr, "Failed to undelete message");
 	} else
-		Put(usr, "<green>Message undeleted\n\n");
+		Put(usr, "<green>Message undeleted\n");
 	Return;
 }
 

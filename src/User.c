@@ -283,14 +283,7 @@ char buf[MAX_PATHLEN], *p;
 		usr->mail = load_Mail(username);
 
 	while(Fgets(f, buf, MAX_PATHLEN) != NULL) {
-		cstrip_line(buf);
-		if ((p = cstrchr(buf, '=')) == NULL)		/* split 'key=value' line */
-			FF1_ERROR;
-
-		*p = 0;
-		p++;
-		if (!*p)
-			continue;
+		FF1_PARSE;
 /*
 	the fun starts here
 	I thought long about how to optimize this code, but the easiest and most

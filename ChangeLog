@@ -6,6 +6,7 @@ Changes as of December 11th 2003
 - nologin moved to state_login.c; when nologin is active, everyone can
   connect, but only superusers may login
 - major change: file format of UserData has changed! format is 'key=value'
+- file format of saved messages has changed
 
 Changes as of December 10th 2003
 - parameter cache_expire specifies how long unused files remain resident
