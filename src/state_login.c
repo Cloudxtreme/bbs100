@@ -717,7 +717,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *crypted;
+		char crypted[MAX_CRYPTED];
 		int i;
 
 		Put(usr, "\n");
@@ -740,7 +740,7 @@ int r;
 		stats.youngest_birth = usr->birth = usr->login_time = usr->online_timer = rtc;
 		strcpy(stats.youngest, usr->name);
 
-		crypted = crypt_phrase(usr->edit_buf);
+		crypt_phrase(usr->edit_buf, crypted);
 		crypted[MAX_CRYPTED_PASSWD-1] = 0;
 
 		if (verify_phrase(usr->edit_buf, crypted)) {

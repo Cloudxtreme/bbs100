@@ -34,7 +34,7 @@
 time_t rtc = (time_t)0UL;
 
 int main(void) {
-char buf[128], buf2[128];
+char buf[128], buf2[128], crypt_buf[MAX_CRYPTED];
 
 	printf("%s", print_copyright(SHORT, "mkpasswd", buf));
 
@@ -54,7 +54,7 @@ char buf[128], buf2[128];
 	}
 	rtc = time(NULL);
 	init_crypt();
-	printf("%s\n", crypt_phrase(buf));
+	printf("%s\n", crypt_phrase(buf, crypt_buf));
 	exit(0);
 	return 0;
 }

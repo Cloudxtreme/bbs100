@@ -146,11 +146,15 @@ char c;
 	Since 'salt' is in this function internally, and since it is
 	dependant on time and pid, you cannot use this function to
 	check for pass-phrases. Use verify_passphrase() instead (see below)
+
+	Note: buf must be large enough (MAX_CRYPTED bytes long)
 */
-char *crypt_phrase(char *phrase) {
-static char buf[MAX_CRYPTED];
+char *crypt_phrase(char *phrase, char *buf) {
 char salt[3], phrase_buf[MAX_PASSPHRASE+1];
 pid_t pid;
+
+	if (buf == NULL)
+		return NULL;
 
 	strncpy(phrase_buf, phrase, MAX_PASSPHRASE);
 	phrase_buf[MAX_PASSPHRASE] = 0;

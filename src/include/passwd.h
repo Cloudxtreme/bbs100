@@ -34,7 +34,7 @@
 
 void init_crypt(void);
 int detect_std_crypt(void);
-char *crypt_phrase(char *);
+char *crypt_phrase(char *, char *);
 int verify_phrase(char *, char *);
 
 #endif	/* PASSWD_H_WJ99 */

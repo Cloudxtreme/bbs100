@@ -1232,10 +1232,10 @@ int r;
 			usr->edit_pos = 0;
 		} else {
 			if (!strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
-				char *crypted;
+				char crypted[MAX_CRYPTED];
 				SU_Passwd *su;
 
-				crypted = crypt_phrase(usr->edit_buf);
+				crypt_phrase(usr->edit_buf, crypted);
 				crypted[MAX_CRYPTED_PASSWD-1] = 0;
 
 				if (verify_phrase(usr->edit_buf, crypted)) {
