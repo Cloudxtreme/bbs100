@@ -8,7 +8,8 @@ port_number            1234
 basedir                xxx
 bindir                 bin/
 confdir                etc/
-feelingsdir            etc/feelings
+feelingsdir            etc/feelings/
+zoneinfodir            etc/zoneinfo/
 userdir                users/
 roomdir                rooms/
 trashdir               trash/
