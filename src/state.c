@@ -720,7 +720,7 @@ int i;
 				Joined *j;
 
 				if ((j = in_Joined(usr->rooms, usr->curr_room->number)) == NULL) {
-					Perror(usr, "All of a sudden you haven't joined the current room (??)");
+					Perror(usr, "All of a sudden you haven't joined the current room ?");
 					break;
 				}
 				if ((usr->curr_msg = newMsgs(usr->curr_room, j->last_read)) != NULL) {

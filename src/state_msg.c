@@ -754,7 +754,7 @@ Joined *j;
 		Return;
 	}
 	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) == NULL) {
-		Perror(usr, "Suddenly you haven't joined this room (??)");
+		Perror(usr, "Suddenly you haven't joined this room ?");
 		RET(usr);
 		Return;
 	}
