@@ -21,7 +21,7 @@ umask to either 007 or 027.
 	$ ./configure --prefix=/home/bbs
 
 Note: Do not use a relative path as prefix;
-      DONT DO ./configure --prefix=..
+      DON'T DO ./configure --prefix=..
 because it will cause problems in the generated scripts.
 
 

@@ -13,13 +13,13 @@ To upgrade from an existing version of bbs100, do the following:
 - check the etc/param file for new parameters
 
 - make the new version:
-  * cd src and configure --prefix={your prefix}
+  * cd src ; ./configure --prefix={your prefix}
   * make install
 
-  This installs the new binairies in ${prefix}/bin-${version}/
+  This installs the new binaries in ${prefix}/bin-${version}/
   and symlinks it to ${prefix}/bin
 
-- verify that the new binairies have been installed correctly
+- verify that the new binaries have been installed correctly
 - inform your users and reboot the BBS
   The new version should come up in a few seconds if all goes well.
 
@@ -41,7 +41,7 @@ following:
 
     ( cd /home/bbs ; mv bin bin-pre-1.1.2 )
 
-Now try 'make upgrade' again, and you should be alright.
+Now try 'make install' again, and you should be alright.
 
 
 THE PARAM FILE
@@ -49,7 +49,7 @@ The etc/param file contains a parameter 'bindir'. People tend to think they
 have to update this parameter each time they install a new version. However,
 the opposite is true; 'bindir' should be set to 'bin' at all times -- the
 symbolic link provides 'bin' for us.
-Same goes for the parameters program_main, program_resolver, and program_logd.
+Same goes for the parameters program_main and program_resolver.
 You should never have to touch these.
 
 
