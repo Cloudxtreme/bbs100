@@ -119,20 +119,14 @@ void state_sysop_menu(User *usr, char c) {
 		case 'H':
 		case '?':
 			Put(usr, "<white>Help\n");
-
-			if (help_sysop == NULL)
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_HELP_SYSOP)) == NULL) {
 				Put(usr, "<red>No help available\n");
-			else {
-				listdestroy_StringList(usr->more_text);
-				if ((usr->more_text = copy_StringList(help_sysop)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				PUSH(usr, STATE_PRESS_ANY_KEY);
-				read_more(usr);
-				Return;
+				break;
 			}
-			break;
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_more(usr);
+			Return;
 
 		case 'c':
 		case 'C':
@@ -1974,17 +1968,22 @@ StringList *sl;
 			RET(usr);
 			Return;
 
+#define UNCACHE_FILE(x)								\
+	remove_Cache_filename(x);						\
+	Print(usr, "File %s uncached\n", (x));			\
+	CURRENT_STATE(usr);								\
+	Return
 
-#define RELOAD_FILE(x,y)						\
-	if ((sl = load_StringList(x)) == NULL) {	\
-		Perror(usr, "Failed to load file");		\
-	} else {									\
-		listdestroy_StringList(y);				\
-		(y) = sl;								\
-		Print(usr, "loading %s ... Ok\n", (x));	\
-	}											\
-	CURRENT_STATE(usr);							\
-	Return;										\
+#define RELOAD_FILE(x,y)											\
+	if ((sl = load_StringList(x)) == NULL)							\
+		Print(usr, "<red>Failed to load file <white>%s\n", (x));	\
+	else {															\
+		listdestroy_StringList(y);									\
+		(y) = sl;													\
+		Print(usr, "Reloaded file %s\n", (x));						\
+	}																\
+	CURRENT_STATE(usr);												\
+	Return
 
 		case '1':
 			Put(usr, "<white>Reload login screen\n");
@@ -1997,41 +1996,44 @@ StringList *sl;
 		case '3':
 			Put(usr, "<white>Reload motd\n");
 			RELOAD_FILE(PARAM_MOTD_SCREEN, motd_screen);
-
+/*
+	the crash screen is not cached
+	(just in case the cache becomes corrupted as well)
+*/
 		case '4':
 			Put(usr, "<white>Reload crash screen\n");
 			RELOAD_FILE(PARAM_CRASH_SCREEN, crash_screen);
 
 		case '5':
 			Put(usr, "<white>Reload first login screen\n");
-			RELOAD_FILE(PARAM_FIRST_LOGIN, first_login);
+			UNCACHE_FILE(PARAM_FIRST_LOGIN);
 
 		case '6':
 			Put(usr, "Reload standard help\n");
-			RELOAD_FILE(PARAM_HELP_STD, help_std);
+			UNCACHE_FILE(PARAM_HELP_STD);
 
 		case '7':
 			Put(usr, "Reload config menu help\n");
-			RELOAD_FILE(PARAM_HELP_CONFIG, help_config);
+			UNCACHE_FILE(PARAM_HELP_CONFIG);
 
 		case '8':
 			Put(usr, "Reload room config menu help\n");
-			RELOAD_FILE(PARAM_HELP_ROOMCONFIG, help_roomconfig);
+			UNCACHE_FILE(PARAM_HELP_ROOMCONFIG);
 
 		case '9':
 			Put(usr, "Reload sysop menu help\n");
-			RELOAD_FILE(PARAM_HELP_SYSOP, help_sysop);
+			UNCACHE_FILE(PARAM_HELP_SYSOP);
 
 		case 'g':
 		case 'G':
 		case KEY_CTRL('G'):
 			Put(usr, "Reload GNU General Public License\n");
-			RELOAD_FILE(PARAM_GPL_SCREEN, gpl_screen);
+			UNCACHE_FILE(PARAM_GPL_SCREEN);
 
 		case 'l':
 		case ']':
 			Put(usr, "Reload local modifications file\n");
-			RELOAD_FILE(PARAM_MODS_SCREEN, mods_screen);
+			UNCACHE_FILE(PARAM_MODS_SCREEN);
 
 		case 'f':
 		case 'F':

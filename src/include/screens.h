@@ -31,13 +31,8 @@ extern StringList *nologin_screen;
 extern StringList *motd_screen;
 extern StringList *crash_screen;
 extern StringList *nologin_screen;
-extern StringList *first_login;
-extern StringList *help_std;
-extern StringList *help_config;
-extern StringList *help_roomconfig;
-extern StringList *help_sysop;
-extern StringList *gpl_screen;
-extern StringList *mods_screen;
+
+StringList *load_screen(char *);
 
 #endif	/* SCREENS_H_WJ99 */
 

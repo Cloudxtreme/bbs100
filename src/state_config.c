@@ -77,20 +77,14 @@ void state_config_menu(User *usr, char c) {
 		case 'H':
 		case '?':
 			Put(usr, "<white>Help\n");
-
-			if (help_config == NULL)
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_HELP_CONFIG)) == NULL) {
 				Put(usr, "<red>No help available\n");
-			else {
-				listdestroy_StringList(usr->more_text);
-				if ((usr->more_text = copy_StringList(help_config)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				PUSH(usr, STATE_PRESS_ANY_KEY);
-				read_more(usr);
-				Return;
+				break;
 			}
-			break;
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_more(usr);
+			Return;
 
 		case 'a':
 		case 'A':

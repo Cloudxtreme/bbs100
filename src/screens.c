@@ -22,14 +22,30 @@
 
 #include "config.h"
 #include "screens.h"
+#include "CachedFile.h"
 
-#ifndef NULL
-#define NULL	0L
-#endif
+#include <stdio.h>
+#include <stdlib.h>
 
 StringList *login_screen = NULL, *logout_screen = NULL, *nologin_screen = NULL,
-	*motd_screen = NULL, *crash_screen = NULL, *first_login = NULL,
-	*help_std = NULL, *help_config = NULL, *help_roomconfig = NULL,
-	*help_sysop = NULL, *gpl_screen = NULL, *mods_screen = NULL;
+	*motd_screen = NULL, *crash_screen = NULL;
+
+
+/*
+	this function seems so simple, but note that it now reads the file
+	from the cache
+*/
+StringList *load_screen(char *filename) {
+StringList *sl;
+File *f;
+
+	if ((f = Fopen(filename)) == NULL)
+		return NULL;
+
+	sl = copy_StringList(f->data);
+
+	Fclose(f);
+	return sl;
+}
 
 /* EOB */

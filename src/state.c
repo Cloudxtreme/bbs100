@@ -174,34 +174,23 @@ int i;
 		case 'H':
 		case '?':
 			Put(usr, "<white>Help\n");
-
-			if (help_std == NULL)
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_HELP_STD)) == NULL) {
 				Put(usr, "<red>No help available\n");
-			else {
-				listdestroy_StringList(usr->more_text);
-				if ((usr->more_text = copy_StringList(help_std)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				read_more(usr);
-				Return;
+				break;
 			}
-			break;
+			read_more(usr);
+			Return;
 
-		case KEY_CTRL('G'):		/* added in 1.1.2; displays the GPL */
+		case KEY_CTRL('G'):
 			Put(usr, "<white>GNU General Public License\n");
-			if (gpl_screen == NULL)
-				Put(usr, "<red>The GPL file is missing\n");
-			else {
-				listdestroy_StringList(usr->more_text);
-				if ((usr->more_text = copy_StringList(gpl_screen)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				read_more(usr);
-				Return;
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_GPL_SCREEN)) == NULL) {
+				Put(usr, "<red>The GPL file is missing\n");		/* or out of memory! */
+				break;
 			}
-			break;
+			read_more(usr);
+			Return;
 
 		case '[':
 			Put(usr, "<white>bbs100 version information\n");
@@ -209,20 +198,15 @@ int i;
 				print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL));
 			break;
 
-		case ']':			/* added in 1.1.2; displays the local mods */
+		case ']':
 			Put(usr, "<white>Local modifications made to bbs100\n");
-			if (mods_screen == NULL)
-				Put(usr, "<red>The local mods file is missing\n");
-			else {
-				listdestroy_StringList(usr->more_text);
-				if ((usr->more_text = copy_StringList(mods_screen)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				read_more(usr);
-				Return;
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_MODS_SCREEN)) == NULL) {
+				Put(usr, "<red>The local mods file is missing\n");		/* or out of memory! */
+				break;
 			}
-			break;
+			read_more(usr);
+			Return;
 
 		case 'w':
 			Put(usr, "<white>Who\n");

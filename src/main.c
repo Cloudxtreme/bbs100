@@ -228,18 +228,6 @@ int main(int argc, char **argv) {
 		printf("failed to initialize file cache\n");
 		exit(-1);
 	}
-	printf("loading gpl_screen %s ... ", PARAM_GPL_SCREEN);
-	if ((gpl_screen = load_StringList(PARAM_GPL_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading mods_screen %s ... ", PARAM_MODS_SCREEN);
-	if ((mods_screen = load_StringList(PARAM_MODS_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
 	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
 	if ((login_screen = load_StringList(PARAM_LOGIN_SCREEN)) == NULL)
 		printf("failed\n");
@@ -260,12 +248,6 @@ int main(int argc, char **argv) {
 
 	printf("loading crash_screen %s ... ", PARAM_CRASH_SCREEN);
 	if ((crash_screen = load_StringList(PARAM_CRASH_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading first_login %s ... ", PARAM_FIRST_LOGIN);
-	if ((first_login = load_StringList(PARAM_FIRST_LOGIN)) == NULL)
 		printf("failed\n");
 	else
 		printf("ok\n");
@@ -296,30 +278,6 @@ int main(int argc, char **argv) {
 
 	printf("loading su_passwd_file %s ... ", PARAM_SU_PASSWD_FILE);
 	if ((su_passwd = load_SU_Passwd(PARAM_SU_PASSWD_FILE)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading help_std %s ... ", PARAM_HELP_STD);
-	if ((help_std = load_StringList(PARAM_HELP_STD)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading help_config %s ... ", PARAM_HELP_CONFIG);
-	if ((help_config = load_StringList(PARAM_HELP_CONFIG)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading help_roomconfig %s ... ", PARAM_HELP_ROOMCONFIG);
-	if ((help_roomconfig = load_StringList(PARAM_HELP_ROOMCONFIG)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
-
-	printf("loading help_sysop %s ... ", PARAM_HELP_SYSOP);
-	if ((help_sysop = load_StringList(PARAM_HELP_SYSOP)) == NULL)
 		printf("failed\n");
 	else
 		printf("ok\n");
