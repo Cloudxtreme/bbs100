@@ -130,6 +130,8 @@ char buf[MAX_LINE], *p;
 
 		FF1_LOAD_STRINGLIST("to", m->to);
 		FF1_LOAD_STRINGLIST("msg", m->msg);
+
+		FF1_LOAD_UNKNOWN;
 	}
 	m->flags &= MSG_ALL;
 	return 0;

@@ -23,9 +23,10 @@
 #ifndef STATS_H_WJ99
 #define STATS_H_WJ99 1
 
-#include <config.h>
+#include "config.h"
 #include "defines.h"
 #include "User.h"
+#include "CachedFile.h"
 #include "sys_time.h"
 
 typedef struct {
@@ -46,7 +47,12 @@ typedef struct {
 extern Stats stats;
 
 int load_Stats(Stats *, char *);
+int load_Stats_version0(File *, Stats *);
+int load_Stats_version1(File *, Stats *);
+
 int save_Stats(Stats *, char *);
+int save_Stats_version0(File *, Stats *);
+int save_Stats_version1(File *, Stats *);
 
 void update_stats(User *);
 void print_stats(User *);

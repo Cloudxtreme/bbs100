@@ -205,6 +205,8 @@ char buf[MAX_LINE+25], *p;
 		FF1_LOAD_STRINGLIST("invited", r->invited);
 		FF1_LOAD_STRINGLIST("kicked", r->kicked);
 		FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
+
+		FF1_LOAD_UNKNOWN;
 	}
 	return 0;
 }

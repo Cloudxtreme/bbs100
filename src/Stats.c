@@ -35,7 +35,7 @@
 #include "Param.h"
 #include "Memory.h"
 #include "CachedFile.h"
-#include "AtomicFile.h"
+#include "FileFormat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,19 +44,90 @@ Stats stats;
 
 
 int load_Stats(Stats *st, char *filename) {
-AtomicFile *f;
-char buf[MAX_LINE];
+File *f;
+int (*load_func)(File *, Stats *) = NULL;
+int version;
 
 	if (st == NULL || filename == NULL)
 		return -1;
 
 	memset(st, 0, sizeof(Stats));
 
-	if ((f = openfile(filename, "r")) == NULL)
+	if ((f = Fopen(filename)) == NULL)
 		return -1;
 
+	version = fileformat_version(f);
+	switch(version) {
+		case -1:
+			load_func = NULL;
+			break;
+
+		case 0:
+			Fclose(f);								/* version0 needs explicit re-open */
+			if ((f = Fopen(filename)) == NULL)
+				break;
+
+			load_func = load_Stats_version0;
+			break;
+
+		case 1:
+			load_func = load_Stats_version1;
+			break;
+
+		default:
+			log_err("load_Stats(): don't know how to load version %d of %s", version, filename);
+	}
+	if (load_func != NULL && !load_func(f, st)) {
+		Fclose(f);
+		return 0;
+	}
+	Fclose(f);
+	memset(st, 0, sizeof(Stats));
+	return -1;
+}
+
+
+int load_Stats_version1(File *f, Stats *st) {
+char buf[MAX_LINE], *p;
+
+	while(Fgets(f, buf, MAX_LINE) != NULL) {
+		FF1_PARSE;
+
+		FF1_LOAD_LEN("oldest", st->oldest, MAX_NAME);
+		FF1_LOAD_LEN("youngest", st->youngest, MAX_NAME);
+		FF1_LOAD_LEN("most_logins", st->most_logins, MAX_NAME);
+		FF1_LOAD_LEN("most_xsent", st->most_xsent, MAX_NAME);
+		FF1_LOAD_LEN("most_xrecv", st->most_xrecv, MAX_NAME);
+		FF1_LOAD_LEN("most_esent", st->most_esent, MAX_NAME);
+		FF1_LOAD_LEN("most_erecv", st->most_erecv, MAX_NAME);
+		FF1_LOAD_LEN("most_fsent", st->most_fsent, MAX_NAME);
+		FF1_LOAD_LEN("most_frecv", st->most_frecv, MAX_NAME);
+		FF1_LOAD_LEN("most_posted", st->most_posted, MAX_NAME);
+		FF1_LOAD_LEN("most_read", st->most_read, MAX_NAME);
+
+		FF1_LOAD_ULONG("oldest_birth", st->oldest_birth);
+		FF1_LOAD_ULONG("oldest_age", st->oldest_age);
+		FF1_LOAD_ULONG("youngest_birth", st->youngest_birth);
+		FF1_LOAD_ULONG("logins", st->logins);
+		FF1_LOAD_ULONG("xsent", st->xsent);
+		FF1_LOAD_ULONG("xrecv", st->xrecv);
+		FF1_LOAD_ULONG("esent", st->esent);
+		FF1_LOAD_ULONG("erecv", st->erecv);
+		FF1_LOAD_ULONG("fsent", st->fsent);
+		FF1_LOAD_ULONG("frecv", st->frecv);
+		FF1_LOAD_ULONG("posted", st->posted);
+		FF1_LOAD_ULONG("read", st->read);
+
+		FF1_LOAD_UNKNOWN;
+	}
+	return 0;
+}
+
+int load_Stats_version0(File *f, Stats *st) {
+char buf[MAX_LINE];
+
 /* oldest */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -64,7 +135,7 @@ char buf[MAX_LINE];
 	st->oldest[MAX_NAME-1] = 0;
 
 /* youngest */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -72,7 +143,7 @@ char buf[MAX_LINE];
 	st->youngest[MAX_NAME-1] = 0;
 
 /* most_logins */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -80,7 +151,7 @@ char buf[MAX_LINE];
 	st->most_logins[MAX_NAME-1] = 0;
 
 /* most_xsent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -88,7 +159,7 @@ char buf[MAX_LINE];
 	st->most_xsent[MAX_NAME-1] = 0;
 
 /* most_xrecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -96,7 +167,7 @@ char buf[MAX_LINE];
 	st->most_xrecv[MAX_NAME-1] = 0;
 
 /* most_esent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -104,7 +175,7 @@ char buf[MAX_LINE];
 	st->most_esent[MAX_NAME-1] = 0;
 
 /* most_erecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -112,7 +183,7 @@ char buf[MAX_LINE];
 	st->most_erecv[MAX_NAME-1] = 0;
 
 /* most_posted */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -120,79 +191,78 @@ char buf[MAX_LINE];
 	st->most_posted[MAX_NAME-1] = 0;
 
 /* most_read */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	strncpy(st->most_read, buf, MAX_NAME);
 	st->most_read[MAX_NAME-1] = 0;
 
-
 /* oldest_birth */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->oldest_birth = strtoul(buf, NULL, 10);
 
 /* youngest_birth */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->youngest_birth = strtoul(buf, NULL, 10);
 
 /* logins */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->logins = strtoul(buf, NULL, 10);
 
 /* xsent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->xsent = strtoul(buf, NULL, 10);
 
 /* xrecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->xrecv = strtoul(buf, NULL, 10);
 
 /* esent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->esent = strtoul(buf, NULL, 10);
 
 /* erecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->erecv = strtoul(buf, NULL, 10);
 
 /* posted */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->posted = strtoul(buf, NULL, 10);
 
 /* read */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
 	st->read = strtoul(buf, NULL, 10);
 
 /* oldest_age */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
@@ -202,7 +272,7 @@ char buf[MAX_LINE];
 	stats for Feelings, as suggested by many, finally present in 1.1.6 and up
 */
 /* most_fsent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
@@ -210,7 +280,7 @@ char buf[MAX_LINE];
 	st->most_fsent[MAX_NAME-1] = 0;
 
 /* most_frecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
@@ -218,45 +288,100 @@ char buf[MAX_LINE];
 	st->most_frecv[MAX_NAME-1] = 0;
 
 /* fsent */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
 	st->fsent = strtoul(buf, NULL, 10);
 
 /* frecv */
-	if (fgets(buf, MAX_LINE, f->f) == NULL)
+	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
 	st->frecv = strtoul(buf, NULL, 10);
 
 end_load_Stats:
-	closefile(f);
+	Fclose(f);
 	return 0;
 
 err_load_Stats:
-	closefile(f);
+	Fclose(f);
 	memset(st, 0, sizeof(Stats));
 	return -1;
 }
 
-int save_Stats(Stats *st, char *filename) {
-AtomicFile *f;
 
-	if (st == NULL || filename == NULL || (f = openfile(filename, "w")) == NULL)
+int save_Stats(Stats *st, char *filename) {
+File *f;
+
+	if (st == NULL || filename == NULL || (f = Fcreate(filename)) == NULL)
 		return -1;
 
-	fprintf(f->f, "%s\n%s\n%s\n%s\n%s\n", st->oldest, st->youngest, st->most_logins, st->most_xsent, st->most_xrecv);
-	fprintf(f->f, "%s\n%s\n%s\n%s\n", st->most_esent, st->most_erecv, st->most_posted, st->most_read);
+	return save_Stats_version1(f, st);
+}
 
-	fprintf(f->f, "%lu\n%lu\n%lu\n%lu\n%lu\n", (unsigned long)st->oldest_birth, (unsigned long)st->youngest_birth, st->logins, st->xsent, st->xrecv);
-	fprintf(f->f, "%lu\n%lu\n%lu\n%lu\n%lu\n", st->esent, st->erecv, st->posted, st->read, st->oldest_age);
+int save_Stats_version1(File *f, Stats *st) {
+	FF1_SAVE_VERSION;
 
-	fprintf(f->f, "%s\n%s\n", st->most_fsent, st->most_frecv);
-	fprintf(f->f, "%lu\n%lu\n", st->fsent, st->frecv);
+	FF1_SAVE_STR("oldest", st->oldest);
+	FF1_SAVE_STR("youngest", st->youngest);
+	FF1_SAVE_STR("most_logins", st->most_logins);
+	FF1_SAVE_STR("most_xsent", st->most_xsent);
+	FF1_SAVE_STR("most_xrecv", st->most_xrecv);
+	FF1_SAVE_STR("most_esent", st->most_esent);
+	FF1_SAVE_STR("most_erecv", st->most_erecv);
+	FF1_SAVE_STR("most_fsent", st->most_fsent);
+	FF1_SAVE_STR("most_frecv", st->most_frecv);
+	FF1_SAVE_STR("most_posted", st->most_posted);
+	FF1_SAVE_STR("most_read", st->most_read);
 
-	closefile(f);
+	Fprintf(f, "oldest_birth=%lu", (unsigned long)st->oldest_birth);
+	Fprintf(f, "oldest_age=%lu", st->oldest_age);
+	Fprintf(f, "youngest_birth=%lu", (unsigned long)st->youngest_birth);
+	Fprintf(f, "logins=%lu", st->logins);
+	Fprintf(f, "xsent=%lu", st->xsent);
+	Fprintf(f, "xrecv=%lu", st->xrecv);
+	Fprintf(f, "esent=%lu", st->esent);
+	Fprintf(f, "erecv=%lu", st->erecv);
+	Fprintf(f, "fsent=%lu", st->fsent);
+	Fprintf(f, "frecv=%lu", st->frecv);
+	Fprintf(f, "posted=%lu", st->posted);
+	Fprintf(f, "read=%lu", st->read);
+
+	Fclose(f);
+	return 0;
+}
+
+int save_Stats_version0(File *f, Stats *st) {
+	Fputs(f, st->oldest);
+	Fputs(f, st->youngest);
+	Fputs(f, st->most_logins);
+	Fputs(f, st->most_xsent);
+	Fputs(f, st->most_xrecv);
+	Fputs(f, st->most_esent);
+	Fputs(f, st->most_erecv);
+	Fputs(f, st->most_posted);
+	Fputs(f, st->most_read);
+
+	Fprintf(f, "%lu", (unsigned long)st->oldest_birth);
+	Fprintf(f, "%lu", (unsigned long)st->youngest_birth);
+	Fprintf(f, "%lu", st->logins);
+	Fprintf(f, "%lu", st->xsent);
+	Fprintf(f, "%lu", st->xrecv);
+	Fprintf(f, "%lu", st->esent);
+	Fprintf(f, "%lu", st->erecv);
+	Fprintf(f, "%lu", st->posted);
+	Fprintf(f, "%lu", st->read);
+	Fprintf(f, "%lu", st->oldest_age);
+
+	Fputs(f, st->most_fsent);
+	Fputs(f, st->most_frecv);
+
+	Fprintf(f, "%lu", st->fsent);
+	Fprintf(f, "%lu", st->frecv);
+
+	Fclose(f);
 	return 0;
 }
 
@@ -421,15 +546,15 @@ unsigned long num;
 	if ((l = strlen(stats.most_read)) > w)
 		w = l;
 
-	usr->more_text = add_String(&usr->more_text, "Most logins are by                     <white>%-*s<green>: <yellow>%s<green>", w, stats.most_logins, print_number(stats.logins));
-	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were sent by     <white>%-*s<green>: <yellow>%s<green>", w, stats.most_xsent, print_number(stats.xsent));
-	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were received by <white>%-*s<green>: <yellow>%s<green>", w, stats.most_xrecv, print_number(stats.xrecv));
-	usr->more_text = add_String(&usr->more_text, "Most emotes were sent by               <white>%-*s<green>: <yellow>%s<green>", w, stats.most_esent, print_number(stats.esent));
-	usr->more_text = add_String(&usr->more_text, "Most emotes were received by           <white>%-*s<green>: <yellow>%s<green>", w, stats.most_erecv, print_number(stats.erecv));
-	usr->more_text = add_String(&usr->more_text, "Most Feelings were sent by             <white>%-*s<green>: <yellow>%s<green>", w, stats.most_fsent, print_number(stats.fsent));
-	usr->more_text = add_String(&usr->more_text, "Most Feelings were received by         <white>%-*s<green>: <yellow>%s<green>", w, stats.most_frecv, print_number(stats.frecv));
-	usr->more_text = add_String(&usr->more_text, "Most messages were posted by           <white>%-*s<green>: <yellow>%s<green>", w, stats.most_posted, print_number(stats.posted));
-	usr->more_text = add_String(&usr->more_text, "Most messages were read by             <white>%-*s<green>: <yellow>%s<green>", w, stats.most_read, print_number(stats.read));
+	usr->more_text = add_String(&usr->more_text, "Most logins are by                     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_logins, print_number(stats.logins));
+	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xsent, print_number(stats.xsent));
+	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xrecv, print_number(stats.xrecv));
+	usr->more_text = add_String(&usr->more_text, "Most emotes were sent by               <white>%-*s<green> : <yellow>%s<green>", w, stats.most_esent, print_number(stats.esent));
+	usr->more_text = add_String(&usr->more_text, "Most emotes were received by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_erecv, print_number(stats.erecv));
+	usr->more_text = add_String(&usr->more_text, "Most Feelings were sent by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_fsent, print_number(stats.fsent));
+	usr->more_text = add_String(&usr->more_text, "Most Feelings were received by         <white>%-*s<green> : <yellow>%s<green>", w, stats.most_frecv, print_number(stats.frecv));
+	usr->more_text = add_String(&usr->more_text, "Most messages were posted by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_posted, print_number(stats.posted));
+	usr->more_text = add_String(&usr->more_text, "Most messages were read by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_read, print_number(stats.read));
 
 	if (!is_guest(usr->name)) {
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));

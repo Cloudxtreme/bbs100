@@ -24,7 +24,7 @@
 #define FILEFORMAT_H_WJ103	1
 
 #include "CachedFile.h"
-
+#include "log.h"
 
 /*
 	macros that help when writing file save/load functions
@@ -123,6 +123,10 @@
 		}																\
 		continue;														\
 	}
+
+#define FF1_LOAD_UNKNOWN		log_err("%s(): unknown keyword '%s'", __FUNCTION__, buf);	\
+								FF1_ERROR
+
 
 /*
 	save macros
