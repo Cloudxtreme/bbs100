@@ -148,10 +148,6 @@ install: $(TARGETS) $(SCRIPTS)
 	done
 	@$(RM_F) $(bindir)
 	@$(LN) -s $(bindir)-$(VERSION) $(bindir)
-	@if $(TEST) -f symtab ; \
-	then \
-		$(INSTALL_DATA) symtab $(prefix)/etc/symtab ; \
-	fi
 	@if $(TEST) ! -d $(prefix)/users -o ! -d $(prefix)/rooms ; \
 	then \
 		echo ' ' ; \
@@ -198,6 +194,10 @@ install: $(TARGETS) $(SCRIPTS)
 			echo '*** unable to initialize the bbs100 directory structure' ; \
 			echo ' ' ; \
 		fi ; \
+	fi
+	@if $(TEST) -f symtab ; \
+	then \
+		$(INSTALL_DATA) symtab $(prefix)/etc/symtab ; \
 	fi
 
 
