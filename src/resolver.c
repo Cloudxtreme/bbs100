@@ -29,7 +29,7 @@
 #include "sys_time.h"
 #include "cstring.h"
 #include "strerror.h"
-#include "inet_aton.h"
+#include "ipv4_aton.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -140,7 +140,7 @@ struct in_addr ipnum;
 			fprintf(stderr, "resolver: got malformed ip address '%s'\n", buf);
 			continue;
 		}
-		if (inet_aton(buf, &ipnum) == 0) {
+		if (ipv4_aton(buf, &ipnum) == 0) {
 			sprintf(buf2, "%s %s", buf, buf);
 			goto reply;
 		}

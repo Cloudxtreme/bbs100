@@ -1,3 +1,6 @@
+Changes as of January 17th 2004
+- replaced inet_aton() with ipv4_aton() to avoid build trouble on Solaris
+
 Changes as of January 11th 2004
 - PARAM_BOOL feature toggles
 - defines LOBBY_ROOM, MAIL_ROOM, HOME_ROOM as fixed room numbers

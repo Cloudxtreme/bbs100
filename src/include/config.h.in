@@ -41,9 +41,6 @@
 /* Define if you have the getpass function.  */
 #undef HAVE_GETPASS
 
-/* Define if you have the inet_aton function.  */
-#undef HAVE_INET_ATON
-
 /* Define if you have the memmove function.  */
 #undef HAVE_MEMMOVE
 

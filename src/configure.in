@@ -155,7 +155,7 @@ dnl Checks for library functions.
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([dup2 gethostbyaddr getpass inet_aton memmove memset mkdir rmdir select socket strerror strrchr strtoul uname])
+AC_CHECK_FUNCS([dup2 gethostbyaddr getpass memmove memset mkdir rmdir select socket strerror strrchr strtoul uname])
 
 dnl special compiler options for gcc
 if test "$GCC" = "yes" ;

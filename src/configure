@@ -2489,7 +2489,7 @@ fi
 
 fi
 
-for ac_func in dup2 gethostbyaddr getpass inet_aton memmove memset mkdir rmdir select socket strerror strrchr strtoul uname
+for ac_func in dup2 gethostbyaddr getpass memmove memset mkdir rmdir select socket strerror strrchr strtoul uname
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:2496: checking for $ac_func" >&5

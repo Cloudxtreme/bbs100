@@ -170,3 +170,6 @@ Credits for bug fixes et al after public release
 
 - Shannon Prickett <spameater@metanav.org> suggested disabling certain
   features. Implemented through parameters in 1.2.3 (development version)
+
+- Russ Allbery <rra@bogus.example.com> wrote the alternative inet_aton()
+  implementation (which I called ipv4_aton() for convenience)
