@@ -3395,7 +3395,7 @@ PList *p;
 	if (usr->curr_room->flags & ROOM_CHATROOM)
 		leave_chatroom(usr);
 
-	if (usr->curr_room->number == 2 && usr->curr_room->inside == NULL) {
+	if (usr->curr_room->number == HOME_ROOM && usr->curr_room->inside == NULL) {
 		remove_Room(&HomeRooms, usr->curr_room);
 		save_Room(usr->curr_room);
 		destroy_Room(usr->curr_room);
@@ -3412,7 +3412,7 @@ StringList *sl;
 
 	Enter(enter_chatroom);
 
-	if (usr->curr_room->number == 2) {
+	if (usr->curr_room->number == HOME_ROOM) {
 		sprintf(buf, "%s Home", name_with_s(usr->name, name_buf));
 
 		if (!strcmp(buf, usr->curr_room->name))

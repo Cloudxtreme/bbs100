@@ -1365,7 +1365,7 @@ Joined *j;
 			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos))
 				add_StringList(&usr->tablist, new_StringList(r->name));
 		}
-		if (r->number == 2)
+		if (r->number == HOME_ROOM)
 			unload_Room(r);
 	}
 /* now link end to beginning and beginning to end, forming a cyclic chain */

@@ -17,7 +17,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	room.h	WJ99
+	Room.h	WJ99
 */
 
 #ifndef ROOM_H_WJ99
@@ -40,6 +40,16 @@
 #define sort_Room(x,y)			(Room *)sort_List((x), (y))
 #define listdestroy_Room(x)		listdestroy_List((x), destroy_Room)
 
+/*
+	fixed room numbers
+*/
+#define LOBBY_ROOM				0
+#define MAIL_ROOM				1
+#define HOME_ROOM				2
+
+/*
+	room flags
+*/
 #define ROOM_READONLY			1
 #define ROOM_SUBJECTS			2
 #define ROOM_INVITE_ONLY		4

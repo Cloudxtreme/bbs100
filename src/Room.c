@@ -308,7 +308,7 @@ File *f;
 
 	r->flags &= ROOM_ALL;
 
-	if (r->number == 1 || r->number == 2) {
+	if (r->number == MAIL_ROOM || r->number == HOME_ROOM) {
 		char name[MAX_LINE], *p;
 
 		strcpy(name, r->name);
@@ -317,10 +317,10 @@ File *f;
 
 		*p = 0;
 
-		if (r->number == 1)
+		if (r->number == MAIL_ROOM)
 			sprintf(filename, "%s/%c/%s/MailData", PARAM_USERDIR, *name, name);
 		else
-			if (r->number == 2)
+			if (r->number == HOME_ROOM)
 				sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
 	} else
 		sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
@@ -667,13 +667,13 @@ void unload_Room(Room *r) {
 	if (r == NULL)
 		return;
 
-	if (r->number == 2 && r->inside == NULL) {		/* demand loaded Home room */
+	if (r->number == HOME_ROOM && r->inside == NULL) {		/* demand loaded Home room */
 		remove_Room(&HomeRooms, r);
 		save_Room(r);
 		destroy_Room(r);
 		return;
 	}
-	if (r->number == 1) {			/* demand loaded Mail> room */
+	if (r->number == MAIL_ROOM) {			/* demand loaded Mail> room */
 		Room *h;
 /*
 	Note: mail rooms are usually stored in the user as usr->mail

@@ -532,7 +532,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (usr->curr_room->number == 1) {
+		if (usr->curr_room->number == MAIL_ROOM) {
 			Put(usr, "<red>You can't kick anyone out of the <yellow>Mail<white>><red> room!\n");
 			RET(usr);
 			Return;
@@ -778,7 +778,7 @@ void state_remove_all_posts(User *usr, char c) {
 	Enter(state_remove_all_posts);
 
 	if (c == INIT_STATE) {
-		if (usr->curr_room->number == 1) {
+		if (usr->curr_room->number == MAIL_ROOM) {
 			Put(usr, "<red>You can't remove any posts from the <yellow>Mail<white>><red> room\n");
 			RET(usr);
 			Return;

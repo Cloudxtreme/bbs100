@@ -2434,7 +2434,7 @@ MsgIndex *m;
 	      and Mail> is checked seperately
 	      (remove this check and strange things happen... :P)
 */
-	if (r->number == 1 || r->number == 2) {
+	if (r->number == MAIL_ROOM || r->number == HOME_ROOM) {
 		Return NULL;
 	}
 	j = in_Joined(usr->rooms, r->number);
