@@ -45,7 +45,7 @@ void restart_process(Process *);
 void wait_process(void);
 void process_sigpipe(int);
 void process_sigchld(int);
-int init_process(void);
+int bbs_init_process(void);
 void kill_process(void);
 
 #endif	/* PROCESS_H_WJ99 */

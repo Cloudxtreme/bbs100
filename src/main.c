@@ -379,7 +379,7 @@ char buf[256];
 	if (!debugger)
 		goto_background();
 
-	if (init_process())
+	if (bbs_init_process())
 		log_err("helper daemons startup failed");
 
 	stats.uptime = rtc = time(NULL);

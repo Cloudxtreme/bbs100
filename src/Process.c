@@ -46,7 +46,7 @@ static Process process_table[1] = {
 };
 
 
-int init_process(void) {
+int bbs_init_process(void) {
 int i, num;
 
 	set_Signal(SIGCHLD, process_sigchld);

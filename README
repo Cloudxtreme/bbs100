@@ -128,8 +128,6 @@ way:
     compliant symbol table.
     (The format should be: <symbol name><type><address in hex><[size in hex]>.
     Note that IRIX nm does not produce a POSIX.2 complaint symbol table.)
-    This is done by 'make install', but it doesn't put the symtab file in
-    the etc/ directory, so you have to do this by hand.
 
     etc/feelings/*
 

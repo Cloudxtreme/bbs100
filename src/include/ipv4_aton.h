@@ -23,6 +23,7 @@
 #ifndef IPV4_ATON_H_WJ102
 #define IPV4_ATON_H_WJ102	1
 
+#include <sys/types.h>
 #include <netinet/in.h>
 
 int ipv4_aton(char *, struct in_addr *);

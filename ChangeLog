@@ -1,3 +1,13 @@
+Changes as of February 1st 2004
+- Mac OS X update, thanks to Jeremy Stock <jstock@speedymail.org> :
+- updated config.guess and config.sub scripts (they were ancient and
+  failed to detect certain OSes, like Mac OS X)
+- init_process() is a system library function on Mac OS X; changed to
+  bbs_init_process()
+- make no longer runs: nm -P main > symtab
+  because the -P is not supported on all platforms
+- released as 2.1
+
 Changes as of January 25th 2004
 - added BBS birthday as suggested by Stephan van Beerschoten
   <stephanb@whacky.net>
