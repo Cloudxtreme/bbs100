@@ -812,9 +812,15 @@ Joined *j;
 						usr->more_text = add_String(&usr->more_text, "<cyan>Subject: <white>Re: <yellow>%s", usr->message->subject);
 					else
 						usr->more_text = add_String(&usr->more_text, "<cyan>Subject: <yellow>%s", usr->message->subject);
-			} else
-				if (usr->message->flags & MSG_REPLY)
+			} else {
+/*
+	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
+	which is actually correct, because the reply_number would be different to each
+	recipient of the Mail> message
+*/
+				if (usr->message->flags & MSG_REPLY && usr->message->reply_number)
 					usr->more_text = add_String(&usr->more_text, "<cyan>Subject: <white>Re: <yellow><message #%lu>", usr->message->reply_number);
+			}
 		} else {
 			if ((usr->message->flags & MSG_FORWARDED) && usr->message->subject[0])
 				usr->more_text = add_String(&usr->more_text, "<white>Fwd: <yellow>%s", usr->message->subject);
