@@ -102,11 +102,8 @@ way:
 
     Contains the message displayed when 'nologin' is active. This message
     can be edited at any time, it is loaded by the BBS when nologin is
-    activated using the Sysop menu.
-    Note: When nologin is active, NO ONE can login, not even a Sysop..!
-          If the unfortunate case occurs that you lock yourself out this way,
-          you can set/reset the nologin status by giving the BBS main process
-          a SIGHUP signal. So do a 'kill -1 `cat etc/pid`' on the Unix prompt.
+    activated using the Sysop menu. When nologin is active, only superusers
+    can login.
 
     etc/pid
 

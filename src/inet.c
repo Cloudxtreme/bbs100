@@ -204,15 +204,6 @@ char optval;
 		close_connection(new_conn, "bad new connection");
 		Return;
 	}
-/* nologin check */
-	if (nologin_screen != NULL) {
-		Print(new_conn, "%s\n", print_copyright(SHORT, NULL));
-		for(sl = nologin_screen; sl != NULL; sl = sl->next)
-			Print(new_conn, "%s\n", sl->str);
-
-		close_connection(new_conn, "new connection closed by nologin");
-		Return;
-	}
 	log_auth("CONN (%s)", new_conn->from_ip);
 	add_User(&AllUsers, new_conn);
 	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */

@@ -43,6 +43,7 @@
 #include "access.h"
 #include "Memory.h"
 #include "OnlineUser.h"
+#include "SU_Passwd.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +113,19 @@ int r;
 		if (!strcmp(usr->tmpbuf[TMP_NAME], "Sysop") || !strcmp(usr->tmpbuf[TMP_NAME], PARAM_NAME_SYSOP)) {
 			Print(usr, "You are not a Sysop, nor a %s. Go away!\n", PARAM_NAME_SYSOP);
 			close_connection(usr, "attempt to login as Sysop");
+			Return;
+		}
+/*
+	nologin is active and user is not a sysop
+*/
+		if (nologin_screen != NULL && get_su_passwd(usr->tmpbuf[TMP_NAME]) == NULL) {
+			StringList *sl;
+
+			Put(usr, "\n");
+			for(sl = nologin_screen; sl != NULL; sl = sl->next)
+				Print(usr, "%s\n", sl->str);
+
+			close_connection(usr, "connection closed by nologin");
 			Return;
 		}
 /*
