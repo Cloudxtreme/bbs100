@@ -28,8 +28,12 @@
 #define PARAM_UINT					2
 #define PARAM_LONG					3
 #define PARAM_ULONG					4
+#define PARAM_BOOL					5
 #define PARAM_SEPARATOR				0x100
 #define PARAM_MASK					0xff
+
+#define PARAM_TRUE					1
+#define PARAM_FALSE					0
 
 /*
 	Note: I have number the list in blocks, so it is easier for me to insert
@@ -137,16 +141,11 @@
 #define DEFAULT_CACHE_TIMEOUT		30		/* expire unused cached files every 30 minutes */
 
 typedef union {
-	char *str;
-	char *s;
-	int i;
-	int d;
-	unsigned int u;
-	unsigned int ui;
-	long l;
-	long ld;
-	unsigned long ul;
-	unsigned long lu;
+	char *str, *s;
+	int i, d, bool;
+	unsigned int u, ui;
+	long l, ld;
+	unsigned long ul, lu;
 } Param_value;
 
 typedef struct {

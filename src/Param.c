@@ -142,9 +142,15 @@ int i, num;
 
 			case PARAM_LONG:
 				param[i].val.l = param[i].default_val.l;
+				break;
 
 			case PARAM_ULONG:
 				param[i].val.ul = param[i].default_val.ul;
+				break;
+
+			case PARAM_BOOL:
+				param[i].val.bool = param[i].default_val.bool;
+				break;
 
 			default:
 				fprintf(stderr, "ERR init_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
@@ -204,9 +210,21 @@ int i, num;
 							param[i].val.ul = strtoul(p, NULL, 10);
 							break;
 
+						case PARAM_BOOL:
+							if (!cstricmp(p, "yes") || !cstricmp(p, "on") || !cstricmp(p, "true") || !strcmp(p, "1"))
+								param[i].val.bool = PARAM_TRUE;
+							else
+								if (!cstricmp(p, "no") || !cstricmp(p, "off") || !cstricmp(p, "false") || !strcmp(p, "0"))
+									param[i].val.bool = PARAM_FALSE;
+								else {
+									fprintf(stderr, "load_Param: unknown value '%s' for param %s\n", p, param[i].var);
+									param[i].val.bool = param[i].default_val.bool;
+								}
+							break;
+
 						default:
 							closefile(f);
-							fprintf(stderr, "ERR load_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
+							fprintf(stderr, "load_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 							return -1;
 					}
 					break;
@@ -254,10 +272,14 @@ int i, num;
 				fprintf(f->f, "%-22s %lu\n", param[i].var, param[i].val.lu);
 				break;
 
+			case PARAM_BOOL:
+				fprintf(f->f, "%-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "off" : "on");
+				break;
+
 			default:
 				fclose(f->f);
 				destroy_AtomicFile(f);
-				fprintf(stderr, "ERR save_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
+				fprintf(stderr, "save_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 				return -1;
 		}
 		if (param[i].type & PARAM_SEPARATOR)
@@ -336,8 +358,12 @@ char buf[MAX_PATHLEN];
 				printf(" %-22s %lu\n", buf, param[i].val.lu);
 				break;
 
+			case PARAM_BOOL:
+				printf(" %-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "off" : "on");
+				break;
+
 			default:
-				fprintf(stderr, "ERR save_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
+				fprintf(stderr, "print_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 		}
 	}
 	printf("\n");
