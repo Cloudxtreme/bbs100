@@ -1,3 +1,8 @@
+Changes as of October 30th
+- crash recovery : protection against looping and crashing again and again
+- option in param file: 'oncrash' can be 'recover' or 'dumpcore' or 'whatever'
+- savecore : archiving of core files
+
 Changes as of October 28th
 - Timers have void* argument instead of User* argument
 - timerq is now sorted and works with 'relative' time; more efficient
@@ -18,8 +23,6 @@ Changes as of October 21st 2003
 - put the source in svn
 - 'g' is for Goto next unread room
 - fixed typo in etc/shutdown
-- added option: #define NO_WORLDCLOCK in include/config.h to omit the
-  worldclock under the 't' time command
 
 Changes as of November 25th 2002
 - next_unread_room() first checks Lobby>, then Mail>, then other rooms

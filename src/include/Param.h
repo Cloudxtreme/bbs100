@@ -85,8 +85,10 @@
 #define PARAM_AUTHLOG				param[PARAM_LOG_N+1].val.s
 #define PARAM_LOGROTATE				param[PARAM_LOG_N+2].val.s
 #define PARAM_ARCHIVEDIR			param[PARAM_LOG_N+3].val.s
+#define PARAM_ONCRASH				param[PARAM_LOG_N+4].val.s
+#define PARAM_CRASHDIR				param[PARAM_LOG_N+5].val.s
 
-#define PARAM_MAX_N					37
+#define PARAM_MAX_N					39
 #define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.u
 #define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.u
 #define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.u
@@ -101,13 +103,13 @@
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.u
 #define PARAM_USERHASH_SIZE			param[PARAM_MAX_N+12].val.u
 
-#define PARAM_NAME_N				50
+#define PARAM_NAME_N				52
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
 #define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
 #define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
 #define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_N				54
+#define PARAM_NOTIFY_N				56
 #define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
 #define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
 #define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s

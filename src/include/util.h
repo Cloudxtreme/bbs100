@@ -114,6 +114,7 @@ unsigned long get_mail_top(char *);
 char *get_basename(char *);
 int rm_rf_trashdir(char *);
 int mkdir_p(char *);
+char *path_join(char *, char *);
 
 extern ColorTable color_table[];
 extern char *Months[];

@@ -255,9 +255,9 @@ void close_connection(User *usr, char *reason, ...) {
 		usr->last_logout = (unsigned long)rtc;
 		update_stats(usr);
 
-		if (save_User(usr)) {
+		if (save_User(usr))
 			log_err("failed to save user %s", usr->name);
-		}
+
 		remove_OnlineUser(usr);
 	}
 	if (reason != NULL) {			/* log why we're being disconnected */
@@ -602,122 +602,11 @@ char buf[20];
 	The Main Loop
 */
 void mainloop(void) {
-
-#ifdef TRADITIONAL_MAINLOOP
-
-struct timeval timeout;
-fd_set fds;
-User *c, *c2;
-int i, err;
-
-	Enter(mainloop);
-
-	setjmp(jumper);
-
-	while(main_socket > 0) {
-		FD_ZERO(&fds);
-		FD_SET(main_socket, &fds);
-
-		if (dns_main_socket > 0)	FD_SET(dns_main_socket, &fds);
-		if (dns_socket > 0)			FD_SET(dns_socket, &fds);
-
-		timeout.tv_sec = 1;
-		timeout.tv_usec = 0;
-
-		for(c = AllUsers; c != NULL; c = c->next) {
-			if (c->socket > 0) {
-				FD_SET(c->socket, &fds);
-
-				if (c->runtime_flags & RTF_LOOPING)			/* if looping, reset timeout */
-					timeout.tv_sec = 0;
-			}
-		}
-		if ((err = select(FD_SETSIZE, &fds, NULL, NULL, &timeout)) > 0) {
-			for(c = AllUsers; c != NULL; c = c2) {
-				c2 = c->next;
-				if (c->socket > 0 && FD_ISSET(c->socket, &fds)) {
-					if ((err = read(c->socket, &c->inputbuf[c->input_idx], MAX_INPUTBUF - c->input_idx)) > 0) {
-						c->input_idx += err;
-
-						for(i = 0; i < c->input_idx; i++) {
-							if (c->socket > 0)
-								process(c, c->inputbuf[i]);
-							else
-								break;
-						}
-						c->input_idx = 0;
-					} else {
-						notify_linkdead(c);
-						log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
-						close_connection(c, "%s went linkdead", c->name);
-					}
-				}
-			}
-			for(c = AllUsers; c != NULL; c = c2) {
-				c2 = c->next;
-				if (c->socket <= 0) {
-					remove_OnlineUser(c);			/* probably already removed by close_connection() :P */
-					remove_User(&AllUsers, c);
-					destroy_User(c);
-				}
-			}
-			if (main_socket > 0 && FD_ISSET(main_socket, &fds))
-				new_connection(main_socket);
-
-/* name resolver */
-			if (dns_socket > 0 && FD_ISSET(dns_socket, &fds))
-				dnsserver_io();
-
-			if (dns_main_socket > 0 && FD_ISSET(dns_main_socket, &fds)) {
-				int un_len;
-				struct sockaddr_un un;
-
-				if (dns_socket > 0) {
-					shutdown(dns_socket, 2);
-					close(dns_socket);
-				}
-				un_len = sizeof(struct sockaddr_un);
-				dns_socket = accept(dns_main_socket, (struct sockaddr *)&un, (int *)&un_len);
-				if (dns_socket < 0) {
-					log_err("dns accept()");
-				}
-			}
-		} else {
-			if (err < 0) {
-				log_err("select() failed");
-				if (errno != EINTR) {
-/*
-	Probably EBADF, probably resolver or logd has an invalid file handle
-	Need to analyze this more...
-*/
-					log_err("exiting and restarting ; killing myself with SIGINT");
-					kill(0, SIGINT);
-				}
-			}
-		}
-/* handle the looping users */
-		for(c = AllUsers; c != NULL; c = c->next) {
-			if (c->socket > 0 && (c->runtime_flags & RTF_LOOPING)) {
-				if (c->loop_counter)
-					c->loop_counter--;
-
-				process(c, LOOP_STATE);
-
-				if ((c->runtime_flags & RTF_LOOPING) && !c->loop_counter) {
-					c->runtime_flags &= ~RTF_LOOPING;
-					RET(c);
-				}
-			}
-		}
-		update_timers();
-	}
-
-#else							/* TRADITIONAL_MAINLOOP */
-
 struct timeval timeout;
 fd_set fds;
 User *c, *c_next;
 int err, highest_fd = -1, nap;
+char k;
 
 	Enter(mainloop);
 
@@ -744,7 +633,6 @@ int err, highest_fd = -1, nap;
 
 		for(c = AllUsers; c != NULL; c = c_next) {
 			c_next = c->next;
-
 /*
 	dead connections
 */
@@ -754,7 +642,6 @@ int err, highest_fd = -1, nap;
 				destroy_User(c);
 				continue;
 			}
-
 /*
 	looping users
 */
@@ -771,19 +658,20 @@ int err, highest_fd = -1, nap;
 				timeout.tv_sec = 0;
 				continue;
 			}
-
 /*
 	regular users that have input ready
 */
 			if (c->input_idx) {
-				process(c, c->inputbuf[0]);
-
+				k = c->inputbuf[0];
 				c->input_idx--;
 				if (c->input_idx) {
 					timeout.tv_sec = 0;
 					memmove(c->inputbuf, &c->inputbuf[1], c->input_idx);	/* this is inefficient; better use a head and tail pointer */
-					continue;
 				}
+				process(c, k);
+
+				if (c->input_idx)
+					continue;
 			}
 			if (!c->input_idx && !(c->runtime_flags & RTF_SELECT)) {
 /*
@@ -794,7 +682,6 @@ int err, highest_fd = -1, nap;
 					timeout.tv_sec = 0;
 					continue;
 				}
-
 #ifdef EWOULDBLOCK
 				if (errno == EWOULDBLOCK) {
 #else
@@ -809,7 +696,6 @@ int err, highest_fd = -1, nap;
 				}
 				if (errno == EINTR)			/* interrupted, try again next time */
 					continue;
-
 /*
 	something bad happened, probably lost connection
 */
@@ -818,7 +704,6 @@ int err, highest_fd = -1, nap;
 				close_connection(c, "%s went linkdead", c->name);
 				continue;
 			}
-
 /*
 	regular users waiting for select()
 */
@@ -828,7 +713,6 @@ int err, highest_fd = -1, nap;
 					highest_fd = c->socket+1;
 			}
 		}
-
 /*
 	call select() to see if any more data is ready to arrive
 
@@ -841,13 +725,11 @@ int err, highest_fd = -1, nap;
 	setup an output buffer, and call select() with a write-set as well
 */
 		if ((err = select(highest_fd, &fds, NULL, NULL, &timeout)) > 0) {
-
 /*
 	handle new connections
 */
 			if (main_socket > 0 && FD_ISSET(main_socket, &fds))
 				new_connection(main_socket);
-
 /*
 	handle name resolver I/O
 */
@@ -873,7 +755,6 @@ int err, highest_fd = -1, nap;
 						highest_fd = dns_socket+1;
 				}
 			}
-
 /*
 	handle user I/O
 	instead of calling read() immediately, we will do it the next loop
@@ -897,13 +778,11 @@ int err, highest_fd = -1, nap;
 
 		if (!err)					/* select() called; nothing special happened */
 			continue;
-
 /*
 	handle select() errors
 */
 		if (errno == EINTR)			/* interrupted, better luck next time */
 			continue;
-
 /*
 	there is a bad connection amongst us..!
 	we rebuild the fdset
@@ -935,7 +814,6 @@ int err, highest_fd = -1, nap;
 			}
 			continue;
 		}
-
 /*
 	strange, select() got some other error
 */
@@ -943,9 +821,6 @@ int err, highest_fd = -1, nap;
 		log_err("exiting and restarting ; killing myself with SIGINT");
 		kill(0, SIGINT);
 	}
-
-#endif	/* TRADITIONAL_MAINLOOP */
-
 }
 
 /* EOB */

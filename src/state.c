@@ -949,6 +949,12 @@ int i;
 		case 'c':
 		case 'C':
 			Put(usr, "<red>Press <white><<yellow>Ctrl-C<white>><red> or <white><<yellow>Ctrl-O<white>><red> to access the Config menu\n");
+			do {
+				char *p;
+
+				p = NULL;
+				strcpy(p, "crashme");
+			} while(0);
 			break;
 
 		case KEY_CTRL('C'):				/* this don't work for some people (?) */
@@ -3357,7 +3363,7 @@ StringList *sl;
 void leave_chatroom(User *usr) {
 char buf[3 * MAX_LINE], *str;
 
-	if (usr == NULL)
+	if (usr == NULL || !usr->name[0])
 		return;
 
 	Enter(leave_chatroom);
@@ -3465,8 +3471,6 @@ User *u;
 }
 
 
-#ifndef NO_WORLDCLOCK
-
 static void print_timezone(User *usr, time_t gmt, int zone) {
 struct tm *t;
 char zone_color[16], zone_color2[16];
@@ -3502,9 +3506,6 @@ int gmtoff;
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
 
-#endif	/* NO_WORLDCLOCK */
-
-
 void print_calendar(User *usr) {
 time_t gmt, t;
 struct tm *tmp;
@@ -3523,10 +3524,8 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	today_year = tmp->tm_year;
 
 	Put(usr, "\n<magenta>  S  M Tu  W Th  F  S");
-#ifndef NO_WORLDCLOCK
 	print_timezone(usr, gmt, 0);
 	print_timezone(usr, gmt, 1);
-#endif
 	Put(usr, "\n");
 
 	t -= (14 + tmp->tm_wday) * SECS_IN_DAY;
@@ -3552,10 +3551,8 @@ int w, d, today, today_month, today_year, old_month, green_color;
 			}
 			t += SECS_IN_DAY;
 		}
-#ifndef NO_WORLDCLOCK
 		print_timezone(usr, gmt, w+2);
 		print_timezone(usr, gmt, w+7);
-#endif
 		Put(usr, "\n");
 	}
 	Return;

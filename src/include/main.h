@@ -28,7 +28,6 @@
 
 extern char *param_file;
 
-void goto_background(void);
 void exit_program(int);
 int main(int, char **);
 

@@ -725,10 +725,8 @@ User *u;
 /*****************************************************************************/
 
 /*
-	Process input
-	Logins, logouts, and other prompts
+	process input and pass it on to the function that is on the callstack
 */
-
 void process(User *usr, char c) {
 	if (usr == NULL || usr->callstack == NULL || usr->callstack->ip == NULL
 		|| (c = telnet_negotiations(usr, c)) == -1)

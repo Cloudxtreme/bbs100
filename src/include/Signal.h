@@ -20,8 +20,8 @@
 	Signal.h	WJ97
 */
 
-#ifndef _SIGNAL_H_WJ97
-#define _SIGNAL_H_WJ97 1
+#ifndef SIGNAL_H_WJ97
+#define SIGNAL_H_WJ97 1
 
 #include <config.h>
 #include "SignalVector.h"
@@ -51,6 +51,6 @@ RETSIGTYPE catch_signal(int);
 int set_Signal(int, RETSIGTYPE (*)(int));
 void remove_Signal(int, RETSIGTYPE (*)(int));
 
-#endif	/* _SIGNAL_H_WJ97 */
+#endif	/* SIGNAL_H_WJ97 */
 
 /* EOB */

@@ -42,7 +42,7 @@ INSTALL_PROGRAM = @INSTALL@ -m 0750
 INSTALL_SCRIPT = @INSTALL@ -m 0750
 INSTALL_DATA = @INSTALL@ -m 0640
 
-CFLAGS = @CFLAGS@ -DEBUG
+CFLAGS = @CFLAGS@ -g -DEBUG
 LFLAGS = @LDFLAGS@
 LIBCRYPT = @LIBCRYPT@
 LIBXNET = @LIBXNET@
@@ -146,7 +146,7 @@ install: $(TARGETS) $(SCRIPTS)
 				$(SED) "/basedir/ s?xxx?$(prefix)?" $(prefix)/etc/param >$(prefix)/etc/param1 ; \
 				$(MV) $(prefix)/etc/param1 $(prefix)/etc/param ; \
 			) ; \
-			for DIR in log rooms users trash log/auth log/debug log/errors log/messages trash/rooms trash/users ; \
+			for DIR in log rooms users trash log/archive log/crash trash/rooms trash/users ; \
 			do \
 				if $(TEST) ! -d "$(prefix)/$${DIR}" ; \
 				then \

@@ -1022,4 +1022,28 @@ char *p;
 	return 0;
 }
 
+/*
+	Warning: returns a static buffer
+*/
+char *path_join(char *p1, char *p2) {
+static char path[MAX_PATHLEN], *p;
+
+	if (p1 == NULL || p2 == NULL)
+		return NULL;
+
+	if ((strlen(p1) + strlen(p2) + 2) > MAX_PATHLEN) {
+		log_err("path_join(): path too long");
+		return NULL;
+	}
+	sprintf(path, "%s/%s", p1, p2);
+
+	p = path;
+	while((p = cstrchr(p, '/')) != NULL) {
+		while(p[1] == '/')
+			memmove(p+1, p+2, strlen(p+1));
+		p++;
+	}
+	return path;
+}
+
 /* EOB */

@@ -34,6 +34,7 @@
 #include "Timer.h"
 #include "timeout.h"
 #include "Param.h"
+#include "OnlineUser.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -114,11 +115,19 @@ SigTable sig_table[] = {
 
 void init_Signal(void) {
 struct sigaction sa, old_sa;
-int i;
+int i, dumpcore;
+
+	dumpcore = 0;
+	if (!cstricmp(PARAM_ONCRASH, "dumpcore"))
+		dumpcore = 1;
 
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sig_table[i].sig != SIGKILL && sig_table[i].sig != SIGSTOP
 			&& sig_table[i].sig != SIGTRAP) {
+
+			if (dumpcore && sig_table[i].default_handler == sig_fatal)
+				continue;
+
 			sigfillset(&sa.sa_mask);
 #ifdef SA_RESTART
 			sa.sa_flags = SA_RESTART;
@@ -144,7 +153,7 @@ int i;
 
 
 /*
-	Note: deinit_Signal() is only called before an exit()
+	Note: deinit_Signal() is only called before an exit() or abort()
 	Therefore, bluntly restore all signal handlers to SIG_DFL
 */
 void deinit_Signal(void) {
@@ -177,7 +186,7 @@ User *u;
 
 	Enter(sig_fatal);
 
-	if (this_user != NULL) {
+	if (!cstricmp(PARAM_ONCRASH, "recover") && this_user != NULL) {
 		time_t now;
 		struct tm *tm;
 		User *usr;
@@ -185,13 +194,11 @@ User *u;
 		usr = this_user;			/* prevent 'resonance' in case we crash again */
 		this_user = NULL;
 
-		if (usr->name[0]) {
-			log_msg("CRASH *** user %s; recovering ***", usr->name);
+		if (usr->name[0])
 			log_err("CRASH *** user %s; recovering ***", usr->name);
-		} else {
-			log_msg("CRASH *** user %s; recovering ***", usr->name);
-			log_err("CRASH *** user %s; recovering ***", usr->name);
-		}
+		else
+			log_err("CRASH *** user <unknown>; recovering ***");
+
 #ifdef DEBUG
 		dump_debug_stack();
 		debug_stackp = 0;
@@ -202,6 +209,26 @@ User *u;
 		if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 			tm->tm_hour -= 12;
 
+		usr->crashed++;
+		if (usr->crashed >= 3) {
+			if (usr->name[0])
+				log_err("CRASH *** disconnecting user %s", usr->name);
+			else
+				log_err("CRASH *** disconnecting user");
+
+			Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
+				"<red>Something's wrong, the BBS made an illegal instruction\n"
+				"You are automatically being disconnected <white>--<yellow> our apologies..!\n",
+				tm->tm_hour, tm->tm_min);
+
+			if (usr->name[0]) {
+				remove_OnlineUser(usr);
+				usr->name[0] = 0;
+			}
+			close_connection(usr, "user crashed too many times");
+
+			longjmp(jumper, 1);
+		}
 		Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
 			"<red>Something's wrong, the BBS made an illegal instruction\n"
 			"Attempting crash recovery...\n", tm->tm_hour, tm->tm_min);
@@ -217,7 +244,6 @@ User *u;
 	deinit_Signal();		/* reset all signal handlers */
 
 	if (sig != SIGTERM) {
-		log_msg("CRASH *** terminated on %s ***", sig_name(sig));
 		log_err("CRASH *** terminated on %s ***", sig_name(sig));
 #ifdef DEBUG
 		dump_debug_stack();
@@ -352,11 +378,10 @@ RETSIGTYPE sig_nologin(int sig) {
 	log_msg("SIGHUP caught; reset nologin");
 
 	if (nologin_screen == NULL) {
-		if ((nologin_screen = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL) {
+		if ((nologin_screen = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL)
 			log_err("failed to load nologin_screen %s", PARAM_NOLOGIN_SCREEN);
-		} else {
+		else
 			log_msg("nologin set ; users cannot login");
-		}
 	} else {
 		listdestroy_StringList(nologin_screen);
 		nologin_screen = NULL;

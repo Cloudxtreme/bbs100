@@ -62,7 +62,7 @@ extern StringList *banished;
 char *param_file;
 
 
-void write_pidfile(void) {
+static void write_pidfile(void) {
 AtomicFile *f;
 
 	if ((f = openfile(PARAM_PID_FILE, "w")) != NULL) {
@@ -71,7 +71,35 @@ AtomicFile *f;
 	}
 }
 
-void goto_background(void) {
+/*
+	save core dumps in the directory under log/crash/
+*/
+static int savecore(void) {
+struct stat statbuf;
+
+	if (!stat("core", &statbuf)) {
+		char filename[MAX_PATHLEN], *path;
+		struct tm *tm;
+		int i;
+
+		tm = localtime(&statbuf.st_ctime);
+		sprintf(filename, "core.%04d%02d%02d", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+		path = path_join(PARAM_CRASHDIR, filename);
+		i = 1;
+		while(!stat(path, &statbuf) && i < 10) {
+			sprintf(filename, "core.%04d%02d%02d-%d", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
+			path = path_join(PARAM_CRASHDIR, filename);
+			i++;
+		}
+		if (rename("core", path) == -1)
+			printf("savecore(): failed to save core as %s\n\n", path);
+		else
+			printf("saving core as %s ...\n\n", path);
+	}
+	return 0;
+}
+
+static void goto_background(void) {
 pid_t pid;
 int fd;
 
@@ -137,7 +165,6 @@ int code = 0;
 	exit(code);
 }
 
-
 int main(int argc, char **argv) {
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
@@ -179,9 +206,6 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IOLBF, 256);
 	setvbuf(stderr, NULL, _IOLBF, 256);
 #endif
-
-	init_Signal();
-
 	init_Param();
 	printf("loading param file %s ... ", param_file);
 	if (load_Param(param_file)) {
@@ -197,6 +221,9 @@ int main(int argc, char **argv) {
 		printf("failed to change directory to basedir '%s'\n", PARAM_BASEDIR);
 		exit(-1);
 	}
+	savecore();
+	init_Signal();
+
 	if (init_FileCache()) {
 		printf("failed to initialize file cache\n");
 		exit(-1);

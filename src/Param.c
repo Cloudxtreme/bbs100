@@ -79,8 +79,10 @@ Param param[] = {
 	{ PARAM_STRING, "syslog",			{ NULL },	{ "log/bbslog" },				},
 	{ PARAM_STRING, "authlog",			{ NULL },	{ "log/authlog" },				},
 	{ PARAM_STRING, "logrotate",		{ NULL },	{ "daily" },					},
+	{ PARAM_STRING, "archivedir",		{ NULL },	{ "log/archive/" },				},
+	{ PARAM_STRING, "oncrash",			{ NULL },	{ "recover" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,
-		"archivedir",		{ NULL },	{ "log/archive/" },				},
+					"crashdir",			{ NULL },	{ "log/crash/" },				},
 
 	{ PARAM_INT,	"max_cached",		{ NULL },	{ (char *)DEFAULT_MAX_CACHED },		},
 	{ PARAM_INT,	"max_messages",		{ NULL },	{ (char *)DEFAULT_MAX_MESSAGES },	},

@@ -128,7 +128,7 @@ typedef struct Debugger_tag Debugger;
 struct User_tag {
 	List(User);
 
-	int socket, telnet_state, in_sub;
+	int socket, telnet_state, in_sub, crashed;
 	int edit_pos, tablen, read_lines, total_lines, input_idx, output_idx;
 	int term_width, term_height;
 	unsigned long ipnum, loop_counter;
