@@ -1,2 +1,2 @@
 #define VERSION "1.2.1"
-#define SYSTEM "unknown-system-type"
+#define SYSTEM "i686-pc-linux-gnu"

@@ -30,7 +30,6 @@
 #include <string.h>
 #include <sys/utsname.h>
 
-char *copyright = "bbs100 " VERSION " by Walter de Jong <walter@heiho.net> (C) 2002";
 
 char *print_copyright(int full, char *progname) {
 static char buf[256];
@@ -42,7 +41,7 @@ static char buf[256];
 		strcat(buf, " ");
 		strcat(buf, progname);
 	}
-	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2002\n");
+	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2003\n");
 
 	if (full) {
 		struct utsname uts;
