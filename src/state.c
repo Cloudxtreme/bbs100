@@ -3354,8 +3354,6 @@ Joined *j;
 		} else {
 			j->number = r->number;
 			j->generation = r->generation;
-			j->last_read = 0UL;
-
 			add_Joined(&usr->rooms, j);
 		}
 	}

@@ -881,8 +881,6 @@ int r;
 			} else {
 				j->number = room->number;
 				j->generation = room->generation;
-				j->last_read = 0UL;
-
 				add_Joined(&usr->rooms, j);
 			}
 		} else {

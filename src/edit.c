@@ -1406,15 +1406,13 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 
 	Enter(tab_list);
 
-	if (usr->tablist == NULL) {
-		usr->tablen = usr->edit_pos;
-		erase_tabname(usr);
+	if (usr->tablist == NULL)
 		make_tablist(usr);
-	} else {
-		erase_tabname(usr);
+	else
 		usr->tablist = usr->tablist->next;
-	}
+
 	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+		erase_tabname(usr);
 		strcpy(usr->edit_buf, usr->tablist->str);
 		usr->edit_pos = strlen(usr->tablist->str);
 		Put(usr, usr->tablist->str);
@@ -1426,14 +1424,13 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 	if (usr == NULL)
 		return;
 
-	if (usr->tablist == NULL) {
-		usr->tablen = usr->edit_pos;
+	if (usr->tablist == NULL)
 		make_tablist(usr);
-	} else {
-		erase_tabname(usr);
+	else
 		usr->tablist = usr->tablist->prev;
-	}
+
 	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+		erase_tabname(usr);
 		strcpy(usr->edit_buf, usr->tablist->str);
 		usr->edit_pos = strlen(usr->tablist->str);
 		Put(usr, usr->tablist->str);

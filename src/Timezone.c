@@ -380,27 +380,12 @@ int i;
 		if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
 			tz->next_idx = tz->curr_idx;
 	}											/* else we have only 1 entry */
-/*
-	do {
-		int t;
-
-		log_debug("load_Timezone(): name == %s", name);
-		log_debug("load_Timezone(): curr_idx is at %s", print_date(NULL, tz->transitions[tz->curr_idx].when));
-		t = tz->transitions[tz->curr_idx].type_idx;
-		log_debug("load_Timezone(): curr_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
-
-		log_debug("load_Timezone(): next_idx is at %s", print_date(NULL, tz->transitions[tz->next_idx].when));
-		t = tz->transitions[tz->next_idx].type_idx;
-		log_debug("load_Timezone(): next_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
-	} while(0);
-*/
 	if (add_Hash(tz_hash, name, tz) == -1) {
 		log_err("load_Timezone(): failed to add new Timezone to tz_hash");
 		destroy_Timezone(tz);
 		return NULL;
 	}
 	tz->refcount = 1;
-/*	log_info("load_Timezone(): loaded timezone %s", name);	*/
 	return tz;
 }
 
