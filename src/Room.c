@@ -510,7 +510,7 @@ Room *r;
 
 		for(r = AllRooms; r != NULL; r = r->next) {
 			if (!strcmp(r->name, name)) {
-				if (r->number <= 2)
+				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 				return r;
 			}
@@ -534,7 +534,7 @@ Room *r;
 		l = strlen(name);
 		for(r = AllRooms; r != NULL; r = r->next) {
 			if (!(r->flags & ROOM_HIDDEN) && !strncmp(r->name, name, l)) {
-				if (r->number <= 2)
+				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 				return r;
 			}
@@ -544,7 +544,7 @@ Room *r;
 */
 		for(r = AllRooms; r != NULL; r = r->next) {
 			if (!(r->flags & ROOM_HIDDEN) && cstrstr(r->name, name) != NULL) {
-				if (r->number <= 2)
+				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 				return r;
 			}
@@ -647,7 +647,7 @@ char *p;
 int roomnumber_exists(unsigned int u) {
 Room *r;
 
-	if (u <= 2)
+	if (u == LOBBY_ROOM || u == MAIL_ROOM || u == HOME_ROOM)
 		return 1;
 
 	for(r = AllRooms; r != NULL; r = r->next)
