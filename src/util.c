@@ -465,7 +465,7 @@ char colorbuf[20], buf[20];
 	Mind that the line may not fully be expanded, 'remainders' with broken color codes
 	are really dreadful
 */
-void expand_hline(char *str, char *dest, int bufsize) {
+void expand_hline(char *str, char *dest, int bufsize, int width) {
 char *p;
 int l, n;
 
@@ -493,9 +493,15 @@ int l, n;
 
 	n = strlen(p);
 	if (n > 0) {
-		while(l + n < bufsize) {
+		int cl, c;
+
+		cl = color_strlen(dest);
+		c = color_strlen(p);
+
+		while(l + n < bufsize && cl < width) {
 			strcat(dest, p);
 			l += n;
+			cl += c;
 		}
 	}
 /*

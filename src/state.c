@@ -2522,7 +2522,7 @@ User *u;
 		else {
 			sprintf(buf, "%c%s <cyan>%s", col, u->name, u->doing);
 			expand_center(buf, buf2, PRINT_BUF - 32, width);
-			expand_hline(buf2, buf, PRINT_BUF - 32);		/* expand as far as possible */
+			expand_hline(buf2, buf, PRINT_BUF - 32, width);
 		}
 		l = color_index(buf, usr->term_width - 9);
 		buf[l] = 0;
