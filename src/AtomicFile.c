@@ -29,6 +29,7 @@
 #include "Memory.h"
 #include "cstring.h"
 #include "defines.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,7 +97,8 @@ char tmpfile[MAX_PATHLEN];
 	if (f->filename != NULL) {
 		strcpy(tmpfile, f->filename);
 		strcat(tmpfile, ".tmp");
-		rename(tmpfile, f->filename);
+		if (rename(tmpfile, f->filename) == -1)
+			log_err("failed to rename %s to %s", tmpfile, f->filename);
 	}
 	destroy_AtomicFile(f);
 }
