@@ -10,7 +10,7 @@ cd @prefix@
 TEST=@TEST@
 AWK=@AWK@
 
-PATH=/bin:/usr/bin
+# PATH=/bin:/usr/bin
 
 PROG=`basename $0`
 echo "bbs100 ${PROG} by Walter de Jong <walter@heiho.net> (C) 2002"

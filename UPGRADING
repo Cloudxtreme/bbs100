@@ -3,6 +3,42 @@ bbs100 by Walter de Jong <walter@heiho.net> (C) 2004
 bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
+
+This is the first major upgrade of bbs100. You should know that you cannot
+go back to the old version once you have upgraded. This is because of the
+new file formats that the new version uses. Therefore, it is wise to make a
+complete backup copy of your existing bbs100 site. For example:
+
+    tar cvf backup.tar bbsdir
+
+After installing the new version, check the new configuration options in
+the etc/param file. This file is not automatically put in place when
+upgrading. You will also need to copy the etc/zoneinfo/ directory by hand.
+This directory contains time zone definitions needed by the improved
+BBS clock -- every user can be in his own timezone.
+
+As said, this version has a new file format. The BBS is capable of loading
+old-format files, and automatically converts them to the new format as the
+files are being used. Hence, files that are not being used (eg. because the
+user is not logging in anymore), are not converted to the new format.
+You have the option of converting the BBS' data files by using a conversion
+program. This is done as follows:
+
+    cd bbsdir
+    find users -type f -print | bbs100_convert --
+    find rooms -type f -print | bbs100_convert --
+    echo etc/statistics | bbs100_convert --
+
+Again, you will want to have made a backup before converting the files.
+Mind that if you have made any modifications to the data files, or if you
+are using site-specific data files, you will have to incorporate the
+changes into the BBS and the conversion program first.
+
+
+Following are some standard instructions on how to upgrade any version
+of bbs100.
+
+
 To upgrade from an existing version of bbs100, do the following:
 - read the ChangeLog to see what's new
 - some versions may come with a WHATSNEW file, but not all

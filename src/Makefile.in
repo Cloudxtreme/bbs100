@@ -194,6 +194,10 @@ install: $(TARGETS) $(SCRIPTS)
 			echo '*** unable to initialize the bbs100 directory structure' ; \
 			echo ' ' ; \
 		fi ; \
+	else \
+		echo ' ' ; \
+		echo '*** be sure to read the file UPGRADING' ; \
+		echo ' ' ; \
 	fi
 	@if $(TEST) -f symtab ; \
 	then \
