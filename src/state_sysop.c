@@ -1356,10 +1356,11 @@ void state_parameters_menu(User *usr, char c) {
 			Put(usr, "<magenta>\n"
 				"S<hotkey>ystem configuration\n"
 				"Configure locations of <hotkey>Files\n"
-				"Configure <hotkey>Maximums\n"
+				"Configure <hotkey>Maximums and timeouts\n"
 				"Configure <hotkey>Strings and messages\n"
 			);
 			Print(usr,
+				"Configure <hotkey>Log rotation\n"
 				"<hotkey>Reload screens and help files\n"
 				"\n"
 				"<white>Ctrl-<hotkey>R<magenta>eload param file <white>%s\n", param_file);
@@ -1393,7 +1394,7 @@ void state_parameters_menu(User *usr, char c) {
 
 		case 'm':
 		case 'M':
-			Put(usr, "Configure maximums\n");
+			Put(usr, "Configure maximums and timeouts\n");
 			CALL(usr, STATE_MAXIMUMS_MENU);
 			Return;
 
@@ -1401,6 +1402,12 @@ void state_parameters_menu(User *usr, char c) {
 		case 'S':
 			Put(usr, "Configure strings and messages\n");
 			CALL(usr, STATE_STRINGS_MENU);
+			Return;
+
+		case 'l':
+		case 'L':
+			Put(usr, "Configure log rotation\n");
+			CALL(usr, STATE_LOG_MENU);
 			Return;
 
 		case 'r':
@@ -1681,6 +1688,7 @@ void state_config_files_menu(User *usr, char c) {
 				PARAM_HOSTS_ACCESS_FILE, PARAM_SU_PASSWD_FILE);
 			Print(usr, "Host <hotkey>map         <white>%-22s<magenta>  S<hotkey>ymbol table     <white>%s<magenta>\n",
 				PARAM_HOSTMAP_FILE, PARAM_SYMTAB_FILE);
+			Print(usr, "Default time<hotkey>zone <white>%-22s<magenta>\n", PARAM_DEFAULT_TIMEZONE);
 			break;
 
 		case ' ':
@@ -1732,7 +1740,6 @@ void state_config_files_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_REBOOT_SCREEN);
 			Return;
 
-		case 'z':
 		case 'Z':
 			Put(usr, "Shutdown screen\n");
 			CALL(usr, STATE_PARAM_SHUTDOWN_SCREEN);
@@ -1809,16 +1816,21 @@ void state_config_files_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_PID_FILE);
 			Return;
 
+		case 'm':
+		case 'M':
+			Put(usr, "Host map file\n");
+			CALL(usr, STATE_PARAM_HOSTMAP_FILE);
+			Return;
+
 		case 'y':
 		case 'Y':
 			Put(usr, "Symbol table file\n");
 			CALL(usr, STATE_PARAM_SYMTAB_FILE);
 			Return;
 
-		case 'm':
-		case 'M':
-			Put(usr, "Host map file\n");
-			CALL(usr, STATE_PARAM_HOSTMAP_FILE);
+		case 'z':
+			Put(usr, "Default timezone\n");
+			CALL(usr, STATE_PARAM_DEF_TIMEZONE);
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Files<white># ", PARAM_NAME_SYSOP);
@@ -1949,6 +1961,12 @@ void state_param_symtab_file(User *usr, char c) {
 void state_param_hostmap_file(User *usr, char c) {
 	Enter(state_param_hostmap_file);
 	change_string_param(usr, c, &PARAM_HOSTMAP_FILE, "<green>Enter hostmap file<yellow>: ");
+	Return;
+}
+
+void state_param_def_timezone(User *usr, char c) {
+	Enter(state_param_def_timezone);
+	change_string_param(usr, c, &PARAM_DEFAULT_TIMEZONE, "<green>Enter default timezone<yellow>: ");
 	Return;
 }
 
@@ -2110,10 +2128,12 @@ void state_maximums_menu(User *usr, char c) {
 			Print(usr,
 				"<hotkey>Idle timeout                          <white>%6u %s<magenta>\n"
 				"Loc<hotkey>k timeout                          <white>%6u %s<magenta>\n"
-				"Periodic <hotkey>saving                       <white>%6u %s<magenta>\n",
+				"Periodic <hotkey>saving                       <white>%6u %s<magenta>\n"
+				"Cache expire <hotkey>time                     <white>%6u %s<magenta>\n",
 				PARAM_IDLE_TIMEOUT, (PARAM_IDLE_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_LOCK_TIMEOUT, (PARAM_LOCK_TIMEOUT == 1) ? "minute" : "minutes",
-				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes"
+				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes",
+				PARAM_CACHE_TIMEOUT, (PARAM_CACHE_TIMEOUT == 1) ? "minute" : "minutes"
 			);
 			break;
 
@@ -2121,6 +2141,23 @@ void state_maximums_menu(User *usr, char c) {
 		case KEY_RETURN:
 		case KEY_BS:
 			Put(usr, "\n");
+/*
+	PARAM_CACHE_TIMEOUT was changed, so we need to reset the timer
+	I'm actually abusing the RTF_WRAPPER_EDITED flag for this
+*/
+			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
+				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
+
+				if (expire_timer != NULL) {
+					remove_Timer(&timerq, expire_timer);
+					destroy_Timer(expire_timer);
+					expire_timer = NULL;
+				}
+				if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * SECS_IN_MIN, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
+					log_err("state_maximums_menu(): failed to allocate a new cache_expire Timer");
+				else
+					add_Timer(&timerq, expire_timer);
+			}
 			RET(usr);
 			Return;
 
@@ -2194,6 +2231,12 @@ void state_maximums_menu(User *usr, char c) {
 		case 'S':
 			Put(usr, "Periodic saving\n");
 			CALL(usr, STATE_PARAM_SAVE);
+			Return;
+
+		case 't':
+		case 'T':
+			Put(usr, "Cache expire time\n");
+			CALL(usr, STATE_PARAM_CACHE_TIMEOUT);
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Maximums<white># ", PARAM_NAME_SYSOP);
@@ -2277,11 +2320,19 @@ void state_param_save(User *usr, char c) {
 	Return;
 }
 
+void state_param_cache_timeout(User *usr, char c) {
+	Enter(state_param_cache_timeout);
+	change_int_param(usr, c, &PARAM_CACHE_TIMEOUT);
+	usr->runtime_flags |= RTF_WRAPPER_EDITED;
+	Return;
+}
+
+
 void state_strings_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
-	Enter(state_maximums_menu);
+	Enter(state_strings_menu);
 
 	switch(c) {
 		case INIT_STATE:
@@ -2477,6 +2528,140 @@ void state_param_notify_leave_chat(User *usr, char c) {
 	Return;
 }
 
+
+void state_log_menu(User *usr, char c) {
+char *new_val;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_log_menu);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+			Print(usr, "\n<magenta>"
+				"<hotkey>Syslog              <white>%s<magenta>\n"
+				"<hotkey>Authlog             <white>%s<magenta>\n"
+				"<hotkey>Rotate              <white>%s<magenta>\n"
+				"Arch<hotkey>ive directory   <white>%s<magenta>\n",
+				PARAM_SYSLOG,
+				PARAM_AUTHLOG,
+				PARAM_LOGROTATE,
+				PARAM_ARCHIVEDIR
+			);
+			Print(usr,
+				"\n"
+				"<hotkey>On crash            <white>%s<magenta>\n"
+				"<hotkey>Core dump directory <white>%s<magenta>\n",
+				PARAM_ONCRASH,
+				PARAM_CRASHDIR
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "\n");
+/*
+	if edited, re-initialize logging
+*/
+			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
+				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
+				init_log();
+			}
+			RET(usr);
+			Return;
+
+
+		case 's':
+		case 'S':
+			Put(usr, "Syslog\n");
+			CALL(usr, STATE_PARAM_SYSLOG);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "Authlog\n");
+			CALL(usr, STATE_PARAM_AUTHLOG);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "Rotate\n");
+			if (!strcmp(PARAM_LOGROTATE, "none"))
+				new_val = "daily";
+			else
+				if (!strcmp(PARAM_LOGROTATE, "daily"))
+					new_val = "weekly";
+				else
+					if (!strcmp(PARAM_LOGROTATE, "weekly"))
+						new_val = "monthly";
+					else
+						if (!strcmp(PARAM_LOGROTATE, "monthly"))
+							new_val = "yearly";
+						else
+							new_val = "none";
+
+			Free(PARAM_LOGROTATE);
+			PARAM_LOGROTATE = cstrdup(new_val);
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'i':
+		case 'I':
+			Put(usr, "Archive directory\n");
+			CALL(usr, STATE_PARAM_ARCHIVEDIR);
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "On crash\n");
+			if (!strcmp(PARAM_ONCRASH, "recover"))
+				new_val = "dumpcore";
+			else
+				new_val = "recover";
+
+			Free(PARAM_ONCRASH);
+			PARAM_ONCRASH = cstrdup(new_val);
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'c':
+		case 'C':
+			Put(usr, "Core dump directory\n");
+			CALL(usr, STATE_PARAM_CRASHDIR);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Logrotate<white># ", PARAM_NAME_SYSOP);
+	Return;
+}
+
+void state_param_syslog(User *usr, char c) {
+	Enter(state_param_syslog);
+	change_string_param(usr, c, &PARAM_SYSLOG, "<green>Enter syslog file<yellow>: ");
+	usr->runtime_flags |= RTF_WRAPPER_EDITED;
+	Return;
+}
+
+void state_param_authlog(User *usr, char c) {
+	Enter(state_param_authlog);
+	change_string_param(usr, c, &PARAM_AUTHLOG, "<green>Enter authlog file<yellow>: ");
+	usr->runtime_flags |= RTF_WRAPPER_EDITED;
+	Return;
+}
+
+void state_param_archivedir(User *usr, char c) {
+	Enter(state_param_archivedir);
+	change_string_param(usr, c, &PARAM_ARCHIVEDIR, "<green>Enter archive directory<yellow>: ");
+	Return;
+}
+
+void state_param_crashdir(User *usr, char c) {
+	Enter(state_param_crashdir);
+	change_string_param(usr, c, &PARAM_CRASHDIR, "<green>Enter core dump directory<yellow>: ");
+	Return;
+}
 
 
 void change_int_param(User *usr, char c, unsigned int *var) {

@@ -24,6 +24,7 @@
 #define CACHEDFILE_H_WJ100 1
 
 #include "StringList.h"
+#include "Timer.h"
 
 #include <stdarg.h>
 #include <time.h>
@@ -54,6 +55,7 @@ struct CachedFile_tag {
 
 extern int cache_size;
 extern int num_cached;
+extern Timer *expire_timer;
 
 int init_FileCache(void);
 void deinit_FileCache(void);

@@ -38,9 +38,9 @@ hosts_access_file       etc/hosts_access
 banished_file           etc/banished
 stat_file               etc/stats
 su_passwd_file          etc/su_passwd
-license_file            etc/license
 pid_file                etc/pid
 symtab_file             etc/symtab
+default_timezone        Europe/Amsterdam
 
 syslog                  log/bbslog
 authlog                 log/authlog

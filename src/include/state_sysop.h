@@ -87,6 +87,7 @@
 #define STATE_PARAM_PID_FILE			state_param_pid_file
 #define STATE_PARAM_SYMTAB_FILE			state_param_symtab_file
 #define STATE_PARAM_HOSTMAP_FILE		state_param_hostmap_file
+#define STATE_PARAM_DEF_TIMEZONE		state_param_def_timezone
 
 #define STATE_RELOAD_FILES_MENU			state_reload_files_menu
 
@@ -103,6 +104,7 @@
 #define STATE_PARAM_IDLE				state_param_idle
 #define STATE_PARAM_LOCK				state_param_lock
 #define STATE_PARAM_SAVE				state_param_save
+#define STATE_PARAM_CACHE_TIMEOUT		state_param_cache_timeout
 
 #define STATE_STRINGS_MENU				state_strings_menu
 #define STATE_PARAM_NAME_SYSOP			state_param_name_sysop
@@ -117,6 +119,13 @@
 #define STATE_PARAM_NOTIFY_UNLOCKED		state_param_notify_unlocked
 #define STATE_PARAM_NOTIFY_ENTER_CHAT	state_param_notify_enter_chat
 #define STATE_PARAM_NOTIFY_LEAVE_CHAT	state_param_notify_leave_chat
+
+#define STATE_LOG_MENU					state_log_menu
+#define STATE_PARAM_SYSLOG				state_param_syslog
+#define STATE_PARAM_AUTHLOG				state_param_authlog
+#define STATE_PARAM_ARCHIVEDIR			state_param_archivedir
+#define STATE_PARAM_CRASHDIR			state_param_crashdir
+
 
 void state_sysop_menu(User *, char);
 void state_disconnect_user(User *, char);
@@ -177,6 +186,7 @@ void state_param_license_file(User *, char);
 void state_param_pid_file(User *, char);
 void state_param_symtab_file(User *, char);
 void state_param_hostmap_file(User *, char);
+void state_param_def_timezone(User *, char);
 
 void state_reload_files_menu(User *, char);
 
@@ -193,6 +203,7 @@ void state_param_enemy(User *, char);
 void state_param_idle(User *, char);
 void state_param_lock(User *, char);
 void state_param_save(User *, char);
+void state_param_cache_timeout(User *, char);
 
 void state_strings_menu(User *, char);
 void state_param_name_sysop(User *, char);
@@ -207,6 +218,12 @@ void state_param_notify_locked(User *, char);
 void state_param_notify_unlocked(User *, char);
 void state_param_notify_enter_chat(User *, char);
 void state_param_notify_leave_chat(User *, char);
+
+void state_log_menu(User *, char);
+void state_param_syslog(User *, char);
+void state_param_authlog(User *, char);
+void state_param_archivedir(User *, char);
+void state_param_crashdir(User *, char);
 
 void change_int_param(User *, char, unsigned int *);
 void change_string_param(User *, char, char **, char *);

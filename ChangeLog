@@ -1,5 +1,6 @@
 Changes as of December 29th 2003
 - removed static buffers from functions
+- added the new parameters to the sysop menu
 
 Changes as of December 28th 2003
 - users can select personal timezone in the config menu

@@ -84,14 +84,17 @@ struct tm *tm;
 			log_err("logrotate_reset_timer(): failed to allocate a new Timer");
 			return -1;
 		}
-		add_Timer(&timerq, logrotate_timer);
-	}
+	} else
+		remove_Timer(&timerq, logrotate_timer);
+
 	t = rtc;
 	tm = localtime(&t);
 /*
 	sleep exactly till midnight
+	the timer must be re-inserted into the timerq because the queue is sorted
 */
 	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * SECS_IN_HOUR - tm->tm_min * SECS_IN_MIN - tm->tm_sec;
+	add_Timer(&timerq, logrotate_timer);
 	return 0;
 }
 
