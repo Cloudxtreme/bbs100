@@ -1,3 +1,8 @@
+Changes as of October 27th 2003
+- automatic log archiving
+- option logrotate: daily/weekly/monthly/none
+- fixed friend notification when locked & relogging (reported by Eeyore)
+
 Changes as of October 26th 2003
 - changed logging; now done to log/bbslog and log/authlog
 

@@ -159,3 +159,8 @@ Credits for bug fixes et al after public release
 - Myth of MatrixBBS reported problem with loading rooms at startup,
   if the directory had been moved to <number>.old ...
   fixed in 1.1.13
+
+- Eeyore of MatrixBBS reported that no friend notification is sent
+  when a friend locks the terminal, and then unlocks it by logging
+  in again
+  fixed in 1.2.1

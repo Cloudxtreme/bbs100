@@ -249,6 +249,9 @@ int r;
 
 			if (u == NULL)				/* if (u != NULL) killed by another login */
 				notify_login(usr);		/* tell friends we're here */
+			else
+				if (u->runtime_flags & RTF_LOCKED)
+					notify_unlocked(usr);
 
 			JMP(usr, STATE_DISPLAY_MOTD);
 		} else {
