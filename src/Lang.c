@@ -34,6 +34,8 @@
 #include "debug.h"
 #include "util.h"
 #include "mydirentry.h"
+#include "locales.h"
+#include "locale_system.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,12 +57,14 @@ int init_Lang(void) {
 
 	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100")) {
 		default_language = NULL;
+		lc_system = &system_locale;
 		return 0;
 	}
 	if ((default_language = load_Language(PARAM_DEFAULT_LANGUAGE)) == NULL) {
 		log_err("failed to load default language %s", PARAM_DEFAULT_LANGUAGE);
 		return -1;
 	}
+	lc_system = default_language->locale;
 	return 0;
 }
 
@@ -107,6 +111,24 @@ HashList *hl;
 }
 
 /*
+	bind locale code to the loaded language
+*/
+Locale *bind_locale(char *lang) {
+Locale *lc;
+int i;
+
+	i = 0;
+	for(lc = all_locales[i]; lc != NULL; i++, lc = all_locales[i])
+		if (!cstricmp(lang, lc->name)) {
+			log_debug("load_Language(): binding locale for %s", lang);
+			return lc;
+		}
+
+	log_debug("load_Language(): locale %s not found, binding to lc_system", lang);
+	return lc_system;
+}
+
+/*
 	demand load language directory for the specified language
 
 	it keeps a refcount, so this function assumes that when you load it,
@@ -150,6 +172,9 @@ struct dirent *direntp;
 	closedir(dirp);
 
 	if (l != NULL) {
+		if (l->locale == NULL)
+			l->locale = bind_locale(lang);
+
 		l->refcount = 1;
 		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
 		dump_Lang(l);

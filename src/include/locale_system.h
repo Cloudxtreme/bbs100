@@ -25,6 +25,7 @@
 
 #include "Lang.h"
 
+extern Locale system_locale;
 extern Locale *lc_system;
 
 #endif	/* LOCALE_SYSTEM_H_WJ105 */
