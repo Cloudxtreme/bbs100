@@ -6,6 +6,7 @@ Credits are due to:
 - Doctor Dave of iscaBBS, developer of DOC (Dave's Own version of Citadel)
   iscaBBS is the BBS of the Iowa Student Computer Association at
   bbs.isca.uiowa.edu
+- Serendipity of iscaBBS
 - Edward Breedveld <edward@sara.nl> aka Freddy Krueger and
   Jaap Dijkshoorn <jaap@sara.nl> aka Distroyer of BrintaBBS for founding
   BrintaBBS
@@ -26,8 +27,7 @@ Credits for bug fixes et al after public release
   fixed in 1.1.1
 
   Big thanks also go to CHIPS for maintaining the bbs100 coding mailing
-  list. To subscribe to this majordomo list,  send an e-mail with 'subscribe'
-  in the body to bbs100-request@hawmps.2y.net
+  list. The list is gone now but it was fun while it lasted.
 
 - Jaap Dijkshoorn <jaap@sara.nl> was the first one to suggest 'make setup'
   in order to simplify installation
@@ -173,3 +173,6 @@ Credits for bug fixes et al after public release
 
 - Russ Allbery <rra@bogus.example.com> wrote the alternative inet_aton()
   implementation (which I called ipv4_aton() for convenience)
+
+- Stephan van Beerschoten <stephanb@whacky.net> suggested displayal of
+  'BBS birthdays'
