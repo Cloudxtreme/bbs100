@@ -26,10 +26,12 @@
 #include <config.h>
 
 #include "User.h"
+#include "Timezone.h"
 #include "log.h"
 #include "sys_time.h"
 
 #include <stdarg.h>
+#include <time.h>
 
 #define RND_STR(x)			((x)[rtc % (sizeof(x)/sizeof(char *))])
 
@@ -86,6 +88,8 @@ int user_exists(char *);
 int next_helping_hand(User *);
 User *check_helping_hand(User *);
 void system_broadcast(int, char *);
+struct tm *tz_time(Timezone *, time_t);
+struct tm *user_time(User *, time_t);
 char *print_date(User *, time_t);
 char *print_total_time(unsigned long);
 char *print_number(unsigned long);

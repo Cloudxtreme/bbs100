@@ -475,9 +475,8 @@ int i;
 
 		case 't':
 		case 'T':
-			Print(usr, "Time%s\n"
-				"<magenta>Time is now<yellow>: %s\n", (usr->time_disp == 0) ? " <white>(<yellow>GMT<white>)" : "",
-				print_date(usr, (time_t)0UL));
+			Print(usr, "Time\n"
+				"<magenta>Time is now<yellow>: %s %s\n", print_date(usr, (time_t)0UL), name_Timezone(usr->tz));
 			print_calendar(usr);
 			break;
 
@@ -2558,13 +2557,10 @@ PList *pl_cols[16];
 
 void who_list_header(User *usr, int total, int drawline) {
 StringList *sl;
-time_t t;
 struct tm *tm;
 char buf[PRINT_BUF];
 
-/* construct header */
-	t = rtc + usr->time_disp;
-	tm = gmtime((time_t *)&t);
+	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
@@ -3025,7 +3021,6 @@ void online_friends_list(User *usr) {
 StringList *sl;
 User *u;
 struct tm *tm;
-time_t t;
 PList *pl = NULL;
 int total;
 
@@ -3061,8 +3056,7 @@ int total;
 	listdestroy_PList(pl);
 
 /* construct header */
-	t = rtc + usr->time_disp;
-	tm = gmtime((time_t *)&t);
+	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
@@ -3092,7 +3086,6 @@ void talked_list(User *usr) {
 StringList *sl;
 User *u;
 struct tm *tm;
-time_t t;
 PList *pl = NULL;
 int total;
 
@@ -3128,8 +3121,7 @@ int total;
 	listdestroy_PList(pl);
 
 /* construct header */
-	t = rtc + usr->time_disp;
-	tm = gmtime((time_t *)&t);
+	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
@@ -3486,14 +3478,16 @@ int gmtoff;
 /*
 	user is in this timezone
 */
+/*
 	if ((usr->time_disp >= gmtoff - 15 * SECS_IN_MIN)
 		&& (usr->time_disp <= gmtoff + 15 * SECS_IN_MIN)) {
 		strcpy(zone_color, "white");
 		strcpy(zone_color2, "white");
 	} else {
+*/
 		strcpy(zone_color, "cyan");
 		strcpy(zone_color2, "yellow");
-	}
+/*	}	*/
 	if (usr->flags & USR_12HRCLOCK) {
 		char am_pm = 'A';
 
@@ -3520,8 +3514,7 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	Enter(print_calendar);
 
 	gmt = t = rtc = time(NULL);
-	t += usr->time_disp;
-	tmp = gmtime(&t);
+	tmp = user_time(usr, (time_t)0UL);
 	today = tmp->tm_mday;
 	today_month = tmp->tm_mon;
 	today_year = tmp->tm_year;
@@ -3532,7 +3525,7 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	Put(usr, "\n");
 
 	t -= (14 + tmp->tm_wday) * SECS_IN_DAY;
-	tmp = gmtime(&t);
+	tmp = user_time(usr, t);
 	old_month = tmp->tm_mon;
 	green_color = 1;
 	Put(usr, "<green>");
@@ -3540,7 +3533,7 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	for(w = 0; w < 5; w++) {
 		Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
 		for(d = 0; d < 7; d++) {
-			tmp = gmtime(&t);
+			tmp = user_time(usr, t);
 
 			if (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
 				Print(usr, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");

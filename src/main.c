@@ -47,6 +47,7 @@
 #include "AtomicFile.h"
 #include "ZoneInfo.h"
 #include "Timezone.h"
+#include "Worldclock.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -338,7 +339,19 @@ int debugger = 0;
 	else
 		printf("ok\n");
 
+	printf("loading default timezone %s ... ", PARAM_DEFAULT_TIMEZONE);
+	if (init_Timezone())
+		printf("failed\n");
+	else {
+		Timezone *tz;
+
+		if ((tz = load_Timezone(PARAM_DEFAULT_TIMEZONE)) == NULL)
+			printf("failed\n");
+		else
+			printf("%s\n", name_Timezone(tz));
+	}
 	init_ZoneInfo();
+	init_Worldclock();
 
 	if (init_Room()) {
 		printf("fatal: Failed to initialize the rooms message system\n");
@@ -369,9 +382,6 @@ int debugger = 0;
 
 	if (init_process())
 		log_err("helper daemons startup failed");
-
-	if (init_Timezone())
-		log_err("failed to initialize timezones");
 
 	stats.uptime = rtc = time(NULL);
 

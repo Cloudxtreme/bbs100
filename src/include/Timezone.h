@@ -40,8 +40,8 @@ typedef struct {
 } TimeType;
 
 typedef struct {
-	time_t when;
-	int num_secs;
+	time_t when;			/* when leap second is included */
+	int num_secs;			/* how many leaps this time (usually just 1) */
 } LeapSecond;
 
 typedef struct {
@@ -53,7 +53,7 @@ typedef struct {
 	DST_Transition *transitions;
 	TimeType *types;
 
-	char *tznames;
+	char *tznames;			/* space for names; like 'AMT NET CET CEST' with zeroes included (!) */
 } Timezone;
 
 extern Hash *tz_hash;
@@ -62,6 +62,7 @@ int init_Timezone(void);
 
 Timezone *load_Timezone(char *);
 void unload_Timezone(char *);
+char *name_Timezone(Timezone *);
 
 #endif	/* TIMEZONE_H_WJ103 */
 

@@ -1168,7 +1168,6 @@ static char buf[PRINT_BUF];
 struct tm *tm;
 char frombuf[256] = "", namebuf[256] = "", multi[32] = "", msgtype[64] = "";
 int from_me = 0;
-time_t t;
 
 	if (usr == NULL || msg == NULL)
 		return NULL;
@@ -1179,9 +1178,7 @@ time_t t;
 		*buf = 0;
 		Return buf;
 	}
-	t = msg->mtime + usr->time_disp;
-	tm = gmtime(&t);
-
+	tm = user_time(usr, msg->mtime);
 	if ((usr->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 		tm->tm_hour -= 12;		/* use 12 hour clock, no 'military' time */
 

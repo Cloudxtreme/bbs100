@@ -72,6 +72,7 @@ User *usr;
 
 	usr->term_height = TERM_HEIGHT;		/* hard-coded defaults; may be set by TELOPT_NAWS */
 	usr->term_width = TERM_WIDTH;
+
 	return usr;
 }
 
@@ -93,6 +94,10 @@ int i;
 	Free(usr->doing);
 	Free(usr->reminder);
 	Free(usr->default_anon);
+
+	unload_Timezone(usr->timezone);
+	usr->tz = NULL;					/* usr->tz is just a reference and is not destroyed here */
+	Free(usr->timezone);
 
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);
@@ -248,6 +253,11 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	destroy_Room(usr->mail);
 	usr->mail = NULL;
 
+	unload_Timezone(usr->timezone);
+	usr->tz = NULL;
+	Free(usr->timezone);
+	usr->timezone = NULL;
+
 /* open the file for loading */
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
@@ -276,6 +286,11 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			log_err("load_User(): don't know how to load file format version %d of %s", version, filename);
 	}
 	if (load_func != NULL && !load_func(f, usr, username, flags)) {
+		if (usr->timezone == NULL)
+			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
+		if (usr->tz == NULL)
+			usr->tz = load_Timezone(usr->timezone);
+
 		Fclose(f);
 		usr->flags &= USR_ALL;
 		return 0;
@@ -317,6 +332,7 @@ char buf[MAX_PATHLEN], *p;
 			FF1_LOAD_DUP("doing", usr->doing);
 			FF1_LOAD_DUP("reminder", usr->reminder);
 			FF1_LOAD_DUP("default_anon", usr->default_anon);
+			FF1_LOAD_DUP("timezone", usr->timezone);
 		}
 		if (!strcmp(buf, "from_ip")) {
 			Free(usr->tmpbuf[TMP_FROM_HOST]);
@@ -342,7 +358,6 @@ char buf[MAX_PATHLEN], *p;
 			FF1_LOAD_ULONG("posted", usr->posted);
 			FF1_LOAD_ULONG("read", usr->read);
 
-			FF1_LOAD_INT("time_disp", usr->time_disp);
 			FF1_LOAD_HEX("flags", usr->flags);
 
 /* custom colors */
@@ -820,12 +835,12 @@ int i;
 
 /* time displacement */
 	if (flags & LOAD_USER_DATA) {
-		usr->time_disp = 0;
+/*		usr->time_disp = 0;						deprecated by timezones */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto end_load_User;
 
 		cstrip_line(buf);
-		usr->time_disp = atoi(buf);
+/*		usr->time_disp = atoi(buf);				deprecated by timezones */
 
 /* fsent */
 		usr->fsent = 0UL;
@@ -923,6 +938,7 @@ StringList *sl;
 	FF1_SAVE_STR("doing", usr->doing);
 	FF1_SAVE_STR("reminder", usr->reminder);
 	FF1_SAVE_STR("default_anon", usr->default_anon);
+	FF1_SAVE_STR("timezone", usr->timezone);
 
 	FF1_SAVE_STR("from_ip", usr->from_ip);
 
@@ -946,7 +962,6 @@ StringList *sl;
 	Fprintf(f, "frecv=%lu", usr->frecv);
 	Fprintf(f, "posted=%lu", usr->posted);
 	Fprintf(f, "read=%lu", usr->read);
-	Fprintf(f, "time_disp=%d", usr->time_disp);
 
 	Fprintf(f, "colors=%d %d %d %d %d %d %d %d %d",
 		usr->colors[BACKGROUND],
@@ -1043,7 +1058,8 @@ int i;
 	Fputlist(f, usr->enemies);
 	Fputlist(f, usr->info);
 
-	Fprintf(f, "%d", usr->time_disp);
+/*	Fprintf(f, "%d", usr->time_disp);		deprecated by timezones	*/
+	Fprintf(f, "0");
 	Fprintf(f, "%lu", usr->fsent);
 	Fprintf(f, "%lu", usr->frecv);
 

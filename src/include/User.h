@@ -39,6 +39,7 @@
 #include "sys_time.h"
 #include "Param.h"
 #include "CachedFile.h"
+#include "Timezone.h"
 
 #include <sys/types.h>
 
@@ -144,12 +145,13 @@ struct User_tag {
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
+	char *timezone;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, posted, read;
 	unsigned int flags, runtime_flags;
-	int colors[9], color, time_disp;
+	int colors[9], color;
 
 	char *quick[NUM_QUICK];
 
@@ -169,6 +171,7 @@ struct User_tag {
 	BufferedMsg *history, *history_p, *busy_msgs, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
+	Timezone *tz;
 
 	CallStack *callstack;
 };

@@ -486,7 +486,6 @@ User *usr;
 	this_user = NULL;
 
 	if (!cstricmp(PARAM_ONCRASH, "recover") && usr != NULL) {
-		time_t now;
 		struct tm *tm;
 
 		if (usr->name[0])
@@ -499,8 +498,7 @@ User *usr;
 		debug_stackp = 0;
 		debug_stack[0] = 0UL;
 #endif
-		now = rtc + usr->time_disp;
-		tm = gmtime(&now);
+		tm = user_time(usr, (time_t)0UL);
 		if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 			tm->tm_hour -= 12;
 

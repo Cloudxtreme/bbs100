@@ -1187,7 +1187,7 @@ int r;
 			if (hh_disp > 12)
 				hh_disp -= 24;
 
-		usr->time_disp = hh_disp * SECS_IN_HOUR + (mm - gmt->tm_min) * SECS_IN_MIN;
+/*		usr->time_disp = hh_disp * SECS_IN_HOUR + (mm - gmt->tm_min) * SECS_IN_MIN;	*/
 
 		if (hh_disp == 12) {
 			Print(usr, "\n<green>You live relatively close to the date border.\n"
@@ -1216,7 +1216,7 @@ void state_sync_date(User *usr, char c) {
 				break;
 
 			case YESNO_NO:
-				usr->time_disp -= SECS_IN_DAY;
+/*				usr->time_disp -= SECS_IN_DAY;	*/
 				Print(usr, "\n<green>Ok<yellow>,<green> perhaps you live on the other side of the date border.\n"
 					"Then today<yellow>'<green>s date would be <yellow>%s\n", print_date(usr, time(NULL)));
 
@@ -1246,7 +1246,7 @@ void state_sync_date2(User *usr, char c) {
 
 			case YESNO_NO:
 				Put(usr, "<green>In that case<yellow>,<green> I don<yellow>'<green>t know either. I give up!\n");
-				usr->time_disp = 0;
+/*				usr->time_disp = 0;	*/
 				RET(usr);
 				break;
 

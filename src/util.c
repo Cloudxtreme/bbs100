@@ -668,7 +668,6 @@ void system_broadcast(int overrule, char *msg) {
 User *u;
 void (*func)(User *, char *, ...);
 char buf[PRINT_BUF];
-time_t now;
 struct tm *tm;
 
 	log_info(msg);
@@ -679,9 +678,8 @@ struct tm *tm;
 		func = Tell;
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		now = rtc + u->time_disp;
-		tm = gmtime(&now);
-		if ((u->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
+		tm = user_time(u, (time_t)0UL);
+		if ((u->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 			tm->tm_hour -= 12;
 
 		sprintf(buf, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
@@ -691,24 +689,45 @@ struct tm *tm;
 	}
 }
 
-/*
-	Warning: Return value is static
-*/
-char *print_date(User *usr, time_t tt) {
-static char date_str[80];
-char add[2];
+struct tm *tz_time(Timezone *tz, time_t tt) {
+struct tm *tm;
 time_t the_time;
-struct tm *t;
 
 	if (tt == (time_t)0UL)
 		the_time = rtc;
 	else
 		the_time = tt;
 
-	if (usr != NULL)
-		the_time += usr->time_disp;
+	if (tz != NULL) {
+		int tz_type;
 
-	t = gmtime(&the_time);
+		tz_type = tz->transitions[tz->curr_idx].type_idx;
+		the_time += tz->types[tz_type].gmtoff;
+	}
+	tm = gmtime(&the_time);
+	return tm;
+}
+
+/*
+	return 'localtime' for user
+	(each user has its own timezone)
+*/
+struct tm *user_time(User *usr, time_t tt) {
+	if (usr != NULL)
+		return tz_time(usr->tz, tt);
+
+	return tz_time(NULL, tt);
+}
+
+/*
+	Warning: Return value is static
+*/
+char *print_date(User *usr, time_t tt) {
+static char date_str[80];
+char add[2];
+struct tm *t;
+
+	t = user_time(usr, tt);
 
 	if (t->tm_mday >= 10 && t->tm_mday <= 20) {
 		add[0] = 't';

@@ -121,7 +121,7 @@ int i;
 	}
 	buf[4] = 0;
 	if (strcmp(buf, "TZif")) {
-		log_err("load_Timezone(): file identifier not found in %s", filename);
+		log_err("load_Timezone(): 'TZif' file identifier not found in %s", filename);
 		closefile(f);
 		destroy_Timezone(tz);
 		return NULL;
@@ -349,13 +349,42 @@ int i;
 */
 	closefile(f);
 
+/*
+	determine pointer to 'current' transition and when the next should occur
+*/
+	tz->curr_idx = tz->next_idx = 0;
+	if (tzh_timecnt > 1)
+		tz->next_idx = 1;
+
+/* rtc is 'now' */
+	while(tz->next_idx < tzh_timecnt && tz->transitions[tz->next_idx].when <= rtc) {
+		tz->curr_idx++;
+		tz->next_idx++;
+	}
+	if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
+		tz->next_idx = tz->curr_idx;
+
+/*
+	do {
+		int t;
+
+		log_debug("load_Timezone(): curr_idx is at %s", print_date(NULL, tz->transitions[tz->curr_idx].when));
+		t = tz->transitions[tz->curr_idx].type_idx;
+		log_debug("load_Timezone(): curr_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
+
+		log_debug("load_Timezone(): next_idx is at %s", print_date(NULL, tz->transitions[tz->next_idx].when));
+		t = tz->transitions[tz->next_idx].type_idx;
+		log_debug("load_Timezone(): next_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
+	} while(0);
+*/
+
 	if (add_Hash(tz_hash, name, tz) == -1) {
 		log_err("load_Timezone(): failed to add new Timezone to tz_hash");
 		destroy_Timezone(tz);
 		return NULL;
 	}
 	tz->refcount = 1;
-	log_info("load_Timezone(): loaded timezone %s", name);
+/*	log_info("load_Timezone(): loaded timezone %s", name);	*/
 	return tz;
 }
 
@@ -367,13 +396,28 @@ Timezone *tz;
 		if (tz->refcount <= 0) {
 			remove_Hash(tz_hash, name);
 			destroy_Timezone(tz);
-			log_info("unload_Timezone(): timezone %s unloaded", name);
+/*			log_info("unload_Timezone(): timezone %s unloaded", name);	*/
 		}
 	}
 }
 
+/*
+	return the name of the timezone
+*/
+char *name_Timezone(Timezone *tz) {
+char *gmt = "GMT", *name;
+int tz_type;
 
-#ifdef DEBUG
+	if (tz == NULL)
+		return gmt;
+
+	tz_type = tz->transitions[tz->curr_idx].type_idx;
+	name = tz->tznames + tz->types[tz_type].tzname_idx;
+	return name;
+}
+
+
+/*
 
 void dump_Timezone(Timezone *tz) {
 int i;
@@ -405,6 +449,6 @@ int i;
 	log_debug("}");
 }
 
-#endif	/* DEBUG */
+*/
 
 /* EOB */
