@@ -845,7 +845,8 @@ int r;
 				Return;
 			}		
 		}
-		if ((room = new_Room()) == NULL) {			Perror(usr, "Out of memory");
+		if ((room = new_Room()) == NULL) {
+			Perror(usr, "Out of memory");
 			RET(usr);
 			Return;
 		}
