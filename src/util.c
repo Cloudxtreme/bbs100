@@ -719,14 +719,17 @@ struct tm *t;
 				add[0] = 's';
 				add[1] = 't';
 				break;
+
 			case 2:
 				add[0] = 'n';
 				add[1] = 'd';
 				break;
+
 			case 3:
 				add[0] = 'r';
 				add[1] = 'd';
 				break;
+
 			default:
 				add[0] = 't';
 				add[1] = 'h';
@@ -872,14 +875,17 @@ char add[3];
 				add[0] = 's';
 				add[1] = 't';
 				break;
+
 			case 2:
 				add[0] = 'n';
 				add[1] = 'd';
 				break;
+
 			case 3:
 				add[0] = 'r';
 				add[1] = 'd';
 				break;
+
 			default:
 				add[0] = 't';
 				add[1] = 'h';

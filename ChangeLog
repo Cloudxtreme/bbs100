@@ -1,7 +1,3 @@
-Changes as of December 12th 2003
-- added new Timezone structure; ZoneInfo will be removed later
-  it parses binary zoneinfo files
-
 Changes as of December 11th 2003
 - signals are now caught but only flagged as pending; they are handled
   out of the signal handler context, synchronously in the program

@@ -40,6 +40,11 @@ typedef struct {
 } TimeType;
 
 typedef struct {
+	time_t when;
+	int num_secs;
+} LeapSecond;
+
+typedef struct {
 	int refcount;
 	int curr_idx, next_idx;
 

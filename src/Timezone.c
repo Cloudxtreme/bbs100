@@ -29,6 +29,7 @@
 #include "Memory.h"
 #include "util.h"
 #include "log.h"
+#include "debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +92,7 @@ char filename[MAX_PATHLEN], buf[32];
 AtomicFile *f;
 Timezone *tz;
 int tzh_ttisgmtcnt, tzh_ttisstdcnt, tzh_leapcnt, tzh_timecnt, tzh_typecnt, tzh_charcnt;
-int i, local;
+int i;
 
 	if ((tz = in_Hash(tz_hash, name)) != NULL) {		/* already loaded */
 		tz->refcount++;									/* somebody is using it (!) */
@@ -209,36 +210,43 @@ int i, local;
 	}
 	tz->tznames[tzh_charcnt] = 0;
 
+	if (tzh_leapcnt) {
 /*
-	crazy world ... we have leap seconds! Because of the rotation of the Earth
-	and such weird stuff. I just want to know what time it is.
-	There is 'standard time' (POSIX time) and 'wallclock time'. POSIX time lacks
-	leap seconds. So, there is a difference between a DST transition given in
-	POSIX time and a DST transition given in wallclock time. This does not make
-	me happy. What you can do is load the leap definitions, and do a fixup for
-	all DST transitions that were specified as POSIX time.
-	I checked the zoneinfo files, but none of them have any leap second entries
-	in them. So, I'm being extremely lazy here and am secretly skipping support
-	for leap seconds in zoneinfo files for now. By the way, do not really have
-	anything to do with timezones anyway. They should occur all over the world.
+	crazy world ... we have leap seconds! Because the rotation of the Earth is
+	not constantly the same, the astronomical time is slightly different from the
+	(used) UTC time, which is based on atomic clocks.
 
-	The actual code should look something like this:
+	There is 'standard time' and 'wallclock time'. Standard time includes leap seconds
+	and wallclock doesn't (ever seen a clock that can display 61 seconds?)
+	So, there is a difference between a DST transition given in standard time and a
+	DST transition given in wallclock time. It is stupid that there are two possible
+	formats in a zoneinfo definition. What I do is load the leap definitions,
+	and do a fixup for all DST transitions that were specified as wallclock time.
 
-		typedef struct {
-			time_t when;
-			int num_secs;
-		} LeapSecond;
+	This code is really untested, because I haven't had the pleasure of finding
+	one single zoneinfo file that actually specifies leap seconds. Leap seconds
+	do occur almost every year, but the zoneinfo files are generally in
+	standard format -- and they should be, because leap seconds are not really
+	a timezone issue, but a global issue
 
+	Due to some confusion raised over the exact meaning of the standard/wall
+	indicator (read below, at the loading of the UTC/local indicators) I'm skipping
+	support for leap seconds.
+*/
+		log_warn("load_Timezone(): leap seconds are not supported in %s", filename);
+	}
+/*
 		LeapSecond *leaps;
+		int standard;
 
-		if ((tz->leaps = (LeapSecond *)Malloc(tzh_leapcnt * sizeof(LeapSecond), TYPE_CHAR)) == NULL) {
+		log_warn("load_Timezone(): running untested code: doing leap seconds fixup for %s", filename);
+
+		if ((leaps = (LeapSecond *)Malloc(tzh_leapcnt * sizeof(LeapSecond), TYPE_CHAR)) == NULL) {
 			log_err("load_Timezone(): out of memory allocating %d LeapSeconds", tzh_leapcnt);
 			closefile(f);
 			destroy_Timezone(tz);
 			return NULL;
 		}
-		tz->num_leaps = tzh_leapcnt;
-
 		for(i = 0; i < tzh_leapcnt; i++) {
 			leaps[i].when = (time_t)fread_int32(f->f);
 			leaps[i].num_secs = (int)fread_int32(f->f);
@@ -247,54 +255,76 @@ int i, local;
 			log_warn("load_Timezone(): weird, tzh_ttisstdcnt (%d) != tzh_typecnt (%d) in %s", tzh_ttisstdcnt, tzh_typecnt, filename);
 
 		for(i = 0; i < tzh_ttisstdcnt; i++) {
-			if ((wall = fgetc(f->f)) == -1) {
+			if ((standard = fgetc(f->f)) == -1) {
 				log_err("load_Timezone(): premature end-of-file loading %s", filename);
 				Free(leaps);
 				closefile(f);
 				destroy_Timezone(tz);
 				return NULL;
 			}
-			if (!wall) {
+			if (!standard) {
+				int a;
 
-	yeah and what now ... (sigh)
+	all this does is add all previously occurred leap seconds to the timestamps
+	in the transition list
 
+				for(a = 0; a < tz->num_trans; a++) {
+					if (tz->transitions[a].type_idx == i) {
+						int b, total_leaps;
+
+						b = total_leaps = 0;
+						while(b < tzh_leapcnt && tz->transitions[a].when < leaps[b].when) {
+							total_leaps += leaps[b].num_secs;
+							b++;
+						}
+						tz->transitions[a].when = (time_t)((unsigned long)tz->transitions[a].when + (unsigned long)total_leaps);
+					}
+				}
 			}
 		}
 		Free(leaps);
+	} else {
 */
+						/* skip the leap second stuff */
 
-/* skip the leap second stuff */
-
-	if (tzh_leapcnt)
-		log_warn("load_Timezone(): leap seconds in file %s are being ignored", filename);
-
-	for(i = 0; i < tzh_leapcnt; i++) {
-		if (fread_int32(f->f) == -1L || fread_int32(f->f) == -1L) {
-			log_err("load_Timezone(): premature end-of-file loading %s", filename);
-			closefile(f);
-			destroy_Timezone(tz);
-			return NULL;
+		for(i = 0; i < tzh_leapcnt; i++) {
+			if (fread_int32(f->f) == -1L || fread_int32(f->f) == -1L) {
+				log_err("load_Timezone(): premature end-of-file loading %s", filename);
+				closefile(f);
+				destroy_Timezone(tz);
+				return NULL;
+			}
 		}
-	}
-	if (tzh_ttisstdcnt != tzh_typecnt)
-		log_warn("load_Timezone(): weird, tzh_ttisstdcnt (%d) != tzh_typecnt (%d) in %s", tzh_ttisstdcnt, tzh_typecnt, filename);
+		if (tzh_ttisstdcnt != tzh_typecnt)
+			log_warn("load_Timezone(): weird, tzh_ttisstdcnt (%d) != tzh_typecnt (%d) in %s", tzh_ttisstdcnt, tzh_typecnt, filename);
 
-	for(i = 0; i < tzh_ttisstdcnt; i++) {
-		if (fgetc(f->f) == -1) {
-			log_err("load_Timezone(): premature end-of-file loading %s", filename);
-			closefile(f);
-			destroy_Timezone(tz);
-			return NULL;
+		for(i = 0; i < tzh_ttisstdcnt; i++) {
+			if (fgetc(f->f) == -1) {
+				log_err("load_Timezone(): premature end-of-file loading %s", filename);
+				closefile(f);
+				destroy_Timezone(tz);
+				return NULL;
+			}
 		}
-	}
+
+/*	}	*/
+
 /*
 	By the way, one more thing ...
 	the DST transitions can be specified as UTC or as local time (for this zone)
-	so I do a fixup here so I can use UTC all the way
+	so I wanted to do a fixup here so I can use UTC all the way
+
+	In reality, I found that all zoneinfo files specify the DST transitions in UTC,
+	and that the UTC/local indicators are 0 for the US and 1 for Europe. In other words,
+	the UTC/local indicators make no sense (to me). So I just skip this bit for now
+	and hope all goes well.
+
+	(This raises some confusion over the meaning of the standard/wall indicators as well)
 */
 	if (tzh_ttisgmtcnt != tzh_typecnt)
 		log_warn("load_Timezone(): weird, tzh_ttisgmtcnt (%d) != tzh_typecnt (%d) in %s", tzh_ttisgmtcnt, tzh_typecnt, filename);
 
+/*
 	for(i = 0; i < tzh_ttisgmtcnt; i++) {
 		if ((local = fgetc(f->f)) == -1) {
 			log_err("load_Timezone(): premature end-of-file loading %s", filename);
@@ -302,15 +332,21 @@ int i, local;
 			destroy_Timezone(tz);
 			return NULL;
 		}
-		if (local) {				/* do fixup; convert 'when' to UTC */
+
+	don't do any fix-ups here (see above)
+
+		if (local) {
 			int k;
 
 			for(k = 0; k < tz->num_trans; k++) {
-				if (tz->transitions[k].type_idx == i)
+				if (tz->transitions[k].type_idx == i) {
+					log_debug("load_Timezone(): UTC/local fixup: trans %d -= %d (type %d)", k, tz->types[i].gmtoff, i);
 					tz->transitions[k].when -= tz->types[i].gmtoff;
+				}
 			}
 		}
 	}
+*/
 	closefile(f);
 
 	if (add_Hash(tz_hash, name, tz) == -1) {
@@ -319,6 +355,7 @@ int i, local;
 		return NULL;
 	}
 	tz->refcount = 1;
+	log_info("load_Timezone(): loaded timezone %s", name);
 	return tz;
 }
 
@@ -330,12 +367,13 @@ Timezone *tz;
 		if (tz->refcount <= 0) {
 			remove_Hash(tz_hash, name);
 			destroy_Timezone(tz);
+			log_info("unload_Timezone(): timezone %s unloaded", name);
 		}
 	}
 }
 
 
-/*
+#ifdef DEBUG
 
 void dump_Timezone(Timezone *tz) {
 int i;
@@ -352,13 +390,13 @@ int i;
 	log_debug("  num_types = %d", tz->num_types);
 
 	for(i = 0; i < tz->num_trans; i++) {
-		log_debug("  DST_Transition {");
+		log_debug("  DST_Transition %d {", i);
 		log_debug("    when = %s", print_date(NULL, tz->transitions[i].when));
 		log_debug("    type_idx = %d", tz->transitions[i].type_idx);
 		log_debug("  }");
 	}
 	for(i = 0; i < tz->num_types; i++) {
-		log_debug("  TimeType {");
+		log_debug("  TimeType %d {", i);
 		log_debug("    gmtoff = %d", tz->types[i].gmtoff);
 		log_debug("    isdst = %d", tz->types[i].isdst);
 		log_debug("    tzname_idx = %d [%s]", tz->types[i].tzname_idx, tz->tznames+tz->types[i].tzname_idx);
@@ -367,6 +405,6 @@ int i;
 	log_debug("}");
 }
 
-*/
+#endif	/* DEBUG */
 
 /* EOB */
