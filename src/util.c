@@ -830,7 +830,7 @@ int l, n;
 
 	p += 8;
 
-	n = width/2 - strlen(p)/2 - l;
+	n = width/2 - color_strlen(p)/2 - l;
 	while(n > 0 && l < bufsize-1) {
 		dest[l] = ' ';
 		l++;
