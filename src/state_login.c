@@ -75,7 +75,7 @@ int r;
 
 	if (c == INIT_STATE) {
 		Put(usr, "Enter your name: ");
-		usr = reset_User(usr);
+/*		usr = reset_User(usr);	*/
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
@@ -182,8 +182,12 @@ int r;
 				Return;
 			}
 /* I said, it's possible to banish 'New', so no new users can be added */
-			if (in_StringList(banished, "New") == NULL)
-				JMP(usr, STATE_NEW_ACCOUNT_YESNO);		/* unknown user; create new account? */
+			if (in_StringList(banished, "New") != NULL) {
+				Put(usr, "\n\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			JMP(usr, STATE_NEW_ACCOUNT_YESNO);		/* unknown user; create new account? */
 		} else {
 			if (load_User(usr, usr->tmpbuf[TMP_NAME], LOAD_USER_PASSWORD)) {
 				Perror(usr, "Failed to load user file");
@@ -594,7 +598,7 @@ int r;
 			"This name will be your alias for the rest of your BBS life.\n"
 			"Enter your name: ");
 
-		usr = reset_User(usr);
+/*		usr = reset_User(usr);	*/
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
@@ -734,18 +738,21 @@ int r;
 		char crypted[MAX_CRYPTED];
 		int i;
 
-		Put(usr, "\n");
-
 		if (!usr->edit_buf[0]) {
-			JMP(usr, STATE_NEW_LOGIN_PROMPT);
+			Put(usr, "Cancelled\n\n");
+			JMP(usr, STATE_LOGIN_PROMPT);
 			Return;
 		}
+		Put(usr, "\n");
+
 		if (strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
 			Put(usr, "Passwords didn't match!\n");
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
 		}
-/* from here we have a name -- from here on others can see the new user online */
+/*
+	from here we have a name -- from here on others can see the new user online
+*/
 		strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
 		i = strlen(usr->name)-1;
 		if (usr->name[i] == ' ')
