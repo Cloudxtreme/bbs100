@@ -72,41 +72,35 @@ char *nl_print_date(Locale *lc, struct tm *t, int twelve_hour_clock, char *date_
 	Note: buf must be large enough (MAX_LINE bytes should do)
 */
 char *nl_print_total_time(Locale *lc, unsigned long total, char *buf) {
-int weeks, days, hrs, mins, secs, l = 0;
+int div[5] = { SECS_IN_WEEK, SECS_IN_DAY, SECS_IN_HOUR, SECS_IN_MIN, 1 };
+int v[5];
+int i, l, elems;
+char *one[5] = { "week", "dag", "uur", "minuut", "seconde" };
+char *more[5] = { "weken", "dagen", "uur", "minuten", "seconden" };
 
-	weeks = total / SECS_IN_WEEK;
-	total %= SECS_IN_WEEK;
-
-	days = total / SECS_IN_DAY;
-	total %= SECS_IN_DAY;
-
-	hrs = total / SECS_IN_HOUR;
-	total %= SECS_IN_HOUR;
-
-	mins = total / SECS_IN_MIN;
-	total %= SECS_IN_MIN;
-
-	secs = total;
-
-	if (weeks > 0)
-		l = sprintf(buf, "%d %s, ", weeks, (weeks == 1) ? "week" : "weken");
-	if (days > 0)
-		l += sprintf(buf+l, "%d %s, ", days, (days == 1) ? "dag" : "dagen");
-	if (hrs > 0)
-		l += sprintf(buf+l, "%d %s, ", hrs, (hrs == 1) ? "uur" : "uur");
-	if (mins > 0)
-		l += sprintf(buf+l, "%d %s, ", mins, (mins == 1) ? "minuut" : "minuten");
-
-	if (l > 0) {		/* strip the last comma */
-		l -= 2;
-		buf[l] = 0;
-
-		if (!secs)
-			return buf;
-
-		l += sprintf(buf+l, " en ");
+	elems = 0;
+	for(i = 0; i < 5; i++) {
+		v[i] = total / div[i];
+		total %= div[i];
+		if (v[i] > 0)
+			elems++;
 	}
-	sprintf(buf+l, "%d %s", secs, (secs == 1) ? "seconde" : "seconden");
+	if (!elems) {
+		strcpy(buf, "0 seconden");
+		return buf;
+	}
+	buf[0] = 0;
+	l = 0;
+	for(i = 0; i < 5; i++) {
+		if (v[i] > 0) {
+			l += sprintf(buf+l, "%d %s", v[i], (v[i] == 1) ? one[i] : more[i]);
+			elems--;
+			if (!elems)
+				break;
+
+			l += sprintf(buf+l, (elems == 1) ? " en " : ", ");
+		}
+	}
 	return buf;
 }
 
