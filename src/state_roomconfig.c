@@ -70,24 +70,28 @@ void state_room_config_menu(User *usr, char c) {
 						"<white>Ctrl-<hotkey>R<magenta>emove all posts\n"
 						"<white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
-					Print(usr, "\n"
-						"Flags\n"
-						"<hotkey>1 <magenta>Room is read-only         <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>2 <magenta>Room has subject lines    <white>[<yellow>%-3s<white>]\n"
+				}
+				Print(usr, "\n"
+					"Flags\n"
+					"<hotkey>1 <magenta>Room has subject lines    <white>[<yellow>%-3s<white>]\n"
+					"<hotkey>2 <magenta>Allow anonymous posts     <white>[<yellow>%-3s<white>]\n",
+					(usr->curr_room->flags & ROOM_SUBJECTS)  ? "Yes" : "No",
+					(usr->curr_room->flags & ROOM_ANONYMOUS) ? "Yes" : "No"
+				);
+				if (usr->runtime_flags & RTF_SYSOP) {
+					Print(usr,
 						"<hotkey>3 <magenta>Room is invite-only       <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>4 <magenta>Allow anonymous posts     <white>[<yellow>%-3s<white>]\n",
-						(usr->curr_room->flags & ROOM_READONLY)    ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_SUBJECTS)    ? "Yes" : "No",
+						"<hotkey>4 <magenta>Room is read-only         <white>[<yellow>%-3s<white>]\n",
 						(usr->curr_room->flags & ROOM_INVITE_ONLY) ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_ANONYMOUS)   ? "Yes" : "No"
+						(usr->curr_room->flags & ROOM_READONLY)    ? "Yes" : "No"
 					);
 					Print(usr,
 						"<hotkey>5 <magenta>Room is not zappable      <white>[<yellow>%-3s<white>]\n"
 						"<hotkey>6 <magenta>Room is hidden            <white>[<yellow>%-3s<white>]\n"
 						"<hotkey>7 <magenta>Room is a chat room       <white>[<yellow>%-3s<white>]\n",
-						(usr->curr_room->flags & ROOM_NOZAP)       ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_HIDDEN)      ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_CHATROOM)    ? "Yes" : "No"
+						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
+						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No",
+						(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
 					);
 				}
 			}
@@ -271,27 +275,21 @@ void state_room_config_menu(User *usr, char c) {
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
-			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>1 (read-only)\n");
-				usr->curr_room->flags ^= ROOM_READONLY;
-				usr->runtime_flags |= RTF_ROOM_EDITED;
-				CURRENT_STATE(usr);
-				Return;
-			}
-			break;
+			Put(usr, "<white>1 (subjects)\n");
+			usr->curr_room->flags ^= ROOM_SUBJECTS;
+			usr->runtime_flags |= RTF_ROOM_EDITED;
+			CURRENT_STATE(usr);
+			Return;
 
 		case '2':
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
-			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>2 (subjects)\n");
-				usr->curr_room->flags ^= ROOM_SUBJECTS;
-				usr->runtime_flags |= RTF_ROOM_EDITED;
-				CURRENT_STATE(usr);
-				Return;
-			}
-			break;
+			Put(usr, "<white>2 (anonymous)\n");
+			usr->curr_room->flags ^= ROOM_ANONYMOUS;
+			usr->runtime_flags |= RTF_ROOM_EDITED;
+			CURRENT_STATE(usr);
+			Return;
 
 		case '3':
 			if (usr->curr_room->flags & ROOM_HOME)
@@ -311,8 +309,8 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>4 (anonymous)\n");
-				usr->curr_room->flags ^= ROOM_ANONYMOUS;
+				Put(usr, "<white>4 (read-only)\n");
+				usr->curr_room->flags ^= ROOM_READONLY;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
 				Return;

@@ -1,6 +1,8 @@
 Changes as of November 8th 2003
 - print_known_rooms() 'K' and Ctr-K functions; changed behaviour of displaying
   hidden rooms
+- room aides can now activate subjects and anon posts from the room config
+  menu
 
 Changes as of November 2nd 2003
 - fixed bug in edit_name(!)  pressing backspace mess it up, as noted by Richard
