@@ -466,12 +466,15 @@ char colorbuf[20];
 }
 
 int color_strlen(char *str) {
-int len = 0;
+int len = 0, i;
 
 	while(*str) {
-		if (*str == '<')
-			str += skip_long_color_code(str);
-		else {
+		if (*str == '<') {
+			i = skip_long_color_code(str);
+			if (i == 1)
+				len++;
+			str += i;
+		} else {
 			if (*str >= ' ' && *str <= '~')
 				len++;
 			str++;

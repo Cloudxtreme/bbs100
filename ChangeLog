@@ -1,3 +1,6 @@
+Changes as of February 17th 2004
+- bug in color_strlen() when using multiple '<<<<' signs
+
 Changes as of February 1st 2004
 - Mac OS X update, thanks to Jeremy Stock <jstock@speedymail.org> :
 - updated config.guess and config.sub scripts (they were ancient and

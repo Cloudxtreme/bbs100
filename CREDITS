@@ -181,3 +181,5 @@ Credits for bug fixes et al after public release
 
 - Jeremy Stock <jstock@speedymail.org> for reporting problems on Mac OS X
   and providing me with a login on his Mac OS X machine
+
+- Blastah of MatrixBBS reported a bug in color_strlen()
