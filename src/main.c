@@ -274,70 +274,37 @@ char buf[256];
 		exit(-1);
 	}
 	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
-	if ((login_screen = load_StringList(PARAM_LOGIN_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((login_screen = load_StringList(PARAM_LOGIN_SCREEN)) == NULL) ? "failed" : "ok");
 
 	printf("loading logout_screen %s ... ", PARAM_LOGOUT_SCREEN);
-	if ((logout_screen = load_StringList(PARAM_LOGOUT_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((logout_screen = load_StringList(PARAM_LOGOUT_SCREEN)) == NULL) ? "failed" : "ok");
 
 	printf("loading motd_screen %s ... ", PARAM_MOTD_SCREEN);
-	if ((motd_screen = load_StringList(PARAM_MOTD_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((motd_screen = load_StringList(PARAM_MOTD_SCREEN)) == NULL) ? "failed" : "ok");
 
 	printf("loading crash_screen %s ... ", PARAM_CRASH_SCREEN);
-	if ((crash_screen = load_StringList(PARAM_CRASH_SCREEN)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((crash_screen = load_StringList(PARAM_CRASH_SCREEN)) == NULL) ? "failed" : "ok");
 
 	printf("loading stat_file %s ... ", PARAM_STAT_FILE);
-	if (load_Stats(&stats, PARAM_STAT_FILE))
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", (load_Stats(&stats, PARAM_STAT_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading hostmap %s ... ", PARAM_HOSTMAP_FILE);
-	if (load_HostMap(PARAM_HOSTMAP_FILE))
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", (load_HostMap(PARAM_HOSTMAP_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading hosts_access %s ... ", PARAM_HOSTS_ACCESS_FILE);
-	if (load_Wrapper(&wrappers, PARAM_HOSTS_ACCESS_FILE))
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", (load_Wrapper(&wrappers, PARAM_HOSTS_ACCESS_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading banished_file %s ... ", PARAM_BANISHED_FILE);
-	if ((banished = load_StringList(PARAM_BANISHED_FILE)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((banished = load_StringList(PARAM_BANISHED_FILE)) == NULL) ? "failed" : "ok");
 
 	printf("loading su_passwd_file %s ... ", PARAM_SU_PASSWD_FILE);
-	if ((su_passwd = load_SU_Passwd(PARAM_SU_PASSWD_FILE)) == NULL)
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", ((su_passwd = load_SU_Passwd(PARAM_SU_PASSWD_FILE)) == NULL) ? "failed" : "ok");
 
 	printf("loading symbol table %s ... ", PARAM_SYMTAB_FILE);
-	if (load_SymbolTable(PARAM_SYMTAB_FILE))
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", (load_SymbolTable(PARAM_SYMTAB_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading feelings from %s ... ", PARAM_FEELINGSDIR);
-	if (init_Feelings())
-		printf("failed\n");
-	else
-		printf("ok\n");
+	printf("%s\n", (init_Feelings() != 0) ? "failed" : "ok");
 
 	printf("loading default timezone %s ... ", PARAM_DEFAULT_TIMEZONE);
 	if (init_Timezone())
