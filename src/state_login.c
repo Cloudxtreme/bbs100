@@ -302,6 +302,8 @@ void state_logout_prompt(User *usr, char c) {
 	Enter(state_logout_prompt);
 
 	if (c == INIT_STATE) {
+		char buf[MAX_LINE];
+
 		if ((usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL)
 			Print(usr, "<green>You have unread messages held\n");
 		else {
@@ -325,7 +327,9 @@ void state_logout_prompt(User *usr, char c) {
 				}
 			}
 		}
-		Print(usr, "<cyan>%s? <white>(<cyan>y<white>/<cyan>N<white>): ", RND_STR(Str_Really_Logout));
+		sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+		Put(usr, buf);
+		Put(usr, "<white>(<cyan>y<white>/<cyan>N<white>): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}

@@ -193,7 +193,7 @@ int addr, c;
 	while(*p) {
 		c = *p - ' ';
 
-		addr <<= 4;
+		addr <<= 1;
 		addr ^= c;
 
 		p++;

@@ -382,6 +382,8 @@ static char textbuf[PRINT_BUF];
 	textbuf[n] = 0;
 	strcat(textbuf, translated);
 	strcat(textbuf, endp);
+
+	log_debug("translate(): --> [%s]", textbuf);
 	return textbuf;
 }
 
