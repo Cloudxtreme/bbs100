@@ -17,33 +17,47 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	defines.h
+	Timezone.h	WJ103
 */
 
-#ifndef DEFINES_H_WJ99
-#define DEFINES_H_WJ99 1
+#ifndef TIMEZONE_H_WJ103
+#define TIMEZONE_H_WJ103	1
 
-#include <config.h>
+#include "Hash.h"
 
-#ifndef HAVE_UNISTD_H
-#error C header file unistd.h is missing -- are you on a Unix platform?
-#endif
+#include <time.h>
 
-#define MAX_NAME            18
-#define MAX_TITLE			(MAX_NAME+10)
-#define MAX_LINE            80
-#define MAX_X_LINES         7
-#define MAX_CRYPTED_PASSWD  140
 
-#define MAX_PATHLEN			1024		/* MAXPATH variable */
-#define MAX_OUTPUTBUF       128			/* per-user output buffer */
-#define MAX_INPUTBUF		128			/* per-user input buffer */
-#define MAX_SUB_BUF			128			/* for telnet negotiations */
-#define PRINT_BUF			512
+typedef struct {
+	time_t when;			/* when DST transition occurs */
+	int type_idx;			/* 'local time type'; index to TimeType structs */
+} DST_Transition;
 
-#define TERM_WIDTH			80			/* can be overridden by TELOPT_NAWS */
-#define TERM_HEIGHT			23			/* can be overridden by TELOPT_NAWS */
+typedef struct {
+	int gmtoff;				/* offset to GMT (e.g. 3600 for GMT+0100) */
+	int isdst;				/* is Daylight Savings in effect? (summer time) */
+	int tzname_idx;			/* pointer to tznames; name of the timezone */
+} TimeType;
 
-#endif	/* DEFINES_H_WJ99 */
+typedef struct {
+	int refcount;
+	int curr_idx, next_idx;
+
+	int num_trans, num_types;
+
+	DST_Transition *transitions;
+	TimeType *types;
+
+	char *tznames;
+} Timezone;
+
+extern Hash *tz_hash;
+
+int init_Timezone(void);
+
+Timezone *load_Timezone(char *);
+void unload_Timezone(char *);
+
+#endif	/* TIMEZONE_H_WJ103 */
 
 /* EOB */

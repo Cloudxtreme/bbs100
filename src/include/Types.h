@@ -45,9 +45,12 @@
 #define TYPE_ATOMICFILE		19
 #define TYPE_SU_PASSWD		20
 #define TYPE_ZONEINFO		21
-#define TYPE_HASH			22
-#define TYPE_HASHLIST		23
-#define NUM_TYPES			24
+#define TYPE_TIMEZONE		22
+#define TYPE_DST_TRANS		23
+#define TYPE_TIMETYPE		24
+#define TYPE_HASH			25
+#define TYPE_HASHLIST		26
+#define NUM_TYPES			27
 
 typedef struct Typedef_tag Typedef;
 

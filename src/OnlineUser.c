@@ -37,7 +37,7 @@ int init_OnlineUser(void) {
 	if ((online_users = new_Hash()) == NULL)
 		return -1;
 
-	online_users->hashaddr = hashaddr_OnlineUser;
+	online_users->hashaddr = hashaddr_ascii;
 	return 0;
 }
 
@@ -46,23 +46,6 @@ void deinit_OnlineUser(void) {
 	online_users = NULL;
 }
 
-int hashaddr_OnlineUser(char *username) {
-char *p;
-int addr, c;
-
-	p = username;
-	addr = *p;
-	p++;
-	while(*p) {
-		c = *p - ' ';
-
-		addr <<= 4;
-		addr ^= c;
-
-		p++;
-	}
-	return addr;
-}
 
 int add_OnlineUser(User *u) {
 	if (u == NULL || !u->name[0] || u->socket <= 0)

@@ -28,8 +28,6 @@
 int init_OnlineUser(void);
 void deinit_OnlineUser(void);
 
-int hashaddr_OnlineUser(char *);
-
 int add_OnlineUser(User *);
 void remove_OnlineUser(User *);
 

@@ -25,6 +25,7 @@
 #include "Feeling.h"
 #include "HostMap.h"
 #include "ZoneInfo.h"
+#include "Timezone.h"
 #include "Hash.h"
 #include "Types.h"
 
@@ -51,6 +52,9 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "AtomicFile",			sizeof(AtomicFile),			},
 	{ "SU_Passwd",			sizeof(SU_Passwd),			},
 	{ "ZoneInfo",			sizeof(ZoneInfo),			},
+	{ "Timezone",			sizeof(Timezone),			},
+	{ "DST_Trans",			sizeof(DST_Transition),		},
+	{ "TimeType",			sizeof(TimeType),			},
 	{ "Hash",				sizeof(Hash),				},
 	{ "HashList",			sizeof(HashList),			},
 	{ "(unknown)",			0,							},

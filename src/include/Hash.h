@@ -44,6 +44,8 @@ int add_Hash(Hash *, char *, void *);
 void *remove_Hash(Hash *, char *);
 void *in_Hash(Hash *, char *);
 
+int hashaddr_ascii(char *);
+
 #endif	/* HASH_H_WJ103 */
 
 /* EOB */

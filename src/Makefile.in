@@ -65,7 +65,8 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	state_config.o state_roomconfig.o state_sysop.o \
 	MsgIndex.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
 	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \
-	debug.o SymbolTable.o Types.o HostMap.o ZoneInfo.o FileFormat.o \
+	debug.o SymbolTable.o Types.o HostMap.o ZoneInfo.o \
+	Timezone.o FileFormat.o \
 	main.o
 
 MORE_OBJS = mkpasswd.o resolver.o ccat.o

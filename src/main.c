@@ -46,6 +46,7 @@
 #include "OnlineUser.h"
 #include "AtomicFile.h"
 #include "ZoneInfo.h"
+#include "Timezone.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,6 +182,7 @@ void usage(void) {
 
 int main(int argc, char **argv) {
 int debugger = 0;
+Timezone *tz;
 
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
@@ -340,17 +342,17 @@ int debugger = 0;
 	init_ZoneInfo();
 
 	if (init_Room()) {
-		log_err("fatal: Failed to initialize the rooms message system");
+		printf("fatal: Failed to initialize the rooms message system\n");
 		exit_program(SHUTDOWN);
 	}
 	if (init_OnlineUser()) {
-		log_err("fatal: Failed to initialize the online users hash");
+		printf("fatal: Failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();			/* init salt table for passwd encryption */
 
 	if ((main_socket = inet_sock(PARAM_PORT_NUMBER)) < 0) {		/* startup inet */
-		printf("failed to listen on port %d\n", PARAM_PORT_NUMBER);
+		printf("fatal: failed to listen on port %d\n", PARAM_PORT_NUMBER);
 		exit_program(SHUTDOWN);
 	}
 	printf("up and running, listening at port %d\n", PARAM_PORT_NUMBER);
@@ -368,6 +370,9 @@ int debugger = 0;
 
 	if (init_process())
 		log_err("helper daemons startup failed");
+
+	if (init_Timezone())
+		log_err("failed to initialize timezones");
 
 	stats.uptime = rtc = time(NULL);
 

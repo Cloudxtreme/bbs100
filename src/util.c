@@ -1057,4 +1057,19 @@ char *p;
 	return path;
 }
 
+long fread_int32(FILE *f) {
+long l;
+int c, i;
+
+	l = 0L;
+	for(i = 0; i < 4; i++) {
+		if ((c = fgetc(f)) == -1)
+			return -1L;
+
+		l <<= 8;
+		l |= (c & 255);
+	}
+	return l;
+}
+
 /* EOB */

@@ -177,4 +177,26 @@ HashList *hl;
 	return NULL;
 }
 
+
+/*
+	example hashaddr function
+*/
+int hashaddr_ascii(char *key) {
+char *p;
+int addr, c;
+
+	p = key;
+	addr = *p;
+	p++;
+	while(*p) {
+		c = *p - ' ';
+
+		addr <<= 4;
+		addr ^= c;
+
+		p++;
+	}
+	return addr;
+}
+
 /* EOB */

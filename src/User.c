@@ -44,6 +44,7 @@
 #include "Param.h"
 #include "Memory.h"
 #include "FileFormat.h"
+#include "Timezone.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,8 +70,8 @@ User *usr;
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
-	usr->term_height = 23;			/* hard-coded defaults; may be set by TELOPT_NAWS */
-	usr->term_width = 80;
+	usr->term_height = TERM_HEIGHT;		/* hard-coded defaults; may be set by TELOPT_NAWS */
+	usr->term_width = TERM_WIDTH;
 	return usr;
 }
 
