@@ -3498,11 +3498,11 @@ char zone_color[16], zone_color2[16];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d %cM", zone_color,
+		Print(usr, "    <cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min, am_pm);
 	} else
-		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d", zone_color,
+		Print(usr, "    <cyan>%-15s <%s>%02d<white>:<%s>%02d",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
@@ -3518,6 +3518,7 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	Enter(print_calendar);
 
 	tmp = user_time(usr, (time_t)0UL);
+	w = tmp->tm_wday;
 	today = tmp->tm_mday;
 	today_month = tmp->tm_mon;
 	today_year = tmp->tm_year;
@@ -3527,7 +3528,7 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	print_worldclock(usr, 1);
 	Put(usr, "\n");
 
-	t = rtc - (14 + tmp->tm_wday) * SECS_IN_DAY;
+	t = rtc - (14 + w) * SECS_IN_DAY;
 	tmp = user_time(usr, t);
 	old_month = tmp->tm_mon;
 	green_color = 1;

@@ -63,6 +63,7 @@ int init_Timezone(void);
 Timezone *load_Timezone(char *);
 void unload_Timezone(char *);
 char *name_Timezone(Timezone *);
+int generate_tz_index(char *, int);
 
 #endif	/* TIMEZONE_H_WJ103 */
 

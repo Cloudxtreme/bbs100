@@ -701,11 +701,36 @@ time_t the_time;
 	if (tz != NULL) {
 		int tz_type;
 
-		tz_type = tz->transitions[tz->curr_idx].type_idx;
+		if (tz->transitions != NULL)
+			tz_type = tz->transitions[tz->curr_idx].type_idx;
+		else
+			tz_type = 0;
+
 		the_time += tz->types[tz_type].gmtoff;
 	}
 	tm = gmtime(&the_time);
 	return tm;
+}
+
+time_t tz_time_t(Timezone *tz, time_t tt) {
+time_t the_time;
+
+	if (tt == (time_t)0UL)
+		the_time = rtc;
+	else
+		the_time = tt;
+
+	if (tz != NULL) {
+		int tz_type;
+
+		if (tz->transitions != NULL)
+			tz_type = tz->transitions[tz->curr_idx].type_idx;
+		else
+			tz_type = 0;
+
+		the_time += tz->types[tz_type].gmtoff;
+	}
+	return the_time;
 }
 
 /*

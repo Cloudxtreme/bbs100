@@ -33,6 +33,7 @@
 #define listdestroy_StringList(x)	listdestroy_List((x), destroy_StringList)
 #define rewind_StringList(x)		(StringList *)rewind_List(x)
 #define unwind_StringList(x)		(StringList *)unwind_List(x)
+#define sort_StringList(x, y)		(StringList *)sort_List((x), (y))
 
 typedef struct StringList_tag StringList;
 

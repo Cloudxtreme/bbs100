@@ -34,6 +34,7 @@
 #include "passwd.h"
 #include "screens.h"
 #include "Memory.h"
+#include "Timezone.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1072,6 +1073,8 @@ void state_config_who_sysop(User *usr, char c) {
 
 
 void state_config_timezone(User *usr, char c) {
+char buf[MAX_LINE], *p;
+
 	if (usr == NULL)
 		return;
 
@@ -1081,15 +1084,26 @@ void state_config_timezone(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Print(usr, "\n"
-				"<green>Current time is now <yellow>%s\n", print_date(usr, time(NULL)));
-
+			Print(usr, "\n<green>Current time is <yellow>%s %s\n",
+				print_date(usr, time(NULL)), name_Timezone(usr->tz)
+			);
 			print_calendar(usr);
 
+/* filter underscores */
+			if (usr->timezone == NULL)
+				strcpy(buf, "GMT");
+			else {
+				strncpy(buf, usr->timezone, MAX_LINE-1);
+				buf[MAX_LINE-1] = 0;
+				p = buf;
+				while((p = cstrchr(p, '_')) != NULL)
+					*p = ' ';
+			}
 			Print(usr, "<magenta>\n"
-				"<hotkey>Display time as      <white>%s<magenta>\n"
-				"<hotkey>Synchronize clocks\n",
-				(usr->flags & USR_12HRCLOCK) ? "12 hour clock (AM/PM)" : "24 hour clock"
+				"<hotkey>Display time as          <white>%s<magenta>\n"
+				"<hotkey>Select time zone         <white>%s (%s)\n",
+				(usr->flags & USR_12HRCLOCK) ? "12 hour clock (AM/PM)" : "24 hour clock",
+				buf, name_Timezone(usr->tz)
 			);
 			break;
 
@@ -1112,147 +1126,287 @@ void state_config_timezone(User *usr, char c) {
 
 		case 's':
 		case 'S':
-			Put(usr, "<white>Synchronize\n");
-			CALL(usr, STATE_SYNC_CLOCKS);
+			Put(usr, "<white>Select time zone\n");
+			CALL(usr, STATE_SELECT_TZ_CONTINENT);
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Time Zone<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
-void state_sync_clocks(User *usr, char c) {
-int r;
+void state_select_tz_continent(User *usr, char c) {
+StringList *sl;
+char filename[MAX_PATHLEN], *p;
+int idx, r;
 
 	if (usr == NULL)
 		return;
 
-	Enter(state_sync_clocks);
+	Enter(state_select_tz_continent);
 
 	if (c == INIT_STATE) {
-		Print(usr, "\n<green>Because every user of <white>%s<green> may live in a different timezone, we need\n"
-			"to synchronize clocks. In order to do so, you have to enter what time it is.\n", PARAM_BBS_NAME);
+		File *f;
 
-		Print(usr, "\n<green>Current BBS time is<yellow>: %s <white>(<yellow>GMT<white>)<yellow>\n"
-			"<green>Now enter your local time <white>(<yellow>in hh<white>:<yellow>mm format<white>):<yellow> ", print_date(NULL, (time_t)0UL));
+		strcpy(filename, PARAM_ZONEINFODIR);
+		strcat(filename, "/.tz_index");
+		path_strip(filename);
+
+		if ((f = Fopen(filename)) == NULL) {
+			log_err("state_select_tz_continent(): failed to open %s", filename);
+			Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n");
+			RET(usr);
+			Return;
+		}
+/*
+	for convenience, put a copy in tmpbuf[0]
+	the user is stuck in this menu anyway so it shouldn't be a prob
+*/
+		if (usr->tmpbuf[0] != NULL) {
+			log_err("state_select_tz_continent(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
+			Free(usr->tmpbuf[0]);
+		}
+		if ((usr->tmpbuf[0] = (char *)copy_StringList(f->data)) == NULL) {
+			log_err("state_select_tz_continent(): out of memory buffering tz_index file");
+			Put(usr, "\n<red>Out of memory error, please retry later\n");
+			Fclose(f);
+			RET(usr);
+			Return;
+		}
+		Fclose(f);
+
+		Put(usr, "\n<magenta>Time zone regions\n\n");
+		idx = 1;
+		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
+			strcpy(filename, sl->str);
+			p = filename;
+			while((p = cstrchr(p, '_')) != NULL)
+				*p = ' ';
+
+			Print(usr, "<green>%3d <yellow>%s\n", idx, filename);
+			idx++;
+		}
+		Put(usr, "\n<green>What part of the world are you in? <yellow>");
 	}
-	r = edit_line(usr, c);
+	r = edit_number(usr, c);
 
 	if (r == EDIT_BREAK) {
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
+
 		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *p;
-		int hh, mm, hh_disp;
-		time_t t;
-		struct tm *gmt;
-
-		cstrip_line(usr->edit_buf);
+		int choice;
 
 		if (!usr->edit_buf[0]) {
+			destroy_StringList((StringList *)usr->tmpbuf[0]);
+			usr->tmpbuf[0] = NULL;
+
 			RET(usr);
 			Return;
 		}
-		if ((p = cstrchr(usr->edit_buf, ':')) == NULL || !p[1] || p == usr->edit_buf) {
-			Put(usr, "\n<red>You should enter your local time in <yellow>hh<white>:<yellow>mm<red> format\n"
-				"<green>Please enter what your local time is now<yellow>: ");
-			edit_line(usr, INIT_STATE);
+		choice = atoi(usr->edit_buf);
+		if (!choice) {
+			destroy_StringList((StringList *)usr->tmpbuf[0]);
+			usr->tmpbuf[0] = NULL;
+
+			RET(usr);
 			Return;
 		}
-		*p = 0;
-		p++;
-		hh = atoi(usr->edit_buf);
-		mm = atoi(p);
-		if (hh < 0 || hh > 23) {
-			Put(usr, "\n<red>The hours should be in between <yellow>00<red> and <yellow>23<red> hours\n"
-				"<green>Please enter what your local time is now<yellow>: "
-			);
-			edit_line(usr, INIT_STATE);
+/*
+	check whether that was a valid choice or not
+*/
+		filename[0] = 0;
+		idx = 1;
+		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
+			if (choice == idx) {
+				strcpy(filename, sl->str);
+				break;
+			}
+			idx++;
+		}
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
+
+		if (!filename[0]) {				/* invalid choice */
+			CURRENT_STATE(usr);
 			Return;
 		}
-		if (mm < 0 || mm >= 60) {
-			Put(usr, "\n<red>The minutes should be in between <yellow>00<red> and <yellow>59<red> minutes\n"
-				"<green>Please enter what your local time is now<yellow>: "
-			);
-			edit_line(usr, INIT_STATE);
+		if ((usr->tmpbuf[0] = cstrdup(filename)) == NULL) {
+			log_err("state_select_tz_continent(): out of memory during cstrdup()");
+			Put(usr, "<red>Out of memory! Please try again later\n");
+
+			RET(usr);
 			Return;
 		}
-		t = time(NULL);
-		gmt = gmtime(&t);
+		p = filename;
+		while((p = cstrchr(p, '_')) != NULL)
+			*p = ' ';
 
-		hh_disp = hh - gmt->tm_hour;
-		if (hh_disp <= -12)
-			hh_disp += 24;
-		else
-			if (hh_disp > 12)
-				hh_disp -= 24;
+		Print(usr, "\n<green>Cities, countries, regions, and zones in category <yellow>%s:\n\n", filename);
 
-/*		usr->time_disp = hh_disp * SECS_IN_HOUR + (mm - gmt->tm_min) * SECS_IN_MIN;	*/
+		JMP(usr, STATE_SELECT_TZ_CITY);
+		Return;
+	}
+	Return;
+}
 
-		if (hh_disp == 12) {
-			Print(usr, "\n<green>You live relatively close to the date border.\n"
-				"Today<yellow>'<green>s date is <yellow>%s\n", print_date(usr, time(NULL)));
+void state_select_tz_city(User *usr, char c) {
+StringList *sl;
+char filename[MAX_PATHLEN], *p;
+int idx, r;
 
-			JMP(usr, STATE_SYNC_DATE);
+	if (usr == NULL)
+		return;
+
+	Enter(state_select_tz_city);
+
+	if (c == INIT_STATE) {
+		File *f;
+
+		if (usr->tmpbuf[0] == NULL) {
+			log_err("state_select_tz_city(): this is bad: usr->tmpbuf[0] == NULL");
+			Put(usr, "<red>Sorry, something is not working. Please try again later\n");
+			RET(usr);
 			Return;
-		}		
+		}
+		sprintf(filename, "%s/%s/.tz_index", PARAM_ZONEINFODIR, usr->tmpbuf[0]);
+		path_strip(filename);
+
+		if (usr->tmpbuf[1] != NULL) {
+			log_err("state_select_tz_city(): this is bad: usr->tmpbuf[1] != NULL, freeing it");
+			Free(usr->tmpbuf[1]);
+		}
+		usr->tmpbuf[1] = usr->tmpbuf[0];		/* tmpbuf[1] holds directory name */
+		usr->tmpbuf[0] = NULL;
+
+		if ((f = Fopen(filename)) == NULL) {
+			log_err("state_select_tz_city(): failed to open %s", filename);
+			Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n");
+
+			Free(usr->tmpbuf[1]);
+			usr->tmpbuf[1] = NULL;
+
+			RET(usr);
+			Return;
+		}
+/*
+	for convenience, put a copy in tmpbuf[0]
+	the user is stuck in this menu anyway so it shouldn't be a prob
+*/
+		if (usr->tmpbuf[0] != NULL) {
+			log_err("state_select_tz_city(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
+			Free(usr->tmpbuf[0]);
+		}
+		if ((usr->tmpbuf[0] = (char *)copy_StringList(f->data)) == NULL) {
+			log_err("state_select_tz_city(): out of memory buffering tz_index file");
+			Put(usr, "\n<red>Out of memory error, please retry later\n");
+
+			Fclose(f);
+			Free(usr->tmpbuf[1]);
+			usr->tmpbuf[1] = NULL;
+
+			RET(usr);
+			Return;
+		}
+		Fclose(f);
+
+		idx = 1;
+		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
+			strcpy(filename, sl->str);
+			p = filename;
+			while((p = cstrchr(p, '_')) != NULL)
+				*p = ' ';
+
+			Print(usr, "<green>%3d <yellow>%s\n", idx, filename);
+			idx++;
+		}
+		Put(usr, "\n<green>Enter city, country, or region near you<yellow>: ");
+	}
+	r = edit_number(usr, c);
+
+	if (r == EDIT_BREAK) {
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
+
+		Free(usr->tmpbuf[1]);
+		usr->tmpbuf[1] = NULL;
+
 		RET(usr);
+		Return;
 	}
-	Return;
-}
+	if (r == EDIT_RETURN) {
+		int choice;
+		Timezone *tz;
 
-void state_sync_date(User *usr, char c) {
-	if (usr == NULL)
-		return;
+		if (!usr->edit_buf[0]) {
+			destroy_StringList((StringList *)usr->tmpbuf[0]);
+			usr->tmpbuf[0] = NULL;
 
-	Enter(state_sync_date);
+			Free(usr->tmpbuf[1]);
+			usr->tmpbuf[1] = NULL;
 
-	if (c == INIT_STATE)
-		Put(usr, "<green>Is this correct? <white>(<cyan>Y<white>/<cyan>n<white>): ");
-	else {
-		switch(yesno(usr, c, 'Y')) {
-			case YESNO_YES:
-				RET(usr);
-				break;
-
-			case YESNO_NO:
-/*				usr->time_disp -= SECS_IN_DAY;	*/
-				Print(usr, "\n<green>Ok<yellow>,<green> perhaps you live on the other side of the date border.\n"
-					"Then today<yellow>'<green>s date would be <yellow>%s\n", print_date(usr, time(NULL)));
-
-				JMP(usr, STATE_SYNC_DATE2);
-				break;
-
-			case YESNO_UNDEF:
-				CURRENT_STATE(usr);
+			RET(usr);
+			Return;
 		}
-	}
-	Return;
-}
+		choice = atoi(usr->edit_buf);
+		if (!choice) {
+			destroy_StringList((StringList *)usr->tmpbuf[0]);
+			usr->tmpbuf[0] = NULL;
 
-void state_sync_date2(User *usr, char c) {
-	if (usr == NULL)
-		return;
+			Free(usr->tmpbuf[1]);
+			usr->tmpbuf[1] = NULL;
 
-	Enter(state_sync_date);
-
-	if (c == INIT_STATE)
-		Put(usr, "<green>Is this correct? <white>(<cyan>Y<white>/<cyan>n<white>): ");
-	else {
-		switch(yesno(usr, c, 'Y')) {
-			case YESNO_YES:
-				RET(usr);
-				break;
-
-			case YESNO_NO:
-				Put(usr, "<green>In that case<yellow>,<green> I don<yellow>'<green>t know either. I give up!\n");
-/*				usr->time_disp = 0;	*/
-				RET(usr);
-				break;
-
-			case YESNO_UNDEF:
-				CURRENT_STATE(usr);
+			RET(usr);
+			Return;
 		}
+/*
+	check whether that was a valid choice or not
+*/
+		filename[0] = 0;
+		idx = 1;
+		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
+			if (choice == idx) {
+				sprintf(filename, "%s/%s", usr->tmpbuf[1], sl->str);
+				break;
+			}
+			idx++;
+		}
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
+
+		if (!filename[0]) {						/* invalid choice */
+			usr->tmpbuf[0] = usr->tmpbuf[1];	/* put dirname in tmpbuf[0] */
+			usr->tmpbuf[1] = NULL;
+
+			CURRENT_STATE(usr);
+			Return;
+		}
+		Free(usr->tmpbuf[1]);
+		usr->tmpbuf[1] = NULL;
+
+		path_strip(filename);
+		if ((tz = load_Timezone(filename)) == NULL) {
+			Put(usr, "<red>That time zone cannot be used right now. Please try again later\n");
+
+			RET(usr);
+			Return;
+		}
+		unload_Timezone(usr->timezone);
+		usr->tz = NULL;
+		Free(usr->timezone);
+		if ((usr->timezone = cstrdup(filename)) == NULL) {
+			log_err("state_select_tz_city(): out of memory setting usr->timezone to %s for user %s", filename, usr->name);
+			Print(usr, "<red>Failed to set new time zone to <yellow>%s\n", filename);
+
+			RET(usr);
+			Return;
+		}
+		usr->tz = tz;
+
+		RET(usr);
+		Return;
 	}
 	Return;
 }

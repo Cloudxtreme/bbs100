@@ -30,9 +30,13 @@
 #include "util.h"
 #include "log.h"
 #include "debug.h"
+#include "mydirentry.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 Hash *tz_hash = NULL;
@@ -43,6 +47,8 @@ int init_Timezone(void) {
 		return -1;
 
 	tz_hash->hashaddr = hashaddr_ascii;
+
+	generate_tz_index(PARAM_ZONEINFODIR, 1);
 	return 0;
 }
 
@@ -146,7 +152,11 @@ int i;
 		destroy_Timezone(tz);
 		return NULL;
 	}
-	if ((tz->transitions = (DST_Transition *)Malloc(tzh_timecnt * sizeof(DST_Transition), TYPE_DST_TRANS)) == NULL) {
+/*
+	it is valid to have zero DST transitions
+	if so, types[0] should be used
+*/
+	if (tzh_timecnt && (tz->transitions = (DST_Transition *)Malloc(tzh_timecnt * sizeof(DST_Transition), TYPE_DST_TRANS)) == NULL) {
 		log_err("load_Timezone(): out of memory allocating %d DST_Transitions", tzh_timecnt);
 		closefile(f);
 		destroy_Timezone(tz);
@@ -353,21 +363,22 @@ int i;
 	determine pointer to 'current' transition and when the next should occur
 */
 	tz->curr_idx = tz->next_idx = 0;
-	if (tzh_timecnt > 1)
+	if (tzh_timecnt > 1) {
 		tz->next_idx = 1;
 
 /* rtc is 'now' */
-	while(tz->next_idx < tzh_timecnt && tz->transitions[tz->next_idx].when <= rtc) {
-		tz->curr_idx++;
-		tz->next_idx++;
-	}
-	if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
-		tz->next_idx = tz->curr_idx;
-
+		while(tz->next_idx < tzh_timecnt && tz->transitions[tz->next_idx].when <= rtc) {
+			tz->curr_idx++;
+			tz->next_idx++;
+		}
+		if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
+			tz->next_idx = tz->curr_idx;
+	}											/* else we have only 1 entry */
 /*
 	do {
 		int t;
 
+		log_debug("load_Timezone(): name == %s", name);
 		log_debug("load_Timezone(): curr_idx is at %s", print_date(NULL, tz->transitions[tz->curr_idx].when));
 		t = tz->transitions[tz->curr_idx].type_idx;
 		log_debug("load_Timezone(): curr_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
@@ -377,7 +388,6 @@ int i;
 		log_debug("load_Timezone(): next_idx: gmtoff %d  isdst %d  tzname %s", tz->types[t].gmtoff, tz->types[t].isdst, tz->tznames + tz->types[t].tzname_idx);
 	} while(0);
 */
-
 	if (add_Hash(tz_hash, name, tz) == -1) {
 		log_err("load_Timezone(): failed to add new Timezone to tz_hash");
 		destroy_Timezone(tz);
@@ -411,7 +421,11 @@ int tz_type;
 	if (tz == NULL)
 		return gmt;
 
-	tz_type = tz->transitions[tz->curr_idx].type_idx;
+	if (tz->transitions != NULL)
+		tz_type = tz->transitions[tz->curr_idx].type_idx;
+	else
+		tz_type = 0;
+
 	name = tz->tznames + tz->types[tz_type].tzname_idx;
 	return name;
 }
@@ -450,5 +464,73 @@ int i;
 }
 
 */
+
+static int tz_index_sort(void *v1, void *v2) {
+StringList *sl1, *sl2;
+
+	if (v1 == NULL || v2 == NULL)
+		return 0;
+
+	sl1 = *(StringList **)v1;
+	sl2 = *(StringList **)v2;
+
+	if (sl1->str == NULL || sl2->str == NULL)
+		return 0;
+
+	return strcmp(sl1->str, sl2->str);
+}
+
+/*
+	there are many many many zoneinfo files that the user can choose as timezone
+	in the Config menu
+	I don't want to rebuild/scan/sort the list of files every time, so we make
+	a .tz_index file that we can put in the cache
+
+	Note: call always with arguments PARAM_ZONEINFODIR, 1
+	This scans the zoneinfo dir for regions, and then the subdirectories for
+	the actual zoneinfo files
+*/
+int generate_tz_index(char *dirname, int subdir) {
+DIR *dirp;
+struct dirent *direntp;
+struct stat statbuf;
+File *f;
+char filename[MAX_PATHLEN];
+
+	if ((dirp = opendir(dirname)) == NULL)
+		return -1;
+
+	strcpy(filename, dirname);
+	strcat(filename, "/.tz_index");
+	path_strip(filename);
+
+	if ((f = Fcreate(filename)) == NULL) {
+		log_err("generate_tz_index(%s): failed to create file %s", dirname, filename);
+		closedir(dirp);
+		return -1;
+	}
+	while((direntp = readdir(dirp)) != NULL) {
+		if (direntp->d_name[0] == '.')
+			continue;
+
+		sprintf(filename, "%s/%s", dirname, direntp->d_name);
+		path_strip(filename);
+
+		if (subdir) {
+			if (!stat(filename, &statbuf) && S_ISDIR(statbuf.st_mode)) {
+				Fprintf(f, "%s", direntp->d_name);
+				generate_tz_index(filename, 0);				/* recurse */
+			}
+		} else {
+			if (!stat(filename, &statbuf) && S_ISREG(statbuf.st_mode))
+				Fprintf(f, "%s", direntp->d_name);
+		}
+	}
+	closedir(dirp);
+
+	f->data = sort_StringList(f->data, tz_index_sort);
+	Fclose(f);
+	return 0;
+}
 
 /* EOB */
