@@ -164,3 +164,9 @@ Credits for bug fixes et al after public release
   when a friend locks the terminal, and then unlocks it by logging
   in again
   fixed in 1.2.1
+
+- Stephan van Beerschoten <stephanb@whacky.net> did testing of
+  version 1.2.2 (development version) on Solaris 8
+
+- Shannon Prickett <spameater@metanav.org> suggested disabling certain
+  features. Implemented through parameters in 1.2.3 (development version)

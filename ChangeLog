@@ -1,3 +1,6 @@
+Changes as of January 11th 2004
+- PARAM_BOOL feature toggles
+
 Changes as of December 30th 2003
 - tiny IRIX fixes
 - new user and Guest get default timezone as specified in etc/param file
