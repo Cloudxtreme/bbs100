@@ -1,3 +1,10 @@
+Changes as of October 21st 2003
+- put the source in svn
+- 'g' is for Goto next unread room
+- fixed typo in etc/shutdown
+- added option: #define NO_WORLDCLOCK in include/config.h to omit the
+  worldclock under the 't' time command
+
 Changes as of November 25th 2002
 - next_unread_room() first checks Lobby>, then Mail>, then other rooms
 - changed version number to 1.2.0

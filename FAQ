@@ -3,11 +3,11 @@ bbs100 by Walter de Jong <walter@heiho.net> (C) 2002
 THE NAME
 Why is it called bbs100?
 Well, I wanted to call it 'FreeBBS', but the name has been used over and
-again by others :(     Also, until now this code wasn't free at all.
-On of my previous projects was called 'bbs10' because it was about the 10th
-time I started over again writing a BBS.
-In 1999, I called it bbs99, and with the new millenium I pretended that it
-was a millenium bug and called it bbs100 as a joke. Silly joke of course,
+again by others :(     Also, until the year 2000, this code wasn't free at
+all. One of my previous projects was called 'bbs10' because it was about
+the 10th time I started over again writing a BBS from scratch.
+In 1999, I called it bbs99, and with the millenium change I pretended that
+it was a millenium bug and called it bbs100 as a joke. Silly joke of course,
 but the name stayed.
 
 
@@ -35,8 +35,11 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     Unicos 10.0.0.x         Cray C90
 
 All this with just configure and make setup.
-bbs100 also runs under MacOS X and Windows platforms.
-If you run bbs100 on an other platform, feel free to let me know.
+bbs100 also runs under MacOS X and Windows platforms, but you will
+need the appropriate patches from the web site to make it work.
+The web site is at http://www.heiho.net/bbs100/
+If you run bbs100 on an other platform than listed here, please let me
+know your experiences in building and running the software.
 
 
 YAWC
@@ -52,7 +55,8 @@ any other code).
 MAILING LIST
 Is there a centralized place where people can get together and discuss bbs100
 related problems?
-There currently is a mailing list for coders, which is intended for code
-related problems only. Maintainer of the list is CHIPS <chips@hawmps.2y.net>.
-To subscribe, send an e-mail with 'subscribe' in the message body to
-<bbs100-request@hawmps.2y.net>.
+There used to be a mailing list, but it is not active anymore.
+If you need help on modifying bbs100, the author (me) is always happy to
+provide you with some pointers and explain how specific parts of bbs100 work,
+and what you should do to make it work the way you want it to work.
+

@@ -14,9 +14,9 @@ To upgrade from an existing version of bbs100, do the following:
 
 - make the new version:
   * cd src and configure --prefix={your prefix}
-  * make upgrade
+  * make install
 
-  'make upgrade' installs the new binairies in ${prefix}/bin-${version}/
+  This installs the new binairies in ${prefix}/bin-${version}/
   and symlinks it to ${prefix}/bin
 
 - verify that the new binairies have been installed correctly
@@ -25,7 +25,7 @@ To upgrade from an existing version of bbs100, do the following:
 
 
 CLEANING UP
-The make upgrade process leaves the old bin/ directory of the BBS intact.
+The make upgrade process leaves the old bin directory of the BBS intact.
 If you are satisfied with the new version, you can safely remove the old
 bin directory.
 

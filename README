@@ -174,6 +174,15 @@ Mind that the BBS doesn't know anything about daylight savings time. If the
 clock the machine runs on uses daylight savings and the user does not, the
 clocks will display a difference of an hour when daylight savings apply and
 the user will have to re-synchronize.
+This also applies for the calendar function under the 't' time command.
+When daylight savings are in use, the world clock may be an hour off.
+This is a known issue with the world clock. Some people find this very
+annoying, so there is a way to cleanly disable the world clock altogether;
+you may add the following line to src/include/config.h:
+
+#define NO_WORLDCLOCK	1		/* disable the world clock */
+
+and do a 'make install'. The world clock should no longer be displayed.
 
 The log files display local time in the format mm/dd/yyyy hh:mm:ss.
 
@@ -217,6 +226,13 @@ You also don't want to run out of disk space. At the moment, bbs100 is very
 bad at handling full disks: messages will not be saved correctly and as a
 consequence messages will be lost. Make sure you have enough free space 
 (cleaning up old log files usually is sufficient) and you will be fine.
+
+
+SITES RUNNING bbs100
+There is a list of sites known to be running bbs100. This list can
+be found on the web at http://www.heiho.net/bbs100/sites.html
+If you are running bbs100 (in a modified way or not) or know of a site
+running bbs100, please mail me stating the IP address and name of the BBS. 
 
 
 HISTORY

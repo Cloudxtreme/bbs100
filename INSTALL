@@ -21,7 +21,7 @@ umask to either 007 or 027.
 	$ ./configure --prefix=/home/bbs
 
 Note: Do not use a relative path as prefix;
-      DONT DO $ ./configure --prefix=..
+      DONT DO ./configure --prefix=..
 because it will cause problems in the generated scripts.
 
 
@@ -41,22 +41,13 @@ probably be more successful sorting it out by yourself.
 If you wish to reconfigure, do a 'make mrproper' before running
 configure again.
 
+If you are setting up bbs100 for the very first time, the make should
+detect this and setup the necessary directory structure automatically.
 
-NOTE TO IRIX GCC USERS: configure may detect an installed gcc, but I
-recommend that you do not use it. Manually edit the generated Makefile
-after configure has completed, and replace 'CC=gcc' with 'CC=cc' and
-remove all gcc specific CFLAGS. Irix gcc displays certain weird problems
-(namely IP numbers that all turn to 0.0.0.0) that are caused by compiler
-and/or library problems.
-On IRIX, please use the MIPSpro cc compiler from SGI (if you have it).
-
-
-Now, if you are setting up bbs100 for the very first time, do a 'make setup'.
-If you are upgrading to a newer version of bbs100, do a 'make upgrade'.
-Read the file UPGRADING.
-Mind that 'make upgrade' only installs new binaries and scripts under
-/home/bbs/bin (or whatever you have configured), but that new versions may
-come with new files under etc/ and new parameters in etc/param as well.
+Mind that when you are upgrading, 'make install' only installs new binaries
+and scripts under /home/bbs/bin (or whatever you have configured), but that
+new versions may come with new files under etc/ and new parameters in
+etc/param as well.
 YOU WILL HAVE TO CHECK THIS YOURSELF WHEN UPGRADING (and please excuse me
 for using caps).
 You can find all important recent changes in the ChangeLog file.
@@ -86,10 +77,10 @@ If you wish to make the BBS accessible from port 23 anyway, I recommend
 running a port redirector at port 23, and have it redirect to port 1234,
 where the BBS runs under a non-privileged account.
 
-It is highly recommended you create a user account 'bbs' under which the
-BBS can run, preferably in the group account 'bbs'. You need to have
-root privileges to create the account and group account.
-Verify that all files under /home/bbs are owned by bbs:bbs and that they
+It is highly recommended you create a UNIX user login 'bbs' under which the
+BBS can run, preferably in the UNIX group 'bbs'. You need to have
+root privileges to create the login and group.
+Verify that all files under /home/bbs are owned by bbs.bbs and that they
 are not accessible by others (ie. permission bits rw-rw----).
 
 If you haven't done so yet, start the BBS by running '/home/bbs/bin/bbs start'
@@ -114,7 +105,7 @@ You are now in Super User mode. This enables you to see some extra fields
 in the user profile (such as IP address), extra options in the Room Config
 menu (press Ctrl-R), and grants you access to the Sysop menu (press Ctrl-S).
 
-As an excercise, press Ctrl-S to enter the Sysop menu. Now press Ctrl-P
+As an exercise, press Ctrl-S to enter the Sysop menu. Now press Ctrl-P
 to enter the Parameters submenu. Via this menu you can control various
 parameters in the BBS that are kept in the etc/param file.
 Now press 'y' to alter the system parameters and then press 'n'.
@@ -122,7 +113,7 @@ You may choose a new name for your BBS. You can exit the menus by hitting
 space or return and verify the BBS name is correct by pressing Shift-S
 on the room prompt.
 
-Exploring the rest of bbs100's capabilities is left as an excercise to
+Exploring the rest of bbs100's capabilities is left as an exercise to
 the reader.
 
 

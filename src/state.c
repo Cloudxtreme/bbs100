@@ -730,6 +730,21 @@ int i;
 			}
 			break;
 
+		case 'g':
+		case 'G':
+			do {
+				Room *r;
+
+				r = next_unread_room(usr);
+				if (r != usr->curr_room) {
+					Print(usr, "<white>Goto <yellow>%s<white>\n", r->name);
+					goto_room(usr, r);
+					Return;
+				}
+			} while(0);
+			Put(usr, "<red>No new messages");
+			break;
+
 		case ' ':
 			listdestroy_StringList(usr->more_text);
 			usr->more_text = NULL;
@@ -3522,8 +3537,10 @@ int w, d, today, today_month, today_year, old_month, green_color;
 	today_year = tmp->tm_year;
 
 	Put(usr, "\n<magenta>  S  M Tu  W Th  F  S");
+#ifndef NO_WORLDCLOCK
 	print_timezone(usr, gmt, 0);
 	print_timezone(usr, gmt, 1);
+#endif
 	Put(usr, "\n");
 
 	t -= (14 + tmp->tm_wday) * SECS_IN_DAY;
@@ -3549,8 +3566,10 @@ int w, d, today, today_month, today_year, old_month, green_color;
 			}
 			t += SECS_IN_DAY;
 		}
+#ifndef NO_WORLDCLOCK
 		print_timezone(usr, gmt, w+2);
 		print_timezone(usr, gmt, w+7);
+#endif
 		Put(usr, "\n");
 	}
 	Return;
