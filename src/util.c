@@ -1084,23 +1084,6 @@ char *p;
 }
 
 /*
-	Warning: returns a static buffer
-*/
-char *path_join(char *p1, char *p2) {
-static char path[MAX_PATHLEN];
-
-	if (p1 == NULL || p2 == NULL)
-		return NULL;
-
-	if ((strlen(p1) + strlen(p2) + 2) > MAX_PATHLEN) {
-		log_err("path_join(): path too long");
-		return NULL;
-	}
-	sprintf(path, "%s/%s", p1, p2);
-	return path_strip(path);
-}
-
-/*
 	Warning: modifies buffer
 */
 char *path_strip(char *path) {

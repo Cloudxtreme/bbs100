@@ -100,7 +100,6 @@ unsigned long get_mail_top(char *);
 char *get_basename(char *);
 int rm_rf_trashdir(char *);
 int mkdir_p(char *);
-char *path_join(char *, char *);
 char *path_strip(char *);
 long fread_int32(FILE *);
 
