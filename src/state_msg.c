@@ -2374,12 +2374,12 @@ Joined *j;
 
 /* then check the mail room */
 
-	if ((j = in_Joined(usr->rooms, 1)) == NULL) {
+	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) == NULL) {
 		if ((j = new_Joined()) == NULL) {			/* this should never happen, but hey... */
 			Perror(usr, "Out of memory");
 			return Lobby_room;
 		}
-		j->number = 1;
+		j->number = MAIL_ROOM;
 		if (usr->mail != NULL)
 			j->generation = usr->mail->generation;
 		add_Joined(&usr->rooms, j);

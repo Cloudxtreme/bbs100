@@ -1351,7 +1351,7 @@ Joined *j;
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
 
-		if (r->number <= 2)
+		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 			r = find_Roombynumber(usr, r->number);
 
 		j = in_Joined(usr->rooms, r->number);

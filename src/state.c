@@ -483,10 +483,7 @@ int i;
 
 		case 'l':
 		case 'L':
-			if (usr->curr_room != NULL
-				&& (usr->curr_room->flags & ROOM_CHATROOM)
-				&& (usr->curr_room->number > 0)) {
-
+			if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)) {
 				Put(usr, "<white>Leave\n");
 				goto_room(usr, Lobby_room);
 			} else {
@@ -821,7 +818,7 @@ int i;
 
 		case 'A':
 		case KEY_CTRL('A'):
-			if (usr->curr_room->number != 1) {
+			if (usr->curr_room->number != MAIL_ROOM) {
 				if (!(usr->runtime_flags & RTF_ROOMAIDE)
 					&& in_StringList(usr->curr_room->room_aides, usr->name) != NULL) {
 					if (is_guest(usr->name)) {
@@ -2174,7 +2171,7 @@ int r;
 		Room *room;
 
 		for(room = AllRooms; room != NULL; room = room->next) {
-			if (room->number > 2
+			if (room->number >= SPECIAL_ROOMS
 				&& !(room->flags & ROOM_NOZAP)
 				&& in_StringList(room->room_aides, usr->name) == NULL) {
 
@@ -2762,7 +2759,7 @@ int read_it = 1;
 
 /* add room aides to the line */
 	if (r->room_aides == NULL) {
-		if (r->number > 2)
+		if (r->number >= SPECIAL_ROOMS)
 			sprintf(buf2+strlen(buf2), "%c(no %s)", (char)color_by_name("red"), PARAM_NAME_ROOMAIDE);
 	} else {
 		StringList *sl;
@@ -2798,7 +2795,7 @@ Joined *j;
 		r_next = r->next;
 
 /* first three rooms are special */
-		if (r->number <= 2)
+		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 			r = find_Roombynumber(usr, r->number);
 
 		if (in_StringList(r->room_aides, usr->name) == NULL) {
@@ -2838,7 +2835,7 @@ Joined *j;
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
 
-		if (r->number <= 2)
+		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 			r = find_Roombynumber(usr, r->number);
 
 		if ((r->flags & ROOM_HIDDEN)

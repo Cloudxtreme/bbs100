@@ -61,7 +61,7 @@ void state_room_config_menu(User *usr, char c) {
 				if (usr->runtime_flags & RTF_SYSOP)
 					Print(usr, "<hotkey>Assign/unassign %s\n", PARAM_NAME_ROOMAIDE);
 
-				if (usr->curr_room->number != 1 && usr->curr_room->number != 2)
+				if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM)
 					Put(usr, "Change room <hotkey>name\n");
 
 				if (usr->runtime_flags & RTF_SYSOP) {
@@ -223,7 +223,7 @@ void state_room_config_menu(User *usr, char c) {
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
-			if (usr->curr_room->number != 1 && usr->curr_room->number != 2) {
+			if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM) {
 				Put(usr, "<white>Change room name\n");
 				CALL(usr, STATE_CHANGE_ROOMNAME);
 				Return;
@@ -868,7 +868,7 @@ void (*func)(User *, char *, ...);
 
 	Enter(delete_room);
 
-	if (room->number <= 2) {
+	if (room->number == LOBBY_ROOM || room->number == MAIL_ROOM || room->number == HOME_ROOM) {
 		Print(usr, "<red>The <yellow>%s<white>><red> room is special and cannot be deleted\n", room->name);
 		Return;
 	}

@@ -96,7 +96,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		}
 		r->generation = (unsigned long)rtc;
 	}
-	r->number = 1;
+	r->number = MAIL_ROOM;
 	sprintf(r->name, "%s Mail", name_with_s(username, name_buf));
 
 	if (in_StringList(r->invited, username) == NULL)
@@ -128,7 +128,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		}
 		r->generation = (unsigned long)rtc;
 	}
-	r->number = 2;
+	r->number = HOME_ROOM;
 	sprintf(r->name, "%s Home", name_with_s(username, name_buf));
 
 	if (in_StringList(r->room_aides, username) == NULL)

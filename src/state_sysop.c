@@ -79,7 +79,7 @@ void state_sysop_menu(User *usr, char c) {
 			Put(usr, "<magenta>\n"
 				"<hotkey>Create new room");
 
-			if (usr->curr_room->number > 2)
+			if (usr->curr_room->number >= SPECIAL_ROOMS)
 				Put(usr, "                   <white>Ctrl-<hotkey>D<magenta>elete Room\n");
 			else
 				Put(usr, "\n");
@@ -135,7 +135,7 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('D'):
-			if (usr->curr_room->number > 2) {
+			if (usr->curr_room->number >= SPECIAL_ROOMS) {
 				Put(usr, "<white>Delete room\n");
 				CALL(usr, STATE_DELETE_ROOM_NAME);
 				Return;
@@ -854,7 +854,7 @@ int r;
 		room->flags = (ROOM_HIDDEN | ROOM_READONLY | ROOM_SUBJECTS | ROOM_INVITE_ONLY);
 
 /* find a room number */
-		room->number = 3;			/* lowest possible new room number is 3 */
+		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
 		for(rm = AllRooms; rm != NULL; rm = rm->next) {
 			if (room->number == rm->number)
 				room->number++;

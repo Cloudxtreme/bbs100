@@ -46,6 +46,7 @@
 #define LOBBY_ROOM				0
 #define MAIL_ROOM				1
 #define HOME_ROOM				2
+#define SPECIAL_ROOMS			3
 
 /*
 	room flags

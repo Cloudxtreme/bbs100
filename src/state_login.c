@@ -442,7 +442,7 @@ char num_buf[25];
 	fix last_read field if too large (fix screwed up mail rooms)
 */
 
-	if ((j = in_Joined(usr->rooms, 1)) != NULL) {
+	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL) {
 		MsgIndex *m;
 
 		m = unwind_MsgIndex(usr->mail->msgs);
@@ -550,12 +550,12 @@ char num_buf[25];
 	as suggested by Mz Boobala and Lightspeed of MatrixBBS
 */
 	new_mail = 0;
-	if (usr->mail != NULL && (j = in_Joined(usr->rooms, 1)) != NULL
+	if (usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
 		&& newMsgs(usr->mail, j->last_read) != NULL) {
 		new_mail = 1;
 		Put(usr, "\n<beep><cyan>You have new mail\n");
 	}
-	if ((j = in_Joined(usr->rooms, 0)) != NULL && newMsgs(Lobby_room, j->last_read) != NULL)
+	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) != NULL)
 		goto_room(usr, Lobby_room);
 	else {
 		if (new_mail)
