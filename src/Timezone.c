@@ -205,6 +205,12 @@ int i;
 			destroy_Timezone(tz);
 			return NULL;
 		}
+		if (tz->types[i].tzname_idx > tzh_charcnt) {
+			log_err("load_Timezone(): illegal tzname_idx in %s", filename);
+			closefile(f);
+			destroy_Timezone(tz);
+			return NULL;
+		}
 	}
 	if ((tz->tznames = (char *)Malloc(tzh_charcnt+1, TYPE_CHAR)) == NULL) {
 		log_err("load_Timezone(): out of memory allocating %d bytes", tzh_charcnt);
