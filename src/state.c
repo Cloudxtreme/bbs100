@@ -3483,7 +3483,7 @@ User *u;
 	Return;
 }
 
-
+#ifndef NO_WORLDCLOCK
 static void print_timezone(User *usr, time_t gmt, int zone) {
 struct tm *t;
 int hours;
@@ -3518,6 +3518,7 @@ char zone_color[16], zone_color2[16];
 		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d", zone_color, timezones[zone].city,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
+#endif
 
 void print_calendar(User *usr) {
 time_t gmt, t;
