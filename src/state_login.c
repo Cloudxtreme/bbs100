@@ -265,6 +265,7 @@ int r;
 				Return;
 			}
 			Put(usr, "<normal>");
+
 			if ((u = is_online(usr->tmpbuf[TMP_NAME])) != NULL) {
 				Print(u, "\n<red>Connection closed by another login from %s\n", usr->from_ip);
 				close_connection(u, "connection closed by another login");

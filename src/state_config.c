@@ -687,7 +687,7 @@ void state_config_terminal(User *usr, char c) {
 				Print(usr, "<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
 					"<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>\n"
 					"\n"
-					"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         Reset all colors to <hotkey>default\n",
+					"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         <hotkey>Defaults for all colors\n",
 					color_table[usr->colors[RED]].key,		color_table[usr->colors[RED]].name,
 					color_table[usr->colors[MAGENTA]].key,	color_table[usr->colors[MAGENTA]].name,
 					color_table[usr->colors[GREEN]].key,	color_table[usr->colors[GREEN]].name,
@@ -869,7 +869,7 @@ void state_custom_colors(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
-			Put(usr, "\n<green>Colors are<yellow>: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite Blac<hotkey>k <hotkey>D<green>efault");
+			Put(usr, "\n<green>Colors are<yellow>: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite <black>Blac<hotkey>k <hotkey>D<green>efault");
 			break;
 
 		case ' ':
@@ -958,7 +958,7 @@ void state_custom_colors(User *usr, char c) {
 			RET(usr);
 			Return;
 	}
-	if (c == BACKGROUND)
+	if (usr->read_lines == BACKGROUND)
 		Put(usr, "\n<cyan>Change the background color to<white>: ");
 	else
 		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to<white>: ", 

@@ -72,6 +72,7 @@ User *usr;
 
 	usr->term_height = TERM_HEIGHT;		/* hard-coded defaults; may be set by TELOPT_NAWS */
 	usr->term_width = TERM_WIDTH;
+	default_colors(usr);
 
 	return usr;
 }
