@@ -83,6 +83,9 @@ void state_config_timezone(User *, char);
 void state_select_tz_continent(User *, char);
 void state_select_tz_city(User *, char);
 
+void select_tz_continent(User *);
+void select_tz_city(User *);
+
 void save_profile(User *, char);
 void abort_profile(User *, char);
 void change_config(User *, char, char **, char *);
