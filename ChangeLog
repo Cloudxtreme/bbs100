@@ -1,5 +1,7 @@
 Changes as of November 9th 2003
 - OnlineUser hash is now a generic hash
+- removed stats.pl script from the dist, because this has all changed due to
+  the log file rotation
 
 Changes as of November 8th 2003
 - changed behaviour of displaying hidden rooms in the known rooms list
