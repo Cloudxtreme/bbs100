@@ -18,6 +18,11 @@
 */
 /*
 	Timer.c	WJ99
+
+	- the timerqueue is sorted by 'relative' time; e.g. the
+	  event happens in 'n' seconds from now
+	- timer functions are called synchronously (after select()
+	  times out), so no locking needs to be done ever
 */
 
 #include "config.h"
