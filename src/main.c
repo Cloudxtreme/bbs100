@@ -45,6 +45,7 @@
 #include "HostMap.h"
 #include "OnlineUser.h"
 #include "AtomicFile.h"
+#include "ZoneInfo.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -306,6 +307,8 @@ int main(int argc, char **argv) {
 		printf("failed\n");
 	else
 		printf("ok\n");
+
+	init_ZoneInfo();
 
 	if (init_Room()) {
 		logerr("fatal: Failed to initialize the rooms message system");

@@ -20,10 +20,13 @@
 	ZoneInfo.h	WJ103
 */
 
-#ifndef TIMEZONE_H_WJ103
-#define TIMEZONE_H_WJ103	1
+#ifndef ZONEINFO_H_WJ103
+#define ZONEINFO_H_WJ103	1
 
 #include "List.h"
+
+#include <time.h>
+
 
 #define add_ZoneInfo(x,y)		(ZoneInfo *)add_List((x), (y))
 #define concat_ZoneInfo(x,y)	(ZoneInfo *)concat_List((x), (y))
@@ -60,11 +63,14 @@ typedef struct {
 extern TimeZone timezones[NUM_TIMEZONES];
 
 
+int init_ZoneInfo(void);
+void deinit_ZoneInfo(void);
+
 ZoneInfo *new_ZoneInfo(void);
 void destroy_ZoneInfo(ZoneInfo *);
 
 ZoneInfo *load_ZoneInfo(char *);
 
-#endif	/* TIMEZONE_H_WJ103 */
+#endif	/* ZONEINFO_H_WJ103 */
 
 /* EOB */

@@ -3469,18 +3469,18 @@ User *u;
 
 static void print_timezone(User *usr, time_t gmt, int zone) {
 struct tm *t;
-int hours;
 char zone_color[16], zone_color2[16];
+int gmtoff;
 
-	hours = timezones[zone].offset * SECS_IN_HOUR;
-	gmt += hours;
+	gmtoff = timezones[zone].zoneinfo->gmtoff;
+	gmt += gmtoff;
 	t = gmtime(&gmt);
 
 /*
 	user is in this timezone
 */
-	if ((usr->time_disp >= hours - 15 * SECS_IN_MIN)
-		&& (usr->time_disp <= hours + 15 * SECS_IN_MIN)) {
+	if ((usr->time_disp >= gmtoff - 15 * SECS_IN_MIN)
+		&& (usr->time_disp <= gmtoff + 15 * SECS_IN_MIN)) {
 		strcpy(zone_color, "white");
 		strcpy(zone_color2, "white");
 	} else {

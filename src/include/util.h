@@ -107,6 +107,8 @@ void LogErr(char *, ...);
 void LogError(char *, ...);
 
 extern ColorTable color_table[];
+extern char *Months[];
+extern char *Days[];
 
 #endif	/* UTIL_H_WJ99 */
 
