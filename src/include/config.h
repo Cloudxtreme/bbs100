@@ -33,8 +33,20 @@
 /* Define if your <sys/time.h> declares struct tm.  */
 /* #undef TM_IN_SYS_TIME */
 
+/* Define if you have the dup2 function.  */
+#define HAVE_DUP2 1
+
+/* Define if you have the gethostbyaddr function.  */
+#define HAVE_GETHOSTBYADDR 1
+
+/* Define if you have the getpass function.  */
+#define HAVE_GETPASS 1
+
 /* Define if you have the inet_aton function.  */
 #define HAVE_INET_ATON 1
+
+/* Define if you have the memmove function.  */
+#define HAVE_MEMMOVE 1
 
 /* Define if you have the memset function.  */
 #define HAVE_MEMSET 1
@@ -42,11 +54,14 @@
 /* Define if you have the mkdir function.  */
 #define HAVE_MKDIR 1
 
+/* Define if you have the rmdir function.  */
+#define HAVE_RMDIR 1
+
 /* Define if you have the select function.  */
 #define HAVE_SELECT 1
 
-/* Define if you have the strchr function.  */
-#define HAVE_STRCHR 1
+/* Define if you have the socket function.  */
+#define HAVE_SOCKET 1
 
 /* Define if you have the strerror function.  */
 #define HAVE_STRERROR 1
@@ -56,6 +71,9 @@
 
 /* Define if you have the strtoul function.  */
 #define HAVE_STRTOUL 1
+
+/* Define if you have the uname function.  */
+#define HAVE_UNAME 1
 
 /* Define if you have the <crypt.h> header file.  */
 #define HAVE_CRYPT_H 1

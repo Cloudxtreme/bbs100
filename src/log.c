@@ -101,12 +101,18 @@ int fd;
 	if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1)
 		log_err("failed to open logfile %s", PARAM_SYSLOG);
 	else {
+#ifndef HAVE_DUP2
+#error This platform has no dup2() function
+#endif
 		dup2(fd, fileno(stdout));
 		close(fd);
 	}
 	if ((fd = open(PARAM_AUTHLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1)
 		log_err("failed to open logfile %s\n", PARAM_AUTHLOG);
 	else {
+#ifndef HAVE_DUP2
+#error This platform has no dup2() function
+#endif
 		dup2(fd, fileno(stderr));
 		close(fd);
 	}

@@ -23,6 +23,8 @@
 #ifndef INET_ATON_H_WJ99
 #define INET_ATON_H_WJ99 1
 
+#include "config.h"
+
 #ifndef HAVE_INET_ATON
 #define HAVE_INET_ATON 1
 

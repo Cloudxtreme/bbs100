@@ -57,11 +57,12 @@ int init_FileCache(void) {
 }
 
 void deinit_FileCache(void) {
-int i;
+	if (file_cache != NULL) {
+		int i;
 
-	for(i = 0; i < cache_size; i++)
-		destroy_CachedFile(file_cache[i]);
-
+		for(i = 0; i < cache_size; i++)
+			destroy_CachedFile(file_cache[i]);
+	}
 	Free(file_cache);
 	file_cache = NULL;
 	fifo_head = fifo_tail = NULL;
@@ -69,6 +70,9 @@ int i;
 }
 
 CachedFile *new_CachedFile(void) {
+	if (!PARAM_MAX_CACHED)		/* we don't want a cache */
+		return NULL;
+
 	return (CachedFile *)Malloc(sizeof(CachedFile), TYPE_CACHEDFILE);
 }
 
@@ -386,7 +390,8 @@ void add_Cache(File *f) {
 int addr;
 CachedFile *cf;
 
-	if (f == NULL || f->filename == NULL || file_cache == NULL
+	if (!PARAM_MAX_CACHED
+		|| f == NULL || f->filename == NULL || file_cache == NULL
 		|| (addr = filecache_hash_addr(f->filename)) == -1
 		|| (cf = new_CachedFile()) == NULL)
 		return;

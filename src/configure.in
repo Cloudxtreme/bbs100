@@ -152,10 +152,11 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 
 dnl Checks for library functions.
+AC_FUNC_FORK
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(mkdir select inet_aton strerror strtoul strchr strrchr memset)
+AC_CHECK_FUNCS([dup2 gethostbyaddr getpass inet_aton memmove memset mkdir rmdir select socket strerror strrchr strtoul uname])
 
 dnl special compiler options for gcc
 if test "$GCC" = "yes" ;
@@ -166,6 +167,6 @@ else
 fi
 CFLAGS="$CCOPTS"
 
-AC_OUTPUT(Makefile bbs expire_accounts.sh)
+AC_OUTPUT([Makefile bbs expire_accounts.sh])
 
 dnl --- END OF CONFIGURE.IN ---
