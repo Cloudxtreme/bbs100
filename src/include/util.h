@@ -73,10 +73,16 @@ typedef struct {
 
 void Put(User *, char *);
 void Out(User *, char *);
+int Putbuf(User *, char *, char *, int);
+int hackerz_mode(int);
 int color_by_name(char *);
 int long_color_code(User *, char *);
+int expand_color_code(User *, char *, char *, int *, int);
+void expand_hline(char *, char *, int);
+void expand_center(char *, char *, int, int);
 int skip_long_color_code(char *);
 int color_strlen(char *);
+int color_index(char *, int);
 int Ansi_Color(User *, int);
 void default_colors(User *);
 int yesno(User *, char, char);

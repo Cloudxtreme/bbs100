@@ -70,7 +70,7 @@ void Put(User *usr, char *str) {
 }
 
 /*
-	literal 'out' over the wire
+	Out() puts texts without translating them
 */
 void Out(User *usr, char *str) {
 char buf[20], c;
@@ -80,65 +80,9 @@ char buf[20], c;
 
 	while(*str) {
 		c = *str;
-		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE) {
-			switch(c) {
-				case 'o':
-				case 'O':
-					c = '0';
-					break;
+		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
+			c = hackerz_mode(c);
 
-				case 'a':
-				case 'A':
-					if ((rand() % 10) > 5)
-						c = '@';
-					else
-						c = '4';
-					break;
-
-				case 'e':
-				case 'E':
-					c = '3';
-					break;
-
-				case 's':
-				case 'S':
-					switch(rand() % 10) {
-						case 0: c = 'z'; break;
-						case 1: c = 'Z'; break;
-						case 2: c = '$'; break;
-						case 3: c = '5'; break;
-						case 4: c = 'S'; break;
-					}
-					break;
-
-				case 't':
-				case 'T':
-					c = '+';
-					break;
-
-				case 'i':
-				case 'I':
-				case 'l':
-				case 'L':
-					c = '1';
-					break;
-
-				case '9':
-					c = 'g';
-					break;
-
-				case 'g':
-				case 'G':
-					c = '9';
-					break;
-
-				default:
-					if (c >= 'a' && c <= 'z')
-						c = ctoupper(c);
-					else
-						c = ctolower(c);
-			}
-		}							/* end of hackerz mode */
 		switch(c) {
 			case '\n':
 				Writechar(usr, '\r');
@@ -221,6 +165,206 @@ char buf[20], c;
 	Flush(usr);
 }
 
+/*
+	same as above, but to a buffer
+	the buffer must be large enough to hold all data
+*/
+int Putbuf(User *usr, char *str, char *dest, int max) {
+char buf[20], c;
+int l = 0, n = 0, cursor = 0;
+
+	if (usr == NULL || str == NULL || dest == NULL)
+		return 0;
+
+	max--;
+	*dest = 0;
+
+	while(*str && l < max) {
+		c = *str;
+		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
+			c = hackerz_mode(c);
+
+		switch(c) {
+			case '\n':
+				dest[l++] = '\r';
+				if (l >= max) {
+					dest[l] = 0;
+					return l;
+				}
+				dest[l++] = '\n';
+				cursor = 0;
+				break;
+
+			case KEY_CTRL('X'):
+				dest[l++] = '\r';
+				cursor = 0;
+				break;
+
+			case KEY_CTRL('A'):
+				if (usr->flags & USR_BEEP)
+					dest[l++] = KEY_BEEP;
+				break;
+
+			case KEY_CTRL('Z'):
+			case KEY_CTRL('R'):
+			case KEY_CTRL('G'):
+			case KEY_CTRL('Y'):
+			case KEY_CTRL('B'):
+			case KEY_CTRL('M'):
+			case KEY_CTRL('C'):
+			case KEY_CTRL('W'):
+/*			case KEY_CTRL('F'):		*/
+				if (usr->flags & USR_ANSI) {
+					usr->color = Ansi_Color(usr, c);
+					if (usr->flags & USR_BOLD)
+						n = sprintf(buf, "\x1b[1;%dm", usr->color);
+					else
+						n = sprintf(buf, "\x1b[%dm", usr->color);
+				}
+				break;
+
+			case KEY_CTRL('K'):
+				str++;
+				if (!*str)
+					break;
+
+				if (usr->flags & USR_ANSI) {
+					if (usr->flags & USR_BOLD)
+						n = sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
+					else
+						n = sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
+					cursor++;
+				} else {
+					n = sprintf(buf, "<%c>", *str);
+					cursor += 3;
+				}
+				break;
+
+			case KEY_CTRL('N'):
+				n = 0;
+				if (usr->flags & USR_ANSI)
+					n = sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+				else
+					if (usr->flags & USR_BOLD) {
+						strcpy(buf, "\x1b[0m");
+						n = 4;
+					}
+
+				if (n) {
+					if (l + n < max) {
+						strcpy(dest+l, buf);
+						l += n;
+					} else {
+						dest[l] = 0;
+						return l;
+					}
+					n = 0;
+				}
+				if (usr->flags & USR_BOLD) {
+					strcpy(buf, "\x1b[1m");
+					n = 4;
+				}
+				break;
+
+			case KEY_CTRL('D'):
+				if (usr->flags & (USR_ANSI | USR_BOLD)) {
+					strcpy(buf, "\x1b[0m");
+					n = 4;
+				}
+				break;
+
+/* long codes are specified as '<yellow>', '<beep>', etc. */
+
+			case '<':
+				dest[l] = 0;
+				str += expand_color_code(usr, str, dest+l, &cursor, max - l);
+				l = strlen(dest);
+				break;
+
+			default:
+				dest[l++] = c;
+				cursor++;
+		}
+		if (*str)
+			str++;
+
+		if (n) {						/* if got something, append it */
+			if (l + n < max) {
+				strcpy(dest+l, buf);
+				l += n;
+			} else
+				break;
+
+			n = 0;
+		}
+	}
+	dest[l] = 0;
+	return l;
+}
+
+/*
+	convert character to character in hackerz mode
+*/
+int hackerz_mode(int c) {
+	switch(c) {
+		case 'o':
+		case 'O':
+			c = '0';
+			break;
+
+		case 'a':
+		case 'A':
+			if ((rand() % 10) > 5)
+				c = '@';
+			else
+				c = '4';
+			break;
+
+		case 'e':
+		case 'E':
+			c = '3';
+			break;
+
+		case 's':
+		case 'S':
+			switch(rand() % 10) {
+				case 0: c = 'z'; break;
+				case 1: c = 'Z'; break;
+				case 2: c = '$'; break;
+				case 3: c = '5'; break;
+				case 4: c = 'S'; break;
+			}
+			break;
+
+		case 't':
+		case 'T':
+			c = '+';
+			break;
+
+		case 'i':
+		case 'I':
+		case 'l':
+		case 'L':
+			c = '1';
+			break;
+
+		case '9':
+			c = 'g';
+			break;
+
+		case 'g':
+		case 'G':
+			c = '9';
+			break;
+
+		default:
+			if (c >= 'a' && c <= 'z')
+				c = ctoupper(c);
+			else
+				c = ctolower(c);
+	}
+	return c;
+}
 
 int color_by_name(char *name) {
 int colors, i;
@@ -428,6 +572,288 @@ char colorbuf[20], buf[20];
 }
 
 /*
+	same as above, but now into a buffer
+*/
+int expand_color_code(User *usr, char *code, char *dest, int *cursor, int max) {
+int i, c, colors;
+char colorbuf[20], buf[20];
+
+	if (usr == NULL || code == NULL || dest == NULL || max <= 0)
+		return 0;
+
+	colors = sizeof(color_table)/sizeof(ColorTable);
+	for(i = 0; i < colors; i++) {
+		if (i == HOTKEY)
+			continue;
+
+		sprintf(colorbuf, "<%s>", color_table[i].name);
+
+		if (!cstrnicmp(code, colorbuf, strlen(colorbuf))) {
+			if (!(usr->flags & USR_ANSI))
+				return strlen(colorbuf)-1;
+
+			c = color_table[i].key;
+
+			usr->color = Ansi_Color(usr, c);
+			if (usr->flags & USR_BOLD)
+				sprintf(buf, "\x1b[1;%dm", usr->color);
+			else
+				sprintf(buf, "\x1b[%dm", usr->color);
+
+			if (strlen(buf) < max)
+				strcpy(dest, buf);
+
+			return strlen(colorbuf)-1;
+		}
+	}
+/*
+	Blinking is really irritating...
+
+	if (!cstrnicmp(code, "<flash>", 7) || !cstrnicmp(code, "<blink>", 7)) {
+		if (!(usr->flags & USR_ANSI))
+			return 6;
+
+		usr->color = Ansi_Color(usr, KEY_CTRL('F'));
+		if (usr->flags & USR_BOLD)
+			sprintf(buf, "\x1b[1;%dm", usr->color);
+		else
+			sprintf(buf, "\x1b[%dm", usr->color);
+
+		if (strlen(buf) < max)
+			strcpy(dest, buf);
+		return 6;
+	}
+*/
+	if (!cstrnicmp(code, "<hotkey>", 8)) {
+		c = code[8];
+		if (!c)
+			return 7;
+
+		if (usr->flags & USR_ANSI) {
+			if (usr->flags & USR_BOLD)
+				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+			else
+				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+		} else
+			sprintf(buf, "<%c>", c);
+
+		if (strlen(buf) < max)
+			strcpy(dest, buf);
+		return 8;
+	}
+	if (!cstrnicmp(code, "<beep>", 6)) {
+		if (usr->flags & USR_BEEP) {
+			dest[0] = KEY_BEEP;
+			dest[1] = 0;
+		}
+		return 5;
+	}
+	if (!cstrnicmp(code, "<normal>", 8)) {
+		buf[0] = 0;
+		if (usr->flags & USR_ANSI)
+			sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+		else
+			if (usr->flags & USR_BOLD)
+				strcpy(buf, "\x1b[0m");
+
+		if (usr->flags & USR_BOLD)
+			strcat(buf, "\x1b[1m");
+
+		if (strlen(buf) < max)
+			strcpy(dest, buf);
+		return 7;
+	}
+	if (!cstrnicmp(code, "<default>", 9)) {
+		if ((usr->flags & (USR_ANSI | USR_BOLD)) && max > 4)
+			strcpy(dest, "\x1b[0m");
+		return 8;
+	}
+	if (!cstrnicmp(code, "<lt>", 4)) {
+		dest[0] = '<';
+		dest[1] = 0;
+		return 3;
+	}
+	if (!cstrnicmp(code, "<gt>", 4)) {
+		dest[0] = '>';
+		dest[1] = 0;
+		return 3;
+	}
+	if (!cstrnicmp(code, "<cr>", 4)) {
+		dest[0] = '\r';
+		dest[1] = 0;
+		return 3;
+	}
+
+/*
+	there are two special codes for use in help files and stuff...
+	<hline> and <center>
+*/
+	if (!cstrnicmp(code, "<hline>", 7)) {
+		char *p, *base;
+
+		p = base = code + 7;
+		if (*p) {
+			while(*p && (*p < ' ' || *p > '~'))
+				p++;
+			base = p;
+
+/*
+	this is merely a check that it contains a valid line
+	otherwise we might run into an endless loop later
+*/
+			while(*p) {
+				if (*p >= ' ' && *p <= '~')
+					break;
+				p++;
+			}
+			if (!*p)
+				return strlen(code)-1;
+
+			p = base;
+			if (*p) {
+				int n;
+/*
+	here...
+	this loop would be endless if we hadn't checked the string for
+	valid characters before
+	Note that you cannot use color codes after a <hline> tag
+	because of the way this has been implemented
+*/
+				n = 1;
+				while(n < (usr->term_width - *cursor) && max > 2) {
+					if (*p >= ' ' && *p <= '~') {
+						*dest++ = *p;
+						*dest = 0;
+						max--;
+						(*cursor)++;
+						n++;
+					}
+					p++;
+					if (!*p)
+						p = base;
+				}
+				*dest++ = '\r';
+				*dest++ = '\n';
+				*dest = 0;
+			}
+		}
+		return strlen(code)-1;
+	}
+	if (!cstrnicmp(code, "<center>", 8)) {
+		i = (usr->term_width-1)/2 - color_strlen(code+8)/2 - *cursor;
+		while(i > 0 && max > 0) {
+			*dest++ = ' ';
+			*dest = 0;
+			max--;
+			(*cursor)++;
+			i--;
+		}
+		return 7;
+	}
+	dest[0] = '<';
+	dest[1] = 0;
+	return 0;
+}
+
+/*
+	expand the <hline> tag into a buffer
+*/
+void expand_hline(char *str, char *dest, int bufsize) {
+char *p;
+int l, n;
+
+	if (str == NULL || dest == NULL || bufsize <= 0)
+		return;
+
+	if ((p = cstristr(str, "<hline>")) == NULL) {
+		strncpy(dest, str, bufsize);
+		dest[bufsize-1] = 0;
+		return;
+	}
+	l = p - str;
+	if (l >= bufsize) {
+		strncpy(dest, str, bufsize-1);
+		dest[bufsize-1] = 0;
+		return;
+	}
+	if (l > 0)
+		strncpy(dest, str, l);
+	else
+		l = 0;
+	dest[l] = 0;
+
+	p += 7;
+
+	n = strlen(p);
+	if (n > 0) {
+		while(l + n < bufsize) {
+			strcat(dest, p);
+			l += n;
+		}
+	}
+	n = bufsize - l;
+	if (n > 0) {
+		strncpy(dest+l, p, n);
+		dest[bufsize-1] = 0;
+	}
+	while((p = cstristr(dest, "<hline>")) != NULL)		/* filter out crappy codes */
+		memmove(p, p+7, strlen(p+7)+1);
+}
+
+/*
+	expand the <center> tag into a buffer
+	This tag doesn't go well together with other tags
+*/
+void expand_center(char *str, char *dest, int bufsize, int width) {
+char *p;
+int l, n;
+
+	if (str == NULL || dest == NULL || bufsize <= 0)
+		return;
+
+	if  ((p = cstristr(str, "<center>")) == NULL) {
+		strncpy(dest, str, bufsize);
+		dest[bufsize-1] = 0;
+		return;
+	}
+	l = p - str;
+	if (l >= bufsize) {
+		strncpy(dest, str, bufsize-1);
+		dest[bufsize-1] = 0;
+		return;
+	}
+	if (l > 0)
+		strncpy(dest, str, l);
+	else
+		l = 0;
+	dest[l] = 0;
+
+	p += 8;
+
+	n = width/2 - strlen(p)/2 - l;
+	while(n > 0 && l < bufsize-1) {
+		dest[l] = ' ';
+		l++;
+		n--;
+	}
+	dest[l] = 0;
+
+	n = strlen(p);
+	if (l + n >= bufsize) {
+		n = bufsize - l;
+		if (n > 0) {
+			strncpy(dest+l, p, n);
+			dest[bufsize-1] = 0;
+		}
+	} else
+		strcpy(dest+l, p);
+
+	while((p = cstristr(dest, "<center>")) != NULL)		/* filter out crappy codes */
+		memmove(p, p+8, strlen(p+8)+1);
+}
+
+
+/*
 	this function is kind of lame :)
 */
 int skip_long_color_code(char *code) {
@@ -491,6 +917,38 @@ int len = 0, i;
 	}
 	return len;
 }
+
+/*
+	return the 'wide' index of a 'screen' position within a color coded string
+	e.g.
+			buf[color_index(buf, 79)] = 0;
+*/
+int color_index(char *str, int pos) {
+int cpos, i;
+
+	if (str == NULL || pos < 0)
+		return 0;
+
+	cpos = 0;
+	while(*str && pos > 0) {
+		if (*str == '<') {
+			i = skip_long_color_code(str);
+			if (i == 1)
+				pos--;
+
+			str += i;
+			cpos += i;
+		} else {
+			if (*str >= ' ' && *str <= '~')
+				pos--;
+
+			str++;
+			cpos++;
+		}
+	}
+	return cpos;
+}
+
 
 int Ansi_Color(User *usr, int c) {
 	if (usr == NULL)

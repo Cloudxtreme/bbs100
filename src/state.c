@@ -2441,10 +2441,10 @@ int total;
 */
 int long_who_list(User *usr, PList *pl) {
 StringList *s = NULL;
-int total = 0, hrs, mins, l, c;
+int total = 0, hrs, mins, l, c, width;
 unsigned long time_now;
 time_t t;
-char buf[PRINT_BUF], col, stat;
+char buf[PRINT_BUF], buf2[PRINT_BUF], col, stat;
 User *u;
 
 	if (usr == NULL)
@@ -2514,22 +2514,23 @@ User *u;
 		t %= SECS_IN_HOUR;
 		mins = t / SECS_IN_MIN;
 
+/* 32 is the length of the string with the stats that's to be added at the end */
+		width = (usr->term_width > (PRINT_BUF-32)) ? (PRINT_BUF-32) : usr->term_width;
+
 		if (u->doing == NULL || !u->doing[0])
 			sprintf(buf, "%c%s<cyan>", col, u->name);
-		else
+		else {
 			sprintf(buf, "%c%s <cyan>%s", col, u->name, u->doing);
-		l = strlen(buf);
+			expand_center(buf, buf2, width, width);
+			expand_hline(buf2, buf, width);
+		}
+		l = color_index(buf, width - 9);
+		buf[l] = 0;
 
 		c = color_strlen(buf);
-		while(c < (usr->term_width-9) && l < PRINT_BUF) {
+		while(c < (width-9) && l < (PRINT_BUF-32)) {
 			buf[l++] = ' ';
 			c++;
-		}
-		while(c >= 0 && l >= 0 && c > (usr->term_width-9)) {
-			l--;
-			if (buf[l] >= ' ' && buf[l] <= '~')
-				c--;
-			buf[l] = 0;
 		}
 		buf[l] = 0;
 		s = add_String(&s, "%s <white>%c <yellow>%2d<white>:<yellow>%02d", buf, stat, hrs, mins);
