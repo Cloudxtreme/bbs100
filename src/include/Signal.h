@@ -30,26 +30,37 @@
 
 typedef struct {
 	int sig;
-	RETSIGTYPE (*default_handler)(int);
+	void (*default_handler)(int);
 	char *sig_name;
 	SignalVector *handlers;
 } SigTable;
 
-extern int ignore_signals;
+extern int jump_set;
 extern jmp_buf jumper;
 extern SigTable sig_table[];
 
 void init_Signal(void);
 void deinit_Signal(void);
 char *sig_name(int);
-RETSIGTYPE sig_fatal(int);
-RETSIGTYPE sig_reboot(int);
-RETSIGTYPE sig_shutdown(int);
-RETSIGTYPE sig_mail(int);
-RETSIGTYPE sig_nologin(int);
+
+int set_Signal(int, void (*)(int));
+void remove_Signal(int, void (*)(int));
+
 RETSIGTYPE catch_signal(int);
-int set_Signal(int, RETSIGTYPE (*)(int));
-void remove_Signal(int, RETSIGTYPE (*)(int));
+RETSIGTYPE catch_sigfatal(int);
+void handle_pending_signals(void);
+
+void block_all_signals(void);
+void unblock_all_signals(void);
+
+void sig_fatal(int);
+void sig_reboot(int);
+void sig_shutdown(int);
+void sig_shutnow(int);
+void sig_mail(int);
+void sig_nologin(int);
+
+void crash_recovery(void);
 
 #endif	/* SIGNAL_H_WJ97 */
 

@@ -348,7 +348,11 @@ int n;
 char buf[MAX_LINE], *p;
 
 	if ((n = read(dns_socket, buf, MAX_LINE-1)) <= 0) {
-		log_err("dns read()");
+		log_err("dns read(), closing socket");
+
+		shutdown(dns_socket, 2);
+		close(dns_socket);
+		dns_socket = -1;
 		return;
 	}
 	if (n >= MAX_LINE)
@@ -610,7 +614,11 @@ char k;
 
 	Enter(mainloop);
 
-	setjmp(jumper);				/* trampoline for crashed users */
+	this_user = NULL;
+
+	setjmp(jumper);			/* trampoline for crashed users */
+	jump_set = 1;
+	crash_recovery();		/* recover crashed users */
 
 	nap = 1;
 	while(main_socket > 0) {
@@ -768,15 +776,11 @@ char k;
 					FD_CLR(c->socket, &fds);
 				}
 			}
-/*
-	update timers
-*/
-			nap = update_timers();
-			continue;
 		}
+		handle_pending_signals();
 		nap = update_timers();
 
-		if (!err)					/* select() called; nothing special happened */
+		if (err >= 0)				/* no error return from select() */
 			continue;
 /*
 	handle select() errors

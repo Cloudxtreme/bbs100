@@ -23,7 +23,6 @@
 #ifndef SIGNALVECTOR_H_WJ99
 #define SIGNALVECTOR_H_WJ99 1
 
-#include <config.h>
 #include "List.h"
 
 #define add_SignalVector(x,y)			add_List((x), (y))
@@ -31,17 +30,17 @@
 #define remove_SignalVector(x,y)		remove_List((x), (y))
 #define rewind_SignalVector(x,y)		(SignalVector *)rewind_List((x), (y))
 #define unwind_SignalVector(x,y)		(SignalVector *)unwind_List((x), (y))
-#define listdestroy_SignalVector(x)	listdestroy_SignalVector((x), destroy_SignalVector)
+#define listdestroy_SignalVector(x)		listdestroy_SignalVector((x), destroy_SignalVector)
 
 typedef struct SignalVector_tag SignalVector;
 
 struct SignalVector_tag {
 	List(SignalVector);
 
-	RETSIGTYPE (*handler)(int);
+	void (*handler)(int);
 };
 
-SignalVector *new_SignalVector(RETSIGTYPE (*)(int));
+SignalVector *new_SignalVector(void (*)(int));
 void destroy_SignalVector(SignalVector *);
 
 #endif	/* SIGNALVECTOR_H_WJ99 */

@@ -45,11 +45,10 @@
 #include <sys/signal.h>
 #endif
 
-/* Note: only used at shutdown */
-int ignore_signals = 0;
+static sigset_t sig_pending;	/* pending signals */
 
-jmp_buf jumper;
-
+int jump_set = 0;
+jmp_buf jumper;			/* crash recovery trampoline */
 
 SigTable sig_table[] = {
 	{ SIGHUP,		sig_nologin,"SIGHUP",			NULL },
@@ -66,7 +65,7 @@ SigTable sig_table[] = {
 	{ SIGUSR2,		SIG_IGN,	"SIGUSR2",			NULL },
 	{ SIGPIPE,		SIG_IGN,	"SIGPIPE",			NULL },
 	{ SIGALRM,		NULL,		"SIGALRM",			NULL },
-	{ SIGTERM,		sig_fatal,	"SIGTERM",			NULL },
+	{ SIGTERM,		sig_shutnow,"SIGTERM",			NULL },
 	{ SIGCHLD,		SIG_IGN,	"SIGCHLD",			NULL },
 	{ SIGCONT,		SIG_IGN,	"SIGCONT",			NULL },
 	{ SIGSTOP,		NULL,		"SIGSTOP",			NULL },
@@ -117,6 +116,8 @@ void init_Signal(void) {
 struct sigaction sa, old_sa;
 int i, dumpcore;
 
+	sigemptyset(&sig_pending);
+
 	dumpcore = 0;
 	if (!cstricmp(PARAM_ONCRASH, "dumpcore"))
 		dumpcore = 1;
@@ -124,7 +125,10 @@ int i, dumpcore;
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sig_table[i].sig != SIGKILL && sig_table[i].sig != SIGSTOP
 			&& sig_table[i].sig != SIGTRAP) {
-
+/*
+	if dumpcore, do not set a handler but use the default handler,
+	which will make it dump core for us
+*/
 			if (dumpcore && sig_table[i].default_handler == sig_fatal)
 				continue;
 
@@ -132,7 +136,10 @@ int i, dumpcore;
 #ifdef SA_RESTART
 			sa.sa_flags = SA_RESTART;
 #endif
-			sa.sa_handler = catch_signal;
+			if (sig_table[i].default_handler == sig_fatal)
+				sa.sa_handler = catch_sigfatal;
+			else
+				sa.sa_handler = catch_signal;
 
 /* restart interrupted system calls, except for SIGALRM */
 
@@ -159,10 +166,13 @@ int i, dumpcore;
 void deinit_Signal(void) {
 int i;
 
+	block_all_signals();
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sig_table[i].sig != SIGKILL && sig_table[i].sig != SIGSTOP)
 			signal(sig_table[i].sig, SIG_DFL);
 	}
+	unblock_all_signals();
+	sigemptyset(&sig_pending);
 }
 
 char *sig_name(int sig) {
@@ -177,100 +187,141 @@ int i;
 	return unknown;
 }
 
-/*
-	the crash handler
-*/
-RETSIGTYPE sig_fatal(int sig) {
-StringList *sl, *screen;
-User *u;
+/* add a signal handler */
+int set_Signal(int sig, void (*handler)(int)) {
+int i;
 
-	Enter(sig_fatal);
+	for(i = 0; sig_table[i].sig > 0; i++) {
+		if (sig_table[i].sig == sig) {
+			SignalVector *h;
 
-	if (!cstricmp(PARAM_ONCRASH, "recover") && this_user != NULL) {
-		time_t now;
-		struct tm *tm;
-		User *usr;
-
-		usr = this_user;			/* prevent 'resonance' in case we crash again */
-		this_user = NULL;
-
-		if (usr->name[0])
-			log_err("CRASH *** user %s; recovering ***", usr->name);
-		else
-			log_err("CRASH *** user <unknown>; recovering ***");
-
-#ifdef DEBUG
-		dump_debug_stack();
-		debug_stackp = 0;
-		debug_stack[0] = 0UL;
-#endif
-		now = rtc + usr->time_disp;
-		tm = gmtime(&now);
-		if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
-			tm->tm_hour -= 12;
-
-		usr->crashed++;
-		if (usr->crashed >= 3) {
-			if (usr->name[0])
-				log_err("CRASH *** disconnecting user %s", usr->name);
-			else
-				log_err("CRASH *** disconnecting user");
-
-			Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
-				"<red>Something's wrong, the BBS made an illegal instruction\n"
-				"You are automatically being disconnected <white>--<yellow> our apologies..!\n",
-				tm->tm_hour, tm->tm_min);
-
-			if (usr->name[0]) {
-				remove_OnlineUser(usr);
-				usr->name[0] = 0;
+			if ((h = new_SignalVector(handler)) == NULL) {
+				log_err("Out of memory allocating SignalVector for signal %d", sig);
+				return -1;
 			}
-			close_connection(usr, "user crashed too many times");
-
-			longjmp(jumper, 1);
+			add_SignalVector(&(sig_table[i].handlers), h);
+			return 0;
 		}
-		Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
-			"<red>Something's wrong, the BBS made an illegal instruction\n"
-			"Attempting crash recovery...\n", tm->tm_hour, tm->tm_min);
+	}
+	log_err("unknown signal '%d'", sig);
+	return -1;
+}
 
-		listdestroy_CallStack(usr->callstack);
-		usr->callstack = NULL;
-		CALL(usr, STATE_ROOM_PROMPT);
+void remove_Signal(int sig, void (*handler)(int)) {
+int i;
 
+	for(i = 0; sig_table[i].sig > 0; i++) {
+		if (sig_table[i].sig == sig) {
+			SignalVector *h;
+
+			for(h = sig_table[i].handlers; h != NULL; h = h->next) {
+				if (h->handler == handler)
+					remove_SignalVector(&sig_table[i].handlers, h);
+			}
+			return;
+		}
+	}
+}
+
+/*
+	catch signal only adds it to the pending set
+	the signal handled later, _synchronously_, so that the signal handlers
+	are much safer than they used to be
+*/
+RETSIGTYPE catch_signal(int sig) {
+	sigaddset(&sig_pending, sig);
+}
+
+/*
+	bloody fatal signals should be dealt with immediately
+	otherwise we could keep bouncing on the instruction that causes SEGV,
+	for example
+	We just jump out, and hope that crash_recovery() can do something
+	about it ... if the jump had not been set yet, then I don't know
+	either, just abort!
+*/
+RETSIGTYPE catch_sigfatal(int sig) {
+	if (jump_set) {
+		sigaddset(&sig_pending, SIGSEGV);		/* this really is a flag for crash_recovery() */
 		longjmp(jumper, 1);
-	}
-	this_user = NULL;
+	} else
+		abort();
+}
 
-	deinit_Signal();		/* reset all signal handlers */
+/*
+	process the pending signals
 
-	if (sig != SIGTERM) {
-		log_err("CRASH *** terminated on %s ***", sig_name(sig));
-#ifdef DEBUG
-		dump_debug_stack();
-#endif
-		screen = crash_screen;
-	} else {
-		log_info("*** shutting down on %s ***", sig_name(sig));
+	- call all registered signal handlers
+	- also call default handler if defined
 
-		if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
-			screen = crash_screen;
+	Note: they are processed in the order of appearance,
+	not in the order they were received
+*/
+void handle_pending_signals(void) {
+int i;
+
+	for(i = 0; sig_table[i].sig > 0; i++) {
+		if (sigismember(&sig_pending, sig_table[i].sig)) {
+			SignalVector *h, *h_next;
+
+			for(h = sig_table[i].handlers; h != NULL; h = h_next) {
+				h_next = h->next;
+				if (h->handler != NULL)
+					h->handler(sig_table[i].sig);
+			}
+			if (sig_table[i].default_handler != NULL
+				&& sig_table[i].default_handler != SIG_IGN
+				&& sig_table[i].default_handler != SIG_DFL) {
+				sig_table[i].default_handler(sig_table[i].sig);
+				sigdelset(&sig_pending, sig_table[i].sig);
+			}
+		}
 	}
-	for(u = AllUsers; u != NULL; u = u->next) {
-		for(sl = screen; sl != NULL; sl = sl->next)
-			Print(u, "%s\n", sl->str);
-		close_connection(u, "system crash");
+}
+
+void block_all_signals(void) {
+sigset_t all_signals;
+
+	sigfillset(&all_signals);
+	sigprocmask(SIG_BLOCK, &all_signals, NULL);
+}
+
+void unblock_all_signals(void) {
+sigset_t all_signals, pending;
+int i;
+
+	sigpending(&pending);			/* these were received while blocked */
+	for(i = 0; sig_table[i].sig > 0; i++) {
+		if (sigismember(&pending, sig_table[i].sig))
+			sigaddset(&sig_pending, sig_table[i].sig);
 	}
-	if (sig == SIGTERM)
-		exit_program(SHUTDOWN);
-	else
-		exit_program(REBOOT);
-	Return;
+	sigfillset(&all_signals);
+	sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
+}
+
+
+/*
+	below are the 'signal handlers'
+	They are not really signal handlers, because in bbs100 they are
+	socalled SignalVectors which are the synchronous equivalents of
+	signal handlers
+	They are being run from the mainloop by handle_pending_signals()
+*/
+
+/*
+	sig_fatal is an empty dummy function so that init_Signal()
+	knows it should install catch_sigfatal()
+	It's not very elegant, I know ...
+	You will want to check out crash_recovery() below
+*/
+void sig_fatal(int sig) {
+	;
 }
 
 /*
 	SIGQUIT: reboot in 5
 */
-RETSIGTYPE sig_reboot(int sig) {
+void sig_reboot(int sig) {
 char buf[128];
 
 	Enter(sig_reboot);
@@ -301,7 +352,7 @@ char buf[128];
 /*
 	SIGABRT: shutdown in 5
 */
-RETSIGTYPE sig_shutdown(int sig) {
+void sig_shutdown(int sig) {
 char buf[128];
 
 	Enter(sig_shutdown);
@@ -330,9 +381,32 @@ char buf[128];
 }
 
 /*
+	SIGTERM: immediate shutdown
+*/
+void sig_shutnow(int sig) {
+StringList *screen, *sl;
+User *u;
+
+	Enter(sig_shutnow);
+
+	log_info("*** shutting down on %s ***", sig_name(sig));
+
+	if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
+		screen = crash_screen;
+
+	for(u = AllUsers; u != NULL; u = u->next) {
+		for(sl = screen; sl != NULL; sl = sl->next)
+			Print(u, "%s\n", sl->str);
+		close_connection(u, "system shutdown");
+	}
+	exit_program(SHUTDOWN);
+	Return;
+}
+
+/*
 	SIGUSR1: rescan Mail> directory
 */
-RETSIGTYPE sig_mail(int sig) {
+void sig_mail(int sig) {
 User *u;
 char buf[MAX_PATHLEN];
 struct stat statbuf;
@@ -340,6 +414,7 @@ int new_mail = 0;
 unsigned long num;
 
 	Enter(sig_mail);
+
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u->socket > 0 && u->name[0] && u->mail != NULL) {
 			if (u->mail->msgs == NULL)
@@ -373,7 +448,7 @@ unsigned long num;
 /*
 	SIGHUP: set/reset nologin status
 */
-RETSIGTYPE sig_nologin(int sig) {
+void sig_nologin(int sig) {
 	Enter(sig_nologin);
 
 	log_msg("SIGHUP caught; reset nologin");
@@ -393,68 +468,86 @@ RETSIGTYPE sig_nologin(int sig) {
 
 
 /*
-	catch signal:
-		call all registered signal handlers
-		also calls the default handler when it is done
-*/
-RETSIGTYPE catch_signal(int sig) {
-int i;
+	do crash recovery for crashed users
+	this is done out of the signal handler to prevent even more havoc
 
-	if (ignore_signals)
+	The principle of crash recovery is jumping out of an error condition
+	In reality, this is unsafe in all cases because the called routine does not get
+	the chance to finish and cleanup nicely. It is wiser to configure 'oncrash dumpcore',
+	which is unfriendly to the users ...
+*/
+void crash_recovery(void) {
+User *usr;
+
+	if (!sigismember(&sig_pending, SIGSEGV))		/* did it really crash? */
 		return;
 
-	for(i = 0; sig_table[i].sig > 0; i++) {
-		if (sig_table[i].sig == sig) {
-			SignalVector *h, *h_next;
+	usr = this_user;
+	this_user = NULL;
 
-			for(h = sig_table[i].handlers; h != NULL; h = h_next) {
-				h_next = h->next;
-				if (h->handler != NULL)
-					h->handler(sig);
+	if (!cstricmp(PARAM_ONCRASH, "recover") && usr != NULL) {
+		time_t now;
+		struct tm *tm;
+
+		if (usr->name[0])
+			log_err("CRASH *** user %s; recovering (%d) ***", usr->name, usr->crashed+1);
+		else
+			log_err("CRASH *** user <unknown>; recovering (%d) ***", usr->crashed+1);
+
+#ifdef DEBUG
+		dump_debug_stack();
+		debug_stackp = 0;
+		debug_stack[0] = 0UL;
+#endif
+		now = rtc + usr->time_disp;
+		tm = gmtime(&now);
+		if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
+			tm->tm_hour -= 12;
+
+		usr->crashed++;
+		if (usr->crashed >= 3) {
+			if (usr->name[0])
+				log_err("CRASH *** disconnecting user %s", usr->name);
+			else
+				log_err("CRASH *** disconnecting user");
+
+			Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
+				"<red>Something's wrong, the BBS made an illegal instruction\n"
+				"You are automatically being disconnected <white>--<yellow> our apologies..!\n",
+				tm->tm_hour, tm->tm_min);
+
+			if (usr->name[0]) {
+				remove_OnlineUser(usr);
+				usr->name[0] = 0;
 			}
-			if (sig_table[i].default_handler != NULL
-				&& sig_table[i].default_handler != SIG_IGN
-				&& sig_table[i].default_handler != SIG_DFL)
-				sig_table[i].default_handler(sig);
+			close_connection(usr, "user crashed too many times");
 			return;
 		}
-	}
-	log_err("caught unknown signal %d", sig);
-}
+		Print(usr, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
+			"<red>Something's wrong, the BBS made an illegal instruction\n"
+			"Attempting crash recovery...\n", tm->tm_hour, tm->tm_min);
 
-/* add a signal handler */
-int set_Signal(int sig, RETSIGTYPE (*handler)(int)) {
-int i;
+		listdestroy_CallStack(usr->callstack);
+		usr->callstack = NULL;
+		CALL(usr, STATE_ROOM_PROMPT);
+	} else {
+		StringList *sl;
+		User *u;
 
-	for(i = 0; sig_table[i].sig > 0; i++) {
-		if (sig_table[i].sig == sig) {
-			SignalVector *h;
+		deinit_Signal();		/* reset all signal handlers */
 
-			if ((h = new_SignalVector(handler)) == NULL) {
-				log_err("Out of memory allocating SignalVector for signal %d", sig);
-				return -1;
-			}
-			add_SignalVector(&(sig_table[i].handlers), h);
-			return 0;
+		log_err("CRASH *** program terminated ***");
+#ifdef DEBUG
+		dump_debug_stack();
+#endif
+		for(u = AllUsers; u != NULL; u = u->next) {
+			for(sl = crash_screen; sl != NULL; sl = sl->next)
+				Print(u, "%s\n", sl->str);
+			close_connection(u, "system crash");
 		}
-	}
-	log_err("unknown signal '%d'", sig);
-	return -1;
-}
-
-void remove_Signal(int sig, RETSIGTYPE (*handler)(int)) {
-int i;
-
-	for(i = 0; sig_table[i].sig > 0; i++) {
-		if (sig_table[i].sig == sig) {
-			SignalVector *h;
-
-			for(h = sig_table[i].handlers; h != NULL; h = h->next) {
-				if (h->handler == handler)
-					remove_SignalVector(&sig_table[i].handlers, h);
-			}
-			return;
-		}
+		if (!cstricmp(PARAM_ONCRASH, "recover"))
+			exit_program(REBOOT);
+		abort();
 	}
 }
 

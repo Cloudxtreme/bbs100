@@ -1,3 +1,9 @@
+Changes as of December 11th 2003
+- signals are now caught but only flagged as pending; they are handled
+  out of the signal handler context, synchronously in the program
+  this is much safer and better than it ever was
+- command line options to main program: -d for starting in a debugger
+
 Changes as of December 10th 2003
 - parameter cache_expire specifies how long unused files remain resident
   the file cache (in minutes)

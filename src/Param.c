@@ -80,7 +80,7 @@ Param param[] = {
 	{ PARAM_STRING, "authlog",			{ NULL },	{ "log/authlog" },				},
 	{ PARAM_STRING, "logrotate",		{ NULL },	{ "daily" },					},
 	{ PARAM_STRING, "archivedir",		{ NULL },	{ "log/archive/" },				},
-	{ PARAM_STRING, "oncrash",			{ NULL },	{ "recover" },					},
+	{ PARAM_STRING, "oncrash",			{ NULL },	{ "dumpcore" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,
 					"crashdir",			{ NULL },	{ "log/crash/" },				},
 

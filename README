@@ -154,7 +154,8 @@ The BBS responds to certain Unix signals.
     SIGTERM    Performs a shutdown (now!)
     SIGUSR1    Scans the Mail> folder of every online user for new mail.
                This was implemented so e-mail can be spooled into the
-               BBS. However, this introduces a race condition, so be warned.
+               BBS. However, this introduces a race condition (the message
+               number), so be warned.
 
 Most other signals are either ignored or linked to the crash handler.
 

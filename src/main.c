@@ -140,33 +140,48 @@ int fd;
 void exit_program(int reboot) {
 int code = 0;
 
-	ignore_signals = 1;
+	deinit_Signal();
 
-	if (reboot) {
+	if (reboot)
 		log_msg("exit_program(): rebooting");
-	} else {
+	else
 		log_msg("exit_program(): shutting down");
-	}
+
 	if (main_socket > 0) {
 		shutdown(main_socket, 2);
 		close(main_socket);
 
-		if (save_Stats(&stats, PARAM_STAT_FILE)) {
+		if (save_Stats(&stats, PARAM_STAT_FILE))
 			log_err("failed to save stats");
-		}
 	}
-/*	kill_process();	*/
+	kill_process();						/* kill helper procs like the resolver */
 
 	if (reboot) {
 		execlp(PARAM_PROGRAM_MAIN, PARAM_PROGRAM_MAIN, NULL);	/* reboot */
-		code = -1;												/* reboot failed */
+		log_err("reboot failed");
+		code = -1;
 	}
 	unlink(PARAM_PID_FILE);				/* shutdown, remove pidfile */
 
 	exit(code);
 }
 
+void usage(void) {
+	printf("options:\n"
+		"  -f <file>  Specify parameters file (default: etc/param)\n"
+		"  -d         Don't run as daemon (for debuggers)\n"
+	);
+	printf("\n"
+		"bbs100 is usually started using the 'bbs' script rather than calling\n"
+		"the binary directly. Instead of using command line arguments, the\n"
+		"parameters are specified in the socalled param file.\n"
+	);
+	exit(1);
+}
+
 int main(int argc, char **argv) {
+int debugger = 0;
+
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
 
@@ -186,17 +201,41 @@ int main(int argc, char **argv) {
 	printf("%s\n", print_copyright(SHORT, "main"));
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
-	sleep(2);
 
-	if (argc > 1)
-		param_file = cstrdup(argv[1]);
-	else
+	if (argc > 1) {
+		int c;
+
+		while((c = getopt(argc, argv, "f:dh")) != -1) {
+			switch(c) {
+				case 'f':
+					param_file = cstrdup(optarg);
+					break;
+
+				case 'd':
+					debugger = 1;
+					break;
+
+				case '?':
+				case 'h':
+					usage();
+					break;
+
+				default:
+					usage();
+			}
+		}
+		if (param_file == NULL && optind <= argc)
+			param_file = cstrdup(argv[optind]);
+	}
+	if (param_file == NULL)
 		param_file = cstrdup("etc/param");
 
 	if (param_file == NULL) {
 		printf("Out of memory (?)\n");
 		exit(-1);
 	}
+	sleep(2);							/* display banner */
+
 	rtc = time(NULL);
 	umask(007);							/* allow owner and group, deny others */
 
@@ -210,21 +249,23 @@ int main(int argc, char **argv) {
 	init_Param();
 	printf("loading param file %s ... ", param_file);
 	if (load_Param(param_file)) {
-		printf("failed, using defaults\n");
-		init_Param();
+		printf("failed\n");
+		exit(-1);
 	} else
 		printf("ok\n");
 	check_Param();
 	print_Param();
 
-	write_pidfile();
-
 	if (chdir(PARAM_BASEDIR)) {
 		printf("failed to change directory to basedir '%s'\n", PARAM_BASEDIR);
 		exit(-1);
 	}
+	write_pidfile();
+
 	savecore();
-	init_Signal();
+
+	if (!debugger)
+		init_Signal();
 
 	if (init_FileCache()) {
 		printf("failed to initialize file cache\n");
@@ -312,18 +353,18 @@ int main(int argc, char **argv) {
 		printf("failed to listen on port %d\n", PARAM_PORT_NUMBER);
 		exit_program(SHUTDOWN);
 	}
-	printf("up and running pid %lu, listening at port %d\n", (unsigned long)getpid(), PARAM_PORT_NUMBER);
-
+	printf("up and running, listening at port %d\n", PARAM_PORT_NUMBER);
+	if (debugger) {
+		printf("running under debugger, signal handling disabled\n");
+		printf("running under debugger, not going to background\n");
+	}
 	init_log();				/* start logging to files */
 
 	log_info("bbs restart");
 	log_entry(stderr, "bbs restart", 'I', NULL);
 
-/*
-	Note: You will want to comment this line out when you compile with -g
-	      in order to be able to use a debugger
-*/
-	goto_background();
+	if (!debugger)
+		goto_background();
 
 	if (init_process())
 		log_err("helper daemons startup failed");
