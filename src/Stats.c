@@ -390,7 +390,9 @@ int updated = 0;
 	if (usr == NULL)
 		return;
 
-	if (usr->online_timer < rtc)		/* bug prevention :P (?) */
+	if (!usr->online_timer)
+		usr->online_timer = rtc;
+	if (usr->online_timer < rtc)
 		usr->total_time += (rtc - usr->online_timer);
 	usr->online_timer = rtc;
 

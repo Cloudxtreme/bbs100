@@ -75,10 +75,15 @@ int r;
 
 	if (c == INIT_STATE) {
 		Put(usr, "Enter your name: ");
-/*		usr = reset_User(usr);	*/
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
+
+		Free(usr->tmpbuf[TMP_PASSWD]);
+		usr->tmpbuf[TMP_PASSWD] = NULL;
+
+		usr->login_time = usr->online_timer = (unsigned long)rtc;
+		usr->total_time = 0UL;
 	}
 	r = edit_name(usr, c);
 
@@ -596,9 +601,7 @@ int r;
 
 		Put(usr, "\nHello there, new user! You may choose a name that suits you well.\n"
 			"This name will be your alias for the rest of your BBS life.\n"
-			"Enter your name: ");
-
-/*		usr = reset_User(usr);	*/
+			"Enter your login name: ");
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
@@ -611,59 +614,55 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
+		char *name;
+
+		name = usr->edit_buf;
+		usr->edit_pos = 0;
+
 		Free(usr->tmpbuf[TMP_NAME]);
+		usr->tmpbuf[TMP_NAME] = NULL;
+
+		if (!name[0]) {
+			Put(usr, "\nPress Ctrl-D to exit\n");
+			JMP(usr, STATE_LOGIN_PROMPT);
+			Return;
+		}
+		if (!name[1]) {
+			Put(usr, "\nThat name is too short\n"
+				"Enter your login name: ");
+			usr->edit_buf[0] = 0;
+			Return;
+		}
+		if (in_StringList(banished, name) != NULL) {
+			Put(usr, "\nYou have been denied access to this BBS.\n");
+			close_connection(usr, "user has been banished");
+			Return;
+		}
+		if (!strcmp(name, "New")) {
+			Put(usr, "\nYou cannot use 'New' as login name, choose another login name\n"
+				"Enter your login name: ");
+			usr->edit_buf[0] = 0;
+			Return;
+		}
+		if (!strcmp(name, "Sysop") || !strcmp(name, PARAM_NAME_SYSOP) || is_guest(name)) {
+			Print(usr, "\nYou cannot use '%s' as login name, choose another login name\n"
+				"Enter your login name: ", name);
+			usr->edit_buf[0] = 0;
+			Return;
+		}
+		if (user_exists(name)) {
+			Put(usr, "\nThat name already is in use, please choose an other login name\n"
+				"Enter your login name: ");
+			usr->edit_buf[0] = 0;
+			Return;
+		}
 		if ((usr->tmpbuf[TMP_NAME] = cstrdup(usr->edit_buf)) == NULL) {
 			Perror(usr, "Out of memory");
 			close_connection(usr, "out of memory");
 			Return;
 		}
 		usr->edit_buf[0] = 0;
-		usr->edit_pos = 0;
 
-		if (!usr->tmpbuf[TMP_NAME][0]) {
-			Put(usr, "\nPress Ctrl-D to exit\n");
-			JMP(usr, STATE_LOGIN_PROMPT);
-			Return;
-		}
-		if (!usr->tmpbuf[TMP_NAME][1]) {
-			Put(usr, "\nThat name is too short\n"
-				"Enter your name: ");
-
-			Free(usr->tmpbuf[TMP_NAME]);
-			usr->tmpbuf[TMP_NAME] = NULL;
-			Return;
-		}
-		if (in_StringList(banished, usr->tmpbuf[TMP_NAME]) != NULL) {
-			Put(usr, "\nYou have been denied access to this BBS.\n");
-			close_connection(usr, "user has been banished");
-			Return;
-		}
-		if (!strcmp(usr->tmpbuf[TMP_NAME], "New")) {
-			Put(usr, "\nYou cannot use 'New' as login name, choose another login name\n"
-				"Enter your login name: ");
-
-			Free(usr->tmpbuf[TMP_NAME]);
-			usr->tmpbuf[TMP_NAME] = NULL;
-			Return;
-		}
-		if (!strcmp(usr->tmpbuf[TMP_NAME], "Sysop")
-			|| !strcmp(usr->tmpbuf[TMP_NAME], PARAM_NAME_SYSOP)
-			|| is_guest(usr->tmpbuf[TMP_NAME])) {
-			Print(usr, "\nYou cannot use '%s' as login name, choose another login name\n"
-				"Enter your login name: ", usr->tmpbuf[TMP_NAME]);
-
-			Free(usr->tmpbuf[TMP_NAME]);
-			usr->tmpbuf[TMP_NAME] = NULL;
-			Return;
-		}
-		if (user_exists(usr->tmpbuf[TMP_NAME])) {
-			Put(usr, "\nThat name already is in use, please choose an other login name\n"
-				"Enter your login name: ");
-
-			Free(usr->tmpbuf[TMP_NAME]);
-			usr->tmpbuf[TMP_NAME] = NULL;
-			Return;
-		}
 		Put(usr, "Now to choose a password. Passwords can be 79 characters long and can contain\n"
 			"spaces and punctuation characters. Be sure not to use a password that can be\n"
 			"guessed easily by anyone. Also be sure not to forget your own password..!\n");
@@ -791,52 +790,6 @@ int r;
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;
-}
-
-/*
-	Damn, it's too much work to reset each member of the User struct,
-	so just destroy the thing and allocate a new User
-*/
-User *reset_User(User *usr) {
-User *u;
-
-	Enter(reset_User);
-
-	if ((u = new_User()) == NULL) {
-		Perror(usr, "Out of memory");
-		close_connection(usr, "Out of memory in reset_User()");
-		Return NULL;
-	}
-	u->socket = usr->socket;
-	u->telnet_state = usr->telnet_state;
-	u->in_sub = usr->in_sub;
-	u->output_idx = usr->output_idx;
-	memcpy(u->in_sub_buf, usr->in_sub_buf, MAX_SUB_BUF);
-	memcpy(u->outputbuf, usr->outputbuf, MAX_OUTPUTBUF);
-
-	u->term_width = usr->term_width;
-	u->term_height = usr->term_height;
-	u->runtime_flags = usr->runtime_flags;
-
-	u->login_time = usr->login_time;
-	strcpy(u->from_ip, usr->from_ip);
-	u->ipnum = usr->ipnum;
-
-	u->callstack = usr->callstack;		/* steal a callstack ;) */
-	usr->callstack = NULL;
-
-	usr->socket = -1;					/* dangling user will be removed by mainloop() */
-
-	default_colors(u);
-
-/* give user the default timezone */
-	if (usr->timezone == NULL)
-		usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
-	if (usr->tz == NULL)
-		usr->tz = load_Timezone(usr->timezone);
-
-	add_User(&AllUsers, u);
-	Return u;
 }
 
 /* EOB */

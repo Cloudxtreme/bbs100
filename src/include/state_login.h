@@ -50,7 +50,6 @@ void state_display_motd(User *, char);
 void state_go_online(User *, char);
 
 void display_motd(User *);
-User *reset_User(User *);
 
 extern StringList *banished;
 
