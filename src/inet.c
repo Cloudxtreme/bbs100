@@ -698,9 +698,12 @@ char k;
 /*
 	something bad happened, probably lost connection
 */
-				notify_linkdead(c);
-				log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
-				close_connection(c, "%s went linkdead", c->name);
+				if (c->name[0]) {
+					notify_linkdead(c);
+					log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
+					close_connection(c, "%s went linkdead", c->name);
+				} else
+					close_connection(c, NULL);
 				continue;
 			}
 /*
