@@ -49,7 +49,8 @@
 #define TYPE_TIMETYPE		23
 #define TYPE_HASH			24
 #define TYPE_HASHLIST		25
-#define NUM_TYPES			26
+#define TYPE_LANG			26
+#define NUM_TYPES			27
 
 typedef struct Typedef_tag Typedef;
 

@@ -100,6 +100,9 @@ int i;
 	usr->tz = NULL;					/* usr->tz is just a reference and is not destroyed here */
 	Free(usr->timezone);
 
+	Free(usr->language);
+	usr->lang = NULL;
+
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);
 
@@ -269,6 +272,10 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	Free(usr->timezone);
 	usr->timezone = NULL;
 
+	Free(usr->language);
+	usr->language = NULL;
+	usr->lang = NULL;
+
 /* open the file for loading */
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
@@ -351,6 +358,18 @@ char buf[MAX_PATHLEN], *p;
 			FF1_LOAD_DUP("reminder", usr->reminder);
 			FF1_LOAD_DUP("default_anon", usr->default_anon);
 			FF1_LOAD_DUP("timezone", usr->timezone);
+			FF1_LOAD_DUP("language", usr->language);
+/*
+	set the language
+	clear the field if the language no longer exists
+*/
+			if (!strcmp(buf, "language") && usr->language != NULL) {
+				cstrlwr(usr->language);
+				if ((usr->lang = in_Hash(languages, usr->language)) == NULL) {
+					Free(usr->language);
+					usr->language = NULL;
+				}
+			}
 		}
 		if (!strcmp(buf, "from_ip")) {
 			Free(usr->tmpbuf[TMP_FROM_HOST]);
@@ -957,6 +976,7 @@ StringList *sl;
 	FF1_SAVE_STR("reminder", usr->reminder);
 	FF1_SAVE_STR("default_anon", usr->default_anon);
 	FF1_SAVE_STR("timezone", usr->timezone);
+	FF1_SAVE_STR("language", usr->language);
 
 	FF1_SAVE_STR("from_ip", usr->from_ip);
 

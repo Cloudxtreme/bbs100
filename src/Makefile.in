@@ -65,7 +65,7 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	MsgIndex.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
 	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \
 	debug.o SymbolTable.o Types.o HostMap.o FileFormat.o \
-	Timezone.o Worldclock.o \
+	Timezone.o Worldclock.o Lang.o \
 	main.o
 
 MORE_OBJS = mkpasswd.o resolver.o ipv4_aton.o ccat.o bbs100_convert.o

@@ -40,6 +40,7 @@
 #include "Param.h"
 #include "CachedFile.h"
 #include "Timezone.h"
+#include "Lang.h"
 
 #include <sys/types.h>
 
@@ -145,7 +146,7 @@ struct User_tag {
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
-	char *timezone;
+	char *timezone, *language;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time;
@@ -172,6 +173,7 @@ struct User_tag {
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
+	Lang *lang;
 
 	CallStack *callstack;
 };

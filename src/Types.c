@@ -26,6 +26,7 @@
 #include "HostMap.h"
 #include "Timezone.h"
 #include "Hash.h"
+#include "Lang.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -55,6 +56,7 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "TimeType",			sizeof(TimeType),			},
 	{ "Hash",				sizeof(Hash),				},
 	{ "HashList",			sizeof(HashList),			},
+	{ "Lang",				sizeof(Lang),				},
 	{ "(unknown)",			0,							},
 };
 
