@@ -2210,7 +2210,7 @@ char from[MAX_LINE];
 }
 
 void more_msg_header(User *usr) {
-char from[MAX_LINE], buf[MAX_LINE*2];
+char from[MAX_LINE], buf[MAX_LINE*3];
 
 	if (usr == NULL)
 		return;
@@ -2241,20 +2241,24 @@ char from[MAX_LINE], buf[MAX_LINE*2];
 
 	if (usr->message->to != NULL) {
 		StringList *sl;
-		int l, dl;			/* l = strlen, dl = display length */
+		int l, dl, max_dl;			/* l = strlen, dl = display length */
+
+		max_dl = usr->term_width-1;
+		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
+			max_dl = MAX_LINE*3-1;
 
 		if (!strcmp(usr->message->from, usr->name)) {
 			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime));
-			dl = l - 2;
+			dl = color_strlen(buf);
 
 			for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-				if ((dl + strlen(sl->str)+2) < (MAX_LINE-1))
+				if ((dl + strlen(sl->str)+2) < max_dl)
 					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
 				else {
 					usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
 					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
 				}
-				dl = l - 2;
+				dl = color_strlen(buf);
 			}
 			add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
 		} else {
@@ -2262,7 +2266,7 @@ char from[MAX_LINE], buf[MAX_LINE*2];
 				usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime), from);
 			else {
 				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime), from);
-				dl = l - 3;
+				dl = color_strlen(buf);
 
 				for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 					if ((dl + strlen(sl->str)+2) < MAX_LINE)
@@ -2271,7 +2275,7 @@ char from[MAX_LINE], buf[MAX_LINE*2];
 						usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
 						l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
 					}
-					dl = l - 2;
+					dl = color_strlen(buf);
 				}
 				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
 			}

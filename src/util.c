@@ -465,9 +465,6 @@ char colorbuf[20];
 	return 1;
 }
 
-/*
-	color_strlen() doesn't count the color codes
-*/
 int color_strlen(char *str) {
 int len = 0;
 
