@@ -74,6 +74,12 @@ int r;
 	Enter(state_login_prompt);
 
 	if (c == INIT_STATE) {
+		usr->login_time++;
+		if (usr->login_time > MAX_LOGIN_ATTEMPTS) {
+			Put(usr, "Bye! Come back when you've figured it out..!\n");
+			close_connection(usr, "too many attempts");
+			Return;
+		}
 		Put(usr, "Enter your name: ");
 
 		Free(usr->tmpbuf[TMP_NAME]);
@@ -82,7 +88,7 @@ int r;
 		Free(usr->tmpbuf[TMP_PASSWD]);
 		usr->tmpbuf[TMP_PASSWD] = NULL;
 
-		usr->login_time = usr->online_timer = (unsigned long)rtc;
+		usr->online_timer = (unsigned long)rtc;
 		usr->total_time = 0UL;
 	}
 	r = edit_name(usr, c);
@@ -106,11 +112,6 @@ int r;
 			Put(usr, "\nPress Ctrl-D to exit\n"
 				"Enter your name: ");
 
-			usr->login_time++;
-			if (usr->login_time >= MAX_LOGIN_ATTEMPTS) {
-				Put(usr, "Bye! Come back when you've figured it out..!\n");
-				close_connection(usr, "too many returns on login prompt");
-			}
 			Return;
 		}
 /*
@@ -180,12 +181,7 @@ int r;
 		}
 		if (!user_exists(usr->tmpbuf[TMP_NAME])) {
 			Put(usr, "No such user. ");
-			usr->login_time++;
-			if (usr->login_time >= MAX_LOGIN_ATTEMPTS) {
-				Put(usr, "Come back when you've figured it out..!\n");
-				close_connection(usr, "too many login attempts");
-				Return;
-			}
+
 /* I said, it's possible to banish 'New', so no new users can be added */
 			if (in_StringList(banished, "New") != NULL) {
 				Put(usr, "\n\n");
@@ -286,13 +282,6 @@ int r;
 		} else {
 			Put(usr, "Wrong password!\n\n");
 			log_auth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->from_ip);
-
-			usr->login_time++;
-			if (usr->login_time >= MAX_LOGIN_ATTEMPTS) {
-				Put(usr, "Come back when you've figured it out..!\n");
-				close_connection(usr, "too many login attempts");
-				Return;
-			}
 			JMP(usr, STATE_LOGIN_PROMPT);
 		}
 	}
@@ -450,7 +439,6 @@ char num_buf[25];
 /*
 	fix last_read field if too large (fix screwed up mail rooms)
 */
-
 	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL) {
 		MsgIndex *m;
 

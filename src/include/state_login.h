@@ -25,7 +25,7 @@
 
 #include "User.h"
 
-#define MAX_LOGIN_ATTEMPTS	5
+#define MAX_LOGIN_ATTEMPTS	3
 
 #define STATE_LOGIN_PROMPT				state_login_prompt
 #define STATE_PASSWORD_PROMPT			state_password_prompt
