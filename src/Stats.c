@@ -545,12 +545,18 @@ unsigned long num;
 		w = l;
 
 	usr->more_text = add_String(&usr->more_text, "Most logins are by                     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_logins, print_number(stats.logins, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xsent, print_number(stats.xsent, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most emotes were sent by               <white>%-*s<green> : <yellow>%s<green>", w, stats.most_esent, print_number(stats.esent, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most emotes were received by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_erecv, print_number(stats.erecv, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most Feelings were sent by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_fsent, print_number(stats.fsent, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most Feelings were received by         <white>%-*s<green> : <yellow>%s<green>", w, stats.most_frecv, print_number(stats.frecv, date_buf));
+	if (PARAM_HAVE_XMSGS) {
+		usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xsent, print_number(stats.xsent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
+	}
+	if (PARAM_HAVE_EMOTES) {
+		usr->more_text = add_String(&usr->more_text, "Most emotes were sent by               <white>%-*s<green> : <yellow>%s<green>", w, stats.most_esent, print_number(stats.esent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "Most emotes were received by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_erecv, print_number(stats.erecv, date_buf));
+	}
+	if (PARAM_HAVE_FEELINGS) {
+		usr->more_text = add_String(&usr->more_text, "Most Feelings were sent by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_fsent, print_number(stats.fsent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "Most Feelings were received by         <white>%-*s<green> : <yellow>%s<green>", w, stats.most_frecv, print_number(stats.frecv, date_buf));
+	}
 	usr->more_text = add_String(&usr->more_text, "Most messages were posted by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_posted, print_number(stats.posted, date_buf));
 	usr->more_text = add_String(&usr->more_text, "Most messages were read by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_read, print_number(stats.read, date_buf));
 
@@ -558,18 +564,21 @@ unsigned long num;
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 		usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>Your statistics"));
 
-		l  = sprintf(buf, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr->xsent, date_buf));
-		sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->xrecv, date_buf));
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-
-		l = sprintf(buf, "<green>Emotes sent          : <yellow>%-15s", print_number(usr->esent, date_buf));
-		sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->erecv, date_buf));
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-
-		l = sprintf(buf, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf));
-		sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->frecv, date_buf));
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-
+		if (PARAM_HAVE_XMSGS) {
+			l  = sprintf(buf, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr->xsent, date_buf));
+			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->xrecv, date_buf));
+			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+		}
+		if (PARAM_HAVE_EMOTES) {
+			l = sprintf(buf, "<green>Emotes sent          : <yellow>%-15s", print_number(usr->esent, date_buf));
+			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->erecv, date_buf));
+			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+		}
+		if (PARAM_HAVE_FEELINGS) {
+			l = sprintf(buf, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf));
+			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr->frecv, date_buf));
+			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+		}
 		l = sprintf(buf, "<green>Messages posted      : <yellow>%-15s", print_number(usr->posted, date_buf));
 		sprintf(buf+l, "<green> read    : <yellow>%s", print_number(usr->read, date_buf));
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));

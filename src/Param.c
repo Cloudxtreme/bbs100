@@ -113,7 +113,19 @@ Param param[] = {
 	{ PARAM_STRING,	"notify_locked",	{ NULL },	{ "is away from the terminal for a while" },	},
 	{ PARAM_STRING,	"notify_unlocked",	{ NULL },	{ "has returned to the terminal" },				},
 	{ PARAM_STRING, "notify_enter_chat",{ NULL },	{ "enters" },									},
-	{ PARAM_STRING, "notify_leave_chat",{ NULL },	{ "leaves" },									},
+	{ PARAM_STRING | PARAM_SEPARATOR,
+					"notify_leave_chat",{ NULL },	{ "leaves" },									},
+
+	{ PARAM_BOOL,	"have_xmsgs",		{ NULL },	{ (char *)-1 }, },
+	{ PARAM_BOOL,	"have_emotes",		{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_feelings",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_questions",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_quick_x",		{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_talkedto",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_hold_msgs",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_x_reply",		{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_worldclock",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"disabled_msg",		{ NULL },	{ (char *)-1 },	},
 };
 
 
@@ -153,7 +165,7 @@ int i, num;
 				break;
 
 			default:
-				fprintf(stderr, "ERR init_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
+				fprintf(stderr, "init_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 				return -1;
 		}
 	}
@@ -273,7 +285,7 @@ int i, num;
 				break;
 
 			case PARAM_BOOL:
-				fprintf(f->f, "%-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "off" : "on");
+				fprintf(f->f, "%-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "no" : "yes");
 				break;
 
 			default:
@@ -359,7 +371,7 @@ char buf[MAX_PATHLEN];
 				break;
 
 			case PARAM_BOOL:
-				printf(" %-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "off" : "on");
+				printf(" %-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "no" : "yes");
 				break;
 
 			default:

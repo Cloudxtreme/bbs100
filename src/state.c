@@ -158,8 +158,12 @@ int i;
 			break;
 
 		case KEY_CTRL('Q'):
-			Put(usr, "<white>Quicklist\n");
-			print_quicklist(usr);
+			if (PARAM_HAVE_QUICK_X) {
+				Put(usr, "<white>Quicklist\n");
+				print_quicklist(usr);
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
 		case KEY_ESC:
@@ -234,66 +238,86 @@ int i;
 			Return;
 
 		case KEY_CTRL('T'):
-			Put(usr, "<white>Talked to list\n");
-			talked_list(usr);
-			Return;
+			if (PARAM_HAVE_TALKEDTO) {
+				Put(usr, "<white>Talked to list\n");
+				talked_list(usr);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Talked To lists<red> are not enabled on this server\n");
+			break;
 
 		case 'q':
 		case 'Q':
-			Put(usr, "<white>Question\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot ask questions\n", PARAM_NAME_GUEST);
-				break;
-			}
-			if (usr->question_asked == NULL) {			/* this should never happen */
-				if (!next_helping_hand(usr)) {
-					Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
-
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+			if (PARAM_HAVE_QUESTIONS) {
+				Put(usr, "<white>Question\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot ask questions\n", PARAM_NAME_GUEST);
 					break;
 				}
-			}
-			Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
+				if (usr->question_asked == NULL) {			/* this should never happen */
+					if (!next_helping_hand(usr)) {
+						Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = new_StringList(usr->question_asked);
+						listdestroy_StringList(usr->recipients);
+						usr->recipients = NULL;
+						break;
+					}
+				}
+				Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
 
-			CALL(usr, STATE_EDIT_QUESTION);
-			Return;
+				listdestroy_StringList(usr->recipients);
+				usr->recipients = new_StringList(usr->question_asked);
+
+				CALL(usr, STATE_EDIT_QUESTION);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Questions<red> are not enabled on this server\n");
+			break;
 
 		case '%':
-			Put(usr, "<white>Toggle helper status\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot be available to help others\n", PARAM_NAME_GUEST);
+			if (PARAM_HAVE_QUESTIONS) {
+				Put(usr, "<white>Toggle helper status\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot be available to help others\n", PARAM_NAME_GUEST);
+					break;
+				}
+				if ((usr->flags & USR_HELPING_HAND) || (usr->runtime_flags & RTF_WAS_HH)) {
+					usr->flags &= ~USR_HELPING_HAND;
+					usr->runtime_flags &= ~RTF_WAS_HH;
+					Put(usr, "<magenta>You are no longer available to help others\n");
+				} else {
+					if (usr->flags & USR_X_DISABLED) {
+						Put(usr, "<red>You must enable message reception if you want to be available to help others\n");
+						break;
+					}
+					if (usr->runtime_flags & RTF_HOLD) {
+						Put(usr, "<red>You must not have messages on hold if you want to be available to help others\n");
+						break;
+					}
+					usr->flags |= USR_HELPING_HAND;
+					Put(usr, "<magenta>You now are available to help others\n");
+				}
 				break;
-			}
-			if ((usr->flags & USR_HELPING_HAND) || (usr->runtime_flags & RTF_WAS_HH)) {
-				usr->flags &= ~USR_HELPING_HAND;
-				usr->runtime_flags &= ~RTF_WAS_HH;
-				Put(usr, "<magenta>You are no longer available to help others\n");
-			} else {
-				if (usr->flags & USR_X_DISABLED) {
-					Put(usr, "<red>You must enable message reception if you want to be available to help others\n");
-					break;
-				}
-				if (usr->runtime_flags & RTF_HOLD) {
-					Put(usr, "<red>You must not have messages on hold if you want to be available to help others\n");
-					break;
-				}
-				usr->flags |= USR_HELPING_HAND;
-				Put(usr, "<magenta>You now are available to help others\n");
-			}
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Questions<red> and <yellow>Helpers<red> are not enabled on this server\n");
 			break;
 
 		case 'x':
-			Put(usr, "<white>eXpress Message\n<green>");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send eXpress Messages\n", PARAM_NAME_GUEST);
-				break;
-			}
-			enter_recipients(usr, STATE_X_PROMPT);
-			Return;
+			if (PARAM_HAVE_XMSGS) {
+				Put(usr, "<white>eXpress Message\n<green>");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send eXpress Messages\n", PARAM_NAME_GUEST);
+					break;
+				}
+				enter_recipients(usr, STATE_X_PROMPT);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
+			break;
 
 		case '0':
 			c = '9'+1;
@@ -306,52 +330,71 @@ int i;
 		case '7':
 		case '8':
 		case '9':
-			Put(usr, "<white>Quick X\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send Quick eXpress Messages\n", PARAM_NAME_GUEST);
-				break;
-			}
-			if (usr->quick[c - '1'] != NULL) {
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
+			if (PARAM_HAVE_QUICK_X) {
+				Put(usr, "<white>Quick X\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send Quick eXpress Messages\n", PARAM_NAME_GUEST);
+					break;
+				}
+				if (usr->quick[c - '1'] != NULL) {
+					listdestroy_StringList(usr->recipients);
+					usr->recipients = NULL;
 
-				strcpy(usr->edit_buf, usr->quick[c - '1']);
-				usr->edit_pos = strlen(usr->edit_buf);
-				usr->runtime_flags |= RTF_BUSY;
+					strcpy(usr->edit_buf, usr->quick[c - '1']);
+					usr->edit_pos = strlen(usr->edit_buf);
+					usr->runtime_flags |= RTF_BUSY;
 
-				Print(usr, "<green>Enter recipient<yellow>: %s", usr->edit_buf);
-				PUSH(usr, STATE_X_PROMPT);
-				Return;
+					Print(usr, "<green>Enter recipient<yellow>: %s", usr->edit_buf);
+					PUSH(usr, STATE_X_PROMPT);
+					Return;
+				} else
+					Put(usr, "<red>That quicklist entry is empty. Press <white><<yellow>Ctrl<white>-<yellow>C<white>><red> to enter the <yellow>Config menu<red>\n"
+						"so you can configure your quicklist\n");
 			} else
-				Put(usr, "<red>That quicklist entry is empty. Press <white><<yellow>Ctrl<white>-<yellow>C<white>><red> to enter the <yellow>Config menu<red>\n"
-					"so you can configure your quicklist\n");
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
 		case KEY_CTRL('X'):
-			Put(usr, "<white>Message history\n");
-			CALL(usr, STATE_HISTORY_PROMPT);
-			Return;
+			if (PARAM_HAVE_XMSGS) {
+				Put(usr, "<white>Message history\n");
+				CALL(usr, STATE_HISTORY_PROMPT);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
+			break;
 
 		case ':':
 		case ';':
-			Put(usr, "<white>Emote\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send emotes\n", PARAM_NAME_GUEST);
-				break;
-			}
-			Put(usr, "<green>");
-			enter_recipients(usr, STATE_EMOTE_PROMPT);
-			Return;
+			if (PARAM_HAVE_EMOTES) {
+				Put(usr, "<white>Emote\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send emotes\n", PARAM_NAME_GUEST);
+					break;
+				}
+				Put(usr, "<green>");
+				enter_recipients(usr, STATE_EMOTE_PROMPT);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Emotes<red> are not enabled on this server\n");
+			break;
 
 		case '*':
-			Put(usr, "<white>Feelings\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send feelings\n", PARAM_NAME_GUEST);
-				break;
-			}
-			Put(usr, "<green>");
-			enter_recipients(usr, STATE_FEELINGS_PROMPT);
-			Return;			
+			if (PARAM_HAVE_FEELINGS) {
+				Put(usr, "<white>Feelings\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send feelings\n", PARAM_NAME_GUEST);
+					break;
+				}
+				Put(usr, "<green>");
+				enter_recipients(usr, STATE_FEELINGS_PROMPT);
+				Return;			
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Feelings<red> are not enabled on this server\n");
+			break;
 
 		case KEY_CTRL('P'):
 			Put(usr, "<white>Ping\n<green>");
@@ -359,22 +402,32 @@ int i;
 			Return;
 
 		case 'v':
-			Put(usr, "<white>Reply\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
-				break;
-			}
-			reply_x(usr, REPLY_X_ONE);
-			Return;
+			if (PARAM_HAVE_X_REPLY) {
+				Put(usr, "<white>Reply\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
+					break;
+				}
+				reply_x(usr, REPLY_X_ONE);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but the <yellow>X Reply<red> feature is not enabled on this server\n");
+			break;
 
 		case 'V':
-			Put(usr, "<white>Reply to all\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
-				break;
-			}
-			reply_x(usr, REPLY_X_ALL);
-			Return;
+			if (PARAM_HAVE_X_REPLY) {
+				Put(usr, "<white>Reply to all\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
+					break;
+				}
+				reply_x(usr, REPLY_X_ALL);
+				Return;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but the <yellow>X Reply<red> feature is not enabled on this server\n");
+			break;
 
 		case 'p':
 		case 'P':
@@ -397,27 +450,32 @@ int i;
 			Return;
 
 		case 'X':
-			Put(usr, "<white>Toggle message reception\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot enable message reception\n", PARAM_NAME_GUEST);
-				break;
-			}
-			usr->flags ^= USR_X_DISABLED;
-			Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
+			if (PARAM_HAVE_XMSGS) {
+				Put(usr, "<white>Toggle message reception\n");
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot enable message reception\n", PARAM_NAME_GUEST);
+					break;
+				}
+				usr->flags ^= USR_X_DISABLED;
+				Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
 
-			if (usr->flags & USR_X_DISABLED) {
-				if (usr->flags & USR_HELPING_HAND) {
-					usr->flags &= ~USR_HELPING_HAND;
-					Put(usr, "<magenta>You are no longer available to help others\n");
-					usr->runtime_flags |= RTF_WAS_HH;
+				if (usr->flags & USR_X_DISABLED) {
+					if (usr->flags & USR_HELPING_HAND) {
+						usr->flags &= ~USR_HELPING_HAND;
+						Put(usr, "<magenta>You are no longer available to help others\n");
+						usr->runtime_flags |= RTF_WAS_HH;
+					}
+				} else {
+					if (usr->runtime_flags & RTF_WAS_HH) {
+						usr->flags |= USR_HELPING_HAND;
+						usr->runtime_flags &= ~RTF_WAS_HH;
+						Put(usr, "<magenta>You are now available to help others\n");
+					}
 				}
-			} else {
-				if (usr->runtime_flags & RTF_WAS_HH) {
-					usr->flags |= USR_HELPING_HAND;
-					usr->runtime_flags &= ~RTF_WAS_HH;
-					Put(usr, "<magenta>You are now available to help others\n");
-				}
-			}
+				break;
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
 			break;
 
 		case 'l':
@@ -527,31 +585,35 @@ int i;
 			break;
 
 		case KEY_CTRL('B'):
-			Put(usr, "<white>Hold messages\n");
+			if (PARAM_HAVE_HOLD) {
+				Put(usr, "<white>Hold messages\n");
 
-			usr->runtime_flags ^= RTF_HOLD;
+				usr->runtime_flags ^= RTF_HOLD;
 
-			if (usr->runtime_flags & RTF_HOLD) {
-				Put(usr, "<magenta>Messages will be held until you press "
-					"<white><<yellow>Ctrl<white>-<yellow>B<white>> <magenta>again\n");
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>Messages will be held until you press "
+						"<white><<yellow>Ctrl<white>-<yellow>B<white>> <magenta>again\n");
 
-				if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
-					usr->flags &= ~USR_HELPING_HAND;
-					usr->runtime_flags |= RTF_WAS_HH;
+					if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
+						usr->flags &= ~USR_HELPING_HAND;
+						usr->runtime_flags |= RTF_WAS_HH;
+					}
+				} else {
+					Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
+
+					if (usr->held_msgs != NULL) {
+						usr->runtime_flags |= RTF_HOLD;			/* keep it on hold for a little longer */
+						CALL(usr, STATE_HELD_HISTORY_PROMPT);
+						Return;
+					}
+					if (usr->runtime_flags & RTF_WAS_HH) {
+						usr->runtime_flags &= ~RTF_WAS_HH;
+						usr->flags |= USR_HELPING_HAND;
+					}
 				}
-			} else {
-				Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
-
-				if (usr->held_msgs != NULL) {
-					usr->runtime_flags |= RTF_HOLD;			/* keep it on hold for a little longer */
-					CALL(usr, STATE_HELD_HISTORY_PROMPT);
-					Return;
-				}
-				if (usr->runtime_flags & RTF_WAS_HH) {
-					usr->runtime_flags &= ~RTF_WAS_HH;
-					usr->flags |= USR_HELPING_HAND;
-				}
-			}
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Hold Message Mode<red> is not enabled on this server\n");
 			break;
 
 		case 'j':
@@ -3538,6 +3600,9 @@ char date_buf[MAX_LINE];
 
 	Print(usr, "<magenta>Current time is<yellow> %s %s\n", print_date(usr, (time_t)0UL, date_buf), name_Timezone(usr->tz));
 
+	if (!PARAM_HAVE_WORLDCLOCK) {
+		Return;
+	}
 	tmp = user_time(usr, (time_t)0UL);
 	w = tmp->tm_wday;
 	today = tmp->tm_mday;

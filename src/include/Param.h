@@ -124,6 +124,19 @@
 #define PARAM_NOTIFY_ENTER_CHAT		param[PARAM_NOTIFY_N+6].val.s
 #define PARAM_NOTIFY_LEAVE_CHAT		param[PARAM_NOTIFY_N+7].val.s
 
+#define PARAM_HAVE_N				65
+#define PARAM_HAVE_XMSGS			param[PARAM_HAVE_N].val.bool
+#define PARAM_HAVE_EMOTES			param[PARAM_HAVE_N+1].val.bool
+#define PARAM_HAVE_FEELINGS			param[PARAM_HAVE_N+2].val.bool
+#define PARAM_HAVE_QUESTIONS		param[PARAM_HAVE_N+3].val.bool
+#define PARAM_HAVE_QUICK_X			param[PARAM_HAVE_N+4].val.bool
+#define PARAM_HAVE_TALKEDTO			param[PARAM_HAVE_N+5].val.bool
+#define PARAM_HAVE_HOLD				param[PARAM_HAVE_N+6].val.bool
+#define PARAM_HAVE_X_REPLY			param[PARAM_HAVE_N+7].val.bool
+#define PARAM_HAVE_WORLDCLOCK		param[PARAM_HAVE_N+8].val.bool
+#define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+9].val.bool
+
+
 #define DEFAULT_PORT_1234			1234	/* default port number */
 
 #define DEFAULT_MAX_CACHED			256		/* max # of objects in cache */
