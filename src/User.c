@@ -257,6 +257,8 @@ int i;
 		return -1;
 
 	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
+	path_strip(buf);
+
 	if ((f = Fopen(buf)) == NULL)
 		return -1;
 
@@ -613,6 +615,8 @@ int i;
 	Enter(save_User);
 
 	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
+	path_strip(buf);
+
 	if ((f = Fcreate(buf)) == NULL) {
 		Perror(usr, "Failed to save userfile");
 		Return -1;
@@ -688,6 +692,8 @@ char buf[MAX_PATHLEN];
 		return -1;
 
 	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, *username, username);
+	path_strip(buf);
+
 	if ((f = Fopen(buf)) == NULL)
 		return 0;
 
@@ -702,6 +708,8 @@ File *f;
 char buf[MAX_PATHLEN];
 
 	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, usr->name[0], usr->name);
+	path_strip(buf);
+
 	if ((f = Fcreate(buf)) == NULL) {
 		Perror(usr, "Failed to save site-specific userfile");
 		Return -1;

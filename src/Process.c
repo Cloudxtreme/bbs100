@@ -79,6 +79,7 @@ int fork_process(Process *proc) {
 
 /* make pathname for the unix domain socket */
 		sprintf(buf, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
+		path_strip(buf);
 		if ((dns_main_socket = unix_sock(buf)) < 0) {
 			log_err("failed to create unix domain socket");
 			return -1;

@@ -72,6 +72,7 @@ Room *load_Room(unsigned int number) {
 char filename[MAX_PATHLEN];
 
 	sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, number);
+	path_strip(filename);
 	return load_RoomData(filename, number);
 }
 
@@ -85,6 +86,7 @@ char filename[MAX_PATHLEN];
 	Enter(load_Mail);
 
 	sprintf(filename, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
+	path_strip(filename);
 
 	if ((r = load_RoomData(filename, 1)) == NULL) {
 		if ((r = new_Room()) == NULL) {
@@ -101,8 +103,8 @@ char filename[MAX_PATHLEN];
 	r->flags = ROOM_SUBJECTS | ROOM_NOZAP | ROOM_INVITE_ONLY;
 
 	sprintf(filename, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	path_strip(filename);
 	room_readroomdir(r, filename);
-
 	Return r;
 }
 
@@ -116,6 +118,7 @@ char filename[MAX_PATHLEN];
 	Enter(load_Home);
 
 	sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
+	path_strip(filename);
 
 	if ((r = load_RoomData(filename, 2)) == NULL) {
 		if ((r = new_Room()) == NULL) {
@@ -260,6 +263,7 @@ File *f;
 				sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
 	} else
 		sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
+	path_strip(filename);
 
 	if ((f = Fcreate(filename)) == NULL)
 		return -1;
@@ -316,6 +320,7 @@ char dirname[MAX_PATHLEN];
 		return;
 
 	sprintf(dirname, "%s/%u/", PARAM_ROOMDIR, r->number);
+	path_strip(dirname);
 	room_readroomdir(r, dirname);
 }
 
@@ -326,6 +331,7 @@ char buf[MAX_PATHLEN];
 		return;
 
 	sprintf(buf, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	path_strip(buf);
 	room_readroomdir(r, buf);
 }
 
@@ -678,6 +684,7 @@ unsigned int u;
 	AllRooms = Lobby_room = NULL;
 
 	sprintf(buf, "%s/", PARAM_ROOMDIR);
+	path_strip(buf);
 	bufp = buf+strlen(buf);
 
 	if ((dirp = opendir(buf)) == NULL)

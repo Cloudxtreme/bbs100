@@ -735,6 +735,7 @@ int r;
 		strcpy(usr->passwd, crypted);
 
 		sprintf(usr->edit_buf, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
+		path_strip(usr->edit_buf);
 		if (mkdir(usr->edit_buf, (mode_t)0750)) {
 			Perror(usr, "Failed to create user directory");
 		}

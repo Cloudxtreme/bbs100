@@ -351,6 +351,7 @@ unsigned long num;
 			for(;;) {
 				num++;
 				sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, u->name[0], u->name, num);
+				path_strip(buf);
 
 				if (!stat(buf, &statbuf)) {
 					new_mail = 1;

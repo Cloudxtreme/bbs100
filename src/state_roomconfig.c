@@ -827,6 +827,7 @@ User *u;
 		idx_next = idx->next;
 
 		sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, room->number, idx->number);
+		path_strip(buf);
 		unlink_file(buf);
 
 		for(u = AllUsers; u != NULL; u = u->next)
@@ -901,7 +902,9 @@ void (*func)(User *, char *, ...);
 	}
 /* move room to trash/ directory */
 	sprintf(path, "%s/%u", PARAM_ROOMDIR, room->number);
+	path_strip(path);
 	sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
+	path_strip(newpath);
 
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */
 	rename_dir(path, newpath);

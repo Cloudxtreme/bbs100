@@ -552,6 +552,7 @@ struct stat statbuf;
 		return 1;
 
 	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
+	path_strip(buf);
 	if (!stat(buf, &statbuf))
 		return 1;
 
@@ -803,6 +804,7 @@ struct dirent *direntp;
 unsigned long maxnum = 0UL, n;
 
 	sprintf(buf, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	path_strip(buf);
 	if ((dirp = opendir(buf)) == NULL)
 		return maxnum;
 
@@ -956,6 +958,7 @@ struct dirent *direntp;
 
 /* safety check */
 	sprintf(buf, "%s/", PARAM_TRASHDIR);
+	path_strip(buf);
 	if (strncmp(buf, dirname, strlen(buf)) || cstrstr(dirname, "..") != NULL)
 		return -1;
 
@@ -1026,7 +1029,7 @@ char *p;
 	Warning: returns a static buffer
 */
 char *path_join(char *p1, char *p2) {
-static char path[MAX_PATHLEN], *p;
+static char path[MAX_PATHLEN];
 
 	if (p1 == NULL || p2 == NULL)
 		return NULL;
@@ -1036,6 +1039,17 @@ static char path[MAX_PATHLEN], *p;
 		return NULL;
 	}
 	sprintf(path, "%s/%s", p1, p2);
+	return path_strip(path);
+}
+
+/*
+	Warning: modifies buffer
+*/
+char *path_strip(char *path) {
+char *p;
+
+	if (path == NULL)
+		return NULL;
 
 	p = path;
 	while((p = cstrchr(p, '/')) != NULL) {

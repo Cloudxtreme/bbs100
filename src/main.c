@@ -78,23 +78,23 @@ static int savecore(void) {
 struct stat statbuf;
 
 	if (!stat("core", &statbuf)) {
-		char filename[MAX_PATHLEN], *path;
+		char filename[MAX_PATHLEN];
 		struct tm *tm;
 		int i;
 
 		tm = localtime(&statbuf.st_ctime);
-		sprintf(filename, "core.%04d%02d%02d", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
-		path = path_join(PARAM_CRASHDIR, filename);
+		sprintf(filename, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+		path_strip(filename);
 		i = 1;
-		while(!stat(path, &statbuf) && i < 10) {
-			sprintf(filename, "core.%04d%02d%02d-%d", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
-			path = path_join(PARAM_CRASHDIR, filename);
+		while(!stat(filename, &statbuf) && i < 10) {
+			sprintf(filename, "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
+			path_strip(filename);
 			i++;
 		}
-		if (rename("core", path) == -1)
-			printf("savecore(): failed to save core as %s\n\n", path);
+		if (rename("core", filename) == -1)
+			printf("savecore(): failed to save core as %s\n\n", filename);
 		else
-			printf("saving core as %s ...\n\n", path);
+			printf("saving core as %s ...\n\n", filename);
 	}
 	return 0;
 }

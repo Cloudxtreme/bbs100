@@ -949,12 +949,6 @@ int i;
 		case 'c':
 		case 'C':
 			Put(usr, "<red>Press <white><<yellow>Ctrl-C<white>><red> or <white><<yellow>Ctrl-O<white>><red> to access the Config menu\n");
-			do {
-				char *p;
-
-				p = NULL;
-				strcpy(p, "crashme");
-			} while(0);
 			break;
 
 		case KEY_CTRL('C'):				/* this don't work for some people (?) */

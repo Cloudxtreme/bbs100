@@ -371,6 +371,7 @@ StringList *sl;
 				usr->new_message->number = room_top(u->mail)+1;
 
 			sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, sl->str[0], sl->str, usr->new_message->number);
+			path_strip(filename);
 
 			if (!save_Message(usr->new_message, filename)) {
 				Print(usr, "<green>Sending mail to <yellow>%s\n", sl->str);
@@ -390,6 +391,7 @@ StringList *sl;
 			if (!err) {
 				usr->new_message->number = room_top(usr->mail)+1;
 				sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
+				path_strip(filename);
 
 				if (save_Message(usr->new_message, filename))
 					err++;
@@ -421,6 +423,7 @@ StringList *sl;
 		}
 		usr->new_message->number = room_top(usr->curr_room)+1;
 		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->new_message->number);
+		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename)) {
 			newMsg(usr->curr_room, usr->new_message);
@@ -762,6 +765,7 @@ Joined *j;
 		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->curr_msg->number);
 	else
 		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->curr_msg->number);
+	path_strip(filename);
 
 /* load the message */
 	destroy_Message(usr->message);
@@ -884,6 +888,7 @@ int r;
 			sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 		else
 			sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+		path_strip(buf);
 
 		if (save_Message(usr->message, buf)) {
 			Perror(usr, "Failed to delete message");
@@ -930,6 +935,7 @@ char filename[MAX_PATHLEN];
 		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 	else
 		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+	path_strip(filename);
 
 	if (save_Message(usr->message, filename)) {
 		Perror(usr, "Failed to undelete message");
@@ -2294,6 +2300,7 @@ char buf[MAX_PATHLEN];
 			u->curr_msg = NULL;			/* hmm... I wonder if strange things could happen here */
 
 	sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs->number);
+	path_strip(buf);
 	unlink_file(buf);
 
 	m = r->msgs;
@@ -2321,6 +2328,7 @@ int i;
 			break;
 
 		sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, m->number);
+		path_strip(buf);
 		unlink_file(buf);
 
 		remove_MsgIndex(&usr->mail->msgs, m);

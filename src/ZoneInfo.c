@@ -61,6 +61,7 @@ char filename[MAX_PATHLEN], buf[256], *p;
 			*p = '_';
 
 		sprintf(filename, "%s/%s", PARAM_ZONEINFODIR, buf);
+		path_strip(filename);
 
 		if ((timezones[i].zoneinfo = load_ZoneInfo(filename)) == NULL)
 			printf("  %-16s failed\n", timezones[i].city);

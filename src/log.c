@@ -203,6 +203,7 @@ struct tm *tm;
 	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
 	tm = localtime(&t);
 	sprintf(filename, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
+	path_strip(filename);
 	if (mkdir_p(filename) < 0)
 		return;
 
@@ -216,6 +217,7 @@ struct tm *tm;
 	}
 	sprintf(filename, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
 		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+	path_strip(filename);
 
 	if (rename(logfile, filename) == -1)
 		log_err("failed to rename %s to %s", logfile, filename);

@@ -370,7 +370,9 @@ int r;
 			u = NULL;
 		}
 		sprintf(path, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
+		path_strip(path);
 		sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
+		path_strip(newpath);
 /*
 	Move the user directory
 	Note that this enables nuked users to recreate their account instantly,
@@ -867,6 +869,7 @@ int r;
 					break;
 		}
 		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
+		path_strip(buf);
 		if (mkdir(buf, (mode_t)0750) < 0) {
 			log_err("failed to create new room directory %s", buf);
 			Perror(usr, "failed to create room directory");
