@@ -129,7 +129,7 @@ void restart_process(Process *proc) {
 	log_msg("restarting %s", proc->name);
 
 	if (((unsigned long)proc->start_time > 0UL)
-		&& (((unsigned long)time(NULL) - (unsigned long)proc->start_time) < 60UL)) {
+		&& (((unsigned long)time(NULL) - (unsigned long)proc->start_time) < (unsigned long)SECS_IN_MIN)) {
 		proc->died_times++;
 		if (proc->died_times > 3) {
 			log_msg("%s died too many times, continuing without", proc->name);

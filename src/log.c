@@ -91,7 +91,7 @@ struct tm *tm;
 /*
 	sleep exactly till midnight
 */
-	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * 3600 - tm->tm_min * 60 - tm->tm_sec;
+	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * SECS_IN_HOUR - tm->tm_min * SECS_IN_MIN - tm->tm_sec;
 	return 0;
 }
 

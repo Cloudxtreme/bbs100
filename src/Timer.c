@@ -32,6 +32,7 @@
 #include "sys_time.h"
 #include "cstring.h"
 #include "Memory.h"
+#include "util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,7 +158,7 @@ User *usr, *usr_next;
 	tdiff = (int)((unsigned long)rtc - (unsigned long)old_rtc);
 	old_rtc = rtc;
 
-	nap = 600;	/* 10 minutes */
+	nap = 10 * SECS_IN_MIN;	/* 10 minutes */
 
 /* update the user timers */
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {

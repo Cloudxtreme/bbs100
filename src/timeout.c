@@ -62,7 +62,7 @@ User *usr;
 		case TIMEOUT_USER:
 			Put(usr, "\n<beep><red>Hello? Is anybody out there?? You will be logged off in one minute unless\n"
 				"you start looking more alive!\n");
-			usr->idle_timer->sleeptime = 60;
+			usr->idle_timer->sleeptime = SECS_IN_MIN;
 			break;
 
 		case (TIMEOUT_USER-1):

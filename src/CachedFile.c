@@ -38,6 +38,7 @@
 #include "Param.h"
 #include "Memory.h"
 #include "log.h"
+#include "util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,7 +57,7 @@ int init_FileCache(void) {
 
 	cache_size = PARAM_MAX_CACHED;
 
-	if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * 60, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
+	if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * SECS_IN_MIN, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
 		log_err("init_FileCache(): failed to allocate a new Timer");
 	else
 		add_Timer(&timerq, expire_timer);

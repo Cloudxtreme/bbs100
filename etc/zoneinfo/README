@@ -20,9 +20,6 @@ enter the correct timezone for your location. The operating system
 uses that information to correct the time whenever a daylight savings
 switch occurs. If the zone information (supplied with your operating system
 software) is not correct, your system clock will also not be correct.
-Note that the system time will not be corrected by NTP (Network Time
-Protocol), as NTP is not aware of where in the world your system is located,
-and thus it cannot know what timezone you are in.
 
 Why is this important for the BBS? The bbs program runs on a centralized
 server, which is in its own time zone. This time zone may very well be

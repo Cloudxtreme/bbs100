@@ -579,7 +579,7 @@ unsigned long num;
 		usr->more_text = add_String(&usr->more_text, "<green>Account created on <cyan>%s<green>", print_date(usr, usr->birth));
 		l = sprintf(buf, "You have logged on <yellow>%s<green> times, ", print_number(usr->logins));
 
-		num = (unsigned long)((rtc - usr->birth) / (30 * 24 * 3600UL));
+		num = (unsigned long)((rtc - usr->birth) / (unsigned long)(30 * SECS_IN_DAY));
 		if (num == 0UL)
 			num = 1UL;
 		num = usr->logins / num;

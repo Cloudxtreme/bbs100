@@ -375,7 +375,7 @@ void state_ansi_prompt(User *usr, char c) {
 	time to read the displayed text
 */
 		if (usr->idle_timer != NULL) {
-			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 			usr->idle_timer->restart = TIMEOUT_USER;
 			usr->idle_timer->action = user_timeout;
 		}
@@ -392,7 +392,7 @@ void state_display_motd(User *usr, char c) {
 	Enter(state_display_motd);
 
 	if (usr->idle_timer != NULL) {			/* reset the 'timeout timer' */
-		usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+		usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 		usr->idle_timer->restart = TIMEOUT_USER;
 		usr->idle_timer->action = user_timeout;
 	}
@@ -419,7 +419,7 @@ User *u;
 	Enter(state_go_online);
 
 /* do periodic saving of user files */
-	add_Timer(&usr->timerq, new_Timer(PARAM_SAVE_TIMEOUT * 60, save_timeout, TIMER_RESTART));
+	add_Timer(&usr->timerq, new_Timer(PARAM_SAVE_TIMEOUT * SECS_IN_MIN, save_timeout, TIMER_RESTART));
 /*
 	give the user a Mail> room
 	this is already done by load_User(), but Guests and New users
@@ -525,10 +525,10 @@ User *u;
 		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
 
 /* if booting/shutting down, inform the user */
-	if (shutdown_timer != NULL && shutdown_timer->maxtime <= 60)
+	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)
 		Put(usr, "\n<white>NOTE<yellow>: <red>The system is shutting down\n");
 	else
-		if (reboot_timer != NULL && reboot_timer->maxtime <= 60)
+		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
 			Put(usr, "\n<white>NOTE<yellow>: <red>The system is rebooting\n");
 
 	MOV(usr, STATE_ROOM_PROMPT);

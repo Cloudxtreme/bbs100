@@ -2416,9 +2416,9 @@ User *u;
 			stat = 'm';
 
 		t = time_now - u->login_time;
-		hrs = t / 3600;
-		t %= 3600;
-		mins = t / 60;
+		hrs = t / SECS_IN_HOUR;
+		t %= SECS_IN_HOUR;
+		mins = t / SECS_IN_MIN;
 
 		if (u->doing == NULL || !u->doing[0])
 			sprintf(buf, "%c%s<cyan>", col, u->name);
@@ -2968,7 +2968,7 @@ void state_lock_password(User *usr, char c) {
 		usr->runtime_flags |= (RTF_BUSY | RTF_LOCKED);
 
 		if (usr->idle_timer != NULL)
-			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * 60;
+			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
 
 		notify_locked(usr);
 		Return;
@@ -2980,7 +2980,7 @@ void state_lock_password(User *usr, char c) {
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
 
 			if (usr->idle_timer != NULL)
-				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 
 			notify_unlocked(usr);
 			RET(usr);

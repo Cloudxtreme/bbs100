@@ -67,8 +67,8 @@ char filename[MAX_PATHLEN], buf[256], *p;
 			printf("  %-16s failed\n", timezones[i].city);
 		else {
 			gmtoff = timezones[i].zoneinfo->gmtoff;
-			hh = gmtoff / 3600;
-			mm = gmtoff % 3600;
+			hh = gmtoff / SECS_IN_HOUR;
+			mm = gmtoff % SECS_IN_HOUR;
 			if (mm < 0)
 				mm = -mm;
 

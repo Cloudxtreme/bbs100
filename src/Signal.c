@@ -328,15 +328,15 @@ char buf[128];
 	log_msg("SIGQUIT received, rebooting in 5 minutes");
 
 	if (reboot_timer != NULL) {
-		reboot_timer->sleeptime = reboot_timer->maxtime = 4*60;		/* reboot in 5 mins */
+		reboot_timer->sleeptime = reboot_timer->maxtime = 4 * SECS_IN_MIN;	/* reboot in 5 mins */
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now rebooting in %s", 
-			print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
+			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN));
 		system_broadcast(0, buf);
 		Return;
 	}
-	if ((reboot_timer = new_Timer(4*60, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
+	if ((reboot_timer = new_Timer(4 * SECS_IN_MIN, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
 		log_msg("SIGQUIT: Out of memory, reboot cancelled");
 		log_err("SIGQUIT: Out of memory, reboot cancelled");
 		Return;
@@ -344,7 +344,7 @@ char buf[128];
 	add_Timer(&timerq, reboot_timer);
 
 	sprintf(buf, "The system is rebooting in %s",
-		print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
+		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -359,15 +359,15 @@ char buf[128];
 	log_msg("SIGTERM received, shutting down in 5 minutes");
 
 	if (shutdown_timer != NULL) {
-		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4*60;		/* shutdown in 5 mins */
+		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4 * SECS_IN_MIN;	/* shutdown in 5 mins */
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now shutting down in %s",
-			print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
+			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN));
 		system_broadcast(0, buf);
 		Return;
 	}
-	if ((shutdown_timer = new_Timer(4*60, shutdown_timeout, TIMEOUT_REBOOT)) == NULL) {
+	if ((shutdown_timer = new_Timer(4 * SECS_IN_MIN, shutdown_timeout, TIMEOUT_REBOOT)) == NULL) {
 		log_msg("SIGTERM: Out of memory, shutdown cancelled");
 		log_err("SIGTERM: Out of memory, shutdown cancelled");
 		Return;
@@ -375,7 +375,7 @@ char buf[128];
 	add_Timer(&timerq, shutdown_timer);
 
 	sprintf(buf, "The system is shutting down in %s",
-		print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
+		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN));
 	system_broadcast(0, buf);
 	Return;
 }
