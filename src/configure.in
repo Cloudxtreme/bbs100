@@ -166,6 +166,6 @@ else
 fi
 CFLAGS="$CCOPTS"
 
-AC_OUTPUT(Makefile bbs expire_accounts.sh stats.pl)
+AC_OUTPUT(Makefile bbs expire_accounts.sh)
 
 dnl --- END OF CONFIGURE.IN ---

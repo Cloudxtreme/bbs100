@@ -70,7 +70,7 @@ MORE_OBJS = mkpasswd.o resolver.o ccat.o
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
 TARGETS = main mkpasswd resolver ccat
-SCRIPTS = bbs expire_accounts.sh stats.pl
+SCRIPTS = bbs expire_accounts.sh
 
 all: .depend $(TARGETS)
 
