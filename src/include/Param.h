@@ -37,7 +37,7 @@
 	      single entry
 */
 #define PARAM_BBS_NAME				param[0].val.s
-#define PARAM_PORT_NUMBER			param[1].val.u
+#define PARAM_PORT_NUMBER			param[1].val.d
 
 #define PARAM_DIR_N					2
 #define PARAM_BASEDIR				param[PARAM_DIR_N].val.s
@@ -89,18 +89,18 @@
 #define PARAM_CRASHDIR				param[PARAM_LOG_N+5].val.s
 
 #define PARAM_MAX_N					39
-#define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.u
-#define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.u
-#define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.u
-#define PARAM_MAX_MSG_LINES			param[PARAM_MAX_N+3].val.u
-#define PARAM_MAX_XMSG_LINES		param[PARAM_MAX_N+4].val.u
-#define PARAM_MAX_HISTORY			param[PARAM_MAX_N+5].val.u
-#define PARAM_MAX_CHAT_HISTORY		param[PARAM_MAX_N+6].val.u
-#define PARAM_MAX_FRIEND			param[PARAM_MAX_N+7].val.u
-#define PARAM_MAX_ENEMY				param[PARAM_MAX_N+8].val.u
-#define PARAM_IDLE_TIMEOUT			param[PARAM_MAX_N+9].val.u
-#define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.u
-#define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.u
+#define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.d
+#define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.d
+#define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.d
+#define PARAM_MAX_MSG_LINES			param[PARAM_MAX_N+3].val.d
+#define PARAM_MAX_XMSG_LINES		param[PARAM_MAX_N+4].val.d
+#define PARAM_MAX_HISTORY			param[PARAM_MAX_N+5].val.d
+#define PARAM_MAX_CHAT_HISTORY		param[PARAM_MAX_N+6].val.d
+#define PARAM_MAX_FRIEND			param[PARAM_MAX_N+7].val.d
+#define PARAM_MAX_ENEMY				param[PARAM_MAX_N+8].val.d
+#define PARAM_IDLE_TIMEOUT			param[PARAM_MAX_N+9].val.d
+#define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.d
+#define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.d
 
 #define PARAM_NAME_N				51
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
@@ -132,7 +132,6 @@
 #define DEFAULT_IDLE_TIMEOUT		10		/* 10 minute timeout */
 #define DEFAULT_LOCK_TIMEOUT		30		/* 30 minute timeout */
 #define DEFAULT_SAVE_TIMEOUT		5		/* save user every 5 minutes */
-#define DEFAULT_USERHASH_SIZE		16		/* good for small and medium sized BBSes */
 
 typedef union {
 	char *str;
@@ -159,6 +158,7 @@ extern Param param[];
 int init_Param(void);
 int load_Param(char *);
 int save_Param(char *);
+void check_Param(void);
 void print_Param(void);
 
 #endif	/* PARAM_H_WJ99 */

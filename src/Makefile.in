@@ -54,7 +54,7 @@ LIBNSL = @LIBNSL@
 INCLUDE = include
 
 .c.o:
-	@echo '  CC       ' $<
+	@echo '  CC       ' $@
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
 OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \

@@ -267,7 +267,41 @@ int i, num;
 }
 
 
-/* used at startup for a pretty boot screen */
+/*
+	check for decent integer values
+*/
+void check_Param(void) {
+/*
+	if max_cached < 0, the user probably meant to turn it off
+*/	
+	if (PARAM_MAX_CACHED < 0) {
+		PARAM_MAX_CACHED = 0;
+		printf("invalid value for max_cached, cache disabled\n");
+	}
+
+#define PARAM_CHECK(x,y,z)	\
+	if ((y) < 1) {			\
+		(y) = (z);			\
+		printf("invalid value for %s, reset to default %d\n", (x), (z));	\
+	}
+
+	PARAM_CHECK("port_number",		PARAM_PORT_NUMBER,		DEFAULT_PORT_1234);
+	PARAM_CHECK("max_messages",		PARAM_MAX_MESSAGES,		DEFAULT_MAX_MESSAGES);
+	PARAM_CHECK("max_mail_msgs",	PARAM_MAX_MAIL_MSGS,	DEFAULT_MAX_MAIL_MSGS);
+	PARAM_CHECK("max_history",		PARAM_MAX_HISTORY,		DEFAULT_MAX_HISTORY);
+	PARAM_CHECK("max_chat_history",	PARAM_MAX_CHAT_HISTORY,	DEFAULT_MAX_CHAT_HISTORY);
+	PARAM_CHECK("max_msg_lines",	PARAM_MAX_MSG_LINES,	DEFAULT_MAX_MSG_LINES);
+	PARAM_CHECK("max_xmsg_lines",	PARAM_MAX_XMSG_LINES,	DEFAULT_MAX_XMSG_LINES);
+	PARAM_CHECK("max_friend",		PARAM_MAX_FRIEND,		DEFAULT_MAX_FRIEND);
+	PARAM_CHECK("max_enemy",		PARAM_MAX_ENEMY,		DEFAULT_MAX_ENEMY);
+	PARAM_CHECK("idle_timeout",		PARAM_IDLE_TIMEOUT,		DEFAULT_IDLE_TIMEOUT);
+	PARAM_CHECK("lock_timeout",		PARAM_LOCK_TIMEOUT,		DEFAULT_LOCK_TIMEOUT);
+	PARAM_CHECK("save_timeout",		PARAM_SAVE_TIMEOUT,		DEFAULT_SAVE_TIMEOUT);
+}
+
+/*
+	used at startup for a pretty boot screen
+*/
 void print_Param(void) {
 int i, num;
 char buf[MAX_PATHLEN];
@@ -276,7 +310,7 @@ char buf[MAX_PATHLEN];
 
 	for(i = 0; i < num; i++) {
 		strcpy(buf, param[i].var);
-		strcat(buf, " ...");
+		strcat(buf, "    ");
 
 		switch(param[i].type & PARAM_MASK) {
 			case PARAM_STRING:

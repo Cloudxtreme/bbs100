@@ -71,7 +71,6 @@ int fork_process(Process *proc) {
 	if (proc == NULL)
 		return -1;
 
-#ifdef HAVE_FORK
 	proc->pid = (pid_t)-1L;
 	proc->start_time = (time_t)0UL;
 
@@ -103,13 +102,6 @@ int fork_process(Process *proc) {
 	proc->start_time = time(NULL);
 
 	log_msg("%s started, pid %u", proc->name, proc->pid);
-
-#else	/* HAVE_FORK */
-
-	log_warn("this platform has no fork() function, not forking %s", proc->name);
-
-#endif	/* HAVE_FORK */
-
 	return 0;
 }
 

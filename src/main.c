@@ -100,7 +100,6 @@ struct stat statbuf;
 }
 
 static void goto_background(void) {
-#ifdef HAVE_FORK
 pid_t pid;
 int fd;
 
@@ -134,8 +133,6 @@ int fd;
 	}
 	if (pid != (pid_t)0L)					/* parent: exit */
 		exit(0);
-
-#endif	/* HAVE_FORK */
 
 	write_pidfile();
 }
@@ -217,6 +214,7 @@ int main(int argc, char **argv) {
 		init_Param();
 	} else
 		printf("ok\n");
+	check_Param();
 	print_Param();
 
 	write_pidfile();
