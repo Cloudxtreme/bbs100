@@ -1,5 +1,5 @@
 /*
-	Hash.c	WJ103
+	Hash.c	WJ104
 
 	bbs100-style generic auto-sizing hash code
 

@@ -1,6 +1,6 @@
 /*
-    bbs100 1.2.2 WJ103
-    Copyright (C) 2003  Walter de Jong <walter@heiho.net>
+    bbs100 1.2.3 WJ104
+    Copyright (C) 2004  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

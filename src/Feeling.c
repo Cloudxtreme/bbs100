@@ -1,6 +1,6 @@
 /*
-    bbs100 1.2.2 WJ103
-    Copyright (C) 2003  Walter de Jong <walter@heiho.net>
+    bbs100 1.2.3 WJ104
+    Copyright (C) 2004  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,8 +144,11 @@ char buf[PRINT_BUF], fmt[128];
 	listdestroy_StringList(feelings_screen);
 	feelings_screen = NULL;
 
-	if (width < 1 || width > 1000)
-		width = 79;
+	if (width < 10)
+		width = 10;
+
+	if (width > PRINT_BUF/2)
+		width = PRINT_BUF/2;
 
 	total = 0;
 	for(f = feelings; f != NULL; f = f->next) {
