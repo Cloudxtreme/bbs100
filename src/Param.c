@@ -123,7 +123,9 @@ Param param[] = {
 	{ PARAM_BOOL,	"have_quick_x",		{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_talkedto",	{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_hold_msgs",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_followup",	{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_x_reply",		{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_calendar",	{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_worldclock",	{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"disabled_msg",		{ NULL },	{ (char *)-1 },	},
 };

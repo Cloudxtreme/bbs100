@@ -1030,7 +1030,7 @@ Rcv_Remove_Recipient:
 					strcpy(msg_type, "Message");
 		}
 	}
-	if (usr->runtime_flags & (RTF_BUSY|RTF_HOLD))
+	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)))
 		msg->flags &= ~BUFMSG_SEEN;
 	else
 		msg->flags |= BUFMSG_SEEN;
@@ -1043,7 +1043,7 @@ Rcv_Remove_Recipient:
 /*
 	put the new copy of the message on the correct list
 */
-	if (usr->runtime_flags & RTF_HOLD) {
+	if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
 		if (!(msg->flags & ~BUFMSG_SEEN)) {		/* one-shot message */
 			if (usr->runtime_flags & RTF_BUSY)
 				add_BufferedMsg(&usr->busy_msgs, new_msg);
@@ -1065,20 +1065,20 @@ Rcv_Remove_Recipient:
 		usr->history->prev = NULL;
 		destroy_BufferedMsg(m);
 	}
-	if (usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) {
+	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
 		if ((usr->runtime_flags & RTF_BUSY_SENDING)
 			&& in_StringList(usr->recipients, from->name) != NULL)
 /*
 	warn follow-up mode by Richard of MatrixBBS
 */
 			Print(from, "<yellow>%s<green> is busy sending you a message%s\n", usr->name,
-				(usr->flags & USR_FOLLOWUP) ? " in follow-up mode" : "");
+				(PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
 		else
 			if ((usr->runtime_flags & RTF_BUSY_MAILING)
 				&& in_StringList(usr->recipients, from->name) != NULL)
 				Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
 			else
-				if (usr->runtime_flags & RTF_HOLD)
+				if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
 					Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
 				else
 					Print(from, "<yellow>%s<green> is busy and will receive your %s when done\n", usr->name, msg_type);
@@ -1095,7 +1095,7 @@ Rcv_Remove_Recipient:
 
 /* auto-reply if FOLLOWUP or if it was a Question */
 
-	if ((usr->flags & USR_FOLLOWUP)
+	if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
 		|| ((msg->flags & BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
 		listdestroy_StringList(usr->recipients);
 		if ((usr->recipients = new_StringList(msg->from)) == NULL) {
@@ -1140,7 +1140,7 @@ BufferedMsg *m;
 
 /* auto-reply is follow up or question */
 		if (strcmp(m->from, usr->name)
-			&& ((usr->flags & USR_FOLLOWUP)
+			&& ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
 			|| ((m->flags & BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND)))) {
 			if (is_online(m->from) != NULL) {
 				listdestroy_StringList(usr->recipients);

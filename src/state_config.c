@@ -52,8 +52,13 @@ void state_config_menu(User *usr, char c) {
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Terminal settings\n"
 				"<hotkey>Doing                        Customize <hotkey>Who list\n"
-				"<hotkey>Reminder                     <hotkey>Quicklist\n"
+				"<hotkey>Reminder"
 			);
+			if (PARAM_HAVE_QUICK_X)
+				Put(usr, "                     <hotkey>Quicklist\n");
+			else
+				Put(usr, "\n");
+
 			Put(usr,
 				"Profile <hotkey>info                 <hotkey>Friends/<hotkey>Enemies\n"
 				"Default an<hotkey>onymous alias      Time <hotkey>Zone\n"
@@ -156,8 +161,11 @@ void state_config_menu(User *usr, char c) {
 
 		case 'q':
 		case 'Q':
-			CALL(usr, STATE_QUICKLIST_PROMPT);
-			Return;
+			if (PARAM_HAVE_QUICK_X) {
+				CALL(usr, STATE_QUICKLIST_PROMPT);
+				Return;
+			}
+			break;
 
 		case 'f':
 		case 'F':

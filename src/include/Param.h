@@ -132,9 +132,11 @@
 #define PARAM_HAVE_QUICK_X			param[PARAM_HAVE_N+4].val.bool
 #define PARAM_HAVE_TALKEDTO			param[PARAM_HAVE_N+5].val.bool
 #define PARAM_HAVE_HOLD				param[PARAM_HAVE_N+6].val.bool
-#define PARAM_HAVE_X_REPLY			param[PARAM_HAVE_N+7].val.bool
-#define PARAM_HAVE_WORLDCLOCK		param[PARAM_HAVE_N+8].val.bool
-#define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+9].val.bool
+#define PARAM_HAVE_FOLLOWUP			param[PARAM_HAVE_N+7].val.bool
+#define PARAM_HAVE_X_REPLY			param[PARAM_HAVE_N+8].val.bool
+#define PARAM_HAVE_CALENDAR			param[PARAM_HAVE_N+9].val.bool
+#define PARAM_HAVE_WORLDCLOCK		param[PARAM_HAVE_N+10].val.bool
+#define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+11].val.bool
 
 
 #define DEFAULT_PORT_1234			1234	/* default port number */

@@ -136,7 +136,7 @@ char many_buf[MAX_LINE*3];
 	(same as for the friendlist, but now with usr->talked_to)
 */
 		case KEY_CTRL('T'):
-			if (usr->talked_to == NULL)
+			if (!PARAM_HAVE_TALKEDTO || usr->talked_to == NULL)
 				break;
 
 			erase_name(usr);

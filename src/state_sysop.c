@@ -1354,13 +1354,14 @@ void state_parameters_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
-				"S<hotkey>ystem configuration\n"
+				"System <hotkey>Configuration\n"
 				"Configure locations of <hotkey>Files\n"
 				"Configure <hotkey>Maximums and timeouts\n"
 				"Configure <hotkey>Strings and messages\n"
 			);
 			Print(usr,
 				"Configure <hotkey>Log rotation\n"
+				"<hotkey>Toggle features\n"
 				"<hotkey>Reload screens and help files\n"
 				"\n"
 				"<white>Ctrl-<hotkey>R<magenta>eload param file <white>%s\n", param_file);
@@ -1380,8 +1381,8 @@ void state_parameters_menu(User *usr, char c) {
 			Return;
 
 
-		case 'y':
-		case 'Y':
+		case 'c':
+		case 'C':
 			Put(usr, "System configuration\n");
 			CALL(usr, STATE_SYSTEM_CONFIG_MENU);
 			Return;
@@ -1408,6 +1409,12 @@ void state_parameters_menu(User *usr, char c) {
 		case 'L':
 			Put(usr, "Configure log rotation\n");
 			CALL(usr, STATE_LOG_MENU);
+			Return;
+
+		case 't':
+		case 'T':
+			Put(usr, "Toggle features\n");
+			CALL(usr, STATE_FEATURES_MENU);
 			Return;
 
 		case 'r':
@@ -2528,6 +2535,111 @@ void state_param_notify_leave_chat(User *usr, char c) {
 	Return;
 }
 
+
+#define TOGGLE_FEATURE(x)	(x) ^= PARAM_TRUE;	\
+	usr->runtime_flags |= RTF_PARAM_EDITED;		\
+	Put(usr, "\n");								\
+	CURRENT_STATE(usr);							\
+	Return
+
+void state_features_menu(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_features_menu);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+			Print(usr, "\n<magenta>"
+				"e<hotkey>Xpress Messages     <white>%-3s<magenta>        Quic<hotkey>k X messaging    <white>%s<magenta>\n"
+				"<hotkey>Emotes               <white>%-3s<magenta>        <hotkey>Talked To list       <white>%s<magenta>\n"
+				"<hotkey>Feelings             <white>%-3s<magenta>        <hotkey>Hold message mode    <white>%s<magenta>\n"
+				"<hotkey>Questions            <white>%-3s<magenta>        Follow-<hotkey>up mode       <white>%s<magenta>\n",
+
+				(PARAM_HAVE_XMSGS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_QUICK_X == PARAM_FALSE) ? "off" : "on",
+
+				(PARAM_HAVE_EMOTES == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_TALKEDTO == PARAM_FALSE) ? "off" : "on",
+
+				(PARAM_HAVE_FEELINGS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_HOLD == PARAM_FALSE) ? "off" : "on",
+
+				(PARAM_HAVE_QUESTIONS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_FOLLOWUP == PARAM_FALSE) ? "off" : "on"
+			);
+			Print(usr,
+				"X <hotkey>Reply              <white>%-3s<magenta>\n"
+				"\n"
+				"<hotkey>Calendar             <white>%-3s<magenta>\n"
+				"<hotkey>World clock          <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
+
+				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
+				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "\n");
+			RET(usr);
+			Return;
+
+		case 'x':
+		case 'X':
+			TOGGLE_FEATURE(PARAM_HAVE_XMSGS);
+
+		case 'e':
+		case 'E':
+			TOGGLE_FEATURE(PARAM_HAVE_EMOTES);
+
+		case 'f':
+		case 'F':
+			TOGGLE_FEATURE(PARAM_HAVE_FEELINGS);
+
+		case 'q':
+		case 'Q':
+			TOGGLE_FEATURE(PARAM_HAVE_QUESTIONS);
+
+		case 'k':
+		case 'K':
+			TOGGLE_FEATURE(PARAM_HAVE_QUICK_X);
+
+		case 't':
+		case 'T':
+			TOGGLE_FEATURE(PARAM_HAVE_TALKEDTO);
+
+		case 'h':
+		case 'H':
+			TOGGLE_FEATURE(PARAM_HAVE_HOLD);
+
+		case 'u':
+		case 'U':
+			TOGGLE_FEATURE(PARAM_HAVE_FOLLOWUP);
+
+		case 'r':
+		case 'R':
+			TOGGLE_FEATURE(PARAM_HAVE_X_REPLY);
+
+		case 'c':
+		case 'C':
+			TOGGLE_FEATURE(PARAM_HAVE_CALENDAR);
+
+		case 'w':
+		case 'W':
+			TOGGLE_FEATURE(PARAM_HAVE_WORLDCLOCK);
+
+		case 'd':
+		case 'D':
+			TOGGLE_FEATURE(PARAM_DISABLED_MSG);
+	}
+	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
+	Return;
+}
 
 void state_log_menu(User *usr, char c) {
 char *new_val;

@@ -293,8 +293,11 @@ int i;
 						break;
 					}
 					if (usr->runtime_flags & RTF_HOLD) {
-						Put(usr, "<red>You must not have messages on hold if you want to be available to help others\n");
-						break;
+						if (PARAM_HAVE_HOLD) {
+							Put(usr, "<red>You must not have messages on hold if you want to be available to help others\n");
+							break;
+						} else
+							usr->runtime_flags &= ~RTF_HOLD;
 					}
 					usr->flags |= USR_HELPING_HAND;
 					Put(usr, "<magenta>You now are available to help others\n");
@@ -611,9 +614,12 @@ int i;
 						usr->flags |= USR_HELPING_HAND;
 					}
 				}
-			} else
+			} else {
 				if (PARAM_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Hold Message Mode<red> is not enabled on this server\n");
+
+				usr->runtime_flags &= ~RTF_HOLD;
+			}
 			break;
 
 		case 'j':
@@ -951,9 +957,13 @@ int i;
 			break;
 
 		case 'F':
-			usr->flags ^= USR_FOLLOWUP;
-			Print(usr, "<white>Toggle follow-up mode\n"
-				"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
+			if (PARAM_HAVE_FOLLOWUP) {
+				usr->flags ^= USR_FOLLOWUP;
+				Print(usr, "<white>Toggle follow-up mode\n"
+					"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
+			} else
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Follow-up mode<red> is not enabled on this server\n");
 			break;
 
 		case 'k':
@@ -1306,20 +1316,20 @@ void loop_ping(User *usr, char c) {
 	the warn follow-up mode feature was donated by Richard of MatrixBBS
 */
 					Print(usr, "<yellow>%s<green> is busy sending you a message%s\n",
-						u->name, (u->flags & USR_FOLLOWUP) ? " in follow-up mode" : "");
+						u->name, (PARAM_HAVE_FOLLOWUP && (u->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
 				else {
 					if ((u->runtime_flags & RTF_BUSY_MAILING)
 						&& u->new_message != NULL
 						&& in_StringList(u->new_message->to, usr->name) != NULL)
 						Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
 					else
-						if (u->runtime_flags & RTF_HOLD)
+						if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD))
 							Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
 						else
 							Print(usr, "<yellow>%s<green> is busy\n", u->name);
 				}
 			} else
-				if (u->runtime_flags & RTF_HOLD)
+				if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD))
 					Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
 				else
 					Print(usr, "<yellow>%s<green> is not busy\n", u->name);
@@ -3578,11 +3588,11 @@ char zone_color[16], zone_color2[16];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		Print(usr, "    <cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
+		Print(usr, "<cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min, am_pm);
 	} else
-		Print(usr, "    <cyan>%-15s <%s>%02d<white>:<%s>%02d",
+		Print(usr, "<cyan>%-15s <%s>%02d<white>:<%s>%02d",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
@@ -3600,7 +3610,7 @@ char date_buf[MAX_LINE];
 
 	Print(usr, "<magenta>Current time is<yellow> %s %s\n", print_date(usr, (time_t)0UL, date_buf), name_Timezone(usr->tz));
 
-	if (!PARAM_HAVE_WORLDCLOCK) {
+	if (!PARAM_HAVE_CALENDAR && !PARAM_HAVE_WORLDCLOCK) {
 		Return;
 	}
 	tmp = user_time(usr, (time_t)0UL);
@@ -3609,36 +3619,57 @@ char date_buf[MAX_LINE];
 	today_month = tmp->tm_mon;
 	today_year = tmp->tm_year;
 
-	Put(usr, "\n<magenta>  S  M Tu  W Th  F  S");
-	print_worldclock(usr, 0);
-	print_worldclock(usr, 1);
+	Put(usr, "\n");
+	if (PARAM_HAVE_CALENDAR)
+		Put(usr, "<magenta>  S  M Tu  W Th  F  S");
+
+	if (PARAM_HAVE_WORLDCLOCK) {
+		if (PARAM_HAVE_CALENDAR)
+			Put(usr, "    ");
+		print_worldclock(usr, 0);
+		Put(usr, "    ");
+		print_worldclock(usr, 1);
+	}
 	Put(usr, "\n");
 
 	t = rtc - (14 + w) * SECS_IN_DAY;
 	tmp = user_time(usr, t);
 	old_month = tmp->tm_mon;
 	green_color = 1;
-	Put(usr, "<green>");
+
+	if (PARAM_HAVE_CALENDAR)
+		Put(usr, "<green>");
 
 	for(w = 0; w < 5; w++) {
-		Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+		if (PARAM_HAVE_CALENDAR)
+			Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+
 		for(d = 0; d < 7; d++) {
 			tmp = user_time(usr, t);
 
-			if (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
+			if (PARAM_HAVE_CALENDAR && tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
 				Print(usr, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 			else {
 				if (old_month != tmp->tm_mon) {
 					green_color ^= 1;
-					Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+
+					if (PARAM_HAVE_CALENDAR)
+						Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+
 					old_month = tmp->tm_mon;
 				}
-				Print(usr, " %2d", tmp->tm_mday);
+				if (PARAM_HAVE_CALENDAR)
+					Print(usr, " %2d", tmp->tm_mday);
 			}
 			t += SECS_IN_DAY;
 		}
-		print_worldclock(usr, w+2);
-		print_worldclock(usr, w+7);
+		if (PARAM_HAVE_WORLDCLOCK) {
+			if (PARAM_HAVE_CALENDAR)
+				Put(usr, "    ");
+			print_worldclock(usr, w+2);
+			Put(usr, "    ");
+			print_worldclock(usr, w+7);
+		}
 		Put(usr, "\n");
 	}
 	Return;

@@ -89,6 +89,7 @@
 #define STATE_PARAM_HOSTMAP_FILE		state_param_hostmap_file
 #define STATE_PARAM_DEF_TIMEZONE		state_param_def_timezone
 
+#define STATE_FEATURES_MENU				state_features_menu
 #define STATE_RELOAD_FILES_MENU			state_reload_files_menu
 
 #define STATE_MAXIMUMS_MENU				state_maximums_menu
@@ -188,6 +189,7 @@ void state_param_symtab_file(User *, char);
 void state_param_hostmap_file(User *, char);
 void state_param_def_timezone(User *, char);
 
+void state_features_menu(User *, char);
 void state_reload_files_menu(User *, char);
 
 void state_maximums_menu(User *, char);
