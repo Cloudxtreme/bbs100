@@ -1,5 +1,5 @@
 /*
-    bbs100 1.2.1 WJ103
+    bbs100 1.2.2 WJ103
     Copyright (C) 2003  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
