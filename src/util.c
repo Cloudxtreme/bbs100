@@ -801,11 +801,13 @@ struct tm *t;
 }
 
 /*
-	Note: returns static buffer
+	Note: buf must be large enough (MAX_LINE bytes will do)
 */
-char *print_total_time(unsigned long total) {
-static char buf[MAX_LINE];
+char *print_total_time(unsigned long total, char *buf) {
 int weeks, days, hrs, mins, secs, l = 0;
+
+	if (buf == NULL)
+		return NULL;
 
 	weeks = total / SECS_IN_WEEK;
 	total %= SECS_IN_WEEK;

@@ -489,7 +489,7 @@ unsigned long num;
 	usr->more_text = add_String(&usr->more_text,
 		"<green>The system was last booted on <cyan>%s", print_date(usr, stats.uptime, date_buf));
 	usr->more_text = add_String(&usr->more_text,
-		"<green>Uptime is <yellow>%s", print_total_time(rtc - stats.uptime));
+		"<green>Uptime is <yellow>%s", print_total_time(rtc - stats.uptime, date_buf));
 	usr->more_text = add_String(&usr->more_text,
 		"<yellow>%s<green> successful login%s made since boot time",
 		print_number(stats.num_logins), (stats.num_logins == 1UL) ? "" : "s");
@@ -519,7 +519,7 @@ unsigned long num;
 
 	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s<green>", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
 	usr->more_text = add_String(&usr->more_text, "Oldest user is <white>%s<green>,", stats.oldest);
-	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s<green>", print_total_time(stats.oldest_age));
+	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s<green>", print_total_time(stats.oldest_age, date_buf));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 
 /*
@@ -586,7 +586,7 @@ unsigned long num;
 
 		sprintf(buf+l, "an average of <yellow>%s<green> time%s per month", print_number(num), (num == 1UL) ? "" : "s");
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-		usr->more_text = add_String(&usr->more_text, "Your total online time is <yellow>%s", print_total_time(usr->total_time));
+		usr->more_text = add_String(&usr->more_text, "Your total online time is <yellow>%s", print_total_time(usr->total_time, date_buf));
 	}
 	read_more(usr);
 	Return;

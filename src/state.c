@@ -1263,8 +1263,11 @@ void loop_ping(User *usr, char c) {
 	(hardcoded) default is after 2 minutes
 */
 			tdiff = (unsigned long)rtc - (unsigned long)u->idle_time;
-			if (tdiff >= 120UL)
-				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff));
+			if (tdiff >= 120UL) {
+				char total_buf[MAX_LINE];
+
+				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf));
+			}
 		}
 /*
 		if (in_StringList(u->friends, usr->name) != NULL)
@@ -1292,7 +1295,7 @@ int r;
 	if (r == EDIT_RETURN) {
 		User *u = NULL;
 		int allocated = 0;
-		char *p;
+		char total_buf[MAX_LINE], *p;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -1320,7 +1323,7 @@ int r;
 			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time));
+				Print(usr, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time, total_buf));
 				if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
 						Print(usr, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]\n", u->from_ip, (int)((u->ipnum >> 24) & 255), (int)((u->ipnum >> 16) & 255), (int)((u->ipnum >> 8) & 255), (int)(u->ipnum & 255));
@@ -1428,7 +1431,7 @@ int r;
 	display for how long someone is online
 	print_total_time() by Richard of MatrixBBS
 */
-			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time));
+			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time, total_buf));
 			if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
 					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]", u->from_ip,
@@ -1444,7 +1447,7 @@ int r;
 		}
 		if (!allocated)
 			update_stats(u);
-		usr->more_text = add_String(&usr->more_text, "<green>Total online time: <yellow>%s", print_total_time(u->total_time));
+		usr->more_text = add_String(&usr->more_text, "<green>Total online time: <yellow>%s", print_total_time(u->total_time, total_buf));
 
 		if (u->flags & USR_X_DISABLED)
 			usr->more_text = add_String(&usr->more_text, "<red>%s has message reception turned off", u->name);

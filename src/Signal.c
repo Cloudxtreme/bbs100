@@ -329,7 +329,7 @@ void sig_fatal(int sig) {
 	SIGQUIT: reboot in 5
 */
 void sig_reboot(int sig) {
-char buf[128];
+char buf[128], total_buf[MAX_LINE];
 
 	Enter(sig_reboot);
 	log_msg("SIGQUIT received, rebooting in 5 minutes");
@@ -339,7 +339,7 @@ char buf[128];
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now rebooting in %s", 
-			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN));
+			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -351,7 +351,7 @@ char buf[128];
 	add_Timer(&timerq, reboot_timer);
 
 	sprintf(buf, "The system is rebooting in %s",
-		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN));
+		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -360,7 +360,7 @@ char buf[128];
 	SIGABRT: shutdown in 5
 */
 void sig_shutdown(int sig) {
-char buf[128];
+char buf[128], total_buf[128];
 
 	Enter(sig_shutdown);
 	log_msg("SIGTERM received, shutting down in 5 minutes");
@@ -370,7 +370,7 @@ char buf[128];
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now shutting down in %s",
-			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN));
+			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -382,7 +382,7 @@ char buf[128];
 	add_Timer(&timerq, shutdown_timer);
 
 	sprintf(buf, "The system is shutting down in %s",
-		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN));
+		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -393,7 +393,7 @@ char buf[128];
 void sig_shutnow(int sig) {
 StringList *screen, *sl;
 User *u;
-char signame_buf[80];
+char signame_buf[MAX_LINE];
 
 	Enter(sig_shutnow);
 

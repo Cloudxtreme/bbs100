@@ -91,7 +91,7 @@ void system_broadcast(int, char *);
 struct tm *tz_time(Timezone *, time_t);
 struct tm *user_time(User *, time_t);
 char *print_date(User *, time_t, char *);
-char *print_total_time(unsigned long);
+char *print_total_time(unsigned long, char *);
 char *print_number(unsigned long);
 char *print_numberth(unsigned long);
 char *name_with_s(char *);
