@@ -95,7 +95,7 @@ char *print_total_time(unsigned long, char *);
 char *print_number(unsigned long, char *);
 char *print_numberth(unsigned long, char *);
 char *name_with_s(char *, char *);
-char *room_name(User *, Room *);
+char *room_name(User *, Room *, char *);
 unsigned long get_mail_top(char *);
 char *get_basename(char *);
 int rm_rf_trashdir(char *);

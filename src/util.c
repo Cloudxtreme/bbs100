@@ -975,10 +975,11 @@ int i, j;
 }
 
 /*
-	Note: returns a static buffer
+	Note: buf must be large enough (MAX_LINE should do)
 */
-char *room_name(User *usr, Room *r) {
-static char buf[MAX_LINE*2];
+char *room_name(User *usr, Room *r, char *buf) {
+	if (buf == NULL)
+		return NULL;
 
 	*buf = 0;
 	if (usr == NULL || r == NULL)

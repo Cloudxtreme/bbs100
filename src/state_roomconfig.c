@@ -442,6 +442,7 @@ int r;
 		StringList *sl;
 		User *u;
 		Joined *j;
+		char roomname_buf[MAX_LINE];
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -464,7 +465,7 @@ int r;
 
 			if ((u = is_online(sl->str)) != NULL) {
 				if (u != usr)
-					Tell(u, "\n<magenta>You have been invited into %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+					Tell(u, "\n<magenta>You have been invited into %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 				if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 					if ((j = new_Joined()) != NULL)
@@ -485,7 +486,7 @@ int r;
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
-						Tell(u, "\n<magenta>You have been uninvited from %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+						Tell(u, "\n<magenta>You have been uninvited from %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 					if ((usr->curr_room->flags & ROOM_HIDDEN)
 						&& (j = in_Joined(u->rooms, usr->curr_room->number)) != NULL)
@@ -498,7 +499,7 @@ int r;
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
-						Tell(u, "\n<magenta>You have been invited in %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+						Tell(u, "\n<magenta>You have been invited in %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 					if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 						if ((j = new_Joined()) != NULL)
@@ -546,6 +547,7 @@ int r;
 		StringList *sl;
 		User *u;
 		Joined *j;
+		char roomname_buf[MAX_LINE];
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -583,7 +585,7 @@ int r;
 			log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 				if (u->curr_room == usr->curr_room) {
 					Tell(u, "<green>You are being dropped off in the <yellow>%s<white>>", Lobby_room->name);
@@ -608,7 +610,7 @@ int r;
 				log_msg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 				}
 			} else {
 				add_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
@@ -617,7 +619,7 @@ int r;
 				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
+					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 					if (u->curr_room == usr->curr_room) {
 						Tell(u, "<green>You are being dropped off in the <yellow>%s<white>>\n", Lobby_room->name);
