@@ -32,6 +32,7 @@
 #include "util.h"
 #include "defines.h"
 #include "debug.h"
+#include "util.h"
 #include "mydirentry.h"
 
 #include <stdio.h>
@@ -295,8 +296,8 @@ Lang *l;
 	translate a given system text into a loaded phrasebook text
 */
 char *translate(Lang *l, char *text) {
-int key, n, m;
-char keybuf[32], *p, *endp, *translated;
+int key, n, m, i;
+char keybuf[32], *p, *q, *endp, *translated;
 static char textbuf[PRINT_BUF];
 
 	if (text == NULL || !*text)
@@ -316,17 +317,50 @@ static char textbuf[PRINT_BUF];
 	}
 /*
 	the kludge here makes translation also work for strings that have leading
-	and trailing white space, which is quite convenient
+	and trailing white space, as well as color codes, and it's quite convenient
+
+	first the leading spaces
 */
 	n = 0;
-	for(p = text; *p == ' ' || *p == '\n' || *p == '\r' || *p == '\b' || *p == '\t'; p++, n++);
+	p = text;
+	while(*p) {
+		if (*p == ' ' || *p == '\n' || *p == '\r' || *p == '\b' || *p == '\t') {
+			p++;
+			n++;
+			continue;
+		}
+		if (*p == '<') {
+			i = skip_long_color_code(p);
+			n += i;
+			p += i;
+			continue;
+		}
+		break;
+	}
 	if (!*p)
 		return text;
 
-	m = strlen(p) - 1;
-	for(endp = p + m; m >= 0 && (*endp == ' ' || *endp == '\n' || *endp == '\r' || *endp == '\b' || *endp == '\t'); endp--, m--);
-	endp++;
-	m++;
+/*
+	now for the trailing spaces
+*/
+	endp = q = p;
+	while(*q) {
+		if (*q == ' ' || *q == '\n' || *q == '\r' || *q == '\b' || *q == '\t') {
+			q++;
+			continue;
+		}
+		if (*q == '<') {
+			i = skip_long_color_code(q);
+			q += i;
+			continue;
+		}
+		q++;
+		endp = q;			/* hit some other character */
+	}
+/*
+	now, the relevant text is in between p and endp
+*/
+	m = strlen(p) - strlen(endp);
 	if (m > 0) {
 		strncpy(textbuf, p, m);
 		textbuf[m] = 0;

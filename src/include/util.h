@@ -17,7 +17,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Util.h	WJ99
+	util.h	WJ99
 */
 
 #ifndef UTIL_H_WJ99
@@ -81,6 +81,7 @@ void Put(User *, char *);
 void Out(User *, char *);
 int color_by_name(char *);
 int long_color_code(User *, char *);
+int skip_long_color_code(char *);
 int color_strlen(char *);
 int Ansi_Color(User *, int);
 void default_colors(User *);
