@@ -445,7 +445,7 @@ unsigned long num;
 			}
 			u->mail->msgs = rewind_MsgIndex(u->mail->msgs);
 
-			if (new_mail) {
+			if (PARAM_HAVE_MAILROOM && new_mail) {
 				Tell(u, "<beep><cyan>You have new mail\n");
 				new_mail = 0;
 			}

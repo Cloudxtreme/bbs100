@@ -127,6 +127,9 @@ Param param[] = {
 	{ PARAM_BOOL,	"have_x_reply",		{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_calendar",	{ NULL },	{ (char *)-1 },	},
 	{ PARAM_BOOL,	"have_worldclock",	{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_chatrooms",	{ NULL },	{ (char *)-1 }, },
+	{ PARAM_BOOL,	"have_mailroom",	{ NULL },	{ (char *)-1 }, },
+	{ PARAM_BOOL,	"have_homeroom",	{ NULL },	{ (char *)-1 }, },
 	{ PARAM_BOOL,	"disabled_msg",		{ NULL },	{ (char *)-1 },	},
 };
 

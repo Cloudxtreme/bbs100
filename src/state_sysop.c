@@ -2554,7 +2554,7 @@ void state_features_menu(User *usr, char c) {
 			Print(usr, "\n<magenta>"
 				"e<hotkey>Xpress Messages     <white>%-3s<magenta>        Quic<hotkey>k X messaging    <white>%s<magenta>\n"
 				"<hotkey>Emotes               <white>%-3s<magenta>        <hotkey>Talked To list       <white>%s<magenta>\n"
-				"<hotkey>Feelings             <white>%-3s<magenta>        <hotkey>Hold message mode    <white>%s<magenta>\n"
+				"<hotkey>Feelings             <white>%-3s<magenta>        H<hotkey>old message mode    <white>%s<magenta>\n"
 				"<hotkey>Questions            <white>%-3s<magenta>        Follow-<hotkey>up mode       <white>%s<magenta>\n",
 
 				(PARAM_HAVE_XMSGS == PARAM_FALSE) ? "off" : "on",
@@ -2570,13 +2570,19 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_FOLLOWUP == PARAM_FALSE) ? "off" : "on"
 			);
 			Print(usr,
-				"X <hotkey>Reply              <white>%-3s<magenta>\n"
-				"\n"
-				"<hotkey>Calendar             <white>%-3s<magenta>\n"
+				"X <hotkey>Reply              <white>%-3s<magenta>        Ch<hotkey>at rooms           <white>%s<magenta>\n"
+				"                                <hotkey>Mail> room           <white>%s<magenta>\n"
+				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Home> room           <white>%s<magenta>\n"
 				"<hotkey>World clock          <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
+
+				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on",
+
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
+
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
 				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
@@ -2613,8 +2619,8 @@ void state_features_menu(User *usr, char c) {
 		case 'T':
 			TOGGLE_FEATURE(PARAM_HAVE_TALKEDTO);
 
-		case 'h':
-		case 'H':
+		case 'o':
+		case 'O':
 			TOGGLE_FEATURE(PARAM_HAVE_HOLD);
 
 		case 'u':
@@ -2632,6 +2638,18 @@ void state_features_menu(User *usr, char c) {
 		case 'w':
 		case 'W':
 			TOGGLE_FEATURE(PARAM_HAVE_WORLDCLOCK);
+
+		case 'a':
+		case 'A':
+			TOGGLE_FEATURE(PARAM_HAVE_CHATROOMS);
+
+		case 'm':
+		case 'M':
+			TOGGLE_FEATURE(PARAM_HAVE_MAILROOM);
+
+		case 'h':
+		case 'H':
+			TOGGLE_FEATURE(PARAM_HAVE_HOMEROOM);
 
 		case 'd':
 		case 'D':

@@ -471,10 +471,10 @@ Room *r;
 	else {
 		char *p, *quote;
 
-		if (!strcmp(name, "Mail"))
+		if (PARAM_HAVE_MAILROOM && !strcmp(name, "Mail"))
 			return usr->mail;
 
-		if (!strcmp(name, "Home"))
+		if (PARAM_HAVE_HOMEROOM && !strcmp(name, "Home"))
 			return find_Home(usr->name);
 
 		if ((p = cstrchr(name, '\'')) != NULL) {
@@ -485,7 +485,7 @@ Room *r;
 				p++;
 			if (*p == ' ') {
 				p++;
-				if (!strcmp(p, "Mail")) {
+				if (PARAM_HAVE_MAILROOM && !strcmp(p, "Mail")) {
 					User *u;
 
 					if ((u = is_online(name)) == NULL) {
@@ -497,7 +497,7 @@ Room *r;
 					*quote = '\'';
 					return u->mail;
 				}
-				if (!strcmp(p, "Home")) {
+				if (PARAM_HAVE_HOMEROOM && !strcmp(p, "Home")) {
 					r = find_Home(name);
 					*quote = '\'';
 					return r;
@@ -561,9 +561,13 @@ Room *r;
 			return Lobby_room;
 
 		case 1:
+			if (!PARAM_HAVE_MAILROOM)
+				break;
 			return usr->mail;
 
 		case 2:
+			if (!PARAM_HAVE_HOMEROOM)
+				break;
 			return find_Home(usr->name);
 
 		default:
@@ -582,9 +586,13 @@ Room *r;
 			return Lobby_room;
 
 		case 1:
+			if (!PARAM_HAVE_MAILROOM)
+				break;
 			return usr->mail;
 
 		case 2:
+			if (!PARAM_HAVE_HOMEROOM)
+				break;
 			return find_Home(username);
 
 		default:
@@ -599,7 +607,7 @@ Room *find_Home(char *username) {
 Room *r;
 char buf[MAX_LINE], name_buf[MAX_NAME+3];
 
-	if (username == NULL || !*username)
+	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
 
 	sprintf(buf, "%s Home", name_with_s(username, name_buf));
@@ -621,8 +629,8 @@ int room_exists(char *name) {
 char *p;
 
 	if ((p = cstrchr(name, '\'')) != NULL) {
-		if (!strcmp(p, "'s Home") || !strcmp(p, "'s Mail")
-			|| !strcmp(p, "' Home") || !strcmp(p, "' Mail")) {
+		if ((PARAM_HAVE_HOMEROOM && (!strcmp(p, "'s Home") || !strcmp(p, "' Home")))
+			|| (PARAM_HAVE_MAILROOM && (!strcmp(p, "'s Mail") || !strcmp(p, "' Mail")))) {
 			*p = 0;
 			if (user_exists(name)) {
 				*p = '\'';
@@ -638,8 +646,15 @@ char *p;
 		Room *r;
 
 		for(r = AllRooms; r != NULL; r = r->next)
-			if (!strcmp(r->name, name))
+			if (!strcmp(r->name, name)) {
+				if (r->number == MAIL_ROOM && !PARAM_HAVE_MAILROOM)
+					return 0;
+
+				if (r->number == HOME_ROOM && !PARAM_HAVE_HOMEROOM)
+					return 0;
+
 				return 1;
+			}
 	}
 	return 0;
 }
@@ -647,9 +662,19 @@ char *p;
 int roomnumber_exists(unsigned int u) {
 Room *r;
 
-	if (u == LOBBY_ROOM || u == MAIL_ROOM || u == HOME_ROOM)
+	if (u == LOBBY_ROOM)
 		return 1;
 
+	if (u == MAIL_ROOM) {
+		if (PARAM_HAVE_MAILROOM)
+			return 1;
+		return 0;
+	}
+	if (u == HOME_ROOM) {
+		if (PARAM_HAVE_HOMEROOM)
+			return 1;
+		return 0;
+	}
 	for(r = AllRooms; r != NULL; r = r->next)
 		if (r->number == u)
 			return 1;

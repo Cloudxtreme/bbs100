@@ -989,20 +989,27 @@ void state_config_who(User *usr, char c) {
 			Print(usr, "\n<magenta>"
 				"Default who list <hotkey>format      <white>%s<magenta>\n"
 				"Sort <hotkey>by<yellow>...                   <white>%s<magenta>\n"
-				"Sort <hotkey>order                   <white>%s<magenta>\n"
-				"When in a <hotkey>chat room<yellow>...       <white>%s<magenta>\n"
-				"Show online <hotkey>enemies          <white>%s\n",
+				"Sort <hotkey>order                   <white>%s<magenta>\n",
 				(usr->flags & USR_SHORT_WHO)       ? "Short"      : "Long",
 				(usr->flags & USR_SORT_BYNAME)     ? "Name"       : "Online time",
-				(usr->flags & USR_SORT_DESCENDING) ? "Descending" : "Ascending",
-				(usr->flags & USR_SHOW_ALL)        ? "Show All"   : "Show Inside",
+				(usr->flags & USR_SORT_DESCENDING) ? "Descending" : "Ascending"
+			);
+
+			if (PARAM_HAVE_CHATROOMS)
+				Print(usr,
+					"When in a <hotkey>chat room<yellow>...       <white>%s<magenta>\n",
+					(usr->flags & USR_SHOW_ALL)        ? "Show All"   : "Show Inside"
+				);
+
+			Print(usr,
+				"Show online <hotkey>enemies          <white>%s\n",
 				(usr->flags & USR_SHOW_ENEMIES)    ? "Yes"        : "No"
 			);
-			if (usr->runtime_flags & RTF_SYSOP) {
+			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "\n"
 					"<magenta><hotkey>Who is in this room          <white>(for %ss only)\n", PARAM_NAME_SYSOP
 				);
-			}
+
 			break;
 
 		case KEY_CTRL('C'):
@@ -1037,10 +1044,13 @@ void state_config_who(User *usr, char c) {
 
 		case 'c':
 		case 'C':
-			Put(usr, "<white>In a chat room...\n");
-			usr->flags ^= USR_SHOW_ALL;
-			CURRENT_STATE(usr);
-			Return;
+			if (PARAM_HAVE_CHATROOMS) {
+				Put(usr, "<white>In a chat room...\n");
+				usr->flags ^= USR_SHOW_ALL;
+				CURRENT_STATE(usr);
+				Return;
+			}
+			break;
 
 		case 'e':
 		case 'E':

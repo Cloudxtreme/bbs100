@@ -379,7 +379,8 @@ StringList *sl;
 
 				if (u != NULL) {
 					newMsg(u->mail, usr->new_message);
-					Tell(u, "<beep><cyan>You have new mail\n");
+					if (PARAM_HAVE_MAILROOM)
+						Tell(u, "<beep><cyan>You have new mail\n");
 				}
 			} else {
 				Print(usr, "<red>Error delivering mail to <yellow>%s\n", sl->str);
@@ -2362,7 +2363,7 @@ Joined *j;
 		Perror(usr, "Suddenly your environment goes up in flames. Please re-login (?)");
 		return Lobby_room;
 	}
-	if (usr->mail == NULL) {
+	if (PARAM_HAVE_MAILROOM && usr->mail == NULL) {
 		Perror(usr, "Your mailbox seems to have vaporized. Please re-login (?)");
 		return Lobby_room;
 	}
@@ -2374,20 +2375,21 @@ Joined *j;
 
 /* then check the mail room */
 
-	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) == NULL) {
-		if ((j = new_Joined()) == NULL) {			/* this should never happen, but hey... */
-			Perror(usr, "Out of memory");
-			return Lobby_room;
+	if (PARAM_HAVE_MAILROOM) {
+		if ((j = in_Joined(usr->rooms, MAIL_ROOM)) == NULL) {
+			if ((j = new_Joined()) == NULL) {			/* this should never happen, but hey... */
+				Perror(usr, "Out of memory");
+				return Lobby_room;
+			}
+			j->number = MAIL_ROOM;
+			if (usr->mail != NULL)
+				j->generation = usr->mail->generation;
+			add_Joined(&usr->rooms, j);
 		}
-		j->number = MAIL_ROOM;
-		if (usr->mail != NULL)
-			j->generation = usr->mail->generation;
-		add_Joined(&usr->rooms, j);
+		m = unwind_MsgIndex(usr->mail->msgs);
+		if (m != NULL && m->number > j->last_read)
+			return usr->mail;
 	}
-	m = unwind_MsgIndex(usr->mail->msgs);
-	if (m != NULL && m->number > j->last_read)
-		return usr->mail;
-
 /*
 	scan for next unread rooms
 	we search the current room, and we proceed our search from there

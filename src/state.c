@@ -652,8 +652,14 @@ int i;
 
 		case 'm':
 		case 'M':
-			if (usr->curr_room != usr->mail)
-				goto_room(usr, usr->mail);		/* 'mail anywhere', by Richard of MatrixBBS */
+			if (PARAM_HAVE_MAILROOM) {
+				if (usr->curr_room != usr->mail)
+					goto_room(usr, usr->mail);		/* 'mail anywhere', by Richard of MatrixBBS */
+			} else {
+				if (PARAM_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but this server has no <yellow>Mail<white>> <red>room\n");
+				break;
+			}
 
 		case 'e':
 		case 'E':
@@ -1596,19 +1602,22 @@ void loop_send_msg(User *usr, char c) {
 		if (sl != NULL) {
 			if ((u = is_online(sl->str)) == NULL) {
 				Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
-				CALL(usr, STATE_MAIL_SEND_MSG);
+				if (PARAM_HAVE_MAILROOM)
+					CALL(usr, STATE_MAIL_SEND_MSG);
 				Return;
 			} else {
 				if (u->runtime_flags & RTF_LOCKED) {
 					Print(usr, "<red>Sorry, but <yellow>%s<red> has suddenly locked the terminal\n", sl->str);
-					CALL(usr, STATE_MAIL_SEND_MSG);
+					if (PARAM_HAVE_MAILROOM)
+						CALL(usr, STATE_MAIL_SEND_MSG);
 					Return;
 				} else {
 					if (!(usr->runtime_flags & RTF_SYSOP)
 						&& (u->flags & USR_X_DISABLED)
 						&& (in_StringList(u->friends, usr->name) == NULL)) {
 						Print(usr, "<red>Sorry, but <yellow>%s<red> has suddenly disabled message reception\n", sl->str);
-						CALL(usr, STATE_MAIL_SEND_MSG);
+						if (PARAM_HAVE_MAILROOM)
+							CALL(usr, STATE_MAIL_SEND_MSG);
 						Return;
 					}
 				}
@@ -2796,7 +2805,8 @@ Joined *j;
 
 /* first three rooms are special */
 		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
-			r = find_Roombynumber(usr, r->number);
+			if ((r = find_Roombynumber(usr, r->number)) == NULL)
+				continue;
 
 		if (in_StringList(r->room_aides, usr->name) == NULL) {
 			if ((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped)
@@ -2836,7 +2846,8 @@ Joined *j;
 		r_next = r->next;
 
 		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
-			r = find_Roombynumber(usr, r->number);
+			if ((r = find_Roombynumber(usr, r->number)) == NULL)
+				continue;
 
 		if ((r->flags & ROOM_HIDDEN)
 			&& (j = in_Joined(usr->rooms, r->number)) == NULL

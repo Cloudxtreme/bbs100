@@ -552,13 +552,15 @@ char num_buf[25];
 	new_mail = 0;
 	if (usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
 		&& newMsgs(usr->mail, j->last_read) != NULL) {
-		new_mail = 1;
-		Put(usr, "\n<beep><cyan>You have new mail\n");
+		if (PARAM_HAVE_MAILROOM) {
+			new_mail = 1;
+			Put(usr, "\n<beep><cyan>You have new mail\n");
+		}
 	}
 	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) != NULL)
 		goto_room(usr, Lobby_room);
 	else {
-		if (new_mail)
+		if (PARAM_HAVE_MAILROOM && new_mail)
 			goto_room(usr, usr->mail);
 		else
 			goto_room(usr, Lobby_room);
