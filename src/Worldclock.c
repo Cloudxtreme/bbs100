@@ -22,26 +22,54 @@
 
 #include "config.h"
 #include "Worldclock.h"
+#include "Memory.h"
 #include "util.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 
 Worldclock worldclock[] = {
-	{ "America/Anchorage",		NULL },
-	{ "Europe/Amsterdam",		NULL },
-	{ "America/Los_Angeles",	NULL },
-	{ "America/Chicago",		NULL },
-	{ "America/New_York",		NULL },
-	{ "America/Rio_de_Janeiro", NULL },
-	{ "Europe/London",			NULL },
-	{ "Africa/Cairo",			NULL },
-	{ "Europe/Moscow",			NULL },
-	{ "Asia/Bangkok",			NULL },
-	{ "Asia/Tokyo",				NULL },
-	{ "Australia/Sydney",		NULL },
+	{ "America/Anchorage",		NULL,	NULL, },
+	{ "Europe/Amsterdam",		NULL,	NULL, },
+	{ "America/Los_Angeles",	NULL,	NULL, },
+	{ "America/Chicago",		NULL,	NULL, },
+	{ "America/New_York",		NULL,	NULL, },
+	{ "America/Rio_de_Janeiro",	NULL,	NULL, },
+	{ "Europe/London",			NULL,	NULL, },
+	{ "Africa/Cairo",			NULL,	NULL, },
+	{ "Europe/Moscow",			NULL,	NULL, },
+	{ "Asia/Bangkok",			NULL,	NULL, },
+	{ "Asia/Tokyo",				NULL,	NULL, },
+	{ "Australia/Sydney",		NULL,	NULL, },
 };
+
+
+static char *zonefile_name(char *filename) {
+static char buf[MAX_LINE];
+char *p;
+
+	buf[0] = 0;
+	if (filename == NULL || !*filename)
+		return buf;
+
+	if ((p = cstrrchr(filename, '/')) != NULL)
+		p++;
+	else
+		p = filename;
+
+	strncpy(buf, p, MAX_LINE-1);
+	buf[MAX_LINE-1] = 0;
+
+	while((p = cstrchr(buf, '_')) != NULL)
+		*p = ' ';
+
+	if (buf[0] >= 'a' && buf[0] <= 'z')
+		buf[0] -= ' ';
+
+	return buf;
+}
 
 
 int init_Worldclock(void) {
@@ -52,9 +80,10 @@ Timezone *tz;
 
 	num = sizeof(worldclock)/sizeof(Worldclock);
 	for(i = 0; i < num; i++) {
-		printf("  %-26s", worldclock[i].filename);
-
 		worldclock[i].tz = tz = load_Timezone(worldclock[i].filename);
+		worldclock[i].name = cstrdup(zonefile_name(worldclock[i].filename));
+
+		printf("  %-16s", (worldclock[i].name == NULL) ? worldclock[i].filename : worldclock[i].name);
 
 		if (tz == NULL)
 			printf("failed\n");
@@ -73,6 +102,19 @@ Timezone *tz;
 		}
 	}
 	return 0;
+}
+
+void deinit_Worldclock(void) {
+int i, num;
+
+	num = sizeof(worldclock)/sizeof(Worldclock);
+	for(i = 0; i < num; i++) {
+		unload_Timezone(worldclock[i].filename);
+		worldclock[i].tz = NULL;
+
+		Free(worldclock[i].name);
+		worldclock[i].name = NULL;
+	}
 }
 
 /* EOB */

@@ -25,9 +25,11 @@
 #include "Timezone.h"
 
 typedef struct {
-	char *filename;
+	char *filename, *name;
 	Timezone *tz;
 } Worldclock;
+
+extern Worldclock worldclock[];
 
 int init_Worldclock(void);
 

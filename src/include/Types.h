@@ -44,13 +44,12 @@
 #define TYPE_HOSTMAP		18
 #define TYPE_ATOMICFILE		19
 #define TYPE_SU_PASSWD		20
-#define TYPE_ZONEINFO		21
-#define TYPE_TIMEZONE		22
-#define TYPE_DST_TRANS		23
-#define TYPE_TIMETYPE		24
-#define TYPE_HASH			25
-#define TYPE_HASHLIST		26
-#define NUM_TYPES			27
+#define TYPE_TIMEZONE		21
+#define TYPE_DST_TRANS		22
+#define TYPE_TIMETYPE		23
+#define TYPE_HASH			24
+#define TYPE_HASHLIST		25
+#define NUM_TYPES			26
 
 typedef struct Typedef_tag Typedef;
 

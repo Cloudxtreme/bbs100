@@ -51,7 +51,7 @@
 #include "HostMap.h"
 #include "copyright.h"
 #include "OnlineUser.h"
-#include "ZoneInfo.h"
+#include "Worldclock.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3466,28 +3466,27 @@ User *u;
 }
 
 
-static void print_timezone(User *usr, time_t gmt, int zone) {
-struct tm *t;
+static void print_worldclock(User *usr, int item) {
+struct tm *t, ut;
 char zone_color[16], zone_color2[16];
-int gmtoff;
-
-	gmtoff = timezones[zone].zoneinfo->gmtoff;
-	gmt += gmtoff;
-	t = gmtime(&gmt);
 
 /*
-	user is in this timezone
+	light up the timezone that this user is in
+	btw, it is possible that the time is the same but they are not
+	exactly in the same zone. Light it up anyway, because it shows
+	the correct current time for this user
 */
-/*
-	if ((usr->time_disp >= gmtoff - 15 * SECS_IN_MIN)
-		&& (usr->time_disp <= gmtoff + 15 * SECS_IN_MIN)) {
+	memcpy(&ut, user_time(usr, (time_t)0UL), sizeof(struct tm));
+
+	t = tz_time(worldclock[item].tz, (time_t)0UL);
+
+	if (t->tm_hour == ut.tm_hour && t->tm_min == ut.tm_min) {
 		strcpy(zone_color, "white");
 		strcpy(zone_color2, "white");
 	} else {
-*/
 		strcpy(zone_color, "cyan");
 		strcpy(zone_color2, "yellow");
-/*	}	*/
+	}
 	if (usr->flags & USR_12HRCLOCK) {
 		char am_pm = 'A';
 
@@ -3496,15 +3495,17 @@ int gmtoff;
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d %cM", zone_color, timezones[zone].city,
+		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d %cM", zone_color,
+			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min, am_pm);
 	} else
-		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d", zone_color, timezones[zone].city,
+		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d", zone_color,
+			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
 
 void print_calendar(User *usr) {
-time_t gmt, t;
+time_t t;
 struct tm *tmp;
 int w, d, today, today_month, today_year, old_month, green_color;
 
@@ -3513,18 +3514,17 @@ int w, d, today, today_month, today_year, old_month, green_color;
 
 	Enter(print_calendar);
 
-	gmt = t = rtc = time(NULL);
 	tmp = user_time(usr, (time_t)0UL);
 	today = tmp->tm_mday;
 	today_month = tmp->tm_mon;
 	today_year = tmp->tm_year;
 
 	Put(usr, "\n<magenta>  S  M Tu  W Th  F  S");
-	print_timezone(usr, gmt, 0);
-	print_timezone(usr, gmt, 1);
+	print_worldclock(usr, 0);
+	print_worldclock(usr, 1);
 	Put(usr, "\n");
 
-	t -= (14 + tmp->tm_wday) * SECS_IN_DAY;
+	t = rtc - (14 + tmp->tm_wday) * SECS_IN_DAY;
 	tmp = user_time(usr, t);
 	old_month = tmp->tm_mon;
 	green_color = 1;
@@ -3547,8 +3547,8 @@ int w, d, today, today_month, today_year, old_month, green_color;
 			}
 			t += SECS_IN_DAY;
 		}
-		print_timezone(usr, gmt, w+2);
-		print_timezone(usr, gmt, w+7);
+		print_worldclock(usr, w+2);
+		print_worldclock(usr, w+7);
 		Put(usr, "\n");
 	}
 	Return;

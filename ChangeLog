@@ -1,3 +1,6 @@
+Changes as of December 13th 2003
+- rewrote worldclock to use new Timezone structure
+
 Changes as of December 11th 2003
 - signals are now caught but only flagged as pending; they are handled
   out of the signal handler context, synchronously in the program

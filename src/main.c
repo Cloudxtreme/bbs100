@@ -45,7 +45,6 @@
 #include "HostMap.h"
 #include "OnlineUser.h"
 #include "AtomicFile.h"
-#include "ZoneInfo.h"
 #include "Timezone.h"
 #include "Worldclock.h"
 
@@ -350,7 +349,6 @@ int debugger = 0;
 		else
 			printf("%s\n", name_Timezone(tz));
 	}
-	init_ZoneInfo();
 	init_Worldclock();
 
 	if (init_Room()) {
