@@ -39,16 +39,22 @@
 Timer *shutdown_timer = NULL, *reboot_timer = NULL;
 
 
-void login_timeout(User *usr) {
-	if (usr == NULL)
+void login_timeout(void *v) {
+User *usr;
+
+	if (v == NULL)
 		return;
 
+	usr = (User *)v;
 	Put(usr, "\nConnection timed out\n");
 	log_auth("TIMEOUT %s (%s)", usr->name, usr->from_ip);
 	close_connection(usr, "%s got timed out", usr->name);
 }
 
-void user_timeout(User *usr) {
+void user_timeout(void *v) {
+User *usr;
+
+	usr = (User *)v;
 	if (usr == NULL || usr->timer == NULL)
 		return;
 
@@ -72,18 +78,21 @@ void user_timeout(User *usr) {
 	}
 }
 
-void save_timeout(User *usr) {
+void save_timeout(void *v) {
+User *usr;
+
+	usr = (User *)v;
 	if (save_User(usr)) {
 		log_err("failed to periodically save user %s", usr->name);
 	}
 }
 
-void reboot_timeout(User *usr) {
+void reboot_timeout(void *v) {
 Timer *t;
 User *u;
 StringList *screen, *sl;
 
-	t = (Timer *)usr;
+	t = (Timer *)v;
 	switch(t->restart) {
 		case TIMEOUT_REBOOT:
 			t->sleeptime = t->maxtime = 30;		/* one minute to go! */
@@ -115,12 +124,12 @@ StringList *screen, *sl;
 	}
 }
 
-void shutdown_timeout(User *usr) {
+void shutdown_timeout(void *v) {
 Timer *t;
 User *u;
 StringList *screen, *sl;
 
-	t = (Timer *)usr;
+	t = (Timer *)v;
 	switch(t->restart) {
 		case TIMEOUT_SHUTDOWN:
 			t->sleeptime = t->maxtime = 30;		/* one minute to go! */

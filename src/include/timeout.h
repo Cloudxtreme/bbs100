@@ -23,7 +23,7 @@
 #ifndef TIMEOUT_H_WJ99
 #define TIMEOUT_H_WJ99 1
 
-#include "User.h"
+#include "Timer.h"
 
 #define LOGIN_TIMEOUT		20		/* 20 secs at login */
 
@@ -39,11 +39,11 @@
 extern Timer *shutdown_timer;
 extern Timer *reboot_timer;
 
-void login_timeout(User *);
-void user_timeout(User *);
-void save_timeout(User *);
-void reboot_timeout(User *);
-void shutdown_timeout(User *);
+void login_timeout(void *);
+void user_timeout(void *);
+void save_timeout(void *);
+void reboot_timeout(void *);
+void shutdown_timeout(void *);
 
 #endif	/* TIMEOUT_H_WJ99 */
 

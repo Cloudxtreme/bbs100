@@ -202,9 +202,6 @@ extern User *AllUsers;
 extern User *this_user;
 extern char RoomName[MAX_NAME];
 
-void login_timeout(User *);
-void user_timeout(User *);
-
 User *in_UserList(User *, User *);
 
 #endif	/* USER_H_WJ97 */

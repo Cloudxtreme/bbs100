@@ -36,7 +36,7 @@ volatile time_t rtc = (time_t)0UL;
 Timer *timerq = NULL;
 
 
-Timer *new_Timer(int s, void (*func)(User *), int r) {
+Timer *new_Timer(int s, void (*func)(void *), int r) {
 Timer *t;
 
 	if ((t = (Timer *)Malloc(sizeof(Timer), TYPE_TIMER)) == NULL)
@@ -109,7 +109,7 @@ Timer *t, *t_next;
 			t->sleeptime = t->maxtime;
 
 			if (t->action != NULL)
-				t->action((User *)t);	/* user-less timers have 't' as argument(!) */
+				t->action(t);			/* user-less timers have 't' as argument(!) */
 
 			if (t->restart > 0)			/* restart -1 always restarts */
 				t->restart--;

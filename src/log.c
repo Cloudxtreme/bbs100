@@ -22,6 +22,7 @@
 	- complete rewrite of logging code
 	- more 'syslog'-like to the outside world
 	- automatic rotation
+	- automatic archiving
 */
 
 #include "config.h"
@@ -48,7 +49,7 @@ Timer *logrotate_timer = NULL;
 
 static int logrotate_reset_timer(void);
 
-static void logrotate_timerfunc(User *dummy) {
+static void logrotate_timerfunc(void *dummy) {
 time_t t;
 struct tm *tm;
 

@@ -23,8 +23,7 @@
 #ifndef TIMER_H_WJ99
 #define TIMER_H_WJ99 1
 
-#include <config.h>
-
+#include "config.h"
 #include "List.h"
 #include "sys_time.h"
 
@@ -40,19 +39,14 @@
 
 typedef struct Timer_tag Timer;
 
-#ifndef USER_DEFINED
-#define USER_DEFINED 1
-typedef struct User_tag User;
-#endif
-
 struct Timer_tag {
 	List(Timer);
 
 	int sleeptime, maxtime, restart;
-	void (*action)(User *);
+	void (*action)(void *);
 };
 
-Timer *new_Timer(int, void (*)(User *), int);
+Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
 int init_rtc(void);
 void update_timers(void);
