@@ -160,7 +160,7 @@ install: $(TARGETS) $(SCRIPTS)
 			CURRDIR=`$(PRINTWD)` ; \
 			echo "  COPYDIR   $(prefix)/etc/" ; \
 			echo "  COPYDIR   $(prefix)/rooms/" ; \
-			$(TAR) -cf - etc/ rooms/ | ( cd $(prefix) ; \
+			$(TAR) -cf - etc rooms | ( cd $(prefix) ; \
 				$(TAR) -xf - ; \
 				$(SED) "/basedir/ s?xxx?$(prefix)?" $(prefix)/etc/param >$(prefix)/etc/param1 ; \
 				$(MV) $(prefix)/etc/param1 $(prefix)/etc/param ; \
