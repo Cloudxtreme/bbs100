@@ -24,8 +24,8 @@
 #include "BufferedMsg.h"
 #include "Feeling.h"
 #include "HostMap.h"
-#include "OnlineUser.h"
 #include "ZoneInfo.h"
+#include "Hash.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -38,7 +38,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Timer",				sizeof(Timer),				},
 	{ "SignalVector",		sizeof(SignalVector),		},
 	{ "User",				sizeof(User),				},
-	{ "OnlineUser",			sizeof(OnlineUser),			},
 	{ "Room",				sizeof(Room),				},
 	{ "Joined",				sizeof(Joined),				},
 	{ "Message",			sizeof(Message),			},
@@ -52,6 +51,8 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "AtomicFile",			sizeof(AtomicFile),			},
 	{ "SU_Passwd",			sizeof(SU_Passwd),			},
 	{ "ZoneInfo",			sizeof(ZoneInfo),			},
+	{ "Hash",				sizeof(Hash),				},
+	{ "HashList",			sizeof(HashList),			},
 	{ "(unknown)",			0,							},
 };
 

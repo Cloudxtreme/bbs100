@@ -95,9 +95,8 @@ Param param[] = {
 	{ PARAM_INT,	"max_enemy",		{ NULL },	{ (char *)DEFAULT_MAX_ENEMY },		},
 	{ PARAM_INT,	"idle_timeout",		{ NULL },	{ (char *)DEFAULT_IDLE_TIMEOUT },	},
 	{ PARAM_INT,	"lock_timeout",		{ NULL },	{ (char *)DEFAULT_LOCK_TIMEOUT },	},
-	{ PARAM_INT,	"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
 	{ PARAM_INT | PARAM_SEPARATOR,
-					"userhash_size",	{ NULL },	{ (char *)DEFAULT_USERHASH_SIZE },	},
+					"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
 
 	{ PARAM_STRING,	"name_sysop",		{ NULL },	{ "Sysop" },						},
 	{ PARAM_STRING,	"name_room_aide",	{ NULL },	{ "Room Aide" },					},

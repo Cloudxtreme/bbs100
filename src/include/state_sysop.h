@@ -102,7 +102,6 @@
 #define STATE_PARAM_IDLE				state_param_idle
 #define STATE_PARAM_LOCK				state_param_lock
 #define STATE_PARAM_SAVE				state_param_save
-#define STATE_PARAM_USERHASH			state_param_userhash
 
 #define STATE_STRINGS_MENU				state_strings_menu
 #define STATE_PARAM_NAME_SYSOP			state_param_name_sysop
@@ -192,7 +191,6 @@ void state_param_enemy(User *, char);
 void state_param_idle(User *, char);
 void state_param_lock(User *, char);
 void state_param_save(User *, char);
-void state_param_userhash(User *, char);
 
 void state_strings_menu(User *, char);
 void state_param_name_sysop(User *, char);

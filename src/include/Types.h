@@ -32,21 +32,22 @@
 #define TYPE_TIMER			6
 #define TYPE_SIGNALVECTOR	7
 #define TYPE_USER			8
-#define TYPE_ONLINEUSER		9
-#define TYPE_ROOM			10
-#define TYPE_JOINED			11
-#define TYPE_MESSAGE		12
-#define TYPE_MSGINDEX		13
-#define TYPE_FEELING		14
-#define TYPE_BUFFEREDMSG	15
-#define TYPE_FILE			16
-#define TYPE_WRAPPER		17
-#define TYPE_CACHEDFILE		18
-#define TYPE_HOSTMAP		19
-#define TYPE_ATOMICFILE		20
-#define TYPE_SU_PASSWD		21
-#define TYPE_ZONEINFO		22
-#define NUM_TYPES			23
+#define TYPE_ROOM			9
+#define TYPE_JOINED			10
+#define TYPE_MESSAGE		11
+#define TYPE_MSGINDEX		12
+#define TYPE_FEELING		13
+#define TYPE_BUFFEREDMSG	14
+#define TYPE_FILE			15
+#define TYPE_WRAPPER		16
+#define TYPE_CACHEDFILE		17
+#define TYPE_HOSTMAP		18
+#define TYPE_ATOMICFILE		19
+#define TYPE_SU_PASSWD		20
+#define TYPE_ZONEINFO		21
+#define TYPE_HASH			22
+#define TYPE_HASHLIST		23
+#define NUM_TYPES			24
 
 typedef struct Typedef_tag Typedef;
 

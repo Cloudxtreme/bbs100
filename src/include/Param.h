@@ -101,15 +101,14 @@
 #define PARAM_IDLE_TIMEOUT			param[PARAM_MAX_N+9].val.u
 #define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.u
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.u
-#define PARAM_USERHASH_SIZE			param[PARAM_MAX_N+12].val.u
 
-#define PARAM_NAME_N				52
+#define PARAM_NAME_N				51
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
 #define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
 #define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
 #define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_N				56
+#define PARAM_NOTIFY_N				55
 #define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
 #define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
 #define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s

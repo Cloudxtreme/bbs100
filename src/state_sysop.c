@@ -2093,12 +2093,10 @@ void state_maximums_menu(User *usr, char c) {
 			Print(usr,
 				"<hotkey>Idle timeout                          <white>%6u %s<magenta>\n"
 				"Loc<hotkey>k timeout                          <white>%6u %s<magenta>\n"
-				"Periodic <hotkey>saving                       <white>%6u %s<magenta>\n"
-				"Online <hotkey>user hash size                 <white>%6u<magenta>\n",
+				"Periodic <hotkey>saving                       <white>%6u %s<magenta>\n",
 				PARAM_IDLE_TIMEOUT, (PARAM_IDLE_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_LOCK_TIMEOUT, (PARAM_LOCK_TIMEOUT == 1) ? "minute" : "minutes",
-				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes",
-				PARAM_USERHASH_SIZE
+				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes"
 			);
 			break;
 
@@ -2180,12 +2178,6 @@ void state_maximums_menu(User *usr, char c) {
 			Put(usr, "Periodic saving\n");
 			CALL(usr, STATE_PARAM_SAVE);
 			Return;
-
-		case 'u':
-		case 'U':
-			Put(usr, "Online user hash size\n");
-			CALL(usr, STATE_PARAM_USERHASH);
-			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Maximums<white># ", PARAM_NAME_SYSOP);
 	Return;
@@ -2265,15 +2257,6 @@ void state_param_lock(User *usr, char c) {
 void state_param_save(User *usr, char c) {
 	Enter(state_param_save);
 	change_int_param(usr, c, &PARAM_SAVE_TIMEOUT);
-	Return;
-}
-
-void state_param_userhash(User *usr, char c) {
-	Enter(state_param_userhash);
-	change_int_param(usr, c, &PARAM_USERHASH_SIZE);
-
-	if ((PARAM_USERHASH_SIZE != online_users_size) && (resize_OnlineUser() == -1))
-		Print(usr, "<red>Failed to resize the online user cache, <yellow>userhash_size<yellow> reset to <white>%d\n", PARAM_USERHASH_SIZE);
 	Return;
 }
 

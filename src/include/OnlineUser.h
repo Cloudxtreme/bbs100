@@ -25,26 +25,12 @@
 
 #include "User.h"
 
-typedef struct OnlineUser_tag OnlineUser;
-
-struct OnlineUser_tag {
-	List(OnlineUser);
-	User *u;
-};
-
-extern OnlineUser **online_users;
-extern int online_users_size;
-
 int init_OnlineUser(void);
 void deinit_OnlineUser(void);
-int resize_OnlineUser(void);
 
 int hashaddr_OnlineUser(char *);
 
-OnlineUser *new_OnlineUser(void);
-void destroy_OnlineUser(OnlineUser *);
-
-OnlineUser *add_OnlineUser(User *);
+int add_OnlineUser(User *);
 void remove_OnlineUser(User *);
 
 User *is_online(char *);

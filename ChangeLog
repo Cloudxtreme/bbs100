@@ -1,11 +1,14 @@
+Changes as of November 9th 2003
+- OnlineUser hash is now a generic hash
+
 Changes as of November 8th 2003
-- print_known_rooms() 'K' and Ctr-K functions; changed behaviour of displaying
-  hidden rooms
+- changed behaviour of displaying hidden rooms in the known rooms list
 - room aides can now activate subjects and anon posts from the room config
   menu
+- added generic hash code
 
 Changes as of November 2nd 2003
-- fixed bug in edit_name(!)  pressing backspace mess it up, as noted by Richard
+- fixed bug in edit_name(!)  backspace messed it up, as noted by Richard
   of MatrixBBS
 - anon aliases should always be forced to lowercase
 - added 'x' flag in who list when someone is sending you a message
@@ -28,6 +31,7 @@ Changes as of October 27th 2003
 
 Changes as of October 26th 2003
 - changed logging; now done to log/bbslog and log/authlog
+  logd program is outta here
 
 Changes as of October 25th 2003
 - added timezone information for the world clock function
