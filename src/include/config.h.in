@@ -38,9 +38,6 @@
 /* Define if you have the gethostbyaddr function.  */
 #undef HAVE_GETHOSTBYADDR
 
-/* Define if you have the getpass function.  */
-#undef HAVE_GETPASS
-
 /* Define if you have the memmove function.  */
 #undef HAVE_MEMMOVE
 
