@@ -1199,11 +1199,11 @@ int from_me = 0;
 		if (from_me)
 			sprintf(frombuf, "as %s ", PARAM_NAME_SYSOP);
 		else
-			sprintf(frombuf, "%c%s<white>:%c %s", (msg->flags & BUFMSG_EMOTE) ? (char)color_by_name("cyan") : (char)color_by_name("yellow"),
-				PARAM_NAME_SYSOP, (msg->flags & BUFMSG_EMOTE) ? (char)color_by_name("cyan") : (char)color_by_name("yellow"), msg->from);
+			sprintf(frombuf, "<%s>%s<white>:<%s> %s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow",
+				PARAM_NAME_SYSOP, (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	} else {
 		if (!from_me)
-			sprintf(frombuf, "%c%s", (msg->flags & BUFMSG_EMOTE) ? (char)color_by_name("cyan") : (char)color_by_name("yellow"), msg->from);
+			sprintf(frombuf, "<%s>%s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
 		strcpy(multi, "Multi ");
@@ -2531,10 +2531,9 @@ int l;
 		Return;
 	}
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(" "));
-
 /*
-	This is the most ugliest hack ever; temporarely reset name to get a correct
-	msg header out of buffered_msf_header();
+	This is the most ugly hack ever; temporarely reset name to get a correct
+	msg header out of buffered_msg_header();
 	I really must rewrite this some day
 */
 	c = usr->name[0];

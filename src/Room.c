@@ -187,9 +187,9 @@ int version;
 
 
 int load_RoomData_version1(File *f, Room *r) {
-char buf[MAX_LINE+25], *p;
+char buf[MAX_LINE*3], *p;
 
-	while(Fgets(f, buf, MAX_LINE+25) != NULL) {
+	while(Fgets(f, buf, MAX_LINE*3) != NULL) {
 		FF1_PARSE;
 
 		FF1_LOAD_LEN("name", r->name, MAX_LINE);

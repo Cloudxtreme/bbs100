@@ -111,9 +111,9 @@ int version;
 }
 
 int load_Message_version1(File *f, Message *m) {
-char buf[MAX_LINE], *p;
+char buf[MAX_LINE*3], *p;
 
-	while(Fgets(f, buf, MAX_LINE) != NULL) {
+	while(Fgets(f, buf, MAX_LINE*3) != NULL) {
 		FF1_PARSE;
 
 		FF1_LOAD_LEN("from", m->from, MAX_NAME);
@@ -136,10 +136,10 @@ char buf[MAX_LINE], *p;
 }
 
 int load_Message_version0(File *f, Message *m) {
-char buf[MAX_LINE];
+char buf[MAX_LINE*3];
 
 /* mtime */
-	if (Fgets(f, buf, MAX_LINE) == NULL)
+	if (Fgets(f, buf, MAX_LINE*3) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);

@@ -1,27 +1,24 @@
-Lobby
-945912288
-23
-1
-Welcome to bbs100. This is an example of roominfo for the first room
-a user enters when he or she logs in to the BBS.
-It should state something like this:
-  
-There are just a few issues:
-1) This bbs serves 1 purpose only: Enjoyment. Nothing more, nothing less.
-   It's not meant to be a substitute for real life, nor is it something to
-   be taken extremely seriously. People come here to enjoy themselves, not
-   to get pissed off. This goes for the users as well as the sysops.
-2) All rooms are to be posted in in English, unless indicated otherwise.
-   Room aides are responsible for their rooms, and the sysops are respon-
-   sible for all board matters.
-3) Discrimination or racial slander is not acceptable. Freedom of speech
-   does not mean freedom to attack someone's cultural heratige, religious
-   beliefs or sexual preferences. All legal issues subject to US law.
-
-For Help, press 'h'.
-  
-Sysops on this board are: Sysop1 and Sysop2
-
-
-
-
+version=1
+name=Lobby
+generation=945912288
+flags=0x23
+roominfo_changed=1
+info=Welcome to bbs100. This is an example of roominfo for the first room
+info=a user enters when he or she logs in to the BBS.
+info=It should state something like this:
+info=  
+info=There are just a few issues:
+info=1) This bbs serves 1 purpose only: Enjoyment. Nothing more, nothing less.
+info=   It's not meant to be a substitute for real life, nor is it something to
+info=   be taken extremely seriously. People come here to enjoy themselves, not
+info=   to get pissed off. This goes for the users as well as the sysops.
+info=2) All rooms are to be posted in in English, unless indicated otherwise.
+info=   Room aides are responsible for their rooms, and the sysops are respon-
+info=   sible for all board matters.
+info=3) Discrimination or racial slander is not acceptable. Freedom of speech
+info=   does not mean freedom to attack someone's cultural heratige, religious
+info=   beliefs or sexual preferences. All legal issues subject to US law.
+info=
+info=For Help, press 'h'.
+info=  
+info=Sysops on this board are: Sysop1 and Sysop2

@@ -1,11 +1,7 @@
-Mail
-0
-0
-0
-This is the Mail> room. Here you can leave messages to users that are not
-online.
-
-
-
-
-
+version=1
+name=Mail
+generation=0
+flags=0
+roominfo_changed=0
+info=This is the Mail> room. Here you can leave messages to users that are not
+info=currently online.

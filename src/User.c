@@ -242,6 +242,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 /*
 	these should already be NULL but I'm just making sure
 */
+	usr->name[0] = 0;
+
 	listdestroy_StringList(usr->friends);
 	listdestroy_StringList(usr->enemies);
 	listdestroy_StringList(usr->info);
@@ -293,6 +295,11 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 
 		Fclose(f);
 		usr->flags &= USR_ALL;
+
+		if (!usr->name[0]) {
+			strncpy(usr->name, username, MAX_NAME-1);
+			usr->name[MAX_NAME-1] = 0;
+		}
 		return 0;
 	}
 	Fclose(f);
