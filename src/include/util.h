@@ -113,6 +113,7 @@ char *room_name(User *, Room *);
 unsigned long get_mail_top(char *);
 char *get_basename(char *);
 int rm_rf_trashdir(char *);
+int mkdir_p(char *);
 
 extern ColorTable color_table[];
 extern char *Months[];

@@ -31,75 +31,91 @@
 #define PARAM_SEPARATOR				0x100
 #define PARAM_MASK					0xff
 
+/*
+	Note: I have number the list in blocks, so it is easier for me to insert
+	      a new define in between without having to manually renumber every
+	      single entry
+*/
 #define PARAM_BBS_NAME				param[0].val.s
 #define PARAM_PORT_NUMBER			param[1].val.u
 
-#define PARAM_BASEDIR				param[2].val.s
-#define PARAM_BINDIR				param[3].val.s
-#define PARAM_CONFDIR				param[4].val.s
-#define PARAM_FEELINGSDIR			param[5].val.s
-#define PARAM_ZONEINFODIR			param[6].val.s
-#define PARAM_USERDIR				param[7].val.s
-#define PARAM_ROOMDIR				param[8].val.s
-#define PARAM_TRASHDIR				param[9].val.s
+#define PARAM_DIR_N					2
+#define PARAM_BASEDIR				param[PARAM_DIR_N].val.s
+#define PARAM_BINDIR				param[PARAM_DIR_N+1].val.s
+#define PARAM_CONFDIR				param[PARAM_DIR_N+2].val.s
+#define PARAM_FEELINGSDIR			param[PARAM_DIR_N+3].val.s
+#define PARAM_ZONEINFODIR			param[PARAM_DIR_N+4].val.s
+#define PARAM_USERDIR				param[PARAM_DIR_N+5].val.s
+#define PARAM_ROOMDIR				param[PARAM_DIR_N+6].val.s
+#define PARAM_TRASHDIR				param[PARAM_DIR_N+7].val.s
 
-#define PARAM_PROGRAM_MAIN			param[10].val.s
-#define PARAM_PROGRAM_RESOLVER		param[11].val.s
+#define PARAM_PROGRAM_N				10
+#define PARAM_PROGRAM_MAIN			param[PARAM_PROGRAM_N].val.s
+#define PARAM_PROGRAM_RESOLVER		param[PARAM_PROGRAM_N+1].val.s
 
-#define PARAM_GPL_SCREEN			param[12].val.s
-#define PARAM_MODS_SCREEN			param[13].val.s
-#define PARAM_LOGIN_SCREEN			param[14].val.s
-#define PARAM_LOGOUT_SCREEN			param[15].val.s
-#define PARAM_NOLOGIN_SCREEN		param[16].val.s
-#define PARAM_MOTD_SCREEN			param[17].val.s
-#define PARAM_REBOOT_SCREEN			param[18].val.s
-#define PARAM_SHUTDOWN_SCREEN		param[19].val.s
-#define PARAM_CRASH_SCREEN			param[20].val.s
+#define PARAM_SCREEN_N				12
+#define PARAM_GPL_SCREEN			param[PARAM_SCREEN_N].val.s
+#define PARAM_MODS_SCREEN			param[PARAM_SCREEN_N+1].val.s
+#define PARAM_LOGIN_SCREEN			param[PARAM_SCREEN_N+2].val.s
+#define PARAM_LOGOUT_SCREEN			param[PARAM_SCREEN_N+3].val.s
+#define PARAM_NOLOGIN_SCREEN		param[PARAM_SCREEN_N+4].val.s
+#define PARAM_MOTD_SCREEN			param[PARAM_SCREEN_N+5].val.s
+#define PARAM_REBOOT_SCREEN			param[PARAM_SCREEN_N+6].val.s
+#define PARAM_SHUTDOWN_SCREEN		param[PARAM_SCREEN_N+7].val.s
+#define PARAM_CRASH_SCREEN			param[PARAM_SCREEN_N+8].val.s
 
-#define PARAM_FIRST_LOGIN			param[21].val.s
-#define PARAM_HELP_STD				param[22].val.s
-#define PARAM_HELP_CONFIG			param[23].val.s
-#define PARAM_HELP_ROOMCONFIG		param[24].val.s
-#define PARAM_HELP_SYSOP			param[25].val.s
+#define PARAM_HELP_N				21
+#define PARAM_FIRST_LOGIN			param[PARAM_HELP_N].val.s
+#define PARAM_HELP_STD				param[PARAM_HELP_N+1].val.s
+#define PARAM_HELP_CONFIG			param[PARAM_HELP_N+2].val.s
+#define PARAM_HELP_ROOMCONFIG		param[PARAM_HELP_N+3].val.s
+#define PARAM_HELP_SYSOP			param[PARAM_HELP_N+4].val.s
 
-#define PARAM_HOSTMAP_FILE			param[26].val.s
-#define PARAM_HOSTS_ACCESS_FILE		param[27].val.s
-#define PARAM_BANISHED_FILE			param[28].val.s
-#define PARAM_STAT_FILE				param[29].val.s
-#define PARAM_SU_PASSWD_FILE		param[30].val.s
-#define PARAM_PID_FILE				param[31].val.s
-#define PARAM_SYMTAB_FILE			param[32].val.s
+#define PARAM_FILE_N				26
+#define PARAM_HOSTMAP_FILE			param[PARAM_FILE_N].val.s
+#define PARAM_HOSTS_ACCESS_FILE		param[PARAM_FILE_N+1].val.s
+#define PARAM_BANISHED_FILE			param[PARAM_FILE_N+2].val.s
+#define PARAM_STAT_FILE				param[PARAM_FILE_N+3].val.s
+#define PARAM_SU_PASSWD_FILE		param[PARAM_FILE_N+4].val.s
+#define PARAM_PID_FILE				param[PARAM_FILE_N+5].val.s
+#define PARAM_SYMTAB_FILE			param[PARAM_FILE_N+6].val.s
 
-#define PARAM_SYSLOG				param[33].val.s
-#define PARAM_AUTHLOG				param[34].val.s
+#define PARAM_LOG_N					33
+#define PARAM_SYSLOG				param[PARAM_LOG_N].val.s
+#define PARAM_AUTHLOG				param[PARAM_LOG_N+1].val.s
+#define PARAM_LOGROTATE				param[PARAM_LOG_N+2].val.s
+#define PARAM_ARCHIVEDIR			param[PARAM_LOG_N+3].val.s
 
-#define PARAM_MAX_CACHED			param[35].val.u
-#define PARAM_MAX_MESSAGES			param[36].val.u
-#define PARAM_MAX_MAIL_MSGS			param[37].val.u
-#define PARAM_MAX_MSG_LINES			param[38].val.u
-#define PARAM_MAX_XMSG_LINES		param[39].val.u
-#define PARAM_MAX_HISTORY			param[40].val.u
-#define PARAM_MAX_CHAT_HISTORY		param[41].val.u
-#define PARAM_MAX_FRIEND			param[42].val.u
-#define PARAM_MAX_ENEMY				param[43].val.u
-#define PARAM_IDLE_TIMEOUT			param[44].val.u
-#define PARAM_LOCK_TIMEOUT			param[45].val.u
-#define PARAM_SAVE_TIMEOUT			param[46].val.u
-#define PARAM_USERHASH_SIZE			param[47].val.u
+#define PARAM_MAX_N					37
+#define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.u
+#define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.u
+#define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.u
+#define PARAM_MAX_MSG_LINES			param[PARAM_MAX_N+3].val.u
+#define PARAM_MAX_XMSG_LINES		param[PARAM_MAX_N+4].val.u
+#define PARAM_MAX_HISTORY			param[PARAM_MAX_N+5].val.u
+#define PARAM_MAX_CHAT_HISTORY		param[PARAM_MAX_N+6].val.u
+#define PARAM_MAX_FRIEND			param[PARAM_MAX_N+7].val.u
+#define PARAM_MAX_ENEMY				param[PARAM_MAX_N+8].val.u
+#define PARAM_IDLE_TIMEOUT			param[PARAM_MAX_N+9].val.u
+#define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.u
+#define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.u
+#define PARAM_USERHASH_SIZE			param[PARAM_MAX_N+12].val.u
 
-#define PARAM_NAME_SYSOP			param[48].val.s
-#define PARAM_NAME_ROOMAIDE			param[49].val.s
-#define PARAM_NAME_HELPER			param[50].val.s
-#define PARAM_NAME_GUEST			param[51].val.s
+#define PARAM_NAME_N				50
+#define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
+#define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
+#define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
+#define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_LOGIN			param[52].val.s
-#define PARAM_NOTIFY_LOGOUT			param[53].val.s
-#define PARAM_NOTIFY_LINKDEAD		param[54].val.s
-#define PARAM_NOTIFY_IDLE			param[55].val.s
-#define PARAM_NOTIFY_LOCKED			param[56].val.s
-#define PARAM_NOTIFY_UNLOCKED		param[57].val.s
-#define PARAM_NOTIFY_ENTER_CHAT		param[58].val.s
-#define PARAM_NOTIFY_LEAVE_CHAT		param[59].val.s
+#define PARAM_NOTIFY_N				54
+#define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
+#define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
+#define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s
+#define PARAM_NOTIFY_IDLE			param[PARAM_NOTIFY_N+3].val.s
+#define PARAM_NOTIFY_LOCKED			param[PARAM_NOTIFY_N+4].val.s
+#define PARAM_NOTIFY_UNLOCKED		param[PARAM_NOTIFY_N+5].val.s
+#define PARAM_NOTIFY_ENTER_CHAT		param[PARAM_NOTIFY_N+6].val.s
+#define PARAM_NOTIFY_LEAVE_CHAT		param[PARAM_NOTIFY_N+7].val.s
 
 #define DEFAULT_PORT_1234			1234	/* default port number */
 
@@ -131,7 +147,7 @@ typedef union {
 } Param_value;
 
 typedef struct {
-	int type;				/* PARAM_INT or PARAM_STRING */
+	int type;				/* PARAM_INT or PARAM_STRING or whatever */
 	char *var;
 	Param_value val;
 	Param_value default_val;

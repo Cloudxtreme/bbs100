@@ -77,8 +77,10 @@ Param param[] = {
 					"symtab_file",		{ NULL },	{ "etc/symtab" },				},
 
 	{ PARAM_STRING, "syslog",			{ NULL },	{ "log/bbslog" },				},
+	{ PARAM_STRING, "authlog",			{ NULL },	{ "log/authlog" },				},
+	{ PARAM_STRING, "logrotate",		{ NULL },	{ "daily" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,
-					"authlog",			{ NULL },	{ "log/authlog" },				},
+		"archivedir",		{ NULL },	{ "log/archive/" },				},
 
 	{ PARAM_INT,	"max_cached",		{ NULL },	{ (char *)DEFAULT_MAX_CACHED },		},
 	{ PARAM_INT,	"max_messages",		{ NULL },	{ (char *)DEFAULT_MAX_MESSAGES },	},

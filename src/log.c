@@ -39,8 +39,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 StringList *internal_log = NULL;
 int internal_log_len = 0;
@@ -51,8 +49,25 @@ Timer *logrotate_timer = NULL;
 static int logrotate_reset_timer(void);
 
 static void logrotate_timerfunc(User *dummy) {
+time_t t;
+struct tm *tm;
+
 	dummy = NULL;
-	log_rotate();
+
+	t = rtc;
+	tm = gmtime(&t);
+
+	if (!cstricmp(PARAM_LOGROTATE, "none"))
+		return;
+
+	if (!cstricmp(PARAM_LOGROTATE, "daily")
+		|| (!cstricmp(PARAM_LOGROTATE, "weekly") && tm->tm_wday == 1)
+		|| (!cstricmp(PARAM_LOGROTATE, "monthly") && tm->tm_mday == 1)
+		|| (!cstricmp(PARAM_LOGROTATE, "yearly") && tm->tm_yday == 1))
+		log_rotate();
+	else
+		log_err("unknown value '%s' for param logrotate", PARAM_LOGROTATE);
+
 	logrotate_reset_timer();
 }
 
@@ -94,6 +109,9 @@ int fd;
 		dup2(fd, fileno(stderr));
 		close(fd);
 	}
+	if (!cstricmp(PARAM_LOGROTATE, "none"))
+		return 0;
+
 	return logrotate_reset_timer();
 }
 
@@ -173,15 +191,28 @@ va_list ap;
 }
 
 static void move_log(char *logfile) {
-int n;
-char filename[MAX_PATHLEN];
-struct stat statbuf;
+char filename[MAX_PATHLEN], *p;
+time_t t;
+struct tm *tm;
 
-	for(n = 1; n < 9999; n++) {
-		sprintf(filename, "%s.%d", logfile, n);
-		if (stat(filename, &statbuf) == -1)
-			break;
+	t = rtc;
+	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
+	tm = localtime(&t);
+	sprintf(filename, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year, tm->tm_mon);
+	if (mkdir_p(filename) < 0)
+		return;
+
+/* 'basename' logfile */
+	if ((p = cstrrchr(logfile, '/')) == NULL)
+		p = logfile;
+	else {
+		p++;
+		if (!*p)
+			p = logfile;
 	}
+	sprintf(filename, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year, tm->tm_mon,
+		p, tm->tm_year, tm->tm_mon, tm->tm_mday);
+
 	if (rename(logfile, filename) == -1)
 		log_err("failed to rename %s to %s", logfile, filename);
 }

@@ -44,6 +44,8 @@ symtab_file            etc/symtab
 
 syslog                 log/bbslog
 authlog                log/authlog
+logrotate              daily
+archivedir             log/archive/
 
 max_cached             256
 max_messages           50

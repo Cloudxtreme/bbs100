@@ -32,6 +32,7 @@
 #include "access.h"
 #include "Memory.h"
 #include "OnlineUser.h"
+#include "mkdir.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -976,6 +977,28 @@ struct dirent *direntp;
 	}
 	closedir(dirp);
 	return rmdir(dirname);
+}
+
+int mkdir_p(char *pathname) {
+char *p;
+
+	p = pathname;
+	while((p = cstrchr(p, '/')) != NULL) {
+		*p = 0;
+		if (!*pathname) {
+			*pathname = '/';
+			p++;
+			continue;
+		}
+		if (mkdir(pathname, (mode_t)0640) == -1) {
+			*p = '/';
+			log_err("mkdir_p(): failed to create directory %s", pathname);
+			return -1;
+		}
+		*p = '/';
+		p++;
+	}
+	return 0;
 }
 
 /* EOB */
