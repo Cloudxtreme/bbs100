@@ -1,3 +1,6 @@
+Changes as of March 2nd 2005
+- the language system seems to be working
+
 Changes as of March 1st 2005
 - removed obsoleted function getpass() from mkpasswd
 - (it's been a year!)

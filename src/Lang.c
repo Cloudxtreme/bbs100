@@ -43,6 +43,7 @@
 
 
 Hash *languages = NULL;
+static Lang *default_language = NULL;
 
 
 int init_Lang(void) {
@@ -51,10 +52,11 @@ int init_Lang(void) {
 
 	languages->hashaddr = hashaddr_ascii;
 
-	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100"))
+	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100")) {
+		default_language = NULL;
 		return 0;
-
-	if (load_Language(PARAM_DEFAULT_LANGUAGE) == NULL) {
+	}
+	if ((default_language = load_Language(PARAM_DEFAULT_LANGUAGE)) == NULL) {
 		log_err("failed to load default language %s", PARAM_DEFAULT_LANGUAGE);
 		return -1;
 	}
@@ -296,9 +298,17 @@ char *translate(Lang *l, char *text) {
 int key;
 char keybuf[32], *p;
 
-	if (l == NULL || text == NULL || !*text)
+	if (text == NULL || !*text)
 		return text;
 
+	if (l == NULL) {
+		if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100"))
+			return text;
+
+		l = default_language;
+		if (l == NULL)
+			return text;
+	}
 	key = hashaddr_ascii(text);
 	sprintf(keybuf, "%x", key);
 	if ((p = (char *)in_Hash(l->hash, keybuf)) == NULL)

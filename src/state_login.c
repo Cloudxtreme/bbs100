@@ -45,6 +45,7 @@
 #include "OnlineUser.h"
 #include "SU_Passwd.h"
 #include "Timezone.h"
+#include "Lang.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,7 +82,8 @@ int r;
 			close_connection(usr, "too many attempts");
 			Return;
 		}
-		Put(usr, "Enter your name: ");
+		Print(usr, "%s: ", translate(usr->lang, "Enter your name"));
+/*		Put(usr, "Enter your name: ");	*/
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
@@ -251,7 +253,7 @@ int r;
 
 	if (c == INIT_STATE) {
 		usr->name[0] = 0;				/* this keeps close_connection() from saving the user file (found by Georbit) */
-		Put(usr, "Enter password: ");
+		Print(usr, "%s: ", translate(usr->lang, "Enter password"));
 	}
 	r = edit_password(usr, c);
 
