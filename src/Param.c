@@ -95,8 +95,9 @@ Param param[] = {
 	{ PARAM_INT,	"max_enemy",		{ NULL },	{ (char *)DEFAULT_MAX_ENEMY },		},
 	{ PARAM_INT,	"idle_timeout",		{ NULL },	{ (char *)DEFAULT_IDLE_TIMEOUT },	},
 	{ PARAM_INT,	"lock_timeout",		{ NULL },	{ (char *)DEFAULT_LOCK_TIMEOUT },	},
+	{ PARAM_INT,	"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
 	{ PARAM_INT | PARAM_SEPARATOR,
-					"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
+					"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
 
 	{ PARAM_STRING,	"name_sysop",		{ NULL },	{ "Sysop" },						},
 	{ PARAM_STRING,	"name_room_aide",	{ NULL },	{ "Room Aide" },					},
@@ -296,7 +297,8 @@ void check_Param(void) {
 	PARAM_CHECK("max_enemy",		PARAM_MAX_ENEMY,		DEFAULT_MAX_ENEMY);
 	PARAM_CHECK("idle_timeout",		PARAM_IDLE_TIMEOUT,		DEFAULT_IDLE_TIMEOUT);
 	PARAM_CHECK("lock_timeout",		PARAM_LOCK_TIMEOUT,		DEFAULT_LOCK_TIMEOUT);
-	PARAM_CHECK("save_timeout",		PARAM_SAVE_TIMEOUT,		DEFAULT_SAVE_TIMEOUT);
+	PARAM_CHECK("periodic_saving",	PARAM_SAVE_TIMEOUT,		DEFAULT_SAVE_TIMEOUT);
+	PARAM_CHECK("cache_expire",		PARAM_CACHE_TIMEOUT,	DEFAULT_CACHE_TIMEOUT);
 }
 
 /*

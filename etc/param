@@ -61,6 +61,7 @@ max_enemy               100
 idle_timeout            10
 lock_timeout            30
 periodic_saving         5
+cache_expire			10
 
 name_sysop              Sysop
 name_room_aide          Room Aide

@@ -37,6 +37,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "Memory.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +45,7 @@
 
 CachedFile **file_cache = NULL, *fifo_head = NULL, *fifo_tail = NULL;
 int cache_size = 0, num_cached = 0;
+Timer *expire_timer = NULL;
 
 int init_FileCache(void) {
 	if (!PARAM_MAX_CACHED)			/* apparently, this site wants no cache at all */
@@ -53,10 +55,21 @@ int init_FileCache(void) {
 		return -1;
 
 	cache_size = PARAM_MAX_CACHED;
+
+	if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * 60, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
+		log_err("init_FileCache(): failed to allocate a new Timer");
+	else
+		add_Timer(&timerq, expire_timer);
+
 	return 0;
 }
 
 void deinit_FileCache(void) {
+	if (expire_timer != NULL) {
+		remove_Timer(&timerq, expire_timer);
+		destroy_Timer(expire_timer);
+		expire_timer = NULL;
+	}
 	if (file_cache != NULL) {
 		int i;
 
@@ -519,6 +532,8 @@ void fifo_add(CachedFile *cf) {
 	}
 	if (fifo_tail == NULL)
 		fifo_tail = fifo_head;
+
+	cf->timestamp = rtc;
 }
 
 void fifo_remove(CachedFile *cf) {
@@ -540,6 +555,18 @@ void fifo_remove(CachedFile *cf) {
 	else
 		if (fifo_head == NULL)
 			fifo_head = fifo_tail;
+}
+
+/*
+	throw away cached files that have not been used for a long time
+	Note that they have already been synced
+*/
+void cache_expire_timerfunc(void *dummy) {
+time_t expire_time;
+
+	expire_time = rtc - PARAM_CACHE_TIMEOUT;
+	while(fifo_tail != NULL && fifo_tail->f != NULL && fifo_tail->timestamp < expire_time)
+		remove_Cache_filename(fifo_tail->f->filename);
 }
 
 /* EOB */

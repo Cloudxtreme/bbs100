@@ -30,9 +30,11 @@ files. This means the BBS process will keep a maximum of 256 files resident
 in memory while running. This also means that after startup, the BBS process
 will start to grow as the cache is filling. When the cache is full, it will
 use an LRU algorithm to refresh the cache. The memory use of the BBS process
-should remain roughly the same from this point on.
-The cache can be sized dynamically from with the BBS, from the Sysop ->
-Parameters->Maximums menu.
+should remain roughly the same from this point on. Because it is pointless
+to keep files in memory when nobody is using them, there is also an
+expiration timer. This is the cache_expire parameter and is specified in
+minutes. The maximum cache size can be set dynamically from within the BBS,
+from the Sysop->Parameters->Maximums menu.
 
 IMPORTANT
 As a consequence of caching, you cannot edit ANY userfiles or filed messages
@@ -41,10 +43,10 @@ the system, so if you use an editor to edit the file at Unix level the changes
 will be lost whenever the cached file is synced to disk.
 Always keep in mind that any file under users/ and rooms/ might be present
 in the cache.
-Since version 1.1.0, sysops have the option of clearing a file from the
-cache. Choose 'uncache file' in the sysop menu to do this. The filename is
-the Unix filename relative to the BBS' basedir. For example, to clear
-the user file of user 'Walter' from the cache, enter users/W/Walter/UserData.
+Sysops have the option of clearing a file from the cache. To do this, choose
+'uncache file' from the Sysop menu. The filename is the Unix filename,
+relative to the BBS' basedir. For example, to clear the user file of a
+user named 'Walter' from the cache, enter users/W/Walter/UserData as filename.
 
 Files under etc/ are not cached. However, they should be treated in a special
 way:
@@ -137,6 +139,11 @@ way:
     These are feelings, which are displayed when a user presses '*'.
     Feelings can be reloaded from the Sysop->Parameters->Reload menu.
 
+    etc/zoneinfo/*
+
+    These are timezone files in plain text format. They are used by
+    the world clock in the calendar (press 't' for Time).
+
 
 SIGNALS
 The BBS responds to certain Unix signals.
@@ -174,17 +181,13 @@ Mind that the BBS doesn't know anything about daylight savings time. If the
 clock the machine runs on uses daylight savings and the user does not, the
 clocks will display a difference of an hour when daylight savings apply and
 the user will have to re-synchronize.
-This also applies for the calendar function under the 't' time command.
-When daylight savings are in use, the world clock may be an hour off.
-This is a known issue with the world clock. Some people find this very
-annoying, so there is a way to cleanly disable the world clock altogether;
-you may add the following line to src/include/config.h:
+The world clock in the calendar function is smart; it does knows about
+timezones and when daylight savings are in use. Because the users may
+have to re-synchronize, it is possible that the world clock displays the
+wrong timezone to the user. This is a known issue and exists as long as
+users are unable to input what their timezone is.
 
-#define NO_WORLDCLOCK	1		/* disable the world clock */
-
-and do a 'make install'. The world clock should no longer be displayed.
-
-The log files display local time in the format mm/dd/yyyy hh:mm:ss.
+The log files display local time in the format MM DD hh:mm:ss.
 
 
 TRASH DIRECTORY

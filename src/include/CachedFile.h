@@ -26,14 +26,15 @@
 #include "StringList.h"
 
 #include <stdarg.h>
+#include <time.h>
 
 #define FILE_DIRTY		1
 
 typedef struct File_tag File;
 
 struct File_tag {
-	char *filename;
 	unsigned int flags;
+	char *filename;
 	StringList *data, *datap;
 };
 
@@ -48,6 +49,7 @@ struct CachedFile_tag {
 	CachedFileList hash;		/* pointers for 'hashlist' */
 	CachedFileList fifo;		/* pointer for FIFO (LRU algorithm) */
 	File *f;					/* the cached file */
+	time_t timestamp;			/* last cache hit */
 };
 
 extern int cache_size;
@@ -82,6 +84,8 @@ void remove_Cache_filename(char *);
 int resize_Cache(void);
 void fifo_remove(CachedFile *);
 void fifo_add(CachedFile *);
+
+void cache_expire_timerfunc(void *);
 
 #endif	/* CACHEDFILE_H_WJ100 */
 
