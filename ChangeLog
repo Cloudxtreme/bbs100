@@ -7,6 +7,7 @@ Changes as of December 11th 2003
 Changes as of December 10th 2003
 - parameter cache_expire specifies how long unused files remain resident
   the file cache (in minutes)
+- 'make' output makeover
 
 Changes as of December 9th 2003
 - internal file cache can be set to 0 to disable it
