@@ -39,6 +39,8 @@
 	Note: I have number the list in blocks, so it is easier for me to insert
 	      a new define in between without having to manually renumber every
 	      single entry
+
+	It would be easier to put the params in a Hash, but this code is much faster
 */
 #define PARAM_BBS_NAME				param[0].val.s
 #define PARAM_PORT_NUMBER			param[1].val.d
@@ -49,15 +51,16 @@
 #define PARAM_CONFDIR				param[PARAM_DIR_N+2].val.s
 #define PARAM_FEELINGSDIR			param[PARAM_DIR_N+3].val.s
 #define PARAM_ZONEINFODIR			param[PARAM_DIR_N+4].val.s
-#define PARAM_USERDIR				param[PARAM_DIR_N+5].val.s
-#define PARAM_ROOMDIR				param[PARAM_DIR_N+6].val.s
-#define PARAM_TRASHDIR				param[PARAM_DIR_N+7].val.s
+#define PARAM_LANGUAGEDIR			param[PARAM_DIR_N+5].val.s
+#define PARAM_USERDIR				param[PARAM_DIR_N+6].val.s
+#define PARAM_ROOMDIR				param[PARAM_DIR_N+7].val.s
+#define PARAM_TRASHDIR				param[PARAM_DIR_N+8].val.s
 
-#define PARAM_PROGRAM_N				10
+#define PARAM_PROGRAM_N				11
 #define PARAM_PROGRAM_MAIN			param[PARAM_PROGRAM_N].val.s
 #define PARAM_PROGRAM_RESOLVER		param[PARAM_PROGRAM_N+1].val.s
 
-#define PARAM_SCREEN_N				12
+#define PARAM_SCREEN_N				13
 #define PARAM_GPL_SCREEN			param[PARAM_SCREEN_N].val.s
 #define PARAM_MODS_SCREEN			param[PARAM_SCREEN_N+1].val.s
 #define PARAM_LOGIN_SCREEN			param[PARAM_SCREEN_N+2].val.s
@@ -68,14 +71,14 @@
 #define PARAM_SHUTDOWN_SCREEN		param[PARAM_SCREEN_N+7].val.s
 #define PARAM_CRASH_SCREEN			param[PARAM_SCREEN_N+8].val.s
 
-#define PARAM_HELP_N				21
+#define PARAM_HELP_N				22
 #define PARAM_FIRST_LOGIN			param[PARAM_HELP_N].val.s
 #define PARAM_HELP_STD				param[PARAM_HELP_N+1].val.s
 #define PARAM_HELP_CONFIG			param[PARAM_HELP_N+2].val.s
 #define PARAM_HELP_ROOMCONFIG		param[PARAM_HELP_N+3].val.s
 #define PARAM_HELP_SYSOP			param[PARAM_HELP_N+4].val.s
 
-#define PARAM_FILE_N				26
+#define PARAM_FILE_N				27
 #define PARAM_HOSTMAP_FILE			param[PARAM_FILE_N].val.s
 #define PARAM_HOSTS_ACCESS_FILE		param[PARAM_FILE_N+1].val.s
 #define PARAM_BANISHED_FILE			param[PARAM_FILE_N+2].val.s
@@ -85,7 +88,7 @@
 #define PARAM_SYMTAB_FILE			param[PARAM_FILE_N+6].val.s
 #define PARAM_DEFAULT_TIMEZONE		param[PARAM_FILE_N+7].val.s
 
-#define PARAM_LOG_N					34
+#define PARAM_LOG_N					35
 #define PARAM_SYSLOG				param[PARAM_LOG_N].val.s
 #define PARAM_AUTHLOG				param[PARAM_LOG_N+1].val.s
 #define PARAM_LOGROTATE				param[PARAM_LOG_N+2].val.s
@@ -93,7 +96,7 @@
 #define PARAM_ONCRASH				param[PARAM_LOG_N+4].val.s
 #define PARAM_CRASHDIR				param[PARAM_LOG_N+5].val.s
 
-#define PARAM_MAX_N					40
+#define PARAM_MAX_N					41
 #define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.d
 #define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.d
 #define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.d
@@ -108,13 +111,13 @@
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.d
 #define PARAM_CACHE_TIMEOUT			param[PARAM_MAX_N+12].val.d
 
-#define PARAM_NAME_N				53
+#define PARAM_NAME_N				54
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
 #define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
 #define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
 #define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_N				57
+#define PARAM_NOTIFY_N				58
 #define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
 #define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
 #define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s
@@ -124,7 +127,7 @@
 #define PARAM_NOTIFY_ENTER_CHAT		param[PARAM_NOTIFY_N+6].val.s
 #define PARAM_NOTIFY_LEAVE_CHAT		param[PARAM_NOTIFY_N+7].val.s
 
-#define PARAM_HAVE_N				65
+#define PARAM_HAVE_N				66
 #define PARAM_HAVE_XMSGS			param[PARAM_HAVE_N].val.bool
 #define PARAM_HAVE_EMOTES			param[PARAM_HAVE_N+1].val.bool
 #define PARAM_HAVE_FEELINGS			param[PARAM_HAVE_N+2].val.bool

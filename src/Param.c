@@ -40,6 +40,7 @@ Param param[] = {
 	{ PARAM_STRING,	"confdir",			{ NULL },	{ "etc/" },						},
 	{ PARAM_STRING, "feelingsdir",		{ NULL },	{ "etc/feelings/" },			},
 	{ PARAM_STRING, "zoneinfodir",		{ NULL },	{ "etc/zoneinfo/" },			},
+	{ PARAM_STRING, "languagedir",		{ NULL },	{ "etc/language/" },			},
 	{ PARAM_STRING,	"userdir",			{ NULL },	{ "users/" }, 					},
 	{ PARAM_STRING,	"roomdir",			{ NULL },	{ "rooms/" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,

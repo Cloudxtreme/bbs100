@@ -10,6 +10,7 @@ bindir                  bin/
 confdir                 etc/
 feelingsdir             etc/feelings/
 zoneinfodir             etc/zoneinfo/
+languagedir             etc/language/
 userdir                 users/
 roomdir                 rooms/
 trashdir                trash/
