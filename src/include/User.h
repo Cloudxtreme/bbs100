@@ -144,7 +144,7 @@ struct User_tag {
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
 
-	time_t birth, login_time, last_logout, online_timer, idle_timer;
+	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, posted, read;
 	unsigned int flags, runtime_flags;
@@ -167,7 +167,7 @@ struct User_tag {
 	MsgIndex *curr_msg;
 	BufferedMsg *history, *history_p, *busy_msgs, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
-	Timer *timer;
+	Timer *timerq, *idle_timer;
 
 	CallStack *callstack;
 };

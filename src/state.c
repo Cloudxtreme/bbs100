@@ -1274,7 +1274,7 @@ void loop_ping(User *usr, char c) {
 	in case a user is idling, print it
 	(hardcoded) default is after 2 minutes
 */
-			tdiff = (unsigned long)rtc - (unsigned long)u->idle_timer;
+			tdiff = (unsigned long)rtc - (unsigned long)u->idle_time;
 			if (tdiff >= 120UL)
 				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff));
 		}
@@ -2958,8 +2958,8 @@ void state_lock_password(User *usr, char c) {
 		usr->edit_buf[0] = 0;
 		usr->runtime_flags |= (RTF_BUSY | RTF_LOCKED);
 
-		if (usr->timer != NULL)
-			usr->timer->sleeptime = usr->timer->maxtime = PARAM_LOCK_TIMEOUT * 60;
+		if (usr->idle_timer != NULL)
+			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * 60;
 
 		notify_locked(usr);
 		Return;
@@ -2970,8 +2970,8 @@ void state_lock_password(User *usr, char c) {
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
 
-			if (usr->timer != NULL)
-				usr->timer->sleeptime = usr->timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+			if (usr->idle_timer != NULL)
+				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
 
 			notify_unlocked(usr);
 			RET(usr);

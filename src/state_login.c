@@ -358,13 +358,13 @@ void state_ansi_prompt(User *usr, char c) {
 		listdestroy_StringList(usr->more_text);
 		if ((usr->more_text = copy_StringList(first_login)) != NULL) {
 /*
-	for the new users, we reset the timeout timer here so they have some time
-	to read the displayed text
+	for the new users, we reset the timeout timer here so they have some
+	time to read the displayed text
 */
-			if (usr->timer != NULL) {
-				usr->timer->sleeptime = usr->timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
-				usr->timer->restart = TIMEOUT_USER;
-				usr->timer->action = user_timeout;
+			if (usr->idle_timer != NULL) {
+				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+				usr->idle_timer->restart = TIMEOUT_USER;
+				usr->idle_timer->action = user_timeout;
 			}
 			MOV(usr, STATE_DISPLAY_MOTD);
 			PUSH(usr, STATE_PRESS_ANY_KEY);
@@ -379,10 +379,10 @@ void state_ansi_prompt(User *usr, char c) {
 void state_display_motd(User *usr, char c) {
 	Enter(state_display_motd);
 
-	if (usr->timer != NULL) {			/* reset the 'timeout timer' */
-		usr->timer->sleeptime = usr->timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
-		usr->timer->restart = TIMEOUT_USER;
-		usr->timer->action = user_timeout;
+	if (usr->idle_timer != NULL) {			/* reset the 'timeout timer' */
+		usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * 60;
+		usr->idle_timer->restart = TIMEOUT_USER;
+		usr->idle_timer->action = user_timeout;
 	}
 	if (motd_screen != NULL
 		&& (usr->more_text = copy_StringList(motd_screen)) != NULL) {
@@ -406,8 +406,8 @@ User *u;
 
 	Enter(state_go_online);
 
-	add_Timer(&usr->timer, new_Timer(PARAM_SAVE_TIMEOUT * 60, save_timeout, TIMER_RESTART));
-
+/* do periodic saving of user files */
+	add_Timer(&usr->timerq, new_Timer(PARAM_SAVE_TIMEOUT * 60, save_timeout, TIMER_RESTART));
 /*
 	give the user a Mail> room
 	this is already done by load_User(), but Guests and New users

@@ -55,19 +55,19 @@ void user_timeout(void *v) {
 User *usr;
 
 	usr = (User *)v;
-	if (usr == NULL || usr->timer == NULL)
+	if (usr == NULL || usr->idle_timer == NULL)
 		return;
 
-	switch(usr->timer->restart) {
+	switch(usr->idle_timer->restart) {
 		case TIMEOUT_USER:
 			Put(usr, "\n<beep><red>Hello? Is anybody out there?? You will be logged off in one minute unless\n"
 				"you start looking more alive!\n");
-			usr->timer->sleeptime = 60;
+			usr->idle_timer->sleeptime = 60;
 			break;
 
 		case (TIMEOUT_USER-1):
 			Put(usr, "\n<beep><red>WAKE UP! You will be logged off NOW unless you show you're alive!\n");
-			usr->timer->sleeptime = 6;
+			usr->idle_timer->sleeptime = 6;
 			break;
 
 		case (TIMEOUT_USER-2):

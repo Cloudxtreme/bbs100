@@ -158,10 +158,10 @@ User *usr, *usr_next;
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {
 		usr_next = usr->next;
 
-		if (usr->timer == NULL)
+		if (usr->timerq == NULL)
 			continue;
 
-		n = update_timerqueue(&usr->timer, usr, tdiff);
+		n = update_timerqueue(&usr->timerq, usr, tdiff);
 		if (n < nap)
 			nap = n;
 	}

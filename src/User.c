@@ -65,7 +65,8 @@ User *usr;
 	usr->socket = -1;
 	usr->telnet_state = TS_DATA;
 
-	add_Timer(&usr->timer, new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT));
+	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
+	add_Timer(&usr->timerq, usr->idle_timer);
 
 	usr->term_height = 23;			/* hard-coded defaults; may be set by TELOPT_NAWS */
 	usr->term_width = 80;
@@ -120,7 +121,7 @@ int i;
 	listdestroy_BufferedMsg(usr->held_msgs);
 	destroy_BufferedMsg(usr->send_msg);
 
-	listdestroy_Timer(usr->timer);
+	listdestroy_Timer(usr->timerq);
 	listdestroy_CallStack(usr->callstack);
 
 	if (usr->socket > 0) {
@@ -741,12 +742,12 @@ void process(User *usr, char c) {
 		return;
 
 /* user is doing something, reset idle timer */
-	usr->idle_timer = rtc;
+	usr->idle_time = rtc;
 
 /* reset timeout timer, unless locked */
-	if (!(usr->runtime_flags & RTF_LOCKED) && usr->timer != NULL) {
-		usr->timer->sleeptime = usr->timer->maxtime;
-		usr->timer->restart = TIMEOUT_USER;
+	if (!(usr->runtime_flags & RTF_LOCKED) && usr->idle_timer != NULL) {
+		usr->idle_timer->sleeptime = usr->idle_timer->maxtime;
+		usr->idle_timer->restart = TIMEOUT_USER;
 	}
 /* call routine on top of the callstack */
 	this_user = usr;
