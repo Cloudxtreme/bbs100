@@ -170,7 +170,7 @@ void new_connection(int fd) {
 User *new_conn;
 struct sockaddr_in client;
 int client_len = sizeof(struct sockaddr_in);
-char buf[20];
+char buf[256];
 StringList *sl;
 int s;
 char optval;
@@ -215,7 +215,7 @@ char optval;
 */
 	for(sl = login_screen; sl != NULL; sl = sl->next)
 		Print(new_conn, "%s\n", sl->str);
-	Print(new_conn, "        %s\n", print_copyright(SHORT, NULL));
+	Print(new_conn, "        %s\n", print_copyright(SHORT, NULL, buf));
 
 /*
 	This code is commented out, but if you want to lock out sites

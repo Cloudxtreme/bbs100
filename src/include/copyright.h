@@ -28,7 +28,7 @@
 
 extern char *copyright;
 
-char *print_copyright(int, char *);
+char *print_copyright(int, char *, char *);
 
 #endif	/* COPYRIGHT_H_WJ99 */
 

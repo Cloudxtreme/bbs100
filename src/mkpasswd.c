@@ -36,15 +36,17 @@ time_t rtc = (time_t)0UL;
 int main(void) {
 char buf[128], buf2[128];
 
-	printf("%s", print_copyright(SHORT, "mkpasswd"));
+	printf("%s", print_copyright(SHORT, "mkpasswd", buf));
 
 	strcpy(buf, getpass("Enter password: "));
 	if (!*buf)
 		exit(1);
+	buf[127] = 0;
 
 	strcpy(buf2, getpass("Enter it again (for verification): "));
 	if (!*buf2)
 		exit(1);
+	buf2[127] = 0;
 
 	if (strcmp(buf, buf2)) {
 		printf("Passwords didn't match\n");

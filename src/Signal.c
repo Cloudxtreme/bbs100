@@ -181,6 +181,9 @@ int i;
 char *sig_name(int sig, char *signame_buf) {
 int i;
 
+	if (signame_buf == NULL)
+		return NULL;
+
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sig == sig_table[i].sig) {
 			strcpy(signame_buf, sig_table[i].sig_name);

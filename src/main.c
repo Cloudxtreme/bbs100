@@ -182,6 +182,7 @@ void usage(void) {
 
 int main(int argc, char **argv) {
 int debugger = 0;
+char buf[256];
 
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
@@ -199,7 +200,7 @@ int debugger = 0;
 		printf("Out of memory (?)\n");
 		exit(-1);
 	}
-	printf("%s\n", print_copyright(SHORT, "main"));
+	printf("%s\n", print_copyright(SHORT, "main", buf));
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
 

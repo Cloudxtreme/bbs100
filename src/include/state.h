@@ -82,6 +82,7 @@ void loop_ping(User *, char);
 void loop_send_msg(User *, char);
 
 void PrintPrompt(User *);
+void print_version_info(User *);
 void enter_recipients(User *, void (*)(User *, char));
 void enter_name(User *, void (*)(User *, char));
 

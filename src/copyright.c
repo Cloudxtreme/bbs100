@@ -30,8 +30,12 @@
 #include <sys/utsname.h>
 
 
-char *print_copyright(int full, char *progname) {
-static char buf[256];
+/*
+	Note: buf must be large enough (160 bytes should do)
+*/
+char *print_copyright(int full, char *progname, char *buf) {
+	if (buf == NULL)
+		return NULL;
 
 	strcpy(buf, "bbs100 ");
 	strcat(buf, VERSION);

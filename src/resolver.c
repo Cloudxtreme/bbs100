@@ -95,7 +95,7 @@ int s, n, un_len;
 struct hostent *host;
 struct in_addr ipnum;
 
-	printf("%s", print_copyright(SHORT, "resolver"));
+	printf("%s", print_copyright(SHORT, "resolver", buf));
 
 	if (strcmp(get_basename(argv[0]), "(bbs100 resolver)")) {
 		printf("You must not run this program by hand. It is supposed to be started by\n"

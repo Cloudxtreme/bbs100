@@ -454,7 +454,7 @@ int updated = 0;
 }
 
 void print_stats(User *usr) {
-char buf[PRINT_BUF], *p;
+char buf[PRINT_BUF], copyright_buf[256], *p;
 int l, w;
 unsigned long num;
 
@@ -469,7 +469,7 @@ unsigned long num;
 	usr->more_text = NULL;
 
 	sprintf(buf, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
-		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL));
+		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf));
 	cstrip_line(buf);
 
 /* kludge for newlines :P */
@@ -477,7 +477,7 @@ unsigned long num;
 		*p = 0;
 
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-		strcpy(buf, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL));
+		strcpy(buf, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf));
 		if ((p = cstrchr(buf, '\n')) != NULL) {
 			p++;
 			strcpy(buf, p);

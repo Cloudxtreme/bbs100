@@ -194,8 +194,7 @@ int i;
 
 		case '[':
 			Put(usr, "<white>bbs100 version information\n");
-			Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
-				print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL));
+			print_version_info(usr);
 			break;
 
 		case ']':
@@ -1033,6 +1032,13 @@ void PrintPrompt(User *usr) {
 	Return;
 }
 
+
+void print_version_info(User *usr) {
+char version_buf[256];
+
+	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
+		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf));
+}
 
 void enter_recipients(User *usr, void (*state_func)(User *, char)) {
 	if (usr == NULL)

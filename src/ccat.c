@@ -383,7 +383,7 @@ int len = 0;
 int main(void) {
 char buf[256];
 
-	printf("%s", print_copyright(SHORT, "ccat"));
+	printf("%s", print_copyright(SHORT, "ccat", buf));
 
 	while(fgets(buf, 256, stdin) != NULL)
 		Put(buf);
