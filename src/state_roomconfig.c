@@ -51,9 +51,9 @@ void state_room_config_menu(User *usr, char c) {
 				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
 
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
-				Put(usr, "<hotkey>Invite                      Show <hotkey>invited\n");
+				Put(usr, "<hotkey>Invite/uninvite             Show <hotkey>invited\n");
 
-			Put(usr, "<hotkey>Kickout                     Show <hotkey>kicked\n");
+			Put(usr, "<hotkey>Kickout/unkick              Show <hotkey>kicked\n");
 
 			if (!(usr->curr_room->flags & ROOM_HOME)) {
 				Put(usr, "\n");
@@ -195,7 +195,6 @@ void state_room_config_menu(User *usr, char c) {
 			else
 				show_namelist(usr, usr->curr_room->kicked);
 			break;
-
 
 		case 'a':
 		case 'A':
