@@ -168,7 +168,7 @@ Credits for bug fixes et al after public release
 - Stephan van Beerschoten <stephanb@whacky.net> did testing of
   version 1.2.2 (development version) on Solaris 8
 
-- Shannon Prickett <spameater@metanav.org> suggested disabling certain
+- Shannon Prickett <binder@manjusri.org> suggested disabling certain
   features. Implemented through parameters in 1.2.3 (development version)
 
 - Russ Allbery <rra@bogus.example.com> wrote the alternative inet_aton()

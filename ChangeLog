@@ -14,7 +14,7 @@ Changes as of January 17th 2004
 Changes as of January 11th 2004
 - PARAM_BOOL feature toggles
 - defines LOBBY_ROOM, MAIL_ROOM, HOME_ROOM as fixed room numbers
-  as suggested by Shannon Prickett <spameater@metanav.org>
+  as suggested by Shannon Prickett <binder@manjusri.org>
 
 Changes as of December 30th 2003
 - tiny IRIX fixes
