@@ -30,6 +30,7 @@
 #include "strtoul.h"
 #include "Memory.h"
 #include "FileFormat.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,6 +99,9 @@ int version;
 		case 1:
 			load_func = load_Message_version1;
 			break;
+
+		default:
+			log_err("load_Message(): don't know how to load version %d of %s", version, filename);
 	}
 	if (load_func != NULL && !load_func(f, m)) {
 		Fclose(f);
