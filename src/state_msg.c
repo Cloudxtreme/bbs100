@@ -1388,7 +1388,7 @@ History_Reply_Code:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
 			if (usr->history_p->flags & BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
@@ -1586,7 +1586,7 @@ Held_History_Reply:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
 			if (usr->held_msgp->flags & BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);

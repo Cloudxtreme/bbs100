@@ -2920,6 +2920,8 @@ StringList *sl;
 }
 
 void do_reply_x(User *usr, int flags) {
+char many_buf[MAX_LINE*3];
+
 	if (usr == NULL)
 		return;
 
@@ -2932,7 +2934,7 @@ void do_reply_x(User *usr, int flags) {
 /* replying to just one person? */
 	if (usr->recipients->next == NULL && usr->recipients->prev == NULL) {
 		usr->runtime_flags &= ~RTF_MULTI;
-		Print(usr, "<green>Replying to%s\n", print_many(usr));
+		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf));
 
 		if (flags & BUFMSG_EMOTE) {
 			CALL(usr, STATE_EDIT_EMOTE);
@@ -2941,7 +2943,7 @@ void do_reply_x(User *usr, int flags) {
 		}
 	} else {
 /* replying to <many>, edit the recipient list */
-		Print(usr, "<green>Replying to%s", print_many(usr));
+		Print(usr, "<green>Replying to%s", print_many(usr, many_buf));
 
 		if (flags & BUFMSG_EMOTE) {
 			PUSH(usr, STATE_EMOTE_PROMPT);

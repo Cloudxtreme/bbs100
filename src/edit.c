@@ -44,6 +44,7 @@
 int edit_recipients(User *usr, char c, int (*access_func)(User *)) {
 StringList *sl;
 int i;
+char many_buf[MAX_LINE*3];
 
 	if (usr == NULL)
 		return 0;
@@ -84,7 +85,7 @@ int i;
 					if (usr->recipients == NULL)
 						usr->runtime_flags &= ~RTF_MULTI;
 
-					Print(usr, "\b \b\b \b%s", print_many(usr));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
 				}
 			}
 			break;
@@ -103,7 +104,7 @@ int i;
 						Put(usr, "<green>, ");
 				}
 			}
-			Print(usr, "\n<green>Enter recipient%s", print_many(usr));
+			Print(usr, "\n<green>Enter recipient%s", print_many(usr, many_buf));
 			break;
 
 		case KEY_CTRL('F'):
@@ -127,7 +128,7 @@ int i;
 
 					add_StringList(&usr->recipients, new_StringList(sl->str));
 			}
-			Print(usr, "%s", print_many(usr));
+			Print(usr, "%s", print_many(usr, many_buf));
 			break;
 
 /*
@@ -155,7 +156,7 @@ int i;
 
 					add_StringList(&usr->recipients, new_StringList(sl->str));
 			}
-			Print(usr, "%s", print_many(usr));
+			Print(usr, "%s", print_many(usr, many_buf));
 			break;
 
 		case KEY_CTRL('W'):
@@ -176,7 +177,7 @@ int i;
 						usr->recipients = add_StringList(&usr->recipients, new_StringList(u->name));
 				}
 				usr->recipients = rewind_StringList(usr->recipients);
-				Print(usr, "%s", print_many(usr));
+				Print(usr, "%s", print_many(usr, many_buf));
 			}
 			break;
 
@@ -205,7 +206,7 @@ int i;
 						remove_StringList(&usr->recipients, sl);
 						destroy_StringList(sl);
 
-						Print(usr, "\b \b\b \b%s", print_many(usr));
+						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
 					}
 					usr->edit_pos = 0;
 					usr->edit_buf[0] = 0;
@@ -314,12 +315,12 @@ int i;
 
 				if (usr->recipients == NULL) {
 					add_StringList(&usr->recipients, sl);
-					Print(usr, "\b \b\b \b%s", print_many(usr));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
 				} else {
 					if (usr->recipients->next == NULL) {
 						erase_many(usr);
 						add_StringList(&usr->recipients, sl);
-						Print(usr, "\b \b\b \b%s", print_many(usr));
+						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
 					} else
 						add_StringList(&usr->recipients, sl);
 				}
@@ -385,6 +386,8 @@ int i;
 }
 
 int edit_name(User *usr, char c) {
+char many_buf[MAX_LINE*3];
+
 	if (usr == NULL)
 		return 0;
 
@@ -432,7 +435,7 @@ int edit_name(User *usr, char c) {
 					if (usr->recipients == NULL)
 						usr->runtime_flags &= ~RTF_MULTI;
 
-					Print(usr, "\b \b\b \b%s", print_many(usr));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
 				}
 			}
 			break;
@@ -1285,10 +1288,11 @@ void erase_many(User *usr) {
 }
 
 /*
-	WARNING: Returns static buffer
+	Note: buf must be large enough (120 bytes will do)
 */
-char *print_many(User *usr) {
-static char buf[MAX_LINE*3];
+char *print_many(User *usr, char *buf) {
+	if (buf == NULL)
+		return NULL;
 
 	buf[0] = 0;
 	if (usr == NULL)

@@ -55,7 +55,7 @@ void erase_word(User *);
 void erase_line(User *, char *);
 void erase_name(User *);
 void erase_many(User *);
-char *print_many(User *);
+char *print_many(User *, char *);
 void erase_tabname(User *);
 void make_users_tablist(User *);
 void make_rooms_tablist(User *);
