@@ -1369,7 +1369,7 @@ Joined *j;
 			|| ((r->flags & ROOM_HIDDEN) && j == NULL)
 			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
 
-			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos))
+			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos) || cstristr(r->name, usr->edit_buf) != NULL)
 				add_StringList(&usr->tablist, new_StringList(r->name));
 		}
 		if (r->number == HOME_ROOM)
@@ -1394,7 +1394,7 @@ int i;
 		return;
 
 	buf[0] = 0;
-	for(i = usr->edit_pos; i > usr->tablen; i--)
+	for(i = usr->edit_pos; i > 0; i--)
 		strcat(buf, "\b \b");
 	Put(usr, buf);
 }
@@ -1408,22 +1408,16 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 
 	if (usr->tablist == NULL) {
 		usr->tablen = usr->edit_pos;
+		erase_tabname(usr);
 		make_tablist(usr);
-
-		if (usr->tablist != NULL && usr->tablist->str != NULL) {
-			strcpy(usr->edit_buf, usr->tablist->str);
-			usr->edit_pos = strlen(usr->tablist->str);
-			Put(usr, usr->tablist->str + usr->tablen);
-		}
 	} else {
 		erase_tabname(usr);
 		usr->tablist = usr->tablist->next;
-
-		if (usr->tablist != NULL && usr->tablist->str != NULL) {
-			strcpy(usr->edit_buf, usr->tablist->str);
-			usr->edit_pos = strlen(usr->tablist->str);
-			Put(usr, usr->tablist->str + usr->tablen);
-		}
+	}
+	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+		strcpy(usr->edit_buf, usr->tablist->str);
+		usr->edit_pos = strlen(usr->tablist->str);
+		Put(usr, usr->tablist->str);
 	}
 	Return;
 }
@@ -1435,21 +1429,14 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 	if (usr->tablist == NULL) {
 		usr->tablen = usr->edit_pos;
 		make_tablist(usr);
-
-		if (usr->tablist != NULL && usr->tablist->str != NULL) {
-			strcpy(usr->edit_buf, usr->tablist->str);
-			usr->edit_pos = strlen(usr->tablist->str);
-			Put(usr, usr->tablist->str + usr->tablen);
-		}
 	} else {
 		erase_tabname(usr);
-
 		usr->tablist = usr->tablist->prev;
-		if (usr->tablist != NULL && usr->tablist->str != NULL) {
-			strcpy(usr->edit_buf, usr->tablist->str);
-			usr->edit_pos = strlen(usr->tablist->str);
-			Put(usr, usr->tablist->str + usr->tablen);
-		}
+	}
+	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+		strcpy(usr->edit_buf, usr->tablist->str);
+		usr->edit_pos = strlen(usr->tablist->str);
+		Put(usr, usr->tablist->str);
 	}
 }
 

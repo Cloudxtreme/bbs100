@@ -1,6 +1,8 @@
 Changes as of January 25th 2004
 - added BBS birthday as suggested by Stephan van Beerschoten
   <stephanb@whacky.net>
+- changed 'Tab' to match substrings as well for room names
+  inspired by a suggestion of Shannon Prickett <binder@manjusri.org>
 
 Changes as of January 21st 2004
 - fixed bugs with logging in; too many attempts
