@@ -54,6 +54,7 @@
 #define STATE_PARAM_BINDIR				state_param_bindir
 #define STATE_PARAM_CONFDIR				state_param_confdir
 #define STATE_PARAM_FEELINGSDIR			state_param_feelingsdir
+#define STATE_PARAM_ZONEINFODIR			state_param_zoneinfodir
 #define STATE_PARAM_USERDIR				state_param_userdir
 #define STATE_PARAM_ROOMDIR				state_param_roomdir
 #define STATE_PARAM_TRASHDIR			state_param_trashdir
@@ -146,6 +147,7 @@ void state_param_basedir(User *, char);
 void state_param_bindir(User *, char);
 void state_param_confdir(User *, char);
 void state_param_feelingsdir(User *, char);
+void state_param_zoneinfodir(User *, char);
 void state_param_userdir(User *, char);
 void state_param_roomdir(User *, char);
 void state_param_trashdir(User *, char);

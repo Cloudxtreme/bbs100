@@ -69,9 +69,9 @@ void state_sysop_menu(User *usr, char c) {
 		case INIT_STATE:
 /* I had to put the save_Wrapper() code here due to needed strange construction.. :P */
 			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
-				if (save_Wrapper(wrappers, PARAM_HOSTS_ACCESS_FILE)) {
+				if (save_Wrapper(wrappers, PARAM_HOSTS_ACCESS_FILE))
 					Perror(usr, "failed to save wrappers");
-				}
+
 				log_msg("SYSOP %s edited wrappers", usr->name);
 				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
 			}
@@ -1426,8 +1426,6 @@ void state_parameters_menu(User *usr, char c) {
 }
 
 
-
-
 void state_system_config_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -1456,9 +1454,11 @@ void state_system_config_menu(User *usr, char c) {
 				PARAM_FEELINGSDIR
 			);
 			Print(usr,
+				"<hotkey>Zoneinfo directory  <white>%s<magenta>\n"
 				"<hotkey>User directory      <white>%s<magenta>\n"
 				"<hotkey>Room directory      <white>%s<magenta>\n"
 				"<hotkey>Trash directory     <white>%s<magenta>\n",
+				PARAM_ZONEINFODIR,
 				PARAM_USERDIR,
 				PARAM_ROOMDIR,
 				PARAM_TRASHDIR
@@ -1519,6 +1519,12 @@ void state_system_config_menu(User *usr, char c) {
 		case 'F':
 			Put(usr, "Feelings directory\n");
 			CALL(usr, STATE_PARAM_FEELINGSDIR);
+			Return;
+
+		case 'z':
+		case 'Z':
+			Put(usr, "Zoneinfo directory\n");
+			CALL(usr, STATE_PARAM_ZONEINFODIR);
 			Return;
 
 		case 'u':
@@ -1596,6 +1602,12 @@ void state_param_confdir(User *usr, char c) {
 void state_param_feelingsdir(User *usr, char c) {
 	Enter(state_param_feelingsdir);
 	change_string_param(usr, c, &PARAM_FEELINGSDIR, "<green>Enter feelings directory<yellow>: ");
+	Return;
+}
+
+void state_param_zoneinfodir(User *usr, char c) {
+	Enter(state_param_zoneinfodir);
+	change_string_param(usr, c, &PARAM_ZONEINFODIR, "<green>Enter zoneinfo directory<yellow>: ");
 	Return;
 }
 
