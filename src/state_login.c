@@ -473,12 +473,14 @@ User *u;
 	note that new users do not have a last_logout time
 */
 	if (usr->last_logout > (time_t)0UL) {
+		char date_buf[MAX_LINE];
+
 		if (usr->tmpbuf[TMP_FROM_HOST])
 			Print(usr, "<green>Last login was on <cyan>%s<green>\n"
 				"From host<yellow>: %s\n",
-				print_date(usr, usr->last_logout), usr->tmpbuf[TMP_FROM_HOST]);
+				print_date(usr, usr->last_logout, date_buf), usr->tmpbuf[TMP_FROM_HOST]);
 		else
-			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout));
+			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout, date_buf));
 	}
 /* free the tmp buffers as they won't be used anymore for a long time */
 	for(i = 0; i < NUM_TMP; i++) {

@@ -745,12 +745,14 @@ struct tm *user_time(User *usr, time_t tt) {
 }
 
 /*
-	Warning: Return value is static
+	Note: date_str should be large enough (80 bytes will do)
 */
-char *print_date(User *usr, time_t tt) {
-static char date_str[80];
+char *print_date(User *usr, time_t tt, char *date_str) {
 char add[2];
 struct tm *t;
+
+	if (date_str == NULL)
+		return NULL;
 
 	t = user_time(usr, tt);
 

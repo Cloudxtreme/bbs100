@@ -740,7 +740,7 @@ int r;
 
 
 void readMsg(User *usr) {
-char filename[MAX_PATHLEN];
+char filename[MAX_PATHLEN], date_buf[MAX_LINE];
 Joined *j;
 
 	if (usr == NULL)
@@ -782,7 +782,7 @@ Joined *j;
 
 		if (usr->message->flags & MSG_DELETED_BY_ANON)
 			usr->more_text = add_String(&usr->more_text, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]",
-				print_date(usr, usr->message->deleted), usr->message->anon);
+				print_date(usr, usr->message->deleted, date_buf), usr->message->anon);
 		else {
 			char deleted_by[MAX_LINE];
 
@@ -798,7 +798,7 @@ Joined *j;
 			strcat(deleted_by, usr->message->deleted_by);
 
 			usr->more_text = add_String(&usr->more_text, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]",
-				print_date(usr, usr->message->deleted), deleted_by);
+				print_date(usr, usr->message->deleted, date_buf), deleted_by);
 		}
 	} else {
 		StringList *sl;
@@ -2162,7 +2162,7 @@ void state_press_any_key(User *usr, char c) {
 
 
 void print_new_msg_header(User *usr) {
-char from[MAX_LINE];
+char from[MAX_LINE], date_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -2191,16 +2191,16 @@ char from[MAX_LINE];
 		StringList *sl;
 
 		if (!strcmp(usr->new_message->from, usr->name)) {
-			Print(usr, "<cyan>%s<green>, to ", print_date(usr, usr->new_message->mtime));
+			Print(usr, "<cyan>%s<green>, to ", print_date(usr, usr->new_message->mtime, date_buf));
 
 			for(sl = usr->new_message->to; sl != NULL && sl->next != NULL; sl = sl->next)
 				Print(usr, "<yellow>%s<green>, ", sl->str);
 			Print(usr, "<yellow>%s<green>\n", sl->str);
 		} else {
 			if (usr->new_message->to != NULL && usr->new_message->to->next == NULL && !strcmp(usr->new_message->to->str, usr->name))
-				Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime), from);
+				Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime, date_buf), from);
 			else {
-				Print(usr, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->new_message->mtime), from);
+				Print(usr, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->new_message->mtime, date_buf), from);
 
 				for(sl = usr->new_message->to; sl != NULL && sl->next != NULL; sl = sl->next)
 					Print(usr, "<yellow>%s<green>, ", sl->str);
@@ -2208,12 +2208,12 @@ char from[MAX_LINE];
 			}
 		}
 	} else
-		Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime), from);
+		Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime, date_buf), from);
 	Return;
 }
 
 void more_msg_header(User *usr) {
-char from[MAX_LINE], buf[MAX_LINE*3];
+char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -2251,7 +2251,7 @@ char from[MAX_LINE], buf[MAX_LINE*3];
 			max_dl = MAX_LINE*3-1;
 
 		if (!strcmp(usr->message->from, usr->name)) {
-			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime));
+			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime, date_buf));
 			dl = color_strlen(buf);
 
 			for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
@@ -2266,9 +2266,9 @@ char from[MAX_LINE], buf[MAX_LINE*3];
 			add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
 		} else {
 			if (usr->message->to != NULL && usr->message->to->next == NULL && !strcmp(usr->message->to->str, usr->name))
-				usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime), from);
+				usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime, date_buf), from);
 			else {
-				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime), from);
+				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime, date_buf), from);
 				dl = color_strlen(buf);
 
 				for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
@@ -2284,7 +2284,7 @@ char from[MAX_LINE], buf[MAX_LINE*3];
 			}
 		}
 	} else
-		usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime), from);
+		usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime, date_buf), from);
 	Return;
 }
 

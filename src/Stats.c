@@ -454,7 +454,7 @@ int updated = 0;
 }
 
 void print_stats(User *usr) {
-char buf[PRINT_BUF], copyright_buf[256], *p;
+char buf[PRINT_BUF], copyright_buf[256], date_buf[MAX_LINE], *p;
 int l, w;
 unsigned long num;
 
@@ -487,7 +487,7 @@ unsigned long num;
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
 
 	usr->more_text = add_String(&usr->more_text,
-		"<green>The system was last booted on <cyan>%s", print_date(usr, stats.uptime));
+		"<green>The system was last booted on <cyan>%s", print_date(usr, stats.uptime, date_buf));
 	usr->more_text = add_String(&usr->more_text,
 		"<green>Uptime is <yellow>%s", print_total_time(rtc - stats.uptime));
 	usr->more_text = add_String(&usr->more_text,
@@ -517,7 +517,7 @@ unsigned long num;
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>User statistics"));
 
-	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s<green>", stats.youngest, print_date(usr, stats.youngest_birth));
+	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s<green>", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
 	usr->more_text = add_String(&usr->more_text, "Oldest user is <white>%s<green>,", stats.oldest);
 	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s<green>", print_total_time(stats.oldest_age));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
@@ -576,7 +576,7 @@ unsigned long num;
 
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 
-		usr->more_text = add_String(&usr->more_text, "<green>Account created on <cyan>%s<green>", print_date(usr, usr->birth));
+		usr->more_text = add_String(&usr->more_text, "<green>Account created on <cyan>%s<green>", print_date(usr, usr->birth, date_buf));
 		l = sprintf(buf, "You have logged on <yellow>%s<green> times, ", print_number(usr->logins));
 
 		num = (unsigned long)((rtc - usr->birth) / (unsigned long)(30 * SECS_IN_DAY));

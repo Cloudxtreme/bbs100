@@ -474,8 +474,7 @@ int i;
 
 		case 't':
 		case 'T':
-			Print(usr, "Time\n"
-				"<magenta>Time is now<yellow>: %s %s\n", print_date(usr, (time_t)0UL), name_Timezone(usr->tz));
+			Put(usr, "Time\n");
 			print_calendar(usr);
 			break;
 
@@ -1416,7 +1415,9 @@ int r;
 				usr->more_text = add_String(&usr->more_text, "<green>Doing: <yellow>%s <cyan>%s", u->name, u->doing);
 		}
 		if (allocated) {
-			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s", print_date(usr, (time_t)u->last_logout));
+			char date_buf[MAX_LINE];
+
+			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s", print_date(usr, (time_t)u->last_logout, date_buf));
 			if (usr->runtime_flags & RTF_SYSOP)
 				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->from_ip, u->tmpbuf[TMP_FROM_IP]);
 
@@ -2800,9 +2801,11 @@ Joined *j;
 	usr->more_text = add_String(&usr->more_text, "<white>Room info of <yellow>%s<white>> (room #%u)",
 		usr->curr_room->name, usr->curr_room->number);
 
-	if (usr->curr_room->generation)
-		usr->more_text = add_String(&usr->more_text, "<green>Created on <yellow>%s", print_date(usr, usr->curr_room->generation));
+	if (usr->curr_room->generation) {
+		char date_buf[80];
 
+		usr->more_text = add_String(&usr->more_text, "<green>Created on <yellow>%s", print_date(usr, usr->curr_room->generation, date_buf));
+	}
 	*buf = 0;
 	if (usr->curr_room->flags & ROOM_READONLY)
 		strcat(buf, ", read-only");
@@ -3519,11 +3522,14 @@ void print_calendar(User *usr) {
 time_t t;
 struct tm *tmp;
 int w, d, today, today_month, today_year, old_month, green_color;
+char date_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
 
 	Enter(print_calendar);
+
+	Print(usr, "<magenta>Current time is<yellow> %s %s\n", print_date(usr, (time_t)0UL, date_buf), name_Timezone(usr->tz));
 
 	tmp = user_time(usr, (time_t)0UL);
 	w = tmp->tm_wday;

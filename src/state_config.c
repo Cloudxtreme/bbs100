@@ -1084,9 +1084,6 @@ char buf[MAX_LINE], *p;
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Print(usr, "\n<green>Current time is <yellow>%s %s\n",
-				print_date(usr, time(NULL)), name_Timezone(usr->tz)
-			);
 			print_calendar(usr);
 
 /* filter underscores */
