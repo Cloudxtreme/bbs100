@@ -1161,15 +1161,14 @@ BufferedMsg *m;
 
 /*
 	Produce an X message header
-	Note: returns a static buffer
+	Note: buf must be large enough (PRINT_BUF in size)
 */
-char *buffered_msg_header(User *usr, BufferedMsg *msg) {
-static char buf[PRINT_BUF];
+char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf) {
 struct tm *tm;
 char frombuf[256] = "", namebuf[256] = "", multi[32] = "", msgtype[64] = "";
 int from_me = 0;
 
-	if (usr == NULL || msg == NULL)
+	if (usr == NULL || msg == NULL || buf == NULL)
 		return NULL;
 
 	Enter(buffered_msg_header);
@@ -1239,6 +1238,7 @@ int from_me = 0;
 
 void print_buffered_msg(User *usr, BufferedMsg *msg) {
 StringList *sl;
+char buf[PRINT_BUF];
 
 	if (usr == NULL || msg == NULL)
 		return;
@@ -1254,7 +1254,7 @@ StringList *sl;
 	if (msg->from[0] && strcmp(usr->name, msg->from) && in_StringList(usr->talked_to, msg->from) == NULL)
 		add_StringList(&usr->talked_to, new_StringList(msg->from));
 
-	Print(usr, "\n%s", buffered_msg_header(usr, msg));
+	Print(usr, "\n%s", buffered_msg_header(usr, msg, buf));
 	for(sl = msg->msg; sl != NULL; sl = sl->next)
 		Print(usr, "%s\n", sl->str);
 
@@ -2486,7 +2486,7 @@ MsgIndex *m;
 void mail_msg(User *usr, BufferedMsg *msg) {
 StringList *sl;
 Room *room;
-char *p, c;
+char *p, c, buf[PRINT_BUF];
 int l;
 
 	if (usr == NULL)
@@ -2539,7 +2539,7 @@ int l;
 */
 	c = usr->name[0];
 	usr->name[0] = 0;
-	p = buffered_msg_header(usr, usr->send_msg);
+	p = buffered_msg_header(usr, usr->send_msg, buf);
 	usr->name[0] = c;
 
 /* kludge for emotes, which have the message on the same line as the header :P */

@@ -76,7 +76,7 @@ void abort_message(User *, char);
 void read_more(User *);
 void readMsg(User *);
 void recvMsg(User *, User *, BufferedMsg *);
-char *buffered_msg_header(User *, BufferedMsg *);
+char *buffered_msg_header(User *, BufferedMsg *, char *);
 void print_buffered_msg(User *, BufferedMsg *);
 void spew_BufferedMsg(User *);
 void print_new_msg_header(User *);
