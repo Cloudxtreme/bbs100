@@ -100,6 +100,7 @@ int i;
 	usr->tz = NULL;					/* usr->tz is just a reference and is not destroyed here */
 	Free(usr->timezone);
 
+	unload_Language(usr->language);
 	Free(usr->language);
 	usr->lang = NULL;
 
@@ -272,6 +273,7 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	Free(usr->timezone);
 	usr->timezone = NULL;
 
+	unload_Language(usr->language);
 	Free(usr->language);
 	usr->language = NULL;
 	usr->lang = NULL;
@@ -310,6 +312,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
+
+		usr->lang = load_Language(usr->language);
 
 		Fclose(f);
 		usr->flags &= USR_ALL;

@@ -492,6 +492,10 @@ char filename[MAX_PATHLEN];
 		return -1;
 
 	strcpy(filename, dirname);
+	if (strlen(filename) + 11 >= MAX_PATHLEN) {
+		log_err("generate_tz_index(): tz_index path too long, directory skipped");
+		return -1;
+	}
 	strcat(filename, "/.tz_index");
 	path_strip(filename);
 
@@ -504,6 +508,10 @@ char filename[MAX_PATHLEN];
 		if (direntp->d_name[0] == '.')
 			continue;
 
+		if (strlen(dirname) + strlen(direntp->d_name) + 2 >= MAX_PATHLEN) {
+			log_err("generate_tz_index(): path too long, file skipped");
+			continue;
+		}
 		sprintf(filename, "%s/%s", dirname, direntp->d_name);
 		path_strip(filename);
 

@@ -75,8 +75,9 @@ Param param[] = {
 	{ PARAM_STRING,	"su_passwd_file",	{ NULL },	{ "etc/su_passwd" },			},
 	{ PARAM_STRING,	"pid_file",			{ NULL },	{ "etc/pid" },					},
 	{ PARAM_STRING,	"symtab_file",		{ NULL },	{ "etc/symtab" },				},
+	{ PARAM_STRING, "default_timezone",	{ NULL },	{ "Europe/Amsterdam" },			},
 	{ PARAM_STRING | PARAM_SEPARATOR,
-					"default_timezone",	{ NULL },	{ "Europe/Amsterdam" },			},
+					"default_language",	{ NULL },	{ "bbs100" },					},
 
 	{ PARAM_STRING, "syslog",			{ NULL },	{ "log/bbslog" },				},
 	{ PARAM_STRING, "authlog",			{ NULL },	{ "log/authlog" },				},

@@ -77,6 +77,7 @@ int r;
 		usr->login_time++;
 		if (usr->login_time > MAX_LOGIN_ATTEMPTS) {
 			Put(usr, "Bye! Come back when you've figured it out..!\n");
+			usr->name[0] = 0;
 			close_connection(usr, "too many attempts");
 			Return;
 		}
@@ -176,6 +177,9 @@ int r;
 			if (usr->tz == NULL)
 				usr->tz = load_Timezone(usr->timezone);
 
+			if (usr->lang == NULL)
+				usr->lang = load_Language(usr->language);
+
 			JMP(usr, STATE_ANSI_PROMPT);
 			Return;
 		}
@@ -245,9 +249,10 @@ int r;
 
 	Enter(state_password_prompt);
 
-	if (c == INIT_STATE)
+	if (c == INIT_STATE) {
+		usr->name[0] = 0;				/* this keeps close_connection() from saving the user file (found by Georbit) */
 		Put(usr, "Enter password: ");
-
+	}
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
@@ -791,6 +796,9 @@ int r;
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
+
+		if (usr->lang == NULL)
+			usr->lang = load_Language(usr->language);
 
 /* save user here, or we're not able to X/profile him yet! */
 		if (usr->logins <= 1 && save_User(usr))

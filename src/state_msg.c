@@ -2064,51 +2064,53 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (r == usr->curr_room) {
-			Put(usr, "<red>The message already is in this room\n");
-			RET(usr);
-			Return;
-		}
-		if (r->flags & ROOM_CHATROOM) {
-			Put(usr, "<red>You cannot forward a message to a <white>chat<red> room\n");
+		if (r->number == MAIL_ROOM) {
 			unload_Room(r);
-			RET(usr);
-			Return;
-		}
-		if (!(usr->runtime_flags & RTF_SYSOP)) {
-			switch(room_access(r, usr->name)) {
-				case ACCESS_INVITE_ONLY:
-					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
-					unload_Room(r);
-					RET(usr);
-					Return;
+			r = usr->mail;
+		} else {
+			if (r == usr->curr_room) {
+				Put(usr, "<red>The message already is in this room\n");
+				RET(usr);
+				Return;
+			}
+			if (r->flags & ROOM_CHATROOM) {
+				Put(usr, "<red>You cannot forward a message to a <white>chat<red> room\n");
+				unload_Room(r);
+				RET(usr);
+				Return;
+			}
+			if (!(usr->runtime_flags & RTF_SYSOP)) {
+				switch(room_access(r, usr->name)) {
+					case ACCESS_INVITE_ONLY:
+						Put(usr, "<red>That room is invite-only, and you have not been invited\n");
+						unload_Room(r);
+						RET(usr);
+						Return;
 
-				case ACCESS_KICKED:
-					Put(usr, "<red>You have been kicked from that room\n");
-					unload_Room(r);
-					RET(usr);
-					Return;
+					case ACCESS_KICKED:
+						Put(usr, "<red>You have been kicked from that room\n");
+						unload_Room(r);
+						RET(usr);
+						Return;
 
-				case ACCESS_INVITED:
-				case ACCESS_OK:
-					break;
+					case ACCESS_INVITED:
+					case ACCESS_OK:
+						break;
+				}
+			}
+			if ((r->flags & ROOM_READONLY)
+				&& !((usr->runtime_flags & RTF_SYSOP)
+				|| (in_StringList(r->room_aides, usr->name) != NULL))) {
+				Put(usr, "<red>You are not allowed to post in that room\n");
+				unload_Room(r);
+				RET(usr);
+				Return;
 			}
 		}
-		if ((r->flags & ROOM_READONLY)
-			&& !((usr->runtime_flags & RTF_SYSOP)
-			|| (in_StringList(r->room_aides, usr->name) != NULL))) {
-			Put(usr, "<red>You are not allowed to post in that room\n");
-			unload_Room(r);
-			RET(usr);
-			Return;
-		}
-		curr_room = usr->curr_room;
-		usr->curr_room = r;
-
 		if (!usr->new_message->subject[0]) {
 			char buf[MAX_LINE*3];
 
-			sprintf(buf, "<yellow><forwarded from %s>", curr_room->name);
+			sprintf(buf, "<yellow><forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
 				strcpy(buf + MAX_LINE - 5, "...>");
 
@@ -2117,12 +2119,41 @@ int r;
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
 		listdestroy_StringList(usr->new_message->to);
-		if ((usr->new_message->to = new_StringList(usr->name)) == NULL) {
-			Perror(usr, "Out of memory");
-			usr->curr_room = curr_room;
-			unload_Room(r);
-			RET(usr);
-			Return;
+		usr->new_message->to = NULL;
+
+		if (r == usr->mail) {
+			char recipient[MAX_LINE+1], *p;
+/*
+	extract the username from the entered room name
+*/
+			strcpy(recipient, usr->edit_buf);
+			if ((p = cstrrchr(recipient, ' ')) != NULL) {
+				*p = 0;
+				p--;
+				if (*p == 's') {
+					*p = 0;
+					p--;
+				}
+				if (*p == '\'')
+					*p = 0;
+
+				usr->edit_buf[0] = 0;
+			} else
+				strcpy(recipient, usr->name);
+
+			listdestroy_StringList(usr->message->to);
+			usr->message->to = NULL;
+
+			if (mail_access(usr, recipient)) {
+				RET(usr);
+				Return;
+			}
+			if ((usr->new_message->to = new_StringList(recipient)) == NULL) {
+				Perror(usr, "Out of memory");
+				unload_Room(r);
+				RET(usr);
+				Return;
+			}
 		}
 /* swap these pointers for save_message() */
 		listdestroy_StringList(usr->more_text);
@@ -2131,7 +2162,9 @@ int r;
 
 		PUSH(usr, STATE_DUMMY);			/* push dummy ret (prevent reprinting prompt in wrong room) */
 		PUSH(usr, STATE_DUMMY);			/* one is not enough (!) */
-		save_message(usr, INIT_STATE);	/* save forwarded message */
+		curr_room = usr->curr_room;
+		usr->curr_room = r;
+		save_message(usr, INIT_STATE);	/* save forwarded message in other room */
 		usr->curr_room = curr_room;		/* restore current room */
 
 		Put(usr, "<green>Message forwarded\n");

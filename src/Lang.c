@@ -26,13 +26,21 @@
 #include "Lang.h"
 #include "Memory.h"
 #include "AtomicFile.h"
+#include "Param.h"
 #include "log.h"
 #include "cstring.h"
+#include "util.h"
 #include "defines.h"
+#include "debug.h"
+#include "mydirentry.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 Hash *languages = NULL;
 
@@ -42,6 +50,16 @@ int init_Lang(void) {
 		return -1;
 
 	languages->hashaddr = hashaddr_ascii;
+
+	log_debug("init_Lang(): default lang == %s", PARAM_DEFAULT_LANGUAGE);
+	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100"))
+		return 0;
+
+	log_debug("init_Lang(): loading %s", PARAM_DEFAULT_LANGUAGE);
+	if (load_Language(PARAM_DEFAULT_LANGUAGE) == NULL)
+		return -1;
+
+	log_debug("init_Lang(): success");
 	return 0;
 }
 
@@ -60,57 +78,138 @@ Lang *l;
 }
 
 void destroy_Lang(Lang *l) {
+int i;
+HashList *hl;
+
 	if (l == NULL)
 		return;
+
+	if (l->refcount != 0)
+		log_err("destroy_Lang(): refcount != 0 (%d)", l->refcount);
 
 	if (l->name != NULL) {
 		Free(l->name);
 		l->name = NULL;
 	}
+/*
+	free all data that is stored in the hash
+*/
+	for(i = 0; i < l->hash->size; i++) {
+		for(hl = l->hash->hash[i]; hl != NULL; hl = hl->next) {
+			log_debug("destroy_Lang(): Free(%s)", (char *)hl->value);
+			Free((char *)hl->value);
+			log_debug("destroy_Lang(): freed");
+			hl->value = NULL;
+		}
+	}
+	log_debug("destroy_Lang(): destroying Hash");
 	destroy_Hash(l->hash);
+	log_debug("destroy_Lang(): destroyed");
 	l->hash = NULL;
 }
 
-Lang *add_language(char *lang) {
-Lang *l;
+/*
+	demand load language directory for the specified language
 
-	if (lang == NULL)
+	it keeps a refcount, so this function assumes that when you load it,
+	you're actually using it too
+*/
+Lang *load_Language(char *lang) {
+Lang *l;
+char dirname[MAX_PATHLEN], filename[MAX_PATHLEN];
+DIR *dirp;
+struct dirent *direntp;
+
+	if (lang == NULL || !*lang)
 		return NULL;
 
-	cstrlwr(lang);
-	if ((l = (Lang *)in_Hash(languages, lang)) == NULL) {
-		if ((l = new_Lang()) == NULL)
-			return NULL;
-
-		if ((l->name = cstrdup(lang)) == NULL) {
-			destroy_Lang(l);
-			return NULL;
-		}
-		if (add_Hash(languages, lang, l) == -1) {
-			destroy_Lang(l);
-			return NULL;
-		}
+	if ((l = in_Hash(languages, lang)) != NULL) {
+		l->refcount++;
+		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
+		return l;
 	}
+	log_debug("load_Language(): loading %s", lang);
+	sprintf(dirname, "%s/%s", PARAM_LANGUAGEDIR, lang);
+	path_strip(dirname);
+
+	if ((dirp = opendir(dirname)) == NULL) {
+		log_debug("load_Language(): failed to opendir %s", dirname);
+		return NULL;
+	}
+	while((direntp = readdir(dirp)) != NULL) {
+		if (direntp->d_name[0] == '.')
+			continue;
+
+		if (strlen(dirname) + strlen(direntp->d_name) + 2 >= MAX_PATHLEN) {
+			log_err("load_Language(%s): path too long, skipped", lang);
+			continue;
+		}
+		sprintf(filename, "%s/%s", dirname, direntp->d_name);
+		path_strip(filename);
+
+		l = load_phrasebook(lang, filename);
+	}
+	closedir(dirp);
+
+	if (l != NULL) {
+		l->refcount = 1;
+		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
+		dump_Lang(l);
+	} else
+		log_debug("load_Language(%s): failed to load", lang);
 	return l;
 }
 
-Lang *load_phrasebook(char *filename) {
+/*
+	unload a language, unless it is still in use
+*/
+void unload_Language(char *lang) {
+Lang *l;
+
+	if (lang == NULL || !*lang || (l = in_Hash(languages, lang)) == NULL)
+		return;
+
+	l->refcount--;
+	log_debug("unload_language(%s): refcount == %d", lang, l->refcount);
+
+	if (l->refcount <= 0) {
+		log_debug("unload_language(): removing language %s", lang);
+
+		remove_Hash(languages, lang);
+		destroy_Lang(l);
+	}
+}
+
+/*
+	load a language file
+*/
+Lang *load_phrasebook(char *lang, char *filename) {
 Lang *l = NULL;
 AtomicFile *f;
-char line_buf[PRINT_BUF], buf[PRINT_BUF], keybuf[32], *p;
+char line_buf[PRINT_BUF], buf[PRINT_BUF], keybuf[32];
 int line_no, errors, continued, len, key;
 
 	if (filename == NULL)
 		return NULL;
 
-	if ((f = openfile(filename, "r")) == NULL)
-		return NULL;
+	log_debug("load_phrasebook(): loading %s", filename);
 
+	if ((l = add_language(lang)) == NULL) {
+		log_err("load_phrasebook(): failed to add language %s", lang);
+		return NULL;
+	}
+	if ((f = openfile(filename, "r")) == NULL) {
+		log_err("load_phrasebook(): failed to open file %s", filename);
+		return NULL;
+	}
 	line_no = errors = continued = 0;
-	line_buf[0] = 0;
+	line_buf[0] = keybuf[0] = 0;
 
 	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
 		line_no++;
+
+		if (!continued)
+			line_buf[0] = 0;
 
 		cstrip_spaces(buf);
 		chop(buf);
@@ -145,52 +244,52 @@ int line_no, errors, continued, len, key;
 		if (continued)
 			continue;
 
-		if ((p = cstrchr(line_buf, ' ')) == NULL)
-			p = cstrchr(line_buf, '\t');
-		if (p == NULL) {
-			log_err("load_Lang(%s): syntax error in line %d\n", filename, line_no);
-			errors++;
-			continue;
-		}
-		p++;
-		if (!*p) {
-			log_err("load_Lang(%s): syntax error in line %d\n", filename, line_no);
-			errors++;
-			continue;
-		}
-		*p = 0;
-		p++;
-		if (!*p) {
-			log_err("load_Lang(%s): syntax error in line %d\n", filename, line_no);
-			errors++;
-			continue;
-		}
+		if (!*keybuf) {
 /*
-	if new definition, compute new key for the foreign strings to follow
-	they are stored with the the key of the English text as their own key,
+	if new definition, compute new key for the foreign line that follows
+	They are stored with the key of the 'bbs100' text as their own key,
 	so the translated text can be found
+	Note that it cannot be translated backwards, because there is no index for it
 */
-		if (!strcmp(line_buf, "bbs100")) {
-			key = hashaddr_ascii(p);
+			key = hashaddr_ascii(line_buf);
 			sprintf(keybuf, "%x", key);
 			continue;
 		}
-		if ((l = add_language(line_buf)) == NULL) {
-			log_err("load_Lang(%s): failed to add language %s\n", filename, line_buf);
-			errors++;
-			break;
-		}
-		if (add_Hash(l->hash, keybuf, p) == -1) {
+		if (add_Hash(l->hash, keybuf, cstrdup(line_buf)) == -1) {
 			log_err("load_Lang(%s): failed to add a new phrase\n", filename);
 			errors++;
 			break;
 		}
+		keybuf[0] = 0;
 	}
 	closefile(f);
 
 	if (errors) {
 		destroy_Lang(l);
 		return NULL;
+	}
+	return l;
+}
+
+Lang *add_language(char *lang) {
+Lang *l;
+
+	if (lang == NULL || languages == NULL)
+		return NULL;
+
+	cstrlwr(lang);
+	if ((l = (Lang *)in_Hash(languages, lang)) == NULL) {
+		if ((l = new_Lang()) == NULL)
+			return NULL;
+
+		if ((l->name = cstrdup(lang)) == NULL) {
+			destroy_Lang(l);
+			return NULL;
+		}
+		if (add_Hash(languages, lang, l) == -1) {
+			destroy_Lang(l);
+			return NULL;
+		}
 	}
 	return l;
 }
@@ -240,6 +339,10 @@ HashList *hl;
 
 	log_debug("--- dump_languages():");
 
+	if (languages == NULL) {
+		log_debug("languages == NULL");
+		return;
+	}
 	for(i = 0; i < languages->size; i++) {
 		for(hl = languages->hash[i]; hl != NULL; hl = hl->next) {
 			log_debug("--- dumping language %s", hl->key);

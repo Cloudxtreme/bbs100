@@ -42,6 +42,7 @@ su_passwd_file          etc/su_passwd
 pid_file                etc/pid
 symtab_file             etc/symtab
 default_timezone        other/GMT
+default_language        nederlands
 
 syslog                  log/bbslog
 authlog                 log/authlog

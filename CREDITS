@@ -183,3 +183,8 @@ Credits for bug fixes et al after public release
   and providing me with a login on his Mac OS X machine
 
 - Blastah of MatrixBBS reported a bug in color_strlen()
+
+- The Ruiner of MatrixBBS reported a bug in forwarding messages to another
+  user's Mail> room
+
+- Georbit <georbit@osuny.co.uk> found and fixed a problem with logging in

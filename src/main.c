@@ -47,6 +47,7 @@
 #include "AtomicFile.h"
 #include "Timezone.h"
 #include "Worldclock.h"
+#include "Lang.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -318,6 +319,9 @@ char buf[256];
 			printf("%s\n", name_Timezone(tz));
 	}
 	init_Worldclock();
+
+	printf("loading default language %s ... ", PARAM_DEFAULT_LANGUAGE);
+	printf("%s\n", (init_Lang() != 0) ? "failed" : "ok");
 
 	if (init_Room()) {
 		printf("fatal: Failed to initialize the rooms message system\n");

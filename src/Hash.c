@@ -13,6 +13,8 @@
 #include "Hash.h"
 #include "Memory.h"
 #include "cstring.h"
+#include "log.h"
+#include "debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,15 +56,21 @@ void destroy_Hash(Hash *h) {
 		if (h->hash != NULL) {
 			int i;
 
+			log_debug("destroy_Hash(): listdestroy_HashList()");
 			for(i = 0; i < h->size; i++)
 				listdestroy_HashList(&h->hash[i]);
+			log_debug("destroy_Hash(): done");
 
+			log_debug("destroy_Hash(): Free(h->hash)");
 			Free(h->hash);
+			log_debug("destroy_Hash(): done");
 			h->hash = NULL;
 			h->size = h->num = 0;
 		}
 	}
+	log_debug("destroy_Hash(): Free(h)");
 	Free(h);
+	log_debug("destroy_Hash(): done");
 }
 
 int resize_Hash(Hash *h, int newsize) {

@@ -30,6 +30,7 @@
 typedef struct {
 	char *name;
 	Hash *hash;
+	int refcount;
 } Lang;
 
 extern Hash *languages;
@@ -39,8 +40,11 @@ int init_Lang(void);
 Lang *new_Lang(void);
 void destroy_Lang(Lang *);
 
+Lang *load_Language(char *);
+void unload_Language(char *);
+Lang *load_phrasebook(char *, char *);
 Lang *add_language(char *);
-Lang *load_phrasebook(char *);
+
 char *translate(Lang *, char *);
 char *translate_by_name(char *, char *);
 
