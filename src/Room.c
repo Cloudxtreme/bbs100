@@ -33,6 +33,8 @@
 #include "Timer.h"
 #include "Memory.h"
 #include "OnlineUser.h"
+#include "FileFormat.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,9 +143,9 @@ char filename[MAX_PATHLEN];
 
 Room *load_RoomData(char *filename, unsigned int number) {
 Room *r;
-char buf[MAX_LINE];
 File *f;
-StringList *sl;
+int (*load_func)(File *, Room *) = NULL;
+int version;
 
 	if (filename == NULL || !*filename || (r = new_Room()) == NULL)
 		return NULL;
@@ -153,6 +155,63 @@ StringList *sl;
 		return NULL;
 	}
 	r->number = number;
+
+	version = fileformat_version(f);
+	switch(version) {
+		case -1:
+			load_func = NULL;
+			break;
+
+		case 0:
+			Fclose(f);								/* version0 needs explicit re-open */
+			if ((f = Fopen(filename)) == NULL)
+				break;
+
+			load_func = load_RoomData_version0;
+			break;
+
+		case 1:
+			load_func = load_RoomData_version1;
+			break;
+
+		default:
+			log_err("load_RoomData(): don't know how to load version %d of %s", version, filename);
+	}
+	if (load_func != NULL && !load_func(f, r)) {
+		Fclose(f);
+		r->flags &= ROOM_ALL;
+		return r;
+	}
+	destroy_Room(r);
+	Fclose(f);
+	return NULL;
+}
+
+
+int load_RoomData_version1(File *f, Room *r) {
+char buf[MAX_LINE+25], *p;
+
+	while(Fgets(f, buf, MAX_LINE+25) != NULL) {
+		FF1_PARSE;
+
+		FF1_LOAD_LEN("name", r->name, MAX_LINE);
+
+		FF1_LOAD_ULONG("generation", r->generation);
+		FF1_LOAD_HEX("flags", r->flags);
+		FF1_LOAD_UINT("roominfo_changed", r->roominfo_changed);
+
+		FF1_LOAD_STRINGLIST("info", r->info);
+		FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
+		FF1_LOAD_STRINGLIST("invited", r->invited);
+		FF1_LOAD_STRINGLIST("kicked", r->kicked);
+		FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
+	}
+	return 0;
+}
+
+int load_RoomData_version0(File *f, Room *r) {
+char buf[MAX_LINE*2];
+StringList *sl;
 
 /* name */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -230,22 +289,23 @@ StringList *sl;
 	if (r->flags & ROOM_CHATROOM)
 		r->chat_history = Fgetlist(f);
 
-	Fclose(f);
-	return r;
+	return 0;
 
 err_load_room:
-	destroy_Room(r);
-	Fclose(f);
-	return NULL;
+	return -1;
 }
 
+
 /* save the RoomData file */
+
 int save_Room(Room *r) {
-char filename[MAX_LINE];
+char filename[MAX_PATHLEN];
 File *f;
 
 	if (r == NULL)
 		return -1;
+
+	r->flags &= ROOM_ALL;
 
 	if (r->number == 1 || r->number == 2) {
 		char name[MAX_LINE], *p;
@@ -268,6 +328,30 @@ File *f;
 	if ((f = Fcreate(filename)) == NULL)
 		return -1;
 
+	return save_Room_version1(f, r);
+}
+
+int save_Room_version1(File *f, Room *r) {
+StringList *sl;
+
+	FF1_SAVE_VERSION;
+	FF1_SAVE_STR("name", r->name);
+
+	Fprintf(f, "generation=%lu", r->generation);
+	Fprintf(f, "flags=0x%x", r->flags);
+	Fprintf(f, "roominfo_changed=%u", r->roominfo_changed);
+
+	FF1_SAVE_STRINGLIST("info", r->info);
+	FF1_SAVE_STRINGLIST("room_aides", r->room_aides);
+	FF1_SAVE_STRINGLIST("invited", r->invited);
+	FF1_SAVE_STRINGLIST("kicked", r->kicked);
+	FF1_SAVE_STRINGLIST("chat_history", r->chat_history);
+
+	Fclose(f);
+	return 0;
+}
+
+int save_Room_version0(File *f, Room *r) {
 	Fputs(f, r->name);
 	Fprintf(f, "%lu", r->generation);
 	Fprintf(f, "%x", r->flags);

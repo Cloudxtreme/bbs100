@@ -131,6 +131,7 @@ char buf[MAX_LINE], *p;
 		FF1_LOAD_STRINGLIST("to", m->to);
 		FF1_LOAD_STRINGLIST("msg", m->msg);
 	}
+	m->flags &= MSG_ALL;
 	return 0;
 }
 
@@ -225,19 +226,21 @@ err_load_message:
 
 
 int save_Message(Message *m, char *filename) {
-	return save_Message_version1(m, filename);
-}
-
-int save_Message_version1(Message *m, char *filename) {
 File *f;
-StringList *sl;
 
 	if (m == NULL || filename == NULL || !*filename
 		|| (f = Fcreate(filename)) == NULL)
 		return -1;
 
-	Fputs(f, "version=1");
+	m->flags &= MSG_ALL;
 
+	return save_Message_version1(f, m);
+}
+
+int save_Message_version1(File *f, Message *m) {
+StringList *sl;
+
+	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("from", m->from);
 	FF1_SAVE_STR("anon", m->anon);
 	FF1_SAVE_STR("subject", m->subject);
@@ -246,26 +249,16 @@ StringList *sl;
 	Fprintf(f, "reply_number=%lu", m->reply_number);
 	Fprintf(f, "mtime=%lu", m->mtime);
 	Fprintf(f, "deleted=%lu", m->deleted);
-	Fprintf(f, "flags=%X", m->flags);
+	Fprintf(f, "flags=0x%x", m->flags);
 
-	for(sl = m->to; sl != NULL; sl = sl->next)
-		FF1_SAVE_STR("to", sl->str);
-
-	m->msg = rewind_StringList(m->msg);
-	for(sl = m->msg; sl != NULL; sl = sl->next)
-		FF1_SAVE_STR("msg", sl->str);
+	FF1_SAVE_STRINGLIST("to", m->to);
+	FF1_SAVE_STRINGLIST("msg", m->msg);
 
 	Fclose(f);
 	return 0;
 }
 
-int save_Message_version0(Message *m, char *filename) {
-File *f;
-
-	if (m == NULL || filename == NULL || !*filename
-		|| (f = Fcreate(filename)) == NULL)
-		return -1;
-
+int save_Message_version0(File *f, Message *m) {
 /* mtime + deleted + flags */
 	Fprintf(f, "%lu", m->mtime);
 	Fprintf(f, "%lu", m->deleted);

@@ -911,8 +911,7 @@ StringList *sl;
 		Perror(usr, "Failed to save userfile");
 		Return -1;
 	}
-	Fputs(f, "version=1");							/* file format version */
-
+	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("name", usr->name);
 	FF1_SAVE_STR("passwd", usr->passwd);
 	FF1_SAVE_STR("real_name", usr->real_name);
@@ -938,7 +937,7 @@ StringList *sl;
 	);
 	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
 	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
-	Fprintf(f, "flags=0x%X", usr->flags);
+	Fprintf(f, "flags=0x%x", usr->flags);
 	Fprintf(f, "logins=%lu", usr->logins);
 	Fprintf(f, "total_time=%lu", usr->total_time);
 
@@ -946,8 +945,11 @@ StringList *sl;
 	Fprintf(f, "xrecv=%lu", usr->xrecv);
 	Fprintf(f, "esent=%lu", usr->esent);
 	Fprintf(f, "erecv=%lu", usr->erecv);
+	Fprintf(f, "fsent=%lu", usr->fsent);
+	Fprintf(f, "frecv=%lu", usr->frecv);
 	Fprintf(f, "posted=%lu", usr->posted);
 	Fprintf(f, "read=%lu", usr->read);
+	Fprintf(f, "time_disp=%d", usr->time_disp);
 
 	Fprintf(f, "colors=%d %d %d %d %d %d %d %d %d",
 		usr->colors[BACKGROUND],
@@ -960,26 +962,17 @@ StringList *sl;
 		usr->colors[WHITE],
 		usr->colors[HOTKEY]);
 
-	for(j = usr->rooms; j != NULL; j = j->next)
-		Fprintf(f, "rooms=%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
-			j->generation, j->last_read, j->roominfo_read);
-
 	for(i = 0; i < 10; i++)
 		if (usr->quick[i] != NULL)
 			Fprintf(f, "quick=%d %s", i, usr->quick[i]);
 
-	for(sl = usr->friends; sl != NULL; sl = sl->next)
-		FF1_SAVE_STR("friends", sl->str);
+	for(j = usr->rooms; j != NULL; j = j->next)
+		Fprintf(f, "rooms=%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
+			j->generation, j->last_read, j->roominfo_read);
 
-	for(sl = usr->enemies; sl != NULL; sl = sl->next)
-		FF1_SAVE_STR("enemies", sl->str);
-
-	for(sl = usr->info; sl != NULL; sl = sl->next)
-		FF1_SAVE_STR("info", sl->str);
-
-	Fprintf(f, "time_disp=%d", usr->time_disp);
-	Fprintf(f, "fsent=%lu", usr->fsent);
-	Fprintf(f, "frecv=%lu", usr->frecv);
+	FF1_SAVE_STRINGLIST("friends", usr->friends);
+	FF1_SAVE_STRINGLIST("enemies", usr->enemies);
+	FF1_SAVE_STRINGLIST("info", usr->info);
 
 /*
 	add site-specific stuff here

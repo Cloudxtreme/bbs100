@@ -80,7 +80,13 @@ Room *load_Room(unsigned int);
 Room *load_Mail(char *);
 Room *load_Home(char *);
 Room *load_RoomData(char *, unsigned int);
+int load_RoomData_version0(File *, Room *);
+int load_RoomData_version1(File *, Room *);
+
 int save_Room(Room *);
+int save_Room_version0(File *, Room *);
+int save_Room_version1(File *, Room *);
+
 void newMsg(Room *, Message *);
 MsgIndex *newMsgs(Room *, unsigned long);
 

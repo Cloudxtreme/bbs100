@@ -124,13 +124,22 @@
 		continue;														\
 	}
 
-
 /*
-	Note: this macro only saves non-null values
+	save macros
 */
+
+#define FF1_SAVE_VERSION	Fputs(f, "version=1")
+
+/* this macro only saves non-null values */
 #define FF1_SAVE_STR(x,y)	do {			\
 		if ((y) != NULL && (y)[0])			\
 			Fprintf(f, "%s=%s", (x), (y));	\
+	} while(0)
+
+#define FF1_SAVE_STRINGLIST(x,y)	do {			\
+		(y) = rewind_StringList((y));				\
+		for(sl = (y); sl != NULL; sl = sl->next)	\
+			FF1_SAVE_STR((x), sl->str);				\
 	} while(0)
 
 

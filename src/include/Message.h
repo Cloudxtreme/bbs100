@@ -59,8 +59,8 @@ int save_Message(Message *, char *);
 int load_Message_version0(File *, Message *);
 int load_Message_version1(File *, Message *);
 
-int save_Message_version0(Message *, char *);
-int save_Message_version1(Message *, char *);
+int save_Message_version0(File *, Message *);
+int save_Message_version1(File *, Message *);
 
 Message *copy_Message(Message *);
 
