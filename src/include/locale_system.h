@@ -25,8 +25,18 @@
 
 #include "Lang.h"
 
+#include <time.h>
+
 extern Locale system_locale;
 extern Locale *lc_system;
+
+char *lc_print_date(Locale *, struct tm *, int, char *);
+char *lc_print_total_time(Locale *, unsigned long, char *);
+char *lc_print_number(unsigned long, int, char *);
+char *lc_print_number_commas(Locale *, unsigned long, char *);
+char *lc_print_number_dots(Locale *, unsigned long, char *);
+char *lc_print_numberth(Locale *, unsigned long, char *);
+char *lc_name_with_s(Locale *, char *, char *);
 
 #endif	/* LOCALE_SYSTEM_H_WJ105 */
 

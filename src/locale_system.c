@@ -123,16 +123,16 @@ int weeks, days, hrs, mins, secs, l = 0;
 	if (mins > 0)
 		l += sprintf(buf+l, "%d %s, ", mins, (mins == 1) ? "minute" : "minutes");
 
-	if (secs > 0) {
-		if (l > 0)
-			l += sprintf(buf+l, "and ");
-		sprintf(buf+l, "%d %s", secs, (secs == 1) ? "second" : "seconds");
-	} else {
-		if (l > 0)
-			buf[l-2] = 0;
-		else
-			sprintf(buf, "%d %s", secs, (secs == 1) ? "second" : "seconds");
+	if (l > 0) {
+		l -= 2;
+		buf[l] = 0;
+
+		if (!secs)
+			return buf;
+
+		l += sprintf(buf+l, ", and ");
 	}
+	sprintf(buf+l, "%d %s", secs, (secs == 1) ? "second" : "seconds");
 	return buf;
 }
 
