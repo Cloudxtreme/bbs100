@@ -58,7 +58,7 @@ INCLUDE = include
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
 OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
-	log.o inet.o ipv4_aton.o util.o screens.o edit.o access.o \
+	log.o inet.o util.o screens.o edit.o access.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
 	state.o state_login.o state_msg.o state_friendlist.o \
@@ -69,7 +69,7 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	Timezone.o Worldclock.o \
 	main.o
 
-MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o
+MORE_OBJS = mkpasswd.o resolver.o ipv4_aton.o ccat.o bbs100_convert.o
 
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
