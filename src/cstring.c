@@ -44,24 +44,18 @@ char *p;
 char *cstrlwr(char *s) {
 char *p;
 
-	p = s;
-	while(p && *p) {
-		if (*p >= 'A' && *p <= 'Z')
-			*p += ' ';
-		p++;
-	}
+	for(p = s; *p; p++)
+		*p = ctolower(*p);
+
 	return s;
 }
 
 char *cstrupr(char *s) {
 char *p;
 
-	p = s;
-	while(p && *p) {
-		if (*p >= 'a' && *p <= 'z')
-			*p -= ' ';
-		p++;
-	}
+	for(p = s; *p; p++)
+		*p = ctoupper(*p);
+
 	return s;
 }
 
