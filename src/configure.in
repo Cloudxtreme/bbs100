@@ -52,7 +52,7 @@ AC_PROG_AWK
 VERSION=`${GREP} VERSION ${srcdir}/include/version.h | ${HEAD} -n 1 | ${AWK} '{ print $3 ; }' | ${SED} 's/\"//g'`
 
 echo " "
-echo "bbs100 ${VERSION} by Walter de Jong <walter@heiho.net> (C) 2003"
+echo "bbs100 ${VERSION} by Walter de Jong <walter@heiho.net> (C) 2005"
 echo " "
 
 AC_SUBST(VERSION)

@@ -1,6 +1,6 @@
 /*
-    bbs100 2.1 WJ104
-    Copyright (C) 2004  Walter de Jong <walter@heiho.net>
+    bbs100 2.2 WJ105
+    Copyright (C) 2005  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,20 +30,44 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <termios.h>
 
 time_t rtc = (time_t)0UL;
+
+void getpassword(char *prompt, char *buf, int maxlen) {
+struct termios term, saved_term;
+
+	if (buf == NULL)
+		return;
+
+	tcgetattr(0, &term);
+	tcgetattr(0, &saved_term);
+	term.c_lflag &= ~ECHO;
+	tcsetattr(0, TCSANOW, &term);
+
+	if (prompt != NULL) {
+		printf("%s", prompt);
+		fflush(stdout);
+	}
+	if (fgets(buf, maxlen, stdin) == NULL)
+		*buf = 0;
+
+	tcsetattr(0, TCSANOW, &saved_term);
+
+	printf("\n");
+}
 
 int main(void) {
 char buf[128], buf2[128], crypt_buf[MAX_CRYPTED];
 
 	printf("%s", print_copyright(SHORT, "mkpasswd", buf));
 
-	strcpy(buf, getpass("Enter password: "));
+	getpassword("Enter password: ", buf, 128);
 	if (!*buf)
 		exit(1);
 	buf[127] = 0;
 
-	strcpy(buf2, getpass("Enter it again (for verification): "));
+	getpassword("Enter it again (for verification): ", buf2, 128);
 	if (!*buf2)
 		exit(1);
 	buf2[127] = 0;
