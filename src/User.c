@@ -232,6 +232,13 @@ User *u;
 }
 
 
+/*
+	load a UserData file
+	is really a wrapper around load_User_versionx() functions
+
+	Note: username cannot be equal to usr->name because usr->name is reset
+	to zero
+*/
 int load_User(User *usr, char *username, int flags) {
 File *f;
 char filename[MAX_PATHLEN];
@@ -265,8 +272,10 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
-	if ((f = Fopen(filename)) == NULL)
+	if ((f = Fopen(filename)) == NULL) {
+		log_err("load_User(): failed to open file %s", filename);
 		return -1;
+	}
 
 /* determine file version */
 	version = fileformat_version(f);

@@ -1159,9 +1159,10 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 		Print(usr, "<green>Enter name <white>[<yellow>%s<white>]:<yellow> ", usr->recipients->str);
 	}
 	usr->runtime_flags |= RTF_BUSY;
+	usr->edit_pos = 0;
+	usr->edit_buf[0] = 0;
 
 	PUSH(usr, state_func);
-	edit_tabname(usr, EDIT_INIT);
 	Return;
 }
 
@@ -1440,11 +1441,10 @@ int r;
 			}
 			allocated = 1;
 
-			strcpy(u->name, usr->edit_buf);
-			if (load_User(u, u->name,
+			if (load_User(u, usr->edit_buf,
 				LOAD_USER_ALL & ~(LOAD_USER_ROOMS | LOAD_USER_PASSWORD | LOAD_USER_QUICKLIST))) {
 				Print(usr, "<red>Error loading user <yellow>%s\n", usr->edit_buf);
-
+				log_err("state_profile_user(): failed to load user %s", usr->edit_buf);
 				RET(usr);
 				Return;
 			}
