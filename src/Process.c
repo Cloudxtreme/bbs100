@@ -167,15 +167,16 @@ pid_t pid;
 	num = sizeof(process_table)/sizeof(Process);
 	for(i = 0; i < num; i++) {
 		if (pid == process_table[i].pid) {
-			if (WIFSIGNALED(status)) {
-				log_msg("%s terminated on signal %s", process_table[i].name, sig_name(WTERMSIG(status)));
-			} else {
-				if (WIFSTOPPED(status)) {
-					log_msg("%s stopped on signal %s", process_table[i].name, sig_name(WSTOPSIG(status)));
-				} else {
+			char signame_buf[80];
+
+			if (WIFSIGNALED(status))
+				log_msg("%s terminated on signal %s", process_table[i].name, sig_name(WTERMSIG(status), signame_buf));
+			else
+				if (WIFSTOPPED(status))
+					log_msg("%s stopped on signal %s", process_table[i].name, sig_name(WSTOPSIG(status), signame_buf));
+				else
 					log_msg("%s terminated, exit code %d", process_table[i].name, WEXITSTATUS(status));
-				}
-			}
+
 			restart_process(&process_table[i]);
 			return;
 		}

@@ -175,16 +175,20 @@ int i;
 	sigemptyset(&sig_pending);
 }
 
-char *sig_name(int sig) {
-static char unknown[80];
+/*
+	Note: signame_buf must be large enough (64 bytes should do)
+*/
+char *sig_name(int sig, char *signame_buf) {
 int i;
 
 	for(i = 0; sig_table[i].sig > 0; i++) {
-		if (sig == sig_table[i].sig)
-			return sig_table[i].sig_name;
+		if (sig == sig_table[i].sig) {
+			strcpy(signame_buf, sig_table[i].sig_name);
+			return signame_buf;
+		}
 	}
-	sprintf(unknown, "(unknown signal %d)", sig);
-	return unknown;
+	sprintf(signame_buf, "(unknown signal %d)", sig);
+	return signame_buf;
 }
 
 /* add a signal handler */
@@ -386,10 +390,11 @@ char buf[128];
 void sig_shutnow(int sig) {
 StringList *screen, *sl;
 User *u;
+char signame_buf[80];
 
 	Enter(sig_shutnow);
 
-	log_info("*** shutting down on %s ***", sig_name(sig));
+	log_info("*** shutting down on %s ***", sig_name(sig, signame_buf));
 
 	if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
 		screen = crash_screen;

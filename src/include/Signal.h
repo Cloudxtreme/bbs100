@@ -41,7 +41,7 @@ extern SigTable sig_table[];
 
 void init_Signal(void);
 void deinit_Signal(void);
-char *sig_name(int);
+char *sig_name(int, char *);
 
 int set_Signal(int, void (*)(int));
 void remove_Signal(int, void (*)(int));
