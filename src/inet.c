@@ -725,6 +725,14 @@ char k;
 */
 		errno = 0;
 		err = select(highest_fd, &fds, NULL, NULL, &timeout);
+
+/*
+	first update timers ... if we do it later, new connections can immediately
+	time out
+*/
+		handle_pending_signals();
+		nap = update_timers();
+
 		if (err > 0) {
 /*
 	handle new connections
@@ -770,9 +778,6 @@ char k;
 				}
 			}
 		}
-		handle_pending_signals();
-		nap = update_timers();
-
 		if (err >= 0)				/* no error return from select() */
 			continue;
 /*

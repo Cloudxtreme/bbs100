@@ -128,6 +128,7 @@ int i;
 	listdestroy_BufferedMsg(usr->held_msgs);
 	destroy_BufferedMsg(usr->send_msg);
 
+	usr->idle_timer = NULL;
 	listdestroy_Timer(usr->timerq);
 	listdestroy_CallStack(usr->callstack);
 
