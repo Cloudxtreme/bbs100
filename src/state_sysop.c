@@ -72,7 +72,7 @@ void state_sysop_menu(User *usr, char c) {
 				if (save_Wrapper(wrappers, PARAM_HOSTS_ACCESS_FILE)) {
 					Perror(usr, "failed to save wrappers");
 				}
-				logmsg("SYSOP %s edited wrappers", usr->name);
+				log_msg("SYSOP %s edited wrappers", usr->name);
 				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
 			}
 			usr->runtime_flags |= RTF_BUSY;
@@ -219,7 +219,7 @@ void state_sysop_menu(User *usr, char c) {
 				reboot_timer = NULL;
 
 				system_broadcast(0, "Reboot cancelled\n");
-				logmsg("SYSOP %s cancelled reboot", usr->name);
+				log_msg("SYSOP %s cancelled reboot", usr->name);
 				CURRENT_STATE(usr);
 				Return;
 			}
@@ -241,7 +241,7 @@ void state_sysop_menu(User *usr, char c) {
 				shutdown_timer = NULL;
 
 				system_broadcast(0, "Shutdown cancelled\n");
-				logmsg("SYSOP %s cancelled shutdown", usr->name);
+				log_msg("SYSOP %s cancelled shutdown", usr->name);
 				CURRENT_STATE(usr);
 				Return;
 			}
@@ -256,7 +256,7 @@ void state_sysop_menu(User *usr, char c) {
 				nologin_screen = NULL;
 
 				Put(usr, "Deactivated\n");
-				logmsg("SYSOP %s deactivated nologin", usr->name);
+				log_msg("SYSOP %s deactivated nologin", usr->name);
 				CURRENT_STATE(usr);
 				Return;
 			} else {
@@ -271,7 +271,7 @@ void state_sysop_menu(User *usr, char c) {
 					nologin_screen = sl;
 
 					Put(usr, "Activated\n");
-					logmsg("SYSOP %s activated nologin", usr->name);
+					log_msg("SYSOP %s activated nologin", usr->name);
 					CURRENT_STATE(usr);
 					Return;
 				}
@@ -381,12 +381,12 @@ int r;
 		rm_rf_trashdir(newpath);		/* make sure trash/newpath does not exist */
 
 		if (rename_dir(path, newpath) < 0) {
-			logerror("rename() failed for %s -> %s", path, newpath);
+			log_err("rename() failed for %s -> %s", path, newpath);
 			Put(usr, "<red>Failed to remove user directory\n");
 		} else
 			Print(usr, "<yellow>%s<red> nuked\n", usr->edit_buf);
 
-		logmsg("SYSOP %s nuked user %s", usr->name, usr->edit_buf);
+		log_msg("SYSOP %s nuked user %s", usr->name, usr->edit_buf);
 		RET(usr);
 	}
 	Return;
@@ -430,7 +430,7 @@ int r;
 				remove_StringList(&banished, sl);
 				destroy_StringList(sl);
 				Print(usr, "<green>Unbanished <yellow>%s\n", usr->edit_buf);
-				logmsg("SYSOP %s unbanished user %s", usr->name, usr->edit_buf);
+				log_msg("SYSOP %s unbanished user %s", usr->name, usr->edit_buf);
 			} else {
 				if ((sl = new_StringList(usr->edit_buf)) == NULL) {
 					Perror(usr, "Out of memory");
@@ -439,7 +439,7 @@ int r;
 				} else {
 					add_StringList(&banished, sl);
 					Print(usr, "<yellow>%s<green> banished\n", usr->edit_buf);
-					logmsg("SYSOP %s banished user %s", usr->name, usr->edit_buf);
+					log_msg("SYSOP %s banished user %s", usr->name, usr->edit_buf);
 				}
 			}
 			if (save_StringList(banished, PARAM_BANISHED_FILE)) {
@@ -868,7 +868,7 @@ int r;
 		}
 		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
 		if (mkdir(buf, (mode_t)0700) < 0) {
-			logerror("failed to create new room directory %s", buf);
+			log_err("failed to create new room directory %s", buf);
 			Perror(usr, "failed to create room directory");
 			destroy_Room(room);
 			RET(usr);
@@ -893,7 +893,7 @@ int r;
 			j->last_read = 0UL;
 		}
 		Print(usr, "<yellow>The room has been assigned number <white>%u\n", room->number);
-		logmsg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
+		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
 
 		add_Room(&AllRooms, room);					/* add room to all rooms list */
 		AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
@@ -1028,7 +1028,7 @@ int r;
 		}
 		add_Timer(&timerq, reboot_timer);
 
-		logmsg("SYSOP %s initiated reboot", usr->name);
+		log_msg("SYSOP %s initiated reboot", usr->name);
 
 		Put(usr, "\n<red>Reboot procedure started\n");
 
@@ -1134,7 +1134,7 @@ int r;
 		}
 		add_Timer(&timerq, shutdown_timer);
 
-		logmsg("SYSOP %s initiated shutdown", usr->name);
+		log_msg("SYSOP %s initiated shutdown", usr->name);
 
 		Put(usr, "\n<red>Shutdown sequence initiated\n");
 
@@ -1249,7 +1249,7 @@ int r;
 							Perror(usr, "failed to save su_passwd_file");
 						} else {
 							Print(usr, "<red>%s mode password changed\n", PARAM_NAME_SYSOP);
-							logmsg("SYSOP %s changed %s mode password", usr->name, PARAM_NAME_SYSOP);
+							log_msg("SYSOP %s changed %s mode password", usr->name, PARAM_NAME_SYSOP);
 						}
 						Free(usr->tmpbuf[TMP_PASSWD]);
 						usr->tmpbuf[TMP_PASSWD] = NULL;

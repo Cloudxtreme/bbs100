@@ -136,7 +136,7 @@ int i;
 				sa.sa_flags |= SA_NOCLDSTOP;
 #endif
 			if (sigaction(sig_table[i].sig, &sa, &old_sa)) {
-				logerr("sigaction(%s) failed, ignored", sig_table[i].sig_name);
+				log_err("sigaction(%s) failed, ignored", sig_table[i].sig_name);
 			}
 		}
 	}
@@ -186,11 +186,11 @@ User *u;
 		this_user = NULL;
 
 		if (usr->name[0]) {
-			logmsg("CRASH *** user %s; recovering ***", usr->name);
-			logerr("CRASH *** user %s; recovering ***", usr->name);
+			log_msg("CRASH *** user %s; recovering ***", usr->name);
+			log_err("CRASH *** user %s; recovering ***", usr->name);
 		} else {
-			logmsg("CRASH *** user %s; recovering ***", usr->name);
-			logerr("CRASH *** user %s; recovering ***", usr->name);
+			log_msg("CRASH *** user %s; recovering ***", usr->name);
+			log_err("CRASH *** user %s; recovering ***", usr->name);
 		}
 #ifdef DEBUG
 		dump_debug_stack();
@@ -217,15 +217,15 @@ User *u;
 	deinit_Signal();		/* reset all signal handlers */
 
 	if (sig != SIGTERM) {
-		logmsg("CRASH *** terminated on %s ***", sig_name(sig));
-		logerr("CRASH *** terminated on %s ***", sig_name(sig));
+		log_msg("CRASH *** terminated on %s ***", sig_name(sig));
+		log_err("CRASH *** terminated on %s ***", sig_name(sig));
 #ifdef DEBUG
 		dump_debug_stack();
 #endif
 		screen = crash_screen;
 	} else {
-		logmsg("*** shutting down on %s ***", sig_name(sig));
-		logerr("*** shutting down on %s ***", sig_name(sig));
+		log_msg("*** shutting down on %s ***", sig_name(sig));
+		log_err("*** shutting down on %s ***", sig_name(sig));
 
 		if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
 			screen = crash_screen;
@@ -249,7 +249,7 @@ RETSIGTYPE sig_reboot(int sig) {
 char buf[128];
 
 	Enter(sig_reboot);
-	logmsg("SIGQUIT received, rebooting in 5 minutes");
+	log_msg("SIGQUIT received, rebooting in 5 minutes");
 
 	if (reboot_timer != NULL) {
 		reboot_timer->sleeptime = reboot_timer->maxtime = 4*60;		/* reboot in 5 mins */
@@ -261,8 +261,8 @@ char buf[128];
 		Return;
 	}
 	if ((reboot_timer = new_Timer(4*60, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
-		logmsg("SIGQUIT: Out of memory, reboot cancelled");
-		logerr("SIGQUIT: Out of memory, reboot cancelled");
+		log_msg("SIGQUIT: Out of memory, reboot cancelled");
+		log_err("SIGQUIT: Out of memory, reboot cancelled");
 		Return;
 	}
 	add_Timer(&timerq, reboot_timer);
@@ -280,7 +280,7 @@ RETSIGTYPE sig_shutdown(int sig) {
 char buf[128];
 
 	Enter(sig_shutdown);
-	logmsg("SIGTERM received, shutting down in 5 minutes");
+	log_msg("SIGTERM received, shutting down in 5 minutes");
 
 	if (shutdown_timer != NULL) {
 		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4*60;		/* shutdown in 5 mins */
@@ -292,8 +292,8 @@ char buf[128];
 		Return;
 	}
 	if ((shutdown_timer = new_Timer(4*60, shutdown_timeout, TIMEOUT_REBOOT)) == NULL) {
-		logmsg("SIGTERM: Out of memory, shutdown cancelled");
-		logerr("SIGTERM: Out of memory, shutdown cancelled");
+		log_msg("SIGTERM: Out of memory, shutdown cancelled");
+		log_err("SIGTERM: Out of memory, shutdown cancelled");
 		Return;
 	}
 	add_Timer(&timerq, shutdown_timer);
@@ -350,18 +350,18 @@ unsigned long num;
 RETSIGTYPE sig_nologin(int sig) {
 	Enter(sig_nologin);
 
-	logmsg("SIGHUP caught; reset nologin");
+	log_msg("SIGHUP caught; reset nologin");
 
 	if (nologin_screen == NULL) {
 		if ((nologin_screen = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL) {
-			logerr("failed to load nologin_screen %s", PARAM_NOLOGIN_SCREEN);
+			log_err("failed to load nologin_screen %s", PARAM_NOLOGIN_SCREEN);
 		} else {
-			logmsg("nologin set ; users cannot login");
+			log_msg("nologin set ; users cannot login");
 		}
 	} else {
 		listdestroy_StringList(nologin_screen);
 		nologin_screen = NULL;
-		logmsg("nologin reset ; users can login");
+		log_msg("nologin reset ; users can login");
 	}
 	Return;
 }
@@ -394,7 +394,7 @@ int i;
 			return;
 		}
 	}
-	logerr("caught unknown signal %d", sig);
+	log_err("caught unknown signal %d", sig);
 }
 
 /* add a signal handler */
@@ -406,14 +406,14 @@ int i;
 			SignalVector *h;
 
 			if ((h = new_SignalVector(handler)) == NULL) {
-				logerr("Out of memory allocating SignalVector for signal %d", sig);
+				log_err("Out of memory allocating SignalVector for signal %d", sig);
 				return -1;
 			}
 			add_SignalVector(&(sig_table[i].handlers), h);
 			return 0;
 		}
 	}
-	logerr("unknown signal '%d'", sig);
+	log_err("unknown signal '%d'", sig);
 	return -1;
 }
 

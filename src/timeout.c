@@ -44,7 +44,7 @@ void login_timeout(User *usr) {
 		return;
 
 	Put(usr, "\nConnection timed out\n");
-	logauth("TIMEOUT %s (%s)", usr->name, usr->from_ip);
+	log_auth("TIMEOUT %s (%s)", usr->name, usr->from_ip);
 	close_connection(usr, "%s got timed out", usr->name);
 }
 
@@ -67,14 +67,14 @@ void user_timeout(User *usr) {
 		case (TIMEOUT_USER-2):
 			Put(usr, "\n<beep><red>You are being logged off due to inactivity\n");
 			notify_idle(usr);
-			logauth("IDLE %s (%s)", usr->name, usr->from_ip);
+			log_auth("IDLE %s (%s)", usr->name, usr->from_ip);
 			close_connection(usr, "%s went idle", usr->name);
 	}
 }
 
 void save_timeout(User *usr) {
 	if (save_User(usr)) {
-		logerr("failed to periodically save user %s", usr->name);
+		log_err("failed to periodically save user %s", usr->name);
 	}
 }
 
@@ -101,7 +101,7 @@ StringList *screen, *sl;
 			break;
 
 		case (TIMEOUT_REBOOT-3):
-			logmsg("rebooting, logging off all users");
+			log_msg("rebooting, logging off all users");
 
 			screen = load_StringList(PARAM_REBOOT_SCREEN);
 
@@ -110,7 +110,7 @@ StringList *screen, *sl;
 					Print(u, "%s\n", sl->str);
 				close_connection(u, "reboot");
 			}
-			logmsg("reboot procedure completed, exiting");
+			log_msg("reboot procedure completed, exiting");
 			exit_program(REBOOT);
 	}
 }
@@ -138,7 +138,7 @@ StringList *screen, *sl;
 			break;
 
 		case (TIMEOUT_SHUTDOWN-3):
-			logmsg("shutting down, logging off all users");
+			log_msg("shutting down, logging off all users");
 
 			screen = load_StringList(PARAM_SHUTDOWN_SCREEN);
 
@@ -147,7 +147,7 @@ StringList *screen, *sl;
 					Print(u, "%s\n", sl->str);
 				close_connection(u, "shutdown");
 			}
-			logmsg("shutdown sequence completed, exiting");
+			log_msg("shutdown sequence completed, exiting");
 			exit_program(SHUTDOWN);
 	}
 }

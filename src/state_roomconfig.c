@@ -469,7 +469,7 @@ int r;
 			add_StringList(&usr->curr_room->invited, sl);
 
 			Print(usr, "<yellow>%s<green> was kicked, but is now invited\n", sl->str);
-			logmsg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+			log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(sl->str)) != NULL) {
 				if (u != usr)
@@ -490,7 +490,7 @@ int r;
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> is uninvited\n", usr->edit_buf);
-				logmsg("%s uninvited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+				log_msg("%s uninvited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
@@ -503,7 +503,7 @@ int r;
 			} else {
 				add_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
 				Print(usr, "<yellow>%s<green> is invited\n", usr->edit_buf);
-				logmsg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+				log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
@@ -589,7 +589,7 @@ int r;
 			add_StringList(&usr->curr_room->kicked, sl);
 
 			Print(usr, "<yellow>%s<green> was invited, but is now kicked\n", sl->str);
-			logmsg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+			log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
@@ -614,7 +614,7 @@ int r;
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> was kicked, but not anymore\n", usr->edit_buf);
-				logmsg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+				log_msg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
@@ -623,7 +623,7 @@ int r;
 				add_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
 
 				Print(usr, "<yellow>%s<green> has been kicked out\n", usr->edit_buf);
-				logmsg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room), usr->name);
@@ -799,7 +799,7 @@ void state_remove_all_posts(User *usr, char c) {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
 				remove_all_posts(usr->curr_room);
-				logmsg("SYSOP room %d %s cleaned out by %s",
+				log_msg("SYSOP room %d %s cleaned out by %s",
 					usr->curr_room->number, usr->curr_room->name, usr->name);
 													/* fall through */
 			case YESNO_NO:
@@ -906,7 +906,7 @@ void (*func)(User *, char *, ...);
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */
 	rename_dir(path, newpath);
 
-	logmsg("SYSOP room %d %s removed by %s", room->number, room->name, usr->name);
+	log_msg("SYSOP room %d %s removed by %s", room->number, room->name, usr->name);
 	Print(usr, "<yellow>%s<white>><red> deleted\n", room->name);
 
 	destroy_Room(room);

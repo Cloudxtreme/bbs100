@@ -143,7 +143,7 @@ int r;
 				}
 				strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
 			}
-			logauth("LOGIN %s (%s)", usr->name, usr->from_ip);
+			log_auth("LOGIN %s (%s)", usr->name, usr->from_ip);
 
 			usr->doing = cstrdup("is just looking around");
 			usr->flags |= USR_X_DISABLED;
@@ -245,7 +245,7 @@ int r;
 				close_connection(u, "connection closed by another login");
 			}
 			strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
-			logauth("LOGIN %s (%s)", usr->name, usr->from_ip);
+			log_auth("LOGIN %s (%s)", usr->name, usr->from_ip);
 
 			if (u == NULL)				/* if (u != NULL) killed by another login */
 				notify_login(usr);		/* tell friends we're here */
@@ -253,7 +253,7 @@ int r;
 			JMP(usr, STATE_DISPLAY_MOTD);
 		} else {
 			Put(usr, "Wrong password!\n\n");
-			logauth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->from_ip);
+			log_auth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->from_ip);
 
 			usr->login_time++;
 			if (usr->login_time >= MAX_LOGIN_ATTEMPTS) {
@@ -312,7 +312,7 @@ void state_logout_prompt(User *usr, char c) {
 				for(sl = logout_screen; sl != NULL; sl = sl->next)
 					Print(usr, "%s\n", sl->str);
 			}
-			logauth("LOGOUT %s (%s)", usr->name, usr->from_ip);
+			log_auth("LOGOUT %s (%s)", usr->name, usr->from_ip);
 			close_connection(usr, "%s has logged out from %s", usr->name, usr->from_ip);
 			break;
 
@@ -555,7 +555,7 @@ int r;
 			close_connection(usr, "new user login closed by wrapper");
 			Return;
 		}
-		logauth("NEWLOGIN (%s)", usr->from_ip);
+		log_auth("NEWLOGIN (%s)", usr->from_ip);
 
 		Put(usr, "\nHello there, new user! You may choose a name that suits you well.\n"
 			"This name will be your alias for the rest of your BBS life.\n"
@@ -735,7 +735,7 @@ int r;
 		if (mkdir(usr->edit_buf, (mode_t)0700)) {
 			Perror(usr, "Failed to create user directory");
 		}
-		logauth("NEWUSER %s (%s)", usr->name, usr->from_ip);
+		log_auth("NEWUSER %s (%s)", usr->name, usr->from_ip);
 
 /* save user here, or we're not able to X/profile him yet! */
 		if (usr->logins <= 1 && save_User(usr)) {

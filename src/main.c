@@ -88,7 +88,7 @@ int fd;
 	}
 	pid = fork();							/* go to background */
 	if (pid == (pid_t)-1L) {
-		logerror("failed to fork()");
+		log_err("failed to fork()");
 		exit_program(SHUTDOWN);
 	}
 	if (pid != (pid_t)0L)					/* parent: exit */
@@ -99,7 +99,7 @@ int fd;
 
 	pid = fork();
 	if (pid == (pid_t)-1L) {
-		logerror("failed to fork()");
+		log_err("failed to fork()");
 		exit_program(SHUTDOWN);
 	}
 	if (pid != (pid_t)0L)					/* parent: exit */
@@ -114,16 +114,16 @@ int code = 0;
 	ignore_signals = 1;
 
 	if (reboot) {
-		logmsg("exit_program(): rebooting");
+		log_msg("exit_program(): rebooting");
 	} else {
-		logmsg("exit_program(): shutting down");
+		log_msg("exit_program(): shutting down");
 	}
 	if (main_socket > 0) {
 		shutdown(main_socket, 2);
 		close(main_socket);
 
 		if (save_Stats(&stats, PARAM_STAT_FILE)) {
-			logerr("failed to save stats");
+			log_err("failed to save stats");
 		}
 	}
 /*	kill_process();	*/
@@ -311,11 +311,11 @@ int main(int argc, char **argv) {
 	init_ZoneInfo();
 
 	if (init_Room()) {
-		logerr("fatal: Failed to initialize the rooms message system");
+		log_err("fatal: Failed to initialize the rooms message system");
 		exit_program(SHUTDOWN);
 	}
 	if (init_OnlineUser()) {
-		logerr("fatal: Failed to initialize the online users hash");
+		log_err("fatal: Failed to initialize the online users hash");
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();			/* init salt table for passwd encryption */
@@ -338,7 +338,7 @@ int main(int argc, char **argv) {
 	goto_background();
 
 	if (init_process())
-		logerr("helper daemons startup failed");
+		log_err("helper daemons startup failed");
 
 	stats.uptime = rtc = time(NULL);
 

@@ -25,22 +25,13 @@
 
 #define MAX_INTERNAL_LOG	50
 
-/*
-	these defines are needed for the code conversion from old to new logging code
-*/
-#define logmsg		log_msg
-#define logerr		log_err
-#define logerror	log_err
-#define logauth		log_auth
-#define loginfo		log_info
-#define logdebug	log_debug
-
-
 int init_log(void);
 void log_entry(FILE *, char *, char, va_list);
 void log_msg(char *, ...);
 void log_info(char *, ...);
 void log_err(char *, ...);
+void log_warn(char *, ...);
+void log_debug(char *, ...);
 void log_auth(char *, ...);
 void log_rotate(void);
 

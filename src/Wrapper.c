@@ -140,7 +140,7 @@ unsigned long net, mask;
 		|| n2 < 0 || n2 > 255
 		|| n3 < 0 || n3 > 255
 		|| n4 < 0 || n4 > 255) {
-		logerr("malformed net address '%s'", netbuf);
+		log_err("malformed net address '%s'", netbuf);
 		return NULL;
 	}
 	net = n1;
@@ -158,7 +158,7 @@ unsigned long net, mask;
 		|| m2 < 0 || m2 > 255
 		|| m3 < 0 || m3 > 255
 		|| m4 < 0 || m4 > 255) {
-		logerr("malformed net mask '%s'", maskbuf);
+		log_err("malformed net mask '%s'", maskbuf);
 		return NULL;
 	}
 	mask = m1;
@@ -175,7 +175,7 @@ unsigned long net, mask;
 		if (!cstricmp(allowbuf, "deny"))
 			allow = 0;
 		else {
-			logerr("unknown keyword '%s'; must be either 'allow' or 'deny'", allowbuf);
+			log_err("unknown keyword '%s'; must be either 'allow' or 'deny'", allowbuf);
 			return NULL;
 		}
 

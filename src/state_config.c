@@ -30,7 +30,6 @@
 #include "state.h"
 #include "edit.h"
 #include "util.h"
-#include "log.h"
 #include "cstring.h"
 #include "passwd.h"
 #include "screens.h"

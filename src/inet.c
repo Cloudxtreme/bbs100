@@ -104,13 +104,13 @@ struct sockaddr_in sin;
 int sock, optval, sleepcount = 0;
 
 	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		logerror("inet socket()");
+		log_err("inet socket()");
 		return -1;
 	}
 	optval = 1;
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
 			sizeof(optval)) == -1) {
-		logerror("inet socket setsockopt()");
+		log_err("inet socket setsockopt()");
 		close(sock);
 		return -1;
 	}
@@ -147,19 +147,19 @@ int sock, optval, sleepcount = 0;
 
 	sin_len = sizeof(sin);
 	if (getsockname(sock, (struct sockaddr *)&sin, (int *)&sin_len) == -1) {
-		logerror("inet socket getsockname()");
+		log_err("inet socket getsockname()");
 		close(sock);
 		return -1;
 	}
 */
 	optval = 1;
 	if (ioctl(sock, FIONBIO, &optval) == -1) {
-		logerror("inet socket ioctl()");
+		log_err("inet socket ioctl()");
 		close(sock);
 		return -1;
 	}
 	if (listen(sock, MAX_NEWCONNS) == -1) {
-		logerror("inet socket listen()");
+		log_err("inet socket listen()");
 		close(sock);
 		return -1;
 	}
@@ -178,11 +178,11 @@ char optval;
 	Enter(new_connection);
 
 	if ((s = accept(fd, (struct sockaddr *)&client, (int *)&client_len)) < 0) {
-		logerror("inet socket accept()");
+		log_err("inet socket accept()");
 		Return;
 	}
 	if ((new_conn = new_User()) == NULL) {
-		logerr("Out of memory allocating new User");
+		log_err("Out of memory allocating new User");
 
 		shutdown(s, 2);
 		close(s);
@@ -213,7 +213,7 @@ char optval;
 		close_connection(new_conn, "new connection closed by nologin");
 		Return;
 	}
-	logauth("CONN (%s)", new_conn->from_ip);
+	log_auth("CONN (%s)", new_conn->from_ip);
 	add_User(&AllUsers, new_conn);
 	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
 
@@ -256,7 +256,7 @@ void close_connection(User *usr, char *reason, ...) {
 		update_stats(usr);
 
 		if (save_User(usr)) {
-			logerr("failed to save user %s", usr->name);
+			log_err("failed to save user %s", usr->name);
 		}
 		remove_OnlineUser(usr);
 	}
@@ -273,7 +273,7 @@ void close_connection(User *usr, char *reason, ...) {
 		vsprintf(buf+strlen(buf), reason, ap);
 		va_end(ap);
 
-		logauth(buf);
+		log_auth(buf);
 	}
 	if (usr->socket > 0) {
 		Put(usr, "<default>\n");
@@ -297,7 +297,7 @@ char optval;
 	unlink(path);
 
 	if ((sock = socket(PF_UNIX, SOCK_STREAM, 0)) == -1) {
-		logerror("unix socket()");
+		log_err("unix socket()");
 		return -1;
 	}
 	memset(&un, 0, sizeof(un));
@@ -307,7 +307,7 @@ char optval;
 	un.sun_path[sizeof(un.sun_path) - 1] = 0;
 
 	if (bind(sock, (struct sockaddr *)&un, sizeof(un)) == -1) {
-		logerror("unix socket bind()");
+		log_err("unix socket bind()");
 		return -1;
 	}
 /*
@@ -315,19 +315,19 @@ char optval;
 
 	un_len = sizeof(un);
 	if (getsockname(sock, (struct sockaddr *)&un, (int *)&un_len) == -1) {
-		logerror("unix socket getsockname()");
+		log_err("unix socket getsockname()");
 		return -1;
 	}
 */
 /* set non-blocking */
 	optval = 1;
 	if (ioctl(sock, FIONBIO, &optval) == -1) {
-		logerror("unix socket ioctl()");
+		log_err("unix socket ioctl()");
 		return -1;
 	}
 
 	if (listen(sock, 3) == -1) {
-		logerror("unix socket listen()");
+		log_err("unix socket listen()");
 		return -1;
 	}
 	return sock;
@@ -339,7 +339,7 @@ void dns_gethostname(char *ipnum) {
 		return;
 
 	if (write(dns_socket, ipnum, strlen(ipnum)) < 0) {
-		logerror("dns write()");
+		log_err("dns write()");
 	}
 }
 
@@ -348,7 +348,7 @@ int n;
 char buf[MAX_LINE], *p;
 
 	if ((n = read(dns_socket, buf, MAX_LINE-1)) <= 0) {
-		logerror("dns read()");
+		log_err("dns read()");
 		return;
 	}
 	if (n >= MAX_LINE)
@@ -648,7 +648,7 @@ int i, err;
 						c->input_idx = 0;
 					} else {
 						notify_linkdead(c);
-						logauth("LINKDEAD %s (%s)", c->name, c->from_ip);
+						log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
 						close_connection(c, "%s went linkdead", c->name);
 					}
 				}
@@ -679,18 +679,18 @@ int i, err;
 				un_len = sizeof(struct sockaddr_un);
 				dns_socket = accept(dns_main_socket, (struct sockaddr *)&un, (int *)&un_len);
 				if (dns_socket < 0) {
-					logerror("dns accept()");
+					log_err("dns accept()");
 				}
 			}
 		} else {
 			if (err < 0) {
-				logerror("select() failed");
+				log_err("select() failed");
 				if (errno != EINTR) {
 /*
 	Probably EBADF, probably resolver or logd has an invalid file handle
 	Need to analyze this more...
 */
-					logerr("exiting and restarting ; killing myself with SIGINT");
+					log_err("exiting and restarting ; killing myself with SIGINT");
 					kill(0, SIGINT);
 				}
 			}
@@ -813,7 +813,7 @@ int err, highest_fd = -1;
 	something bad happened, probably lost connection
 */
 				notify_linkdead(c);
-				logauth("LINKDEAD %s (%s)", c->name, c->from_ip);
+				log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
 				close_connection(c, "%s went linkdead", c->name);
 				continue;
 			}
@@ -865,7 +865,7 @@ int err, highest_fd = -1;
 				un_len = sizeof(struct sockaddr_un);
 				dns_socket = accept(dns_main_socket, (struct sockaddr *)&un, (int *)&un_len);
 				if (dns_socket < 0) {
-					logerror("dns accept()");
+					log_err("dns accept()");
 				} else {
 					FD_SET(dns_socket, &fds);
 					if (dns_socket >= highest_fd)
@@ -938,8 +938,8 @@ int err, highest_fd = -1;
 /*
 	strange, select() got some other error
 */
-		logerr("select() got errno %d", errno);
-		logerr("exiting and restarting ; killing myself with SIGINT");
+		log_err("select() got errno %d", errno);
+		log_err("exiting and restarting ; killing myself with SIGINT");
 		kill(0, SIGINT);
 	}
 

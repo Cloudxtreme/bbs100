@@ -472,7 +472,7 @@ int i;
 				usr->runtime_flags &= ~RTF_SYSOP;
 				Print(usr, "<white>Exiting %s mode\n", PARAM_NAME_SYSOP);
 
-				logmsg("SYSOP %s left %s mode", usr->name, PARAM_NAME_SYSOP);
+				log_msg("SYSOP %s left %s mode", usr->name, PARAM_NAME_SYSOP);
 
 /* silently disable roomaide mode, if not allowed to be roomaide here */
 				if ((usr->runtime_flags & RTF_ROOMAIDE) && in_StringList(usr->curr_room->room_aides, usr->name) == NULL)
@@ -1473,7 +1473,7 @@ int r;
 		if (usr->message != NULL && usr->message->anon[0]
 			&& !strcmp(usr->message->from, u->name)
 			&& strcmp(usr->message->from, usr->name)) {
-			logmsg("%s profiled anonymous post", usr->name);
+			log_msg("%s profiled anonymous post", usr->name);
 		}
 		if (allocated)
 			destroy_User(u);
@@ -2165,11 +2165,11 @@ int r;
 			usr->runtime_flags |= RTF_SYSOP;
 			Print(usr, "\n<red>*** <white>NOTE: You are now in <yellow>%s<white> mode <red>***\n", PARAM_NAME_SYSOP);
 
-			logmsg("SYSOP %s entered %s mode", usr->name, PARAM_NAME_SYSOP);
+			log_msg("SYSOP %s entered %s mode", usr->name, PARAM_NAME_SYSOP);
 		} else {
 			Put(usr, "<red>Wrong password\n");
 
-			logmsg("SYSOP %s entered wrong %s mode password", usr->name, PARAM_NAME_SYSOP);
+			log_msg("SYSOP %s entered wrong %s mode password", usr->name, PARAM_NAME_SYSOP);
 		}
 		RET(usr);
 		Return;

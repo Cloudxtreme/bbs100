@@ -125,13 +125,11 @@ ZoneInfo *zoneinfo, *z;
 	zoneinfo = NULL;
 
 	if ((f = fopen(filename, "r")) == NULL) {
-		logerr("load_ZoneInfo(): failed to open file %s", filename);
+		log_err("load_ZoneInfo(): failed to open file %s", filename);
 		return NULL;
 	}
 	now = time(NULL);
 	tm = gmtime(&now);
-	putenv("TZ=GMT");
-	tzset();
 
 	this_year = tm->tm_year+1900;
 
@@ -148,7 +146,7 @@ ZoneInfo *zoneinfo, *z;
 		if ((arr = cstrsplit(buf, ' ')) == NULL) {
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
-			logerr("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
+			log_err("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
 			return NULL;
 		}
 /* stupid check to see if we've got all the fields */
@@ -158,7 +156,7 @@ ZoneInfo *zoneinfo, *z;
 				fclose(f);
 				listdestroy_ZoneInfo(zoneinfo);
 
-				logerr("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
+				log_err("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
 				return NULL;
 			}
 		}
@@ -167,7 +165,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
+			log_err("load_ZoneInfo(%s): syntax error in line %d", filename, lineno);
 			return NULL;
 		}
 /*
@@ -192,7 +190,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d; dow == %d (?)", filename, lineno, i);
+			log_err("load_ZoneInfo(%s): syntax error in line %d; dow == %d (?)", filename, lineno, i);
 			return NULL;
 		}
 		mk_tm.tm_wday = i;
@@ -209,7 +207,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d; month == %d (?)", filename, lineno, i);
+			log_err("load_ZoneInfo(%s): syntax error in line %d; month == %d (?)", filename, lineno, i);
 			return NULL;
 		}
 		mk_tm.tm_mon = i;
@@ -223,7 +221,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d; mday == %d (?)", filename, lineno, i);
+			log_err("load_ZoneInfo(%s): syntax error in line %d; mday == %d (?)", filename, lineno, i);
 			return NULL;
 		}
 		mk_tm.tm_mday = i;
@@ -236,7 +234,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d; invalid time format", filename, lineno);
+			log_err("load_ZoneInfo(%s): syntax error in line %d; invalid time format", filename, lineno);
 			return NULL;
 		}
 		arr[4][2] = 0;
@@ -253,14 +251,15 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): syntax error in line %d; time == %02d:%02d:%02d (?)", filename, lineno, mk_tm.tm_hour, mk_tm.tm_min, mk_tm.tm_sec);
+			log_err("load_ZoneInfo(%s): syntax error in line %d; time == %02d:%02d:%02d (?)", filename, lineno, mk_tm.tm_hour, mk_tm.tm_min, mk_tm.tm_sec);
 			return NULL;
 		}
 		mk_tm.tm_yday = 0;		/* I have no clue what day in the year it is, and I don't care */
 		mk_tm.tm_isdst = 0;		/* UTC does not have DST */
 
-		if ((t = mktime(&mk_tm)) == (time_t)-1L) {
-			logerr("load_ZoneInfo(%s): syntax error in line %d; mktime() failed", filename, lineno);
+		t = mktime(&mk_tm);
+		if (t == (time_t)-1L) {
+			log_err("load_ZoneInfo(%s): syntax error in line %d; mktime() failed", filename, lineno);
 /*
 			printf("TD: %d %04d%02d%02d %02d:%02d:%02d\n", mk_tm.tm_wday,
 				mk_tm.tm_year+1900, mk_tm.tm_mon, mk_tm.tm_mday,
@@ -279,7 +278,7 @@ ZoneInfo *zoneinfo, *z;
 			fclose(f);
 			listdestroy_ZoneInfo(zoneinfo);
 
-			logerr("load_ZoneInfo(%s): out of memory allocating new ZoneInfo structure", filename);
+			log_err("load_ZoneInfo(%s): out of memory allocating new ZoneInfo structure", filename);
 			return NULL;
 		}
 		z->t = t;

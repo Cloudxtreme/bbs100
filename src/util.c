@@ -978,44 +978,4 @@ struct dirent *direntp;
 	return rmdir(dirname);
 }
 
-/* WARNING: this function returns a static buffer */
-char *logtime(void) {
-static char buf[64];
-time_t t;
-struct tm *tm;
-
-	t = time(NULL);
-	tm = localtime(&t);
-
-	sprintf(buf, "%02d/%02d/%d %02d:%02d:%02d", tm->tm_mon+1, tm->tm_mday, tm->tm_year+1900,
-		tm->tm_hour, tm->tm_min, tm->tm_sec);
-	return buf;
-}
-
-
-void LogMsg(char *fmt, ...) {
-va_list ap;
-
-	if (fmt == NULL)
-		return;
-
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-}
-
-/* same as LogMsg(), but add a perror()-like explanation of errno */
-void LogError(char *fmt, ...) {
-va_list ap;
-
-	if (fmt == NULL)
-		return;
-
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, ": %s\n", strerror(errno));
-}
-
 /* EOB */

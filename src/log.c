@@ -21,6 +21,7 @@
 
 	- complete rewrite of logging code
 	- more 'syslog'-like to the outside world
+	- automatic rotation
 */
 
 #include "config.h"
@@ -29,6 +30,7 @@
 #include "StringList.h"
 #include "Param.h"
 #include "util.h"
+#include "Timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +45,39 @@
 StringList *internal_log = NULL;
 int internal_log_len = 0;
 
+Timer *logrotate_timer = NULL;
+
+
+static int logrotate_reset_timer(void);
+
+static void logrotate_timerfunc(User *dummy) {
+	dummy = NULL;
+	log_rotate();
+	logrotate_reset_timer();
+}
+
+/*
+	initialize rotation timer
+*/
+static int logrotate_reset_timer(void) {
+time_t t;
+struct tm *tm;
+
+	if (logrotate_timer == NULL) {
+		if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
+			log_err("logrotate_reset_timer(): failed to allocate a new Timer");
+			return -1;
+		}
+		add_Timer(&timerq, logrotate_timer);
+	}
+	t = time(NULL);
+	tm = localtime(&t);
+/*
+	sleep exactly till midnight
+*/
+	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * 3600 - tm->tm_min * 60 - tm->tm_sec;
+	return 0;
+}
 
 int init_log(void) {
 int fd;
@@ -59,7 +94,7 @@ int fd;
 		dup2(fd, fileno(stderr));
 		close(fd);
 	}
-	return 0;
+	return logrotate_reset_timer();
 }
 
 
@@ -113,6 +148,14 @@ va_list ap;
 	va_end(ap);
 }
 
+void log_warn(char *msg, ...) {
+va_list ap;
+
+	va_start(ap, msg);
+	log_entry(stdout, msg, 'W', ap);
+	va_end(ap);
+}
+
 void log_debug(char *msg, ...) {
 va_list ap;
 
@@ -135,7 +178,7 @@ char filename[MAX_PATHLEN];
 struct stat statbuf;
 
 	for(n = 1; n < 9999; n++) {
-		sprintf(filename, "%s.%d", PARAM_SYSLOG, n);
+		sprintf(filename, "%s.%d", logfile, n);
 		if (stat(filename, &statbuf) == -1)
 			break;
 	}

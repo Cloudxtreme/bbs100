@@ -56,7 +56,7 @@ int i, num;
 	num = sizeof(process_table)/sizeof(Process);	/* start all children */
 	for(i = 0; i < num; i++) {
 		if (fork_process(&process_table[i])) {
-			logerror("failed to start %s", process_table[i].name);
+			log_err("failed to start %s", process_table[i].name);
 			return -1;
 		}
 	}
@@ -80,27 +80,27 @@ int fork_process(Process *proc) {
 /* make pathname for the unix domain socket */
 		sprintf(buf, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
 		if ((dns_main_socket = unix_sock(buf)) < 0) {
-			logerror("failed to create unix domain socket");
+			log_err("failed to create unix domain socket");
 			return -1;
 		}
-		logmsg("starting resolver with socket %s", buf);
+		log_msg("starting resolver with socket %s", buf);
 		proc->argv[1] = buf;
 	}
 	proc->pid = fork();
 	if (proc->pid == (pid_t)-1L) {
-		logerror("failed to fork()");
+		log_err("failed to fork()");
 		return -1;
 	}
 	if (!proc->pid) {
 		execv(proc->path, proc->argv);
-		logerror("exec(\"%s\") failed", proc->path);
+		log_err("exec(\"%s\") failed", proc->path);
 		exit(-1);
 	}
 	waitpid(-1, NULL, WNOHANG);
 
 	proc->start_time = time(NULL);
 
-	logmsg("%s started, pid %u", proc->name, proc->pid);
+	log_msg("%s started, pid %u", proc->name, proc->pid);
 	return 0;
 }
 
@@ -125,13 +125,13 @@ void restart_process(Process *proc) {
 	if (!(proc->flags & PROC_RESTART))
 		return;
 
-	logmsg("restarting %s", proc->name);
+	log_msg("restarting %s", proc->name);
 
 	if (((unsigned long)proc->start_time > 0UL)
 		&& (((unsigned long)time(NULL) - (unsigned long)proc->start_time) < 60UL)) {
 		proc->died_times++;
 		if (proc->died_times > 3) {
-			logmsg("%s died too many times, continuing without", proc->name);
+			log_msg("%s died too many times, continuing without", proc->name);
 /*
 	reset start_time, so the operator can restart the process by killing
 	the bbs with a SIGCHLD
@@ -144,7 +144,7 @@ void restart_process(Process *proc) {
 		proc->died_times = 0;
 
 	if (fork_process(proc)) {
-		logmsg("failed to restart %s, continuing without", proc->name);
+		log_msg("failed to restart %s, continuing without", proc->name);
 		proc->died_times = 0;
 		proc->start_time = (time_t)0UL;
 	}
@@ -156,30 +156,30 @@ pid_t pid;
 
 	pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
 	if (pid == (pid_t)-1L) {
-		logerror("waitpid()");
+		log_err("waitpid()");
 		return;
 	}
 	if (pid == (pid_t)0L) {
-		logmsg("SIGCHLD caught");
+		log_msg("SIGCHLD caught");
 		return;
 	}
 	num = sizeof(process_table)/sizeof(Process);
 	for(i = 0; i < num; i++) {
 		if (pid == process_table[i].pid) {
 			if (WIFSIGNALED(status)) {
-				logmsg("%s terminated on signal %s", process_table[i].name, sig_name(WTERMSIG(status)));
+				log_msg("%s terminated on signal %s", process_table[i].name, sig_name(WTERMSIG(status)));
 			} else {
 				if (WIFSTOPPED(status)) {
-					logmsg("%s stopped on signal %s", process_table[i].name, sig_name(WSTOPSIG(status)));
+					log_msg("%s stopped on signal %s", process_table[i].name, sig_name(WSTOPSIG(status)));
 				} else {
-					logmsg("%s terminated, exit code %d", process_table[i].name, WEXITSTATUS(status));
+					log_msg("%s terminated, exit code %d", process_table[i].name, WEXITSTATUS(status));
 				}
 			}
 			restart_process(&process_table[i]);
 			return;
 		}
 	}
-	logmsg("SIGCHLD caught");
+	log_msg("SIGCHLD caught");
 }
 
 /*
@@ -187,13 +187,13 @@ pid_t pid;
 	broke a pipe connection
 */
 void process_sigpipe(int sig) {
-	logerr("SIGPIPE caught");
+	log_err("SIGPIPE caught");
 	wait_process();
 }
 
 /* SIGCHLD was caused by an exiting child */
 void process_sigchld(int sig) {
-	logerr("SIGCHLD caught");
+	log_err("SIGCHLD caught");
 	wait_process();
 }
 
