@@ -137,6 +137,7 @@ int code = 0;
 	exit(code);
 }
 
+
 int main(int argc, char **argv) {
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";

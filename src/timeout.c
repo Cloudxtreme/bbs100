@@ -96,17 +96,17 @@ StringList *screen, *sl;
 	switch(t->restart) {
 		case TIMEOUT_REBOOT:
 			t->sleeptime = t->maxtime = 30;		/* one minute to go! */
-			system_broadcast(0, "The system will reboot in one minute!\n");
+			system_broadcast(0, "The system will reboot in one minute!");
 			break;
 
 		case (TIMEOUT_REBOOT-1):
 			t->sleeptime = t->maxtime = 25;
-			system_broadcast(OVERRULE, "The system will reboot in 30 seconds!\n");
+			system_broadcast(OVERRULE, "The system will reboot in 30 seconds!");
 			break;
 
 		case (TIMEOUT_REBOOT-2):
 			t->sleeptime = t->maxtime = 5;
-			system_broadcast(OVERRULE, "The system will reboot in 5 seconds!\n");
+			system_broadcast(OVERRULE, "The system will reboot in 5 seconds!");
 			break;
 
 		case (TIMEOUT_REBOOT-3):
@@ -133,17 +133,17 @@ StringList *screen, *sl;
 	switch(t->restart) {
 		case TIMEOUT_SHUTDOWN:
 			t->sleeptime = t->maxtime = 30;		/* one minute to go! */
-			system_broadcast(0, "The system will shutdown in one minute!\n");
+			system_broadcast(0, "The system will shutdown in one minute!");
 			break;
 
 		case (TIMEOUT_SHUTDOWN-1):
 			t->sleeptime = t->maxtime = 25;
-			system_broadcast(OVERRULE, "The system will shutdown in 30 seconds!\n");
+			system_broadcast(OVERRULE, "The system will shutdown in 30 seconds!");
 			break;
 
 		case (TIMEOUT_SHUTDOWN-2):
 			t->sleeptime = t->maxtime = 5;
-			system_broadcast(OVERRULE, "The system will shutdown in 5 seconds!\n");
+			system_broadcast(OVERRULE, "The system will shutdown in 5 seconds!");
 			break;
 
 		case (TIMEOUT_SHUTDOWN-3):

@@ -717,12 +717,13 @@ int i, err;
 struct timeval timeout;
 fd_set fds;
 User *c, *c_next;
-int err, highest_fd = -1;
+int err, highest_fd = -1, nap;
 
 	Enter(mainloop);
 
 	setjmp(jumper);				/* trampoline for crashed users */
 
+	nap = 1;
 	while(main_socket > 0) {
 		FD_ZERO(&fds);
 		FD_SET(main_socket, &fds);
@@ -738,7 +739,7 @@ int err, highest_fd = -1;
 			if (dns_socket >= highest_fd)
 				highest_fd = dns_socket+1;
 		}
-		timeout.tv_sec = 1;
+		timeout.tv_sec = nap;
 		timeout.tv_usec = 0;
 
 		for(c = AllUsers; c != NULL; c = c_next) {
@@ -887,12 +888,12 @@ int err, highest_fd = -1;
 				}
 			}
 /*
-	update timers every damn time
+	update timers
 */
-			update_timers();
+			nap = update_timers();
 			continue;
 		}
-		update_timers();
+		nap = update_timers();
 
 		if (!err)					/* select() called; nothing special happened */
 			continue;

@@ -117,7 +117,7 @@ ListType **root, *l;
 	if (*root == NULL)
 		return;
 
-	if (l->prev == NULL)				/* must be in root node */
+	if (l->prev == NULL)				/* it is the root node */
 		*root = l->next;
 	else
 		l->prev->next = l->next;

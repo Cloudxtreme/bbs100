@@ -53,6 +53,83 @@ void destroy_Timer(Timer *t) {
 	Free(t);
 }
 
+/*
+	insertion-sort timers into the sorted timerqueue
+	the timerqueue works with 'relative' time
+*/
+Timer *add_Timer(Timer **queue, Timer *t) {
+Timer *q, *q_prev;
+
+	if (queue == NULL || t == NULL)
+		return NULL;
+
+	t->prev = t->next = NULL;
+
+	if (*queue == NULL) {
+		*queue = t;
+		return t;
+	}
+	for(q = *queue; q != NULL; q = q->next) {
+		if (q->sleeptime > t->sleeptime || t->sleeptime <= 0) {
+			if (q->sleeptime > t->sleeptime)
+				q->sleeptime -= t->sleeptime;
+
+			t->next = q;					/* insert before q */
+			t->prev = q->prev;
+
+			if (q->prev != NULL)
+				q->prev->next = t;
+
+			q->prev = t;
+			if (t->prev == NULL)
+				*queue = t;
+			return t;
+		} else
+			t->sleeptime -= q->sleeptime;
+
+		q_prev = q;
+	}
+	q_prev->next = t;						/* append at end */
+	t->prev = q_prev;
+	return t;
+}
+
+
+static int update_timerqueue(Timer **queue, void *arg, int tdiff) {
+int nap;
+Timer *t, *t_next;
+
+	nap = 0;
+	for(t = *queue; t != NULL; t = t_next) {
+		t_next = t->next;
+
+		if (tdiff > 0) {
+			t->sleeptime -= tdiff;
+			tdiff = 0;
+		}
+		if (t->sleeptime > 0) {
+			if (t->sleeptime < nap)
+				nap = t->sleeptime;
+			break;
+		}
+		if (t->sleeptime <= 0) {
+			t->sleeptime = t->maxtime;
+
+			if (t->action != NULL)
+				t->action((arg == NULL) ? t : arg);
+
+			if (t->restart > 0)		/* restart -1 always restarts */
+				t->restart--;
+
+			remove_Timer(queue, t);
+			if (!t->restart)
+				destroy_Timer(t);
+			else
+				add_Timer(queue, t);
+		}
+	}
+	return nap;
+}
 
 /*
 	update timers
@@ -61,64 +138,41 @@ void destroy_Timer(Timer *t) {
 	If select() does not time out, rtc will be updated too much,
 	so I had to put an old_rtc in and compare the two clocks :P
 */
-void update_timers(void) {
+int update_timers(void) {
+int n, nap;
 static time_t old_rtc = (time_t)0UL;
+int tdiff;
 User *usr, *usr_next;
-Timer *t, *t_next;
 
 	rtc = time(NULL);
-	if (rtc == old_rtc)				/* rtc is moving too fast */
-		return;
-
+	if (!old_rtc) {
+		old_rtc = rtc;
+		return 1;
+	}
+	tdiff = (int)((unsigned long)rtc - (unsigned long)old_rtc);
 	old_rtc = rtc;
+
+	nap = 600;	/* 10 minutes */
 
 /* update the user timers */
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {
 		usr_next = usr->next;
 
-		for(t = usr->timer; t != NULL; t = t_next) {
-			t_next = t->next;
+		if (usr->timer == NULL)
+			continue;
 
-			if (t->sleeptime > 0)
-				t->sleeptime--;
-
-			if (t->sleeptime <= 0) {
-				t->sleeptime = t->maxtime;
-
-				if (t->action != NULL)
-					t->action(usr);
-				if (t->restart > 0)		/* restart -1 always restarts */
-					t->restart--;
-
-				if (!t->restart) {
-					remove_Timer(&usr->timer, t);
-					destroy_Timer(t);
-				}
-			}
-		}
+		n = update_timerqueue(&usr->timer, usr, tdiff);
+		if (n < nap)
+			nap = n;
 	}
 
 /* now process timers that are not bound to a user */
 
-	for(t = timerq; t != NULL; t = t_next) {
-		t_next = t->next;
+	n = update_timerqueue(&timerq, NULL, tdiff);
+	if (n < nap)
+		nap = n;
 
-		if (t->sleeptime > 0)
-			t->sleeptime--;
-		if (!t->sleeptime) {
-			t->sleeptime = t->maxtime;
-
-			if (t->action != NULL)
-				t->action(t);			/* user-less timers have 't' as argument(!) */
-
-			if (t->restart > 0)			/* restart -1 always restarts */
-				t->restart--;
-			if (!t->restart) {
-				remove_Timer(&timerq, t);
-				destroy_Timer(t);
-			}
-		}
-	}
+	return nap;
 }
 
 /* EOB */

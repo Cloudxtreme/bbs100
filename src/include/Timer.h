@@ -27,8 +27,6 @@
 #include "List.h"
 #include "sys_time.h"
 
-#define add_Timer(x,y)			add_List((x), (y))
-#define concat_Timer(x,y)		concat_List((x), (y))
 #define remove_Timer(x,y)		remove_List((x), (y))
 #define rewind_Timer(x)			(Timer *)rewind_List((x))
 #define unwind_Timer(x)			(Timer *)unwind_List((x))
@@ -48,8 +46,9 @@ struct Timer_tag {
 
 Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
+Timer *add_Timer(Timer **, Timer *);
 int init_rtc(void);
-void update_timers(void);
+int update_timers(void);
 
 extern volatile time_t rtc;
 extern Timer *timerq;

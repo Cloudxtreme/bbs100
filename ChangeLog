@@ -1,5 +1,6 @@
 Changes as of October 28th
 - Timers have void* argument instead of User* argument
+- timerq is now sorted and works with 'relative' time; more efficient
 
 Changes as of October 27th 2003
 - automatic log archiving

@@ -224,8 +224,7 @@ User *u;
 #endif
 		screen = crash_screen;
 	} else {
-		log_msg("*** shutting down on %s ***", sig_name(sig));
-		log_err("*** shutting down on %s ***", sig_name(sig));
+		log_info("*** shutting down on %s ***", sig_name(sig));
 
 		if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
 			screen = crash_screen;
@@ -255,7 +254,7 @@ char buf[128];
 		reboot_timer->sleeptime = reboot_timer->maxtime = 4*60;		/* reboot in 5 mins */
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
-		sprintf(buf, "The system is now rebooting in %s\n", 
+		sprintf(buf, "The system is now rebooting in %s", 
 			print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
 		system_broadcast(0, buf);
 		Return;
@@ -267,7 +266,7 @@ char buf[128];
 	}
 	add_Timer(&timerq, reboot_timer);
 
-	sprintf(buf, "The system is rebooting in %s\n", 
+	sprintf(buf, "The system is rebooting in %s",
 		print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
 	system_broadcast(0, buf);
 	Return;
@@ -286,7 +285,7 @@ char buf[128];
 		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4*60;		/* shutdown in 5 mins */
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
-		sprintf(buf, "The system is now shutting down in %s\n", 
+		sprintf(buf, "The system is now shutting down in %s",
 			print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
 		system_broadcast(0, buf);
 		Return;
@@ -298,7 +297,7 @@ char buf[128];
 	}
 	add_Timer(&timerq, shutdown_timer);
 
-	sprintf(buf, "The system is shutting down in %s\n", 
+	sprintf(buf, "The system is shutting down in %s",
 		print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
 	system_broadcast(0, buf);
 	Return;

@@ -673,6 +673,8 @@ char buf[PRINT_BUF];
 time_t now;
 struct tm *tm;
 
+	log_info(msg);
+
 	if (overrule)
 		func = Print;
 	else
@@ -751,7 +753,9 @@ struct tm *t;
 	return date_str;
 }
 
-/* Note: returns static buffer */
+/*
+	Note: returns static buffer
+*/
 char *print_total_time(unsigned long total) {
 static char buf[MAX_LINE];
 int weeks, days, hrs, mins, secs, l = 0;

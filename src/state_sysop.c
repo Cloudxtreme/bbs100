@@ -218,7 +218,7 @@ void state_sysop_menu(User *usr, char c) {
 				destroy_Timer(reboot_timer);
 				reboot_timer = NULL;
 
-				system_broadcast(0, "Reboot cancelled\n");
+				system_broadcast(0, "Reboot cancelled");
 				log_msg("SYSOP %s cancelled reboot", usr->name);
 				CURRENT_STATE(usr);
 				Return;
@@ -240,7 +240,7 @@ void state_sysop_menu(User *usr, char c) {
 				destroy_Timer(shutdown_timer);
 				shutdown_timer = NULL;
 
-				system_broadcast(0, "Shutdown cancelled\n");
+				system_broadcast(0, "Shutdown cancelled");
 				log_msg("SYSOP %s cancelled shutdown", usr->name);
 				CURRENT_STATE(usr);
 				Return;
@@ -995,7 +995,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *pwd, buf[128];
+		char *pwd, buf[256];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
@@ -1011,11 +1011,14 @@ int r;
 			Return;
 		}
 		if (reboot_timer != NULL) {
+			remove_Timer(&timerq, reboot_timer);
 			reboot_timer->sleeptime = reboot_timer->maxtime = usr->read_lines;
 			reboot_timer->restart = TIMEOUT_REBOOT;
+			add_Timer(&timerq, reboot_timer);
+
 			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + 60UL));
 
-			sprintf(buf, "The system is now rebooting in %s\n", 
+			sprintf(buf, "The system is now rebooting in %s",
 				print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
 			system_broadcast(0, buf);
 			RET(usr);
@@ -1033,7 +1036,7 @@ int r;
 		Put(usr, "\n<red>Reboot procedure started\n");
 
 		if (reboot_timer->sleeptime > 0) {
-			sprintf(buf, "The system is rebooting in %s\n", 
+			sprintf(buf, "The system is rebooting in %s",
 				print_total_time((unsigned long)reboot_timer->sleeptime + 60UL));
 			system_broadcast(0, buf);
 		}
@@ -1101,7 +1104,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *pwd, buf[128];
+		char *pwd, buf[256];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
@@ -1117,11 +1120,13 @@ int r;
 			Return;
 		}
 		if (shutdown_timer != NULL) {
+			remove_Timer(&timerq, shutdown_timer);
 			shutdown_timer->sleeptime = shutdown_timer->maxtime = usr->read_lines;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
+			add_Timer(&timerq, shutdown_timer);
 			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + 60UL));
 
-			sprintf(buf, "The system is now shutting down in %s\n", 
+			sprintf(buf, "The system is now shutting down in %s",
 				print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
 			system_broadcast(0, buf);
 			RET(usr);
@@ -1139,7 +1144,7 @@ int r;
 		Put(usr, "\n<red>Shutdown sequence initiated\n");
 
 		if (shutdown_timer->sleeptime > 0) {
-			sprintf(buf, "The system is shutting down in %s\n", 
+			sprintf(buf, "The system is shutting down in %s",
 				print_total_time((unsigned long)shutdown_timer->sleeptime + 60UL));
 			system_broadcast(0, buf);
 		}
