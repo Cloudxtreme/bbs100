@@ -1,0 +1,40 @@
+bbs100 by Walter de Jong <walter@heiho.net> (C) 2002
+
+bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
+bbs100 is distributed under terms described in the GNU General Public License.
+This means you are allowed to run the code. If you are a programmer, you are
+allowed to modify the code. Although the GPL allows this, I do not encourage
+it in all cases. From my point of view, bbs100 works and does not need
+modification unless the modification is substantial and adds some useful
+functionality.
+
+You should READ THE LICENSE and make sure you understand it.
+The document ABOUT_GPL underlines the importance of understanding the license.
+
+If you make a useful addition to bbs100, or if you make a bugfix, please
+send me a patch in unified diff format and add some documentation on how it
+works and why the patch makes things better.
+Mind that the GPL states that the GPL applies to your modifications as well.
+
+A lot of features in bbs100 work the way they do by design, and there are
+features that were left out _on purpose_ (such as the ability to edit users
+from within the BBS). bbs100 is based on freedom for the users, which is
+why their IP is invisible to other normal users and why no account validation
+is required. Think about this when modifying bbs100.
+
+If you run a modified version of bbs100, be so kind to enter all made
+changes into etc/local_mods. This file should list all local modifications
+to the original bbs100. It is like a local 'ChangeLog' file. This is purely
+to inform your users; they can read about your modifications by pressing ']'.
+
+If you really want your name on the login screen as well, I suggest you add
+a line to the original copyright message. Mind that modifying or removing the
+original copyright message is prohibited by law.
+
+If you make a useful addition to bbs100, or if you make a bugfix, please
+send me a patch and add some documentation on how it works and why you think
+it's better this way.
+
+Thank you and happy hacking,
+
+    --Walter <walter@heiho.net>

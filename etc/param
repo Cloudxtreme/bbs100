@@ -1,0 +1,73 @@
+#
+# bbs100 param file etc/param
+#
+
+bbs_name               bbs100
+port_number            1234
+
+basedir                xxx
+bindir                 bin/
+confdir                etc/
+feelingsdir            etc/feelings
+userdir                users/
+roomdir                rooms/
+trashdir               trash/
+
+program_main           bin/main
+program_resolver       bin/resolver
+program_logd           bin/logd
+
+gpl_screen             etc/GPL
+mods_screen            etc/local_mods
+login_screen           etc/login
+logout_screen          etc/logout
+nologin_screen         etc/nologin
+motd_screen            etc/motd
+reboot_screen          etc/reboot
+shutdown_screen        etc/shutdown
+crash_screen           etc/crash
+
+first_login            etc/first_login
+help_std               etc/help.std
+help_config            etc/help.config
+help_roomconfig        etc/help.roomconfig
+help_sysop             etc/help.sysop
+
+hostmap_file           etc/hostmap
+hosts_access_file      etc/hosts_access
+banished_file          etc/banished
+stat_file              etc/stats
+su_passwd_file         etc/su_passwd
+license_file           etc/license
+pid_file               etc/pid
+symtab_file            etc/symtab
+
+max_cached             256
+max_messages           50
+max_mail_msgs          50
+max_msg_lines          1000
+max_xmsg_lines         7
+max_history            50
+max_chat_history       10
+max_friend             100
+max_enemy              100
+idle_timeout           10
+lock_timeout           30
+periodic_saving        5
+userhash_size          16
+
+name_sysop             Sysop
+name_room_aide         Room Aide
+name_helper            Helping Hand
+name_guest             Guest
+
+notify_login           is formed from some <yellow>golden<magenta> stardust
+notify_logout          explodes into <yellow>golden<magenta> stardust
+notify_linkdead        freezes up and crumbles to dust
+notify_idle            has been logged out due to inactivity
+notify_locked          is away from the terminal for a while
+notify_unlocked        has returned to the terminal
+notify_enter_chat      enters through a dimensional gateway
+notify_leave_chat      leaves through a dimensional gateway
+
+# EOB

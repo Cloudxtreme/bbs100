@@ -1,0 +1,106 @@
+/*
+    bbs100 1.2.0 WJ102
+    Copyright (C) 2002  Walter de Jong <walter@heiho.net>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+/*
+	room.h	WJ99
+*/
+
+#ifndef ROOM_H_WJ99
+#define ROOM_H_WJ99 1
+
+#include <config.h>
+
+#include "defines.h"
+#include "List.h"
+#include "StringList.h"
+#include "MsgIndex.h"
+#include "Message.h"
+#include "PList.h"
+
+#define add_Room(x,y)			add_List((x), (y))
+#define concat_Room(x,y)		concat_List((x), (y))
+#define remove_Room(x,y)		remove_List((x), (y))
+#define rewind_Room(x)			(Room *)rewind_List(x)
+#define unwind_Room(x)			(Room *)unwind_List(x)
+#define sort_Room(x,y)			(Room *)sort_List((x), (y))
+#define listdestroy_Room(x)		listdestroy_List((x), destroy_Room)
+
+#define ROOM_READONLY			1
+#define ROOM_SUBJECTS			2
+#define ROOM_INVITE_ONLY		4
+#define ROOM_ANONYMOUS			8
+#define ROOM_HIDDEN				0x10
+#define ROOM_NOZAP				0x20
+#define ROOM_CHATROOM			0x40
+#define ROOM_HOME				0x80
+#define ROOM_ALL				0xff	/* ROOM_READONLY | ROOM_SUBJECTS | ... | ROOM_HOME */
+
+#ifndef USER_DEFINED
+#define USER_DEFINED 1
+typedef struct User_tag User;
+#endif
+
+typedef struct Room_tag Room;
+
+struct Room_tag {
+	List(Room);
+
+	char name[MAX_LINE];
+	unsigned int number, flags, roominfo_changed;
+	unsigned long generation;
+	MsgIndex *msgs;
+	StringList *info, *room_aides, *kicked, *invited, *chat_history;
+
+	PList *inside;		/* list of pointers to online users (chat room only) */
+};
+
+extern Room *AllRooms;
+extern Room *HomeRooms;
+extern Room *Lobby_room;
+
+Room *new_Room(void);
+void destroy_Room(Room *);
+
+Room *load_Room(unsigned int);
+Room *load_Mail(char *);
+Room *load_Home(char *);
+Room *load_RoomData(char *, unsigned int);
+int save_Room(Room *);
+void newMsg(Room *, Message *);
+MsgIndex *newMsgs(Room *, unsigned long);
+
+void room_readdir(Room *);
+void room_readmaildir(Room *, char *);
+void room_readroomdir(Room *, char *);
+unsigned long room_top(Room *);
+
+int init_Room(void);
+Room *find_Room(User *, char *);
+Room *find_abbrevRoom(User *, char *);
+Room *find_Roombynumber(User *, unsigned int);
+Room *find_Roombynumber_username(User *, char *, unsigned int);
+Room *find_Home(char *);
+int room_exists(char *);
+int roomnumber_exists(unsigned int);
+void unload_Room (Room *);
+int room_sort_func(void *, void *);
+int msgs_sort_func(void *, void *);
+
+#endif	/* ROOM_H_WJ99 */
+
+/* EOB */

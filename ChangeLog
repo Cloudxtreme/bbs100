@@ -1,0 +1,474 @@
+Changes as of November 25th 2002
+- next_unread_room() first checks Lobby>, then Mail>, then other rooms
+- changed version number to 1.2.0
+- released as 1.2.0 (first new release after a year..!)
+
+Changes as of October 31st 2002
+- 't' shows Time with a neat calendar and world time zones
+- added site-specific hooks for loading/saving UserData
+
+Changes as of October 25th 2002
+- replies in rooms without subjects show up as 'Re: <message number>'
+- forwarded messages without subject have subject '<forwarded from <room name>>'
+- forwarded messages in rooms without subject show up as 'Fwd: ...'
+- bugfix: only directories with completely numeric names are loaded as rooms
+  upon startup
+
+Changes as of October 24th 2002
+- file opens are now always done thru 'atomic' openfile() and closefile()
+  this prevents files from becoming corrupted if the bbs reboots or crashes
+  during a file write
+
+Changes as of October 22nd 2002
+- enter/leave messages in chat rooms are no longer logged in the room history
+  (because it is annoying to see ppl only wandering in and out)
+- every room now keeps an 'inside' list of users
+- if you having beeping enabled, and a message is posted in the room you are in,
+  it will beep ya
+- Ctrl-W in Sysop mode gives the option 'Who is in this room'
+
+Changes as of October 21st 2002
+- when replying from within X history (Ctrl-X) or hold mode (Ctrl-B),
+  you don't fall out of that mode anymore, but nicely return to it
+- empty Quicklist entries are now displayed as "<empty>"
+
+Changes as of October 19th 2002
+- hold message mode silently toggles Helping Hand mode
+- added donated features/fixes by Richard of MatrixBBS:
+  - press Ctrl-T for talked-to list
+  - Ctrl-D on roomprompt changes Doing
+  - typo: receiption vs. reception
+  - typo: "suddenly logged off"
+  - enable/disable Xs remembers if you were available to help others
+  - MailAnywhere: 'm' on roomprompt sends mail
+  - WarnFollowUp: 'user is busy sending you a message in follow-up mode'
+  - profile shows total amount of time the user is online
+  - PARAM_NAME_SYSOP can no longer be used as login name
+    (too bad for people who already had such a login name)
+
+Changes as of July 20th 2002
+- major rewrite of mainloop(), code cleanup and it fixes a bug:
+  the connection could lock up when sending lots of input at once (upload)
+
+Changes as of May 31st 2002
+- added a free_list to Memory.c for faster allocation/reuse of objects
+
+Changes as of May 20th 2002
+- changed design of how busy/held/normal messages arrive
+- added tags <hline> and <center> for help texts and such
+
+Changes as of May 19th 2002
+- fixed bug; BUFMSG_SEEN sometimes wasn't set when someone logged
+  off in between
+  usr->send_msg is now a seperate copy of the message
+- press Ctrl-B for hold message mode
+
+Changes as of May 14th 2002
+- fixed bug in MD5 password encryption
+- colors now also may be specified via long notation:
+  <red>, <green>, <yellow>, <blue>, <magenta>, <cyan>, <black>,
+  <beep>, <lt>, <gt>, <normal>, <default>
+
+Changes as of May 12th 2002
+- Toggle Beep moved from Ctrl-B to 'B'
+- new feature: Ping shows for how long a user is idle (after 2 minutes)
+
+Changes as of May 11th 2002
+- put the source in CVS
+  was a bit of a hassle :P
+- changed 'make setup' to create directories rather than copy them
+  from the dist tarball
+- fixed bug in Sysop menu
+- 'a' for Read Again
+- '(' for Read Parent of a Reply
+- better word-wrapping
+- Ctrl-W for erase word in posts and Xs
+- added Ctrl-W for erase word in edit_line
+- 'ABORT' aborts an X message
+- 'b' on --More-- prompt, but on the first page, quits the --More-- prompt
+- Lobby> is always checked for new posts
+- deleting all posts in a room now prints a warning message
+  about resetting the creation date as well.
+  It is still a bug, but at least it now gives a warning about it...
+- in the Sysop menu, for Disconnect, Nuke, Banish, the name list will
+  be empty by default to prevent accidents... :)
+  Same goes for Kick in the Room Config menu
+- upon login, if you have new mail, but there is also a new Lobby>
+  post, you'll read the Lobby> first
+  Otherwise you automatically end up in Mail>
+- Ctrl-R for uploading replies
+  The code was there, but it was disabled..!
+  The Room Config menu is now accessed via Shift-A or Ctrl-A
+  just like it has been on MatrixBBS for ages now
+
+Changes as of November 1st
+- fixed bug in inviting/kicking users
+- friends are no longer notified of login if the login kills another login
+  by the same user
+- fixed bug in anonymous posting
+- fixed memory leak (the number of Joined structures that was allocated)
+- released as 1.1.12 (bugfix release)
+
+Changes as of October 18th
+- added OnlineUser: hash of online userlist for fast is_online() lookup
+- added PARAM_USERHASH_SIZE to control size of the online user hash
+- released as 1.1.10
+- bugfix ; OnlineUser structures were never freed in memory
+- released as 1.1.11 (also known as the 0F release)
+
+Changes as of October 17th
+- added an extra '<space><backspace>' to erase_many() in edit.c
+  I wonder when this glitch slipped in since it's been there for quite a while
+  and I wonder if this 'breaks' any other pretty-printing when editing the
+  recipient list
+- cache hit and miss counters are now reset when you resize the cache
+- quickly released as 1.1.9
+
+Changes as of October 16th
+- fixed bug in Reply All (sometimes the same recipient could show up multiple
+  times in the recipient list, and thus recieve double messages)
+
+Changes as of October 15th
+- the file cache finally works the way it should:
+  * it's a hash of linked lists (for fast searches)
+  * it's got a FIFO with head and tail pointers (for LRU algorithm)
+  * it's resizeable
+  * File and CachedFile are seperated from each other
+  * the interface is more like in BBX (Fopen(), Fclose(), etc)
+  I was feeling kind of ill when I wrote this, so I wonder if there are any
+  bugs in it -- it all seemed to work the way I want it to when testing.
+- changed 'unzappable' to 'not zappable'
+- grammatical error "You do get it (by) this way" fixed
+- released as 1.1.8
+
+Changes as of October 12th
+- fixed the backspace key
+- fixed bug in "busy mailing you a message"
+- added "busy sending/mailing you a message" when logging out
+- released as 1.1.7
+
+Changes as of October 10th
+- changed some things in the telnet negotiations (like DEL/BS translation,
+  and '\n' is now ignored). This ought to fix certain weird problems that Mac
+  and some Windows users were experiencing
+- logd now logs in localtime instead of annoying gmtime
+- released to the public as 1.1.6
+
+Changes as of October 7th
+- fixed problem with distribution; some compilers choke on the control
+  characters in the source
+  as reported by Richard Odekerken <richard@odekerken.net>
+- fixed small bug in distribution; when doing a fresh install, there was
+  a thingie with bin/
+
+Changes as of October 6th
+- added NOCTTY in main.c to detach of controlling tty even more
+
+Changes as of October 1st
+- added stats for Feelings
+- for Sysops: list cache size as well in the Stats
+- fixed typos in etc/hostmap; some countries should begin with 'the'
+- this version was given to the test site as 1.1.6
+
+Changes as of September 23rd
+- added RTF_LOOPING, LOOP_STATE, and usr->loop_counter for 'multiplexed' loops
+- undeliverable messages can now be sent as Mail>
+  (messages are undeliverable when someone logs off, locks, or disables 'm)
+- Config menu> Terminal settings screen is now is magenta instead of green
+- fixed bug: <empty> does not wish to receive Mail> from you
+
+Changes as of September 22nd
+- fixed typo: "Guest cannot play reply to messages" now reads "Guest cannot
+               reply to messages"
+- fixed typo: "Guest cannot play forward messages" now reads "Guest cannot
+               forward messages"
+- fixed: "Auto enabling room aide functions" changed to "Auto enabling %s
+          functions", PARAM_NAME_ROOMAIDE
+- changed "Super User" to PARAM_NAME_SYSOP everywhere in the code
+- changed "room aide" to PARAM_NAME_ROOMAIDE everywhere in the code
+- improved the check for empty messages
+- added usr->new_message, which should fix a couple of weird bugs caused by
+  the fact that new and read messages were not seperated in the User struct
+- added flag ROOM_HOME for Home> rooms, which makes sure no Sysop is messing
+  around with Home> rooms in the Room Config menu
+- added line in help.std about Home> and /Ctrl-R
+  reported by Ruben van Staveren <ruben@verweg.com>
+- removed line in help.roomconfig about assigning room aides
+- help.roomconfig: Change room name is not available in the Home> room
+- fixed reply bug; message number was wrong when replying to a reply
+  (reported by Mz Boobala <boobala@whacky.net>)
+
+Changes as of September 21st
+- fixed message deletion bug, as reported by Mz Boobala <boobala@whacky.net>
+- emergency release as 1.1.5
+
+Changes as of August 31st
+- fixed small memory leak
+- fixed possible crasher, which apparently never occurred, but is fixed anyway
+- released as 1.1.4
+
+Changes as of August 22nd
+- fixed bug in Timer.c : reboot and shutdown timer didn't work correctly
+  when ppl logged out (first reported on beta test site)
+
+Changes as of August 21st
+- Arend Brouwer <arend@belboek.com> reported that the password encryption
+  does not work properly on FreeBSD 4.0 with MD5 enabled.
+  Should be fixed now, although I do not have an oppertunity of testing the
+  fix, and there is a slight possibility that the system on which the problem
+  occurred was not properly installed
+- Guest can no longer lock, as suggested by Stephan Beerschoten
+  <stephanb@whacky.net>
+
+Changes as of August 17th
+- Jason Lentz <lentz@westpole.net> reports that Slackware Linux has its
+  own SignalHandler type in /usr/include/signal.h
+  To fix this, SignalHandler is now called SignalVector
+  The whole SignalHandler code is way overkill (it's used only once) but
+  that's another story...
+- added Ctrl-G for GPL ; etc/GPL
+- added ']' for local mods list ; etc/local_mods
+- added '[' to reflect version info
+- added params gpl_screen and mods_screen
+- added gpl and mods in the Sysop|Params|Reload menu
+- redid the Sysop|Params|Files menu, now includes gpl, mods, and hostmap
+- updated the help files, as well as INSTALL, README, NOTES, etc
+- improved 'make setup' and added file UPGRADING
+
+Changes as of August 14th
+- notify_friends() now beeps (for users that have beeping enabled)
+
+Changes as of August 12th
+- added 'make setup' for easier installation procedure
+
+Changes as of August 9th
+- version 1.1.1
+- fixed bug; write_pidfile() used PARAM_PID_FILE before param was loaded
+  as pointed out by C-H-I-P-S <chips@demon.mudservices.net>
+- fixed bug; var was declared time_t *t but should've been time_t t
+
+Changes as of August 6th
+- removed all FIFO code from CachedFile.c
+  The cache now is a standard hash, no more bugs damnit!!
+- removed command parser because it was only used by the internal debugger
+  (which is gone now too)
+- added memory allocation status in Sysop menu
+  it has allocated object counters, which is done by Malloc(), which uses
+  the Types_table
+- added 'Uncache file' in Sysop menu
+- added 'Is date correct?' in Time Zone Config for ppl at the date border
+- fixed width Statistics screen
+  It works for reasonably long names now. It's not perfect, but a lot better
+- added a hostmap ; you can now set descriptions for where users come from
+
+Changes as of August 5th
+- removed online debugger (because it can cause corruption and crashes)
+- added Config TimeZone (sync clocks + 24 hr clock vs 12 hr clock)
+- first release will be called 1.1.0 because I have to do some more things
+
+Changes as of August 2nd 2000
+- removed all license code
+- set version number to 1.0.0
+- we're going to be released under GPL soon
+
+Changes as of July ...?
+- removed memory hash -> suddenly giant memory leak is gone
+
+Changes as of May 3rd
+- fixed giant memory leak : Free() didn't find the address due to a buggy
+  long -> int conversion (or something..??)
+
+Changes as of April 28th
+- finally fixed the filecache FIFO head and tail pointers
+- filecache finally is a hash, now it is more efficient!
+
+Changes as of April 18th
+- added Memory.c ; use Malloc() and Free()
+  still have to make the garbage collector work somehow...
+
+Changes as of March 22nd
+- fixed: users die al uitgelogd waren, waren nog even visible in de
+  who-list
+
+----
+Changes as of March 8th
+- Ctrl-F in Mail> mails to all friends
+- wrappers; editing netmask
+
+Changes as of February 13th
+- online friends list (Ctrl-F) now sorted by name and in columns
+- user himself/herself is shown in white in the who list
+
+Changes as of February 10th
+- short Who-list now sorted column-wise, just like Feelings
+
+Changes as of February 6th
+- We have Feelings (press '*')
+  Feelings can be customized by the admins
+- To toggle message receiption, press 'X'
+
+Changes as of February 1st
+- sort_List() now uses qsort() instead of doing a bubble sort
+- completely rewrote Who list code
+
+Changes as of January 31th
+- got code to work again last weekend :P
+- fixed Reply All bug that popped up
+- Ctrl-W to customize who list
+- Added customize who list to Config menu as well
+
+Changes as of January 20th
+- added chat rooms
+- added personal room: Home> (press Ctrl-R at Home> to customize)
+  This room always is room #2 (which causes some 'trouble' with roominfo_read)
+
+====
+
+Changes as of January 7th
+- finished the debug 'set' function (implemented debug_reference())
+
+Changes as of January 6th
+- gotten the 'set' function in the online debugger to work
+- fixed bug in Quicklist in Config menu
+- fixed bug in tab key when tabbing through a list of names
+- fixed bug in backtab key '\' when tabbing backwards through a list
+
+Changes as of January 5th
+- added configurable notify_login, notify_logout, notify_linkdead,
+  notify_idle, notify_locked, notify_unlocked
+- source has reached a total of 24,000 lines
+
+Changes as of January 4th
+- changed 'bbs99' to 'bbs100'
+- changed SymbolTable loader to accept nm POSIX.2 format only
+- fixed bug in Ctrl-Z Zap All Rooms
+
+Changes as of January 3rd
+- made OffsetOf() macro to fully support interactive walking of structs
+  in the near future (which will obsolete 'set user')
+
+Changes as of January 2nd
+- added debugger function 'set user'
+
+Changes as of January 1st
+- added debugger struct definitions
+
+Changes as of December 31st
+- changed debugstack to use SymbolTable (much faster now)
+
+Changes as of December 30th
+- Debugger dumps all important types, except CachedFile (harder because it's
+  a tree)
+- Debugger pretty-dumps flags and dates
+- Debugger uses a symbol table to pretty-dump function pointers
+
+Changes as of December 29th
+- fixed locked bug when exiting the room config menu
+- fixed 'Sysop' header in X messages/Questions/Emotes
+- added NoZap flag to rooms
+- added Debugger to Sysop menu (not fully functional yet)
+
+-----
+
+Changes as of December 27th/28th/29th
+- fixed bug in Mail> access
+- fixed broken word wrap
+- fixed Guest login time
+- removed "login as 'Guest' to look around" from BBS code
+  (admins should put it on the login screen)
+- when x-ing/emote-ing/question-ing as Sysop, the msg header now shows
+  'from Sysop: <name>'
+- fixed bug in auto-replying to a message
+- the number of lines in an xmsg is now dynamic; configurable by admin
+- HHs now auto-reply to questions even if they were busy when the question was
+  received
+- added dynamic temp buffers
+- New users get 'is new to <bbs_name>' as default doing
+- integrated ton of parameters in param file into the sysop menu
+
+Changes as of December 23rd 1999
+- EDIT_INIT state was often not called (numerous erroneous flag settings have
+  been fixed)
+- added ton of parameters to the param file
+  however, 'Sysop' remains a reserved name
+- Guest logins didn't have a mailbox anymore, causing them to be unable to
+  read any rooms
+
+Changes as of December 22nd 1999
+- moved loading of Mail> room from go_online() to load_User()
+- possibly fixed Mail> problems (? (SIGUSR1 handler))
+- changed generation number to reflect room creation time
+  This fixes what is design flaw in other DOC-like BBSes (the incremental gen
+  number)
+- Questions fully implemented (press 'q' or 'Q')
+  Questions won't go to enemies
+- QuickView Quicklist moved to Ctrl-Q
+- anyone can become available to help others (press '%' to toggle)
+
+Changes as of December 20th 1999
+- message forwarding didn't work at all anymore; fixed
+- total online time shown in profile and stats changed
+- increase generation function is no longer accessible to RAs; sysops only
+- 'Sysop' is now a reserved login name
+- Guest user and multiple simultaneous Guest logins
+- it said '%s is busy sending you a message' in cases where this was not true
+- added '%s is busy mailing you a message'
+- fixed messed up prompt when editing multiple recipients and getting an error
+  message
+- press '-' for Read Last n messages
+- press '+' for Skip n messages
+
+Changes as of December 16th 1999
+- changed loading of joined rooms in users (muuuuch faster now)
+- completely rewrote the routines that make you find new messages in rooms
+- changed the known rooms function
+- Anon rooms are now marked with a green 'A' in known rooms list
+- typo on login for New users :P
+- included a crude check for empty messages
+- RAs can't unassign co-RAs (they can _assign_ them, however)
+- RAs can't unassign themselves
+- changed help.roomconfig
+- changed periodic saving of users to 5 minutes
+- known room list is now sorted by number
+- newly created rooms get 'unused' room numbers
+- fixed buffer overflow when pressing tab on Jump room
+- completely new (and different) licensing mechanism
+- sysops can see when the license expires in the Statistics screen
+- fixed 'UNREGISTERED blah blah' bug (buffer overflow)
+- spent two hours figuring out why it crashed when an invalid license was
+  replaced with a valid one; turned out it is unsafe to remove timers from the
+  timer queue from within a timer function
+
+---
+
+Changes as of December 15th 1999
+After a year I have decided to finally go keep a history log.
+It's been about 4 to 5 months since I've done _anything_ on the code, so
+it was like meeting an old friend ;)
+
+- crash handler now attempts recovery: keep the bbs running anyway
+  This function is highly experimental (don't be surprised if it messes up)
+- editing multiple recipients now works better (had a problem in Mail>)
+- reply to one person won't require a <return>
+- followup mode won't require a <return>
+- terminal size was not remembered if user made a mistake while logging in
+- when profiling someone who is not online, the name is not remembered
+  (and thus fixing the stupid message 'In the meantime, %s has logged off' when
+   he/she never was online)
+- SIGQUIT reboots the bbs in 5 minutes
+- SIGABRT shuts the bbs down in 5 minutes
+- SIGTERM does a quick shutdown (save all users and exit)
+- SIGUSR1 checks for new mail for all online users
+- RAs now have more options in the Room Config menu
+- hidden and/or invite-only rooms are now handled correctly (no longer appear8
+  as Zapped)
+  RAs of such rooms should increase the generation number of the room in order
+  to make everything work correctly (which also causes everyone to re-read the
+  room)
+- room aide functions will be automatically enabled when a RA presses Ctrl-R
+  in his/her room
+- users are now saved every 10 minutes
+- known rooms ('k') and all known rooms ('K') now print list in the same order
+- fixed default reboot/shutdown time in sysop menu
+- the Mail> room now can have room info (even though it's not possible to set
+  from within the bbs)

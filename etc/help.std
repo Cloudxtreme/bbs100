@@ -1,0 +1,126 @@
+<green>This Help screen is a list of keypresses that apply to the message system.
+When in a <yellow>chat room<green>, press <hotkey>/ before giving the command.
+
+     <hotkey>l    Logout <yellow>/<green> Leave chat room
+     <hotkey>h/<hotkey>?  Help<yellow>:<green> display this information
+<white>Ctrl-<hotkey>C<green>    Enter Config menu
+<white>Ctrl-<hotkey>O<green>    Enter Config menu
+
+     <hotkey>w    Who is online
+<white>Shft-<hotkey>W<green>    Short list of who is online
+<white>Ctrl-<hotkey>W<green>    Toggle whether <hotkey>w will give a long or short format Who list
+<white>Ctrl-<hotkey>F<green>    Online friends
+<white>Ctrl-<hotkey>T<green>    People you talked to
+     <hotkey>x    Send eXpress Message
+     <hotkey>:/<hotkey>;  Send Emote
+     <hotkey>*    Send Feeling
+<white>Ctrl-<hotkey>P<green>    Ping <white>;<green> see if user is busy
+<white>Ctrl-<hotkey>X<green>    Message history
+     <hotkey>v    Reply to sender of last received message
+<white>Shft-<hotkey>V<green>    Reply to all receipents of the last received message
+     <hotkey>X    Toggle message receiption on<yellow>/<green>off
+     <hotkey>B    Toggle beeping on<yellow>/<green>off
+<white>Ctrl-<hotkey>B<green>    Toggle hold messages on<yellow>/<green>off
+<white>Shft-<hotkey>F<green>    Toggle Follow up <yellow>(<green>auto<yellow>-<green>reply<yellow>)<green> mode
+     <hotkey>%    Toggle helper status
+     <hotkey>q    Ask question
+     <hotkey>0-<hotkey>9  Quick send eXpress Message
+<white>Ctrl-<hotkey>Q<green>    Quickview quicklist
+     <hotkey>p    Profile user
+     <hotkey>>    Edit friend list
+     <hotkey><    Block users <yellow>;<green> edit enemy list
+     <hotkey>t    Time <yellow>(<green>in UTC<yellow>)<green>
+<white>Shft-<hotkey>S<green>    Display statistics
+<white>Ctrl-<hotkey>L<green>    Lock terminal
+<white>Ctrl-<hotkey>D<green>    Change Doing field
+
+<white><<yellow>space<white>><green>   Read next unread message
+     <hotkey>e    Enter a message in a room
+     <hotkey>m    Mail a message
+     <hotkey>d    Delete message
+     <hotkey>u    Undelete a deleted message
+     <hotkey>j    Jump to a specific room
+     <hotkey>z    Zap room <yellow>;<green> never read this room again
+<white>Ctrl-<hotkey>Z<green>    Zap all rooms
+     <hotkey>i    Read room information
+     <hotkey>k    List all known rooms
+     <hotkey>s    Stop reading a room
+     <hotkey>b    Read backwards
+     <hotkey>a    Read current message again
+     <hotkey>r    Reply to message
+<white>Ctrl-<hotkey>R<green>    Upload a reply to a message
+<white>Shft-<hotkey>R<green>    Reply to all recipients of a <yellow>Mail<white>><green> message
+     <hotkey>f    Forward message to other recipients or to another room
+     <hotkey>#    Read a specific message number
+     <hotkey>-    Read last <n> messages
+     <hotkey>+    Skip next <n> messages
+     <hotkey>(    Read parent of a reply
+
+<white>Ctrl-<hotkey>G<green>    View the GNU General Public License
+     <hotkey>[    Display version information
+     <hotkey>]    View the local modifications to a standard bbs100 BBS
+
+On the <white>--More--<green> prompt, you can use the following keys:
+
+<white><<yellow>space<white>><green>   Next page
+     <hotkey>b    Previous page
+     <hotkey>q/<hotkey>s  Quit/stop reading here
+     <hotkey>g    Goto beginning
+     <hotkey>G    Goto end
+<white><<yellow>enter<white>><green>   Next line
+     <hotkey>+    Next line
+     <hotkey>-    Previous line
+     <hotkey>/    Find text
+     <hotkey>?    Find backwards
+
+
+<white>Note: <green>Users can send you messages, unless you have message receiption
+      disabled. Users that are on your friend list can always contact you.
+      You can use your enemy list to block annoying users.
+
+You may need an invitation for certain rooms. Please contact the room aide
+for an invitation if necessary.
+In public rooms, the room aide may decide to have you removed from the room
+if you do not display proper conduct.
+<yellow>Home<white>><green> is your personal chat room. Type <white>/<<yellow>Ctrl-A<white>><green> to enter the Room Config
+menu, where you can invite people to your home.
+
+When sending an eXpress Message or an Emote, or when mailing someone you
+are given a prompt <yellow>'<green>Enter recipient<yellow>: '<green>.
+This prompt supports automatic name extension <yellow>(<green>press <white><<yellow>Tab<white>><green> and backtab <white><<yellow>\<white>><yellow>)<green>.
+It is possible to enter multiple recipients<yellow>;<green> at the end of a name press
+comma <white><<yellow>,<white>><green> instead of <white><<yellow>return<white>><green> to try it out. You can press <white><<yellow>Ctrl-L<white>><green> for a list
+of already entered recipients. Hit <white><<yellow>Ctrl-F<white>><green> to enter your friends, or
+<white><<yellow>Ctrl-T<white>><green> to enter the names of the users you have already talked to in this
+session.
+
+It is possible to use colors in your messages. To enter colors, press <white><<yellow>Ctrl-V<white>><green>
+while editing, followed by a special color character. Mind that you can
+backspace the color character as well <yellow>;<green> it may seem odd for the first time
+you can backspace an <yellow>'<green>invisible<yellow>'<green> character.
+
+     <white>Ctrl-<hotkey>V <hotkey>w<green> for <white>White<green>              <white>Ctrl-<hotkey>V <hotkey>c<green> for <cyan>Cyan
+     <white>Ctrl-<hotkey>V <hotkey>y<green> for <yellow>Yellow<green>             <white>Ctrl-<hotkey>V <hotkey>b<green> for <blue>Blue
+     <white>Ctrl-<hotkey>V <hotkey>r<green> for <red>Red<green>                <white>Ctrl-<hotkey>V <hotkey>m<green> for <magenta>Magenta
+     <white>Ctrl-<hotkey>V <hotkey>g<green> for <green>Green<green>              <white>Ctrl-<hotkey>V <hotkey>k<green> for blacK <black>blacK
+
+<yellow>---
+
+<white>    bbs100 Copyright (C) 2002 by Walter de Jong <walter@heiho.net>
+
+<green>    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    Press <white>Ctrl-<hotkey>G<green> to read the entire GNU General Public License.
+

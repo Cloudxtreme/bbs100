@@ -1,0 +1,39 @@
+     In the POSIX portable output, the symbol name is followed by a
+     character describing its type (see below), its value and, if
+     appropriate, by its size.  Both the number and size are represented in
+     the number base determined by the -t flag:  -t d produces decimal,
+     -t o octal, and -t x hexadecimal.  If -t is not specified, the number
+     and size are represented in hexadecimal.
+
+     If the -A flag is specified, the symbol name is preceded by the file
+     name, followed by a library member name enclosed in square brackets if
+     appropriate, followed by a colon.
+
+     Symbols are written sorted by symbol name, collated as determined by
+     the current locale, unless the -v flag is specified, in which case
+     symbols are sorted by value.
+
+     If the -u flag is specified, only undefined symbols are written.
+
+     Symbol types are:
+
+          A    Global absolute
+          B    Global bss segment symbol
+          b    Local bss segment symbol
+          C    Common block
+          D    Global data segment symbol
+          d    Local data segment symbol
+          L    Block resides in local memory
+          T    Global text segment symbol
+          t    Local text segment symbol
+          U    Undefined
+
+     If the -c option was specified, the following characters describe
+     additional information on relocatable formats:
+
+          b    A bss block or common block.
+          e    A common block that is also an entry point.
+          s    A soft external.
+          x    An external passed as an address by a Fortran routine.
+          z    A bss block or common block that may be preset to 0.
+

@@ -1,0 +1,171 @@
+dnl
+dnl bbs100 configure.in script  WJ99
+dnl
+dnl Process this file with autoconf to produce a configure script.
+dnl
+
+AC_INIT(state_friendlist.c)
+
+dnl -------------------------------------------------------------------------
+dnl
+dnl function for testing if a function is present in a library
+dnl
+dnl this totally sucks, perhaps my autoconf is broken or something
+dnl but I had to write this test myself because it gave false results
+dnl
+
+test_library_function () {
+	${CC} ${CFLAGS} -c test$$.c >/dev/null 2>/dev/null
+	${CC} test$$.o -o test$$ ${LDFLAGS} >/dev/null 2>/dev/null
+
+	if test -r test$$ -a -x test$$ ;
+	then
+		AC_MSG_RESULT(yes)
+		result=yes
+	else
+		AC_MSG_RESULT(no)
+		result=no
+	fi
+	${RM} -f test$$.c test$$.o test$$
+}
+
+dnl -------------------------------------------------------------------------
+
+AC_CONFIG_HEADER(include/config.h)
+
+dnl set some default output vars
+exec_prefix=${prefix}
+bindir=${prefix}/bin
+sysconfdir=${prefix}/etc
+
+CFLAGS=-O2
+
+if test ! -r ${srcdir}/include/version.h ;
+then
+	AC_ERROR(file ${srcdir}/include/version.h is missing)
+fi
+
+AC_PATH_PROG(GREP, grep, grep)
+AC_PATH_PROG(HEAD, head, head)
+AC_PATH_PROG(SED, sed, sed)
+AC_PROG_AWK
+VERSION=`${GREP} VERSION ${srcdir}/include/version.h | ${HEAD} -n 1 | ${AWK} '{ print $3 ; }' | ${SED} 's/\"//g'`
+
+echo " "
+echo "bbs100 ${VERSION} by Walter de Jong <walter@heiho.net> (C) 2002"
+echo " "
+
+AC_SUBST(VERSION)
+AC_CANONICAL_SYSTEM
+
+dnl create file version.h
+echo "#define VERSION \"${VERSION}\"" > ${srcdir}/include/version.h
+echo "#define SYSTEM \"${target}\"" >> ${srcdir}/include/version.h
+
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_GCC_TRADITIONAL
+AC_PROG_INSTALL
+AC_PATH_PROG(TEST, test, test)
+AC_PATH_PROG(CAT, cat, cat)
+AC_PATH_PROG(RM, rm, rm)
+AC_PATH_PROG(MV, mv, mv)
+AC_PATH_PROG(TOUCH, touch, touch)
+AC_PATH_PROG(PERL, perl, perl)
+AC_PATH_PROG(TAR, tar, tar)
+AC_PATH_PROG(NM, nm, nm)
+AC_PATH_PROG(LN, ln, ln)
+AC_PATH_PROG(MKDIR, mkdir, mkdir)
+AC_PATH_PROG(PRINTWD, pwd, pwd)
+
+dnl Checks for libraries.
+
+dnl checking for crypt in in libc
+dnl
+AC_MSG_CHECKING(for crypt in libc)
+
+${CAT} >test$$.c <<CRYPT_EOF
+#include <crypt.h>
+int main(void) { crypt("test", "WJ"); return 0; }
+CRYPT_EOF
+test_library_function
+if test "${result}" = "no" ; then
+	dnl check for libcrypt
+	AC_CHECK_LIB(crypt, main)
+fi
+LIBCRYPT=${LIBS}
+LIBS=''
+AC_SUBST(LIBCRYPT)
+
+dnl test for socket() function
+
+AC_MSG_CHECKING(for socket in libc)
+${CAT} >test$$.c <<SOCKET_EOF
+#include <sys/socket.h>
+int main(void) { socket(0, 0, 0); return 0; }
+SOCKET_EOF
+test_library_function
+if test "${result}" = "no" ; then
+	dnl hmmm... check for xnet library
+	AC_CHECK_LIB(xnet, main)
+	LIBXNET=${LIBS}
+	LIBS=''
+
+	if test -z "${LIBXNET}" ;
+	then
+		AC_CHECK_LIB(socket, main)
+		LIBSOCKET=${LIBS}
+		LIBS=''
+	fi
+fi
+
+if test ! -z "${LIBXNET}" ;
+then
+	AC_MSG_CHECKING(for gethostbyaddr in libc)
+	${CAT} >test$$.c <<NSL_EOF
+#include <netdb.h>
+int main(void) { gethostbyaddr((char *)0UL, 0, 0); return 0; }
+NSL_EOF
+	test_library_function
+	if test "${result}" = "no" ; then
+		AC_CHECK_LIB(nsl, main)
+		LIBNSL=${LIBS}
+		LIBS=''
+	fi
+fi
+AC_SUBST(LIBXNET)
+AC_SUBST(LIBSOCKET)
+AC_SUBST(LIBNSL)
+LIBS=''
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(crypt.h fcntl.h strings.h sys/filio.h sys/signal.h sys/ioctl.h sys/time.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_MODE_T
+AC_TYPE_PID_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AC_FUNC_SETVBUF_REVERSED
+AC_TYPE_SIGNAL
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(mkdir select inet_aton strerror strtoul strchr strrchr memset)
+
+dnl special compiler options for gcc
+if test "$GCC" = "yes" ;
+then
+	CCOPTS='-O2 -Wall -Wstrict-prototypes -fomit-frame-pointer -fno-strength-reduce'
+else
+	CCOPTS='-O2'
+fi
+CFLAGS="$CCOPTS"
+
+AC_OUTPUT(Makefile bbs expire_accounts.sh stats.pl)
+
+dnl --- END OF CONFIGURE.IN ---

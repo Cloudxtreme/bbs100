@@ -1,0 +1,1310 @@
+/*
+    bbs100 1.2.0 WJ102
+    Copyright (C) 2002  Walter de Jong <walter@heiho.net>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+/*
+	state_config.c	WJ99
+
+	The Config Menu
+*/
+
+#include <config.h>
+
+#include "debug.h"
+#include "state_config.h"
+#include "state_friendlist.h"
+#include "state_msg.h"
+#include "state.h"
+#include "edit.h"
+#include "util.h"
+#include "cstring.h"
+#include "passwd.h"
+#include "screens.h"
+#include "Memory.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void state_config_menu(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_menu);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+			Put(usr, "<magenta>\n"
+				"<hotkey>Address                      <hotkey>Terminal settings\n"
+				"<hotkey>Doing                        Customize <hotkey>Who list\n"
+				"<hotkey>Reminder                     <hotkey>Quicklist\n"
+			);
+			Put(usr,
+				"Profile <hotkey>info                 <hotkey>Friends/<hotkey>Enemies\n"
+				"Default an<hotkey>onymous alias      Time <hotkey>Zone\n"
+				"<hotkey>Password                     <hotkey>Help\n"
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "\n");
+			if (usr->runtime_flags & RTF_CONFIG_EDITED) {
+				save_User(usr);
+				usr->runtime_flags &= ~RTF_CONFIG_EDITED;
+			}
+			RET(usr);
+			Return;
+
+		case 'h':
+		case 'H':
+		case '?':
+			Put(usr, "<white>Help\n");
+
+			if (help_config == NULL)
+				Put(usr, "<red>No help available\n");
+			else {
+				listdestroy_StringList(usr->more_text);
+				if ((usr->more_text = copy_StringList(help_config)) == NULL) {
+					Perror(usr, "Out of memory");
+					break;
+				}
+				PUSH(usr, STATE_PRESS_ANY_KEY);
+				read_more(usr);
+				Return;
+			}
+			break;
+
+		case 'a':
+		case 'A':
+			Put(usr, "<white>Address\n");
+			CALL(usr, STATE_CONFIG_ADDRESS);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "<white>Doing\n");
+			CALL(usr, STATE_CONFIG_DOING);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<white>Reminder\n");
+			CALL(usr, STATE_CONFIG_REMINDER);
+			Return;
+
+		case 'i':
+		case 'I':
+			Put(usr, "<white>Profile info\n");
+
+			listdestroy_StringList(usr->more_text);
+			usr->more_text = usr->textp = NULL;
+
+			if (usr->info != NULL) {
+				StringList *sl;
+
+				if ((usr->more_text = new_StringList("<cyan>Your current profile info is<white>:\n<green>")) == NULL
+					|| (sl = copy_StringList(usr->info)) == NULL) {
+					Perror(usr, "Out of memory");
+					break;
+				}
+				concat_StringList(&usr->more_text, sl);
+
+				PUSH(usr, STATE_CHANGE_PROFILE);
+				read_more(usr);
+			} else {
+				Put(usr, "<cyan>Your current profile info is empty\n<green>");
+				CALL(usr, STATE_CHANGE_PROFILE);
+			}
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "<white>Default anonymous alias\n");
+			CALL(usr, STATE_CONFIG_ANON);
+			Return;
+
+		case 'p':
+		case 'P':
+			Put(usr, "<white>Password\n");
+			CALL(usr, STATE_CONFIG_PASSWORD);
+			Return;
+
+		case 't':
+		case 'T':
+			Put(usr, "<white>Terminal settings\n");
+			CALL(usr, STATE_CONFIG_TERMINAL);
+			Return;
+
+		case 'w':
+		case 'W':
+			Put(usr, "<white>Who list\n");
+			CALL(usr, STATE_CONFIG_WHO);
+			Return;
+
+		case 'q':
+		case 'Q':
+			CALL(usr, STATE_QUICKLIST_PROMPT);
+			Return;
+
+		case 'f':
+		case 'F':
+		case '>':
+			Put(usr, "<white>Friends\n");
+			CALL(usr, STATE_FRIENDLIST_PROMPT);
+			Return;
+
+		case 'e':
+		case 'E':
+		case '<':
+			Put(usr, "<white>Enemies\n");
+			CALL(usr, STATE_ENEMYLIST_PROMPT);
+			Return;
+
+		case 'z':
+		case 'Z':
+			Put(usr, "<white>Time Zone\n");
+			CALL(usr, STATE_CONFIG_TIMEZONE);
+			Return;
+
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] %c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+
+void state_config_address(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_address);
+
+	switch(c) {
+		case INIT_STATE:
+			Print(usr, "\n<hotkey>R<magenta>eal name: <yellow>%s\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
+			Print(usr, 
+				"<hotkey>A<magenta>ddress  : <yellow>%s\n"
+				"           %s  %s\n"
+				"           %s, %s\n",
+				(usr->street == NULL  || !usr->street[0])  ? "<white><unknown street><yellow>"  : usr->street,
+				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
+				(usr->city == NULL    || !usr->city[0])    ? "<white><unknown city><yellow>"    : usr->city,
+				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state><yellow>"   : usr->state,
+				(usr->country == NULL || !usr->country[0]) ? "<white><unknown country><yellow>" : usr->country);
+			Print(usr,
+				"<hotkey>P<magenta>hone    : <yellow>%s\n"
+				"\n"
+				"<hotkey>E<magenta>-mail   : <yellow>%s\n"
+				"<hotkey>W<magenta>WW      : <yellow>%s\n",
+				(usr->phone == NULL || !usr->phone[0]) ? "<white><unknown phone number><yellow>"   : usr->phone,
+				(usr->email == NULL || !usr->email[0]) ? "<white><unknown e-mail address><yellow>" : usr->email,
+				(usr->www == NULL   || !usr->www[0])   ? "<white><unknown WWW address><yellow>"    : usr->www);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "\n\n<white>Config menu\n");
+			RET(usr);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<white>Real name\n");
+			CALL(usr, STATE_CHANGE_REALNAME);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "<white>Address\n");
+			CALL(usr, STATE_CHANGE_ADDRESS);
+			Return;
+
+		case 'p':
+		case 'P':
+			Put(usr, "<white>Phone number\n");
+			CALL(usr, STATE_CHANGE_PHONE);
+			Return;
+
+		case 'e':
+		case 'E':
+			Put(usr, "<white>E-mail address\n");
+			CALL(usr, STATE_CHANGE_EMAIL);
+			Return;
+
+		case 'w':
+		case 'W':
+			Put(usr, "<white>WWW address\n");
+			CALL(usr, STATE_CHANGE_WWW);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Address<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+void state_change_realname(User *usr, char c) {
+	Enter(state_change_realname);
+	change_config(usr, c, &usr->real_name, "<green>Enter your real name<yellow>: ");
+	Return;
+}
+
+void state_change_address(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_change_address);
+
+	POP(usr);
+	PUSH(usr, STATE_CHANGE_COUNTRY);
+	PUSH(usr, STATE_CHANGE_STATE);
+	PUSH(usr, STATE_CHANGE_CITY);
+	PUSH(usr, STATE_CHANGE_ZIPCODE);
+	CALL(usr, STATE_CHANGE_STREET);
+
+	Return;
+}
+
+
+void state_change_street(User *usr, char c) {
+	Enter(state_change_street);
+	change_config(usr, c, &usr->street, "<green>Enter your street and number<yellow>: ");
+	Return;
+}
+
+void state_change_zipcode(User *usr, char c) {
+	Enter(state_change_zipcode);
+	change_config(usr, c, &usr->zipcode, "<green>Enter your ZIP or postal code<yellow>: ");
+	Return;
+}
+
+void state_change_city(User *usr, char c) {
+	Enter(state_change_city);
+	change_config(usr, c, &usr->city, "<green>Enter the city you live in<yellow>: ");
+	Return;
+}
+
+void state_change_state(User *usr, char c) {
+	Enter(state_change_state);
+	change_config(usr, c, &usr->state, "<green>Enter the state you are from<yellow>: ");
+	Return;
+}
+
+void state_change_country(User *usr, char c) {
+	Enter(state_change_country);
+	change_config(usr, c, &usr->country, "<green>Enter your country<yellow>: ");
+	Return;
+}
+
+void state_change_phone(User *usr, char c) {
+	Enter(state_change_phone);
+	change_config(usr, c, &usr->phone, "<green>Enter your phone number<yellow>: ");
+	Return;
+}
+
+void state_change_email(User *usr, char c) {
+	Enter(state_change_email);
+	change_config(usr, c, &usr->email, "<green>Enter your e-mail address<yellow>: ");
+	Return;
+}
+
+void state_change_www(User *usr, char c) {
+	Enter(state_change_www);
+	change_config(usr, c, &usr->www, "<green>Enter your WWW address<yellow>: ");
+	Return;
+}
+
+
+void state_config_doing(User *usr, char c) {
+	Enter(state_config_doing);
+
+	if (c == INIT_STATE && usr->doing != NULL && usr->doing[0])
+		Print(usr, "<green>You are currently doing<white>:<cyan> %s\n", usr->doing);
+
+	change_config(usr, c, &usr->doing, "<green>Enter new Doing<yellow>: ");
+	Return;
+}
+
+void state_config_reminder(User *usr, char c) {
+	Enter(state_config_reminder);
+
+	if (c == INIT_STATE && usr->reminder != NULL && usr->reminder[0])
+		Print(usr, "<green>Current reminder<white>:<cyan> %s\n", usr->reminder);
+
+	change_config(usr, c, &usr->reminder, "<green>Enter new reminder<yellow>: ");
+	Return;
+}
+
+void state_config_anon(User *usr, char c) {
+int r;
+
+	Enter(state_config_anon);
+
+	if (c == INIT_STATE) {
+		if (usr->default_anon != NULL && usr->default_anon[0])
+			Print(usr, "<green>Your current default anonymous alias is: <cyan>%s\n", usr->default_anon);
+		Put(usr, "<green>Enter new alias<yellow>: ");
+	}
+	r = edit_name(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (usr->edit_buf[0]) {
+			cstrip_line(usr->edit_buf);
+
+			if (!usr->edit_buf[0]) {
+				Free(usr->default_anon);
+				usr->default_anon = NULL;
+			} else {
+				char *s;
+
+				if ((s = cstrdup(usr->edit_buf)) == NULL) {
+					Perror(usr, "Out of memory");
+					RET(usr);
+					Return;
+				}
+				Free(usr->default_anon);
+				usr->default_anon = s;
+			}
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+		} else
+			if (usr->default_anon != NULL && usr->default_anon[0])
+				Put(usr, "<red>Not changed\n");
+		RET(usr);
+	}
+	Return;
+}
+
+
+void state_change_profile(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_change_profile);
+
+	if (c == INIT_STATE) {
+		Put(usr, "\n<cyan>Are you sure you wish to change this? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+		usr->runtime_flags |= RTF_BUSY;
+	} else {
+		switch(yesno(usr, c, 'Y')) {
+			case YESNO_YES:
+				POP(usr);			/* discard current state */
+				usr->runtime_flags |= RTF_UPLOAD;
+				Print(usr, "\n<green>Upload new profile info, press <white><<yellow>Ctrl-C<white>><green> to end\n");
+				edit_text(usr, save_profile, abort_profile);
+				break;
+
+			case YESNO_NO:
+				RET(usr);
+				break;
+
+			case YESNO_UNDEF:
+				CURRENT_STATE(usr);
+		}
+	}
+	Return;
+}
+
+void save_profile(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(save_profile);
+
+	listdestroy_StringList(usr->info);
+	usr->more_text = rewind_StringList(usr->more_text);
+	usr->info = usr->more_text;
+	usr->more_text = NULL;
+
+	usr->runtime_flags |= RTF_CONFIG_EDITED;
+	RET(usr);
+	Return;
+}
+
+void abort_profile(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(abort_profile);
+
+	listdestroy_StringList(usr->more_text);
+	usr->more_text = NULL;
+	RET(usr);
+	Return;
+}
+
+
+void state_config_password(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_password);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Enter old password<yellow>: ");
+
+	r = edit_password(usr, c);
+
+	if (r == EDIT_BREAK) {
+		Put(usr, "<red>Password not changed\n");
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
+		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
+			JMP(usr, STATE_CHANGE_PASSWORD);
+		} else {
+			Put(usr, "<red>Wrong password\n");
+			RET(usr);
+		}
+	}
+	Return;
+}
+
+void state_change_password(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_change_password);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<green>Enter new password<yellow>: ");
+
+		Free(usr->tmpbuf[TMP_PASSWD]);
+		usr->tmpbuf[TMP_PASSWD] = NULL;
+	}
+	r = edit_password(usr, c);
+
+	if (r == EDIT_BREAK) {
+		Put(usr, "<red>Password not changed\n");
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
+		if (usr->tmpbuf[TMP_PASSWD] == NULL) {
+			if (strlen(usr->edit_buf) < 5) {
+				Put(usr, "<red>That password is too short\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			Put(usr, "<green>Enter it again (for verification)<yellow>: ");
+
+			if ((usr->tmpbuf[TMP_PASSWD] = cstrdup(usr->edit_buf)) == NULL) {
+				Perror(usr, "Out of memory");
+				RET(usr);
+				Return;
+			}
+			usr->edit_buf[0] = 0;
+			usr->edit_pos = 0;
+		} else {
+			if (!strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
+				char *crypted;
+
+				crypted = crypt_phrase(usr->edit_buf);
+				crypted[MAX_CRYPTED_PASSWD-1] = 0;
+
+				if (verify_phrase(usr->edit_buf, crypted)) {
+					Perror(usr, "bug in password encryption -- please choose an other password");
+					CURRENT_STATE(usr);
+					Return;
+				}
+				strcpy(usr->passwd, crypted);
+				Put(usr, "Password changed\n");
+				usr->runtime_flags |= RTF_CONFIG_EDITED;
+			} else
+				Put(usr, "<red>Passwords didn't match <white>;<red> password NOT changed\n");
+
+			Free(usr->tmpbuf[TMP_PASSWD]);
+			usr->tmpbuf[TMP_PASSWD] = NULL;
+
+			RET(usr);
+		}
+	}
+	Return;
+}
+
+
+
+void state_quicklist_prompt(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_quicklist_prompt);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			Put(usr, "<white>Quicklist\n\n");
+			print_quicklist(usr);
+			break;
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			Print(usr, "%c\n", c);
+			if (c == '0')
+				c = '9'+1;
+			usr->read_lines = c - '1';		/* a bit of a hack */
+
+			enter_name(usr, STATE_EDIT_QUICKLIST);
+			Return;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "\n\n<white>Config menu\n");
+			RET(usr);
+			Return;
+	}
+	Put(usr, "\n<green>Enter number<yellow>: <white>");
+	Return;
+}
+
+/*
+	Note: As a hack, usr->read_lines is the index to the quicklist entry
+*/
+void state_edit_quicklist(User *usr, char c) {
+int r;
+
+	if (usr == NULL || c == INIT_STATE)
+		return;
+
+	Enter(state_edit_quicklist);
+
+	r = edit_tabname(usr, c);
+
+	if (r == EDIT_BREAK) {
+		listdestroy_StringList(usr->recipients);
+		usr->recipients = NULL;
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (!usr->edit_buf[0]) {
+			Free(usr->quick[usr->read_lines]);
+			usr->quick[usr->read_lines] = NULL;
+
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+		} else {
+			if (!user_exists(usr->edit_buf))
+				Put(usr, "<red>No such user\n");
+			else {
+				if ((usr->quick[usr->read_lines] = cstrdup(usr->edit_buf)) == NULL) {
+					Perror(usr, "Out of memory");
+				}
+				usr->runtime_flags |= RTF_CONFIG_EDITED;
+			}
+		}
+		listdestroy_StringList(usr->recipients);
+		usr->recipients = NULL;
+		RET(usr);
+		Return;
+	}
+	Return;
+}
+
+void state_config_terminal(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_terminal);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			Print(usr, "<normal>\n"
+				"<hotkey>T<magenta>erminal emulation ANSI/dumb            <white>[<yellow>%s<white>]\n"
+				"<magenta>Make use of bold/bright <hotkey>attribute       <white>[<yellow>%-3s<white>]\n",
+				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
+				(usr->flags & USR_BOLD) ? "Yes"  : "No"
+			);
+			Print(usr, "<hotkey>B<magenta>eep on arrival of messages             <white>[<yellow>%-3s<white>]\n"
+				"<magenta>Show room <hotkey>number in room prompt         <white>[<yellow>%-3s<white>]\n"
+				"<hotkey>H<magenta>4ck3rZ M0De                            <white>[<yellow>%-3s<white>]\n",
+				(usr->flags & USR_BEEP) ? "Yes"  : "No",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_HACKERZ) ? "Oh Yeah!" : "No"
+			);
+			if (usr->flags & USR_ANSI) {
+				Print(usr, "\n"
+					"<white>Customize colors<magenta>\n"
+					"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
+					"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         Bl<hotkey>ue       <white>[%c%-7s<white>]<magenta>\n",
+					color_table[usr->colors[WHITE]].key,	color_table[usr->colors[WHITE]].name,
+					color_table[usr->colors[CYAN]].key,		color_table[usr->colors[CYAN]].name,
+					color_table[usr->colors[YELLOW]].key,	color_table[usr->colors[YELLOW]].name,
+					color_table[usr->colors[BLUE]].key,		color_table[usr->colors[BLUE]].name
+				);
+				Print(usr, "<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
+					"<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>\n"
+					"\n"
+					"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         Reset all colors to <hotkey>default\n",
+					color_table[usr->colors[RED]].key,		color_table[usr->colors[RED]].name,
+					color_table[usr->colors[MAGENTA]].key,	color_table[usr->colors[MAGENTA]].name,
+					color_table[usr->colors[GREEN]].key,	color_table[usr->colors[GREEN]].name,
+					color_table[usr->colors[HOTKEY]].key,	color_table[usr->colors[HOTKEY]].name,
+					color_table[usr->colors[BACKGROUND]].key, color_table[usr->colors[BACKGROUND]].name
+				);
+			}
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "\n\n<white>Config menu\n");
+			RET(usr);
+			Return;
+
+		case 't':
+		case 'T':
+			Put(usr, "<white>Terminal emulation<default>\n");
+
+			usr->flags ^= USR_ANSI;
+
+			if (usr->flags & USR_ANSI)			/* assume bold/non-bold */
+				usr->flags |= USR_BOLD;
+			else
+				usr->flags &= ~USR_BOLD;
+
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "<white>Attribute bold/bright<default>\n");
+			usr->flags ^= USR_BOLD;
+			Put(usr, "<normal>");
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+			Put(usr, "<white>Beep\n");
+			usr->flags ^= USR_BEEP;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'n':
+		case 'N':
+			Put(usr, "<white>Show room number\n");
+			usr->flags ^= USR_ROOMNUMBERS;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'h':
+		case 'H':
+			usr->flags ^= USR_HACKERZ;
+			Put(usr, "<white>Hackers mode\n");
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'w':
+		case 'W':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = WHITE;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'y':
+		case 'Y':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = YELLOW;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'r':
+		case 'R':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = RED;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'g':
+		case 'G':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = GREEN;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'c':
+		case 'C':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = CYAN;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'u':
+		case 'U':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = BLUE;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'm':
+		case 'M':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = MAGENTA;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'o':
+		case 'O':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = HOTKEY;
+				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'k':
+		case 'K':
+			if (usr->flags & USR_ANSI) {
+				usr->read_lines = BACKGROUND;
+				Print(usr, "Customize background\n", color_table[usr->read_lines].name);
+				CALL(usr, STATE_CUSTOM_COLORS);
+				Return;
+			}
+			break;
+
+		case 'd':
+		case 'D':
+			if (usr->flags & USR_ANSI) {
+				default_colors(usr);
+				Put(usr, "Defaults<normal>\n");
+			}
+			CURRENT_STATE(usr);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Terminal<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+/*
+	Customize colors
+	Note: usr->read_lines = index of color to change
+*/
+void state_custom_colors(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_custom_colors);
+
+	switch(c) {
+		case INIT_STATE:
+			Put(usr, "\n<green>Colors are<yellow>: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite Blac<hotkey>k <hotkey>D<green>efault");
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+			Put(usr, "\n");
+			RET(usr);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<red>Red\n\n");
+			usr->colors[usr->read_lines] = RED;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'g':
+		case 'G':
+			Put(usr, "<green>Green\n\n");
+			usr->colors[usr->read_lines] = GREEN;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'y':
+		case 'Y':
+			Put(usr, "<yellow>Yellow\n\n");
+			usr->colors[usr->read_lines] = YELLOW;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+		case 'u':
+		case 'U':
+			Put(usr, "<blue>Blue\n\n");
+			usr->colors[usr->read_lines] = BLUE;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'm':
+		case 'M':
+			Put(usr, "<magenta>Magenta\n\n");
+			usr->colors[usr->read_lines] = MAGENTA;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'c':
+		case 'C':
+			Put(usr, "<cyan>Cyan\n\n");
+			usr->colors[usr->read_lines] = CYAN;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'w':
+		case 'W':
+			Put(usr, "<white>White\n\n");
+			usr->colors[usr->read_lines] = WHITE;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'k':
+		case 'K':
+			Put(usr, "<black>Black\n\n");
+			usr->colors[usr->read_lines] = BLACK;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "<white>Default\n\n");
+			if (usr->read_lines == HOTKEY)
+				usr->colors[usr->read_lines] = YELLOW;
+			else
+				usr->colors[usr->read_lines] = usr->read_lines;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			RET(usr);
+			Return;
+	}
+	if (c == BACKGROUND)
+		Put(usr, "\n<cyan>Change the background color to<white>: ");
+	else
+		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to<white>: ", 
+			color_table[usr->read_lines].key,
+			color_table[usr->read_lines].name);
+	Return;
+}
+
+
+void state_config_who(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_who);
+
+	switch(c) {
+		case KEY_RETURN:			/* convenience for sysops that use Ctrl-W/W ... */
+			if (!(usr->runtime_flags & RTF_SYSOP)) {
+				Put(usr, "<white>Exit\n");
+				RET(usr);
+				Return;
+			} else
+				Put(usr, "\n");
+
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			Print(usr, "\n<magenta>"
+				"Default who list <hotkey>format      <white>%s<magenta>\n"
+				"Sort <hotkey>by<yellow>...                   <white>%s<magenta>\n"
+				"Sort <hotkey>order                   <white>%s<magenta>\n"
+				"When in a <hotkey>chat room<yellow>...       <white>%s<magenta>\n"
+				"Show online <hotkey>enemies          <white>%s\n",
+				(usr->flags & USR_SHORT_WHO)       ? "Short"      : "Long",
+				(usr->flags & USR_SORT_BYNAME)     ? "Name"       : "Online time",
+				(usr->flags & USR_SORT_DESCENDING) ? "Descending" : "Ascending",
+				(usr->flags & USR_SHOW_ALL)        ? "Show All"   : "Show Inside",
+				(usr->flags & USR_SHOW_ENEMIES)    ? "Yes"        : "No"
+			);
+			if (usr->runtime_flags & RTF_SYSOP) {
+				Print(usr, "\n"
+					"<magenta><hotkey>Who is in this room          <white>(for %ss only)\n", PARAM_NAME_SYSOP
+				);
+			}
+			break;
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_ESC:
+		case ' ':
+		case KEY_BS:
+			Put(usr, "<white>Exit\n");
+			RET(usr);
+			Return;
+
+		case 'f':
+		case 'F':
+			Put(usr, "<white>Format\n");
+			usr->flags ^= USR_SHORT_WHO;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+			Put(usr, "<white>Sort by\n");
+			usr->flags ^= USR_SORT_BYNAME;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "<white>Sort order\n");
+			usr->flags ^= USR_SORT_DESCENDING;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'c':
+		case 'C':
+			Put(usr, "<white>In a chat room...\n");
+			usr->flags ^= USR_SHOW_ALL;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'e':
+		case 'E':
+			Put(usr, "<white>Show enemies\n");
+			usr->flags ^= USR_SHOW_ENEMIES;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'w':
+		case KEY_CTRL('W'):
+			if (!(usr->runtime_flags & RTF_SYSOP))
+				break;
+
+			PUSH(usr, state_config_who_sysop);
+
+			Put(usr, "<white>Who\n");
+			who_list(usr, WHO_LIST_LONG | WHO_LIST_ROOM);
+			Return;
+
+		case 'W':
+			if (!(usr->runtime_flags & RTF_SYSOP))
+				break;
+
+			PUSH(usr, state_config_who_sysop);
+
+			Put(usr, "<white>Who\n");
+			who_list(usr, WHO_LIST_SHORT | WHO_LIST_ROOM);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Who<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+void state_config_who_sysop(User *usr, char c) {
+	POP(usr);
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Who<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+}
+
+
+void state_config_timezone(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_timezone);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			Print(usr, "\n"
+				"<green>Current time is now <yellow>%s\n", print_date(usr, time(NULL)));
+
+			print_calendar(usr);
+
+			Print(usr, "<magenta>\n"
+				"<hotkey>Display time as      <white>%s<magenta>\n"
+				"<hotkey>Synchronize clocks\n",
+				(usr->flags & USR_12HRCLOCK) ? "12 hour clock (AM/PM)" : "24 hour clock"
+			);
+			break;
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_ESC:
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "<white>Exit\n");
+			RET(usr);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "<white>Display time\n");
+			usr->flags ^= USR_12HRCLOCK;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 's':
+		case 'S':
+			Put(usr, "<white>Synchronize\n");
+			CALL(usr, STATE_SYNC_CLOCKS);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Time Zone<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+void state_sync_clocks(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_sync_clocks);
+
+	if (c == INIT_STATE) {
+		Print(usr, "\n<green>Because every user of <white>%s<green> may live in a different timezone, we need\n"
+			"to synchronize clocks. In order to do so, you have to enter what time it is.\n", PARAM_BBS_NAME);
+
+		Print(usr, "\n<green>Current BBS time is<yellow>: %s <white>(<yellow>GMT<white>)<yellow>\n"
+			"<green>Now enter your local time <white>(<yellow>in hh<white>:<yellow>mm format<white>):<yellow> ", print_date(NULL, (time_t)0UL));
+	}
+	r = edit_line(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		char *p;
+		int hh, mm, hh_disp;
+		time_t t;
+		struct tm *gmt;
+
+		cstrip_line(usr->edit_buf);
+
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
+		if ((p = cstrchr(usr->edit_buf, ':')) == NULL || !p[1] || p == usr->edit_buf) {
+			Put(usr, "\n<red>You should enter your local time in <yellow>hh<white>:<yellow>mm<red> format\n"
+				"<green>Please enter what your local time is now<yellow>: ");
+			edit_line(usr, INIT_STATE);
+			Return;
+		}
+		*p = 0;
+		p++;
+		hh = atoi(usr->edit_buf);
+		mm = atoi(p);
+		if (hh < 0 || hh > 23) {
+			Put(usr, "\n<red>The hours should be in between <yellow>00<red> and <yellow>23<red> hours\n"
+				"<green>Please enter what your local time is now<yellow>: "
+			);
+			edit_line(usr, INIT_STATE);
+			Return;
+		}
+		if (mm < 0 || mm >= 60) {
+			Put(usr, "\n<red>The minutes should be in between <yellow>00<red> and <yellow>59<red> minutes\n"
+				"<green>Please enter what your local time is now<yellow>: "
+			);
+			edit_line(usr, INIT_STATE);
+			Return;
+		}
+		t = time(NULL);
+		gmt = gmtime(&t);
+
+		hh_disp = hh - gmt->tm_hour;
+		if (hh_disp <= -12)
+			hh_disp += 24;
+		else
+			if (hh_disp > 12)
+				hh_disp -= 24;
+
+		usr->time_disp = hh_disp * 3600 + (mm - gmt->tm_min) * 60;
+
+		if (hh_disp == 12) {
+			Print(usr, "\n<green>You live relatively close to the date border.\n"
+				"Today<yellow>'<green>s date is <yellow>%s\n", print_date(usr, time(NULL)));
+
+			JMP(usr, STATE_SYNC_DATE);
+			Return;
+		}		
+		RET(usr);
+	}
+	Return;
+}
+
+void state_sync_date(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_sync_date);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Is this correct? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+	else {
+		switch(yesno(usr, c, 'Y')) {
+			case YESNO_YES:
+				RET(usr);
+				break;
+
+			case YESNO_NO:
+				usr->time_disp -= (24 * 3600);
+				Print(usr, "\n<green>Ok<yellow>,<green> perhaps you live on the other side of the date border.\n"
+					"Then today<yellow>'<green>s date would be <yellow>%s\n", print_date(usr, time(NULL)));
+
+				JMP(usr, STATE_SYNC_DATE2);
+				break;
+
+			case YESNO_UNDEF:
+				CURRENT_STATE(usr);
+		}
+	}
+	Return;
+}
+
+void state_sync_date2(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_sync_date);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Is this correct? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+	else {
+		switch(yesno(usr, c, 'Y')) {
+			case YESNO_YES:
+				RET(usr);
+				break;
+
+			case YESNO_NO:
+				Put(usr, "<green>In that case<yellow>,<green> I don<yellow>'<green>t know either. I give up!\n");
+				usr->time_disp = 0;
+				RET(usr);
+				break;
+
+			case YESNO_UNDEF:
+				CURRENT_STATE(usr);
+		}
+	}
+	Return;
+}
+
+
+void change_config(User *usr, char c, char **var, char *prompt) {
+int r;
+
+	if (usr == NULL || var == NULL)
+		return;
+
+	Enter(change_config);
+
+	if (c == INIT_STATE && prompt != NULL)
+		Put(usr, prompt);
+
+	r = edit_line(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (usr->edit_buf[0]) {
+			cstrip_line(usr->edit_buf);
+
+			if (!usr->edit_buf[0]) {
+				Free(*var);
+				*var = NULL;
+			} else {
+				char *s;
+
+				if ((s = cstrdup(usr->edit_buf)) == NULL) {
+					Perror(usr, "Out of memory");
+					RET(usr);
+					Return;
+				}
+				Free(*var);
+				*var = s;
+			}
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+		} else
+			if (var != NULL && *var != NULL && **var)
+				Put(usr, "<red>Not changed\n");
+		RET(usr);
+	}
+	Return;
+}
+
+/* EOB */

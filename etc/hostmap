@@ -1,0 +1,82 @@
+#
+#	bbs100 hostmap file	WJ100
+#
+
+localhost		the local machine <white>bbs100<yellow> runs on		# comment
+127.0.0.1		the local machine <white>bbs100<yellow> runs on
+
+#.com			commercial site
+#.org			an organization
+#.edu			an educational site (usually a university in the USA)
+#.gov			governmental site
+.nasa.gov		the NASA
+.fbi			the Federal Bureau of Investigations (FBI)
+.net			somewhere deep within the net
+
+.fsf.org		the Free Software Foundation
+.gnu.org        the GNU zoo
+
+# following is a list of ISO 3166 country code top level domains
+
+.ar  Argentina
+.am  Armenia
+.au  Australia
+.at  Austria
+.be  Belgium
+.br  Brasil
+.bg  Bulgaria
+.bi  Burundi
+.ca  Canada
+.cl  Chile
+.cn  China
+.cg  Congo
+.cr  Costa Rica
+.hr  Croatia
+.cz  the Czech Republic
+.dk  Denmark
+.fi  Finland
+.fr  France
+.de  Germany
+.gr  Greece
+.gu  Guam
+.gt  Guatemala
+.hk  Hong Kong
+.hu  Hungary
+.in  India
+.ir  Iran
+.ie  Ireland
+.il  Israel
+.it  Italy
+.jp  Japan
+.kr  the Republic of Korea
+.lv  Latvia
+.li  Liechtenstein
+.lu  Luxembourg
+.ly  Lybia
+.my  Malaysia
+.mx  Mexico
+.nl  the Netherlands
+.nz  New Zealand
+.ni  Nicaragua
+.no  Norway
+.pk  Pakistan
+.pe  Peru
+.pt  Portugal
+.ro  Romania
+.ru  Russia
+.rw  Rwanda
+.sg  Singapore
+.sk  Slovakia
+.za  South Africa
+.es  Spain
+.se  Sweden
+.ch  Switzerland
+.tw  Taiwan
+.th  Thailand
+.ug  Uganda
+.uk  the United Kingdom
+.us  the United States
+.yu  Yugoslavia
+.zr  Zaire
+
+# EOB

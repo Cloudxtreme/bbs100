@@ -1,0 +1,122 @@
+#! /bin/sh
+#
+#   bbs100 1.2.0 WJ102
+#   Copyright (C) 2002  Walter de Jong <walter@heiho.net>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#! /bin/sh
+#
+#	bbs100 1.2.0 rc.bbs script	WJ99
+#
+
+TEST=@TEST@
+AWK=@AWK@
+
+PATH=/bin:/usr/bin
+PROG=`basename $0`
+
+DEFAULT_PARAM=@prefix@/etc/param
+
+PARAM=${DEFAULT_PARAM}
+if ${TEST} x"$2" != x ;
+then
+	PARAM=$2
+fi
+
+if ${TEST} ! -f "${PARAM}" ;
+then
+	echo "${PROG}: can't find param file ${PARAM}"
+	exit 1
+fi
+if ${TEST} ! -r "${PARAM}" ;
+then
+	echo "${PROG}: the param file ${PARAM} should be readable"
+	exit 1
+fi
+
+BASEDIR=`${AWK} '/basedir/ { print $2 }' ${PARAM}`
+MAIN=`${AWK} '/program_main/ { print $2 }' ${PARAM}`
+PIDFILE=`${AWK} '/pid_file/ { print $2 }' ${PARAM}`
+
+if ${TEST} ! -d "${BASEDIR}" ;
+then
+	echo "${PROG}: cannot access basedir ${BASEDIR}"
+	echo "${PROG}: please make sure basedir is set correctly in ${PARAM}"
+	exit 1
+fi
+
+if ${TEST} ! -x "${BASEDIR}/${MAIN}" ;
+then
+	echo "${PROG}: cannot find program_main ${BASEDIR}/${MAIN}"
+	echo "${PROG}: please make sure basedir is set correctly in ${PARAM}"
+	exit 1
+fi
+
+case "$1" in
+	start)
+		cd ${BASEDIR}
+		if ${TEST} -f "${PIDFILE}"
+		then
+			PID=`cat ${PIDFILE}`
+			echo "${PROG}: already running, pid ${PID}"
+		else
+			${MAIN} ${PARAM}
+		fi
+		;;
+
+	status)
+		cd ${BASEDIR}
+		if ${TEST} -f "${PIDFILE}"
+		then
+			PID=`cat ${PIDFILE}`
+			echo "${PROG}: up and running, pid ${PID}"
+		else
+			echo "${PROG}: not running"
+		fi
+		;;
+
+	stop)
+		cd ${BASEDIR}
+		if ${TEST} -f "${PIDFILE}"
+		then
+			kill `cat ${PIDFILE}`
+			sleep 3
+			if ${TEST} -f "${PIDFILE}"
+			then
+				kill -9 `cat ${PIDFILE}`
+			fi
+	    	echo "${PROG}: stopped"
+			rm -f "${PIDFILE}"
+		else
+			echo "${PROG}: not running"
+		fi
+		;;
+
+	restart)
+		$0 stop ${PARAM}
+		$0 start ${PARAM}
+		;;
+
+	*)
+		echo "usage: ${PROG} {start|stop|status|restart} [param file]"
+		echo "       default param file is ${DEFAULT_PARAM}"
+		exit 1
+	;;
+esac
+
+exit 0
+
+# EOB

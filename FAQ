@@ -1,0 +1,58 @@
+bbs100 by Walter de Jong <walter@heiho.net> (C) 2002
+
+THE NAME
+Why is it called bbs100?
+Well, I wanted to call it 'FreeBBS', but the name has been used over and
+again by others :(     Also, until now this code wasn't free at all.
+On of my previous projects was called 'bbs10' because it was about the 10th
+time I started over again writing a BBS.
+In 1999, I called it bbs99, and with the new millenium I pretended that it
+was a millenium bug and called it bbs100 as a joke. Silly joke of course,
+but the name stayed.
+
+
+PRONOUNCIATION
+How is 'bbs100' pronounced?
+Just "bee-bee-es one-hundred" or "bee-bee-es-hundred" if you like.
+
+
+PORTABILITY
+What platforms does bbs100 run on?
+Basically, it runs on any Unix-like platform.
+So far, I've succesfully compiled and run bbs100 on the following platforms:
+
+    Platform                Architecture
+------------------------------------------------------------------------------
+    Linux 2.x               intel PC  (Debian, RedHat, Slackware)
+    Linux 2.x               DEC Alpha (as tested by News of MatrixBBS)
+    LinuxPPC                PowerMac  (as tested by Joshua Bell of lumpBBS)
+    FreeBSD 3.x / 4.x       intel PC
+    NetBSD 1.3              Sun Sparc-1
+    Solaris 2.6             Sun Sparc Ultra-1
+    SunOS 5.6               Sun Sparc Ultra-1
+    AIX 4.2.1 with DFS      IBM RS/6000
+    Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000
+    Unicos 10.0.0.x         Cray C90
+
+All this with just configure and make setup.
+bbs100 also runs under MacOS X and Windows platforms.
+If you run bbs100 on an other platform, feel free to let me know.
+
+
+YAWC
+Why isn't YAWC mentioned anywhere in the README or CREDITS?
+Well, YAWC is yet another clone of DOC by Kenneth Haglund (also known as
+KHaglund). Last thing I've heard of YAWC is that its source code is not
+publicly available anymore. I haven't seen or spoken with KHaglund for
+years now.
+Anyway, bbs100 borrows not a single bit of the YAWC code (or in fact,
+any other code).
+
+
+MAILING LIST
+Is there a centralized place where people can get together and discuss bbs100
+related problems?
+There currently is a mailing list for coders, which is intended for code
+related problems only. Maintainer of the list is CHIPS <chips@hawmps.2y.net>.
+To subscribe, send an e-mail with 'subscribe' in the message body to
+<bbs100-request@hawmps.2y.net>.

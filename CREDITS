@@ -1,0 +1,161 @@
+bbs100 by Walter de Jong <walter@heiho.net> (C) 2002
+
+Credits are due to:
+- The original Citadel developers
+  for more information on Citadel, see http://www.citadel.org
+- Doctor Dave of iscaBBS, developer of DOC (Dave's Own version of Citadel)
+  iscaBBS is the BBS of the Iowa Student Computer Association at
+  bbs.isca.uiowa.edu
+- Edward Breedveld <edward@sara.nl> aka Freddy Krueger and
+  Jaap Dijkshoorn <jaap@sara.nl> aka Distroyer of BrintaBBS for founding
+  BrintaBBS
+- Ruben van Staveren <ruben@verweg.com> aka The Guru aka Het Guur for running
+  as first beta tester at erg.verweg.com and for registering heiho.net domain
+- Petros Mylonopoulos <r00t__beer@hotmail.com> aka Afterworld and
+  Stephan van Beerschoten <myth@whacky.net> aka Myth
+  for encouraging the bbs100 project and beta testing
+- some unknown people for providing the example feelings
+
+and last but not least
+- all other people who actually run, use, maintain, or distribute bbs100
+
+
+Credits for bug fixes et al after public release
+- CHIPS <chips@hawmps.2y.net> reports bug in startup code:
+  write_pidfile() used PARAM_PID_FILE even before the param file was loaded
+  fixed in 1.1.1
+
+  Big thanks also go to CHIPS for maintaining the bbs100 coding mailing
+  list. To subscribe to this majordomo list,  send an e-mail with 'subscribe'
+  in the body to bbs100-request@hawmps.2y.net
+
+- Jaap Dijkshoorn <jaap@sara.nl> was the first one to suggest 'make setup'
+  in order to simplify installation
+  first appeared in 1.1.2
+
+- Martin Bethlehem <dmouse@brinta.cs.hro.nl> reports that bbs100 compiles and
+  installs fine on RedHat Linux on a DEC Alpha machine
+
+- Jason Lentz <lentz@westpole.net> reported that Linux Slackware has its own
+  SignalHandler type in /usr/include/signal.h
+  fixed in version 1.1.2; SignalHandler is now called SignalVector
+
+- Arend Brouwer <arend@belboek.com> reports that the password crypting does
+  not work correctly on FreeBSD 4.0 with MD5 encryption algorithm
+  fixed in 1.1.3; init_crypt() now detects whether the system has standard
+  DES crypt() or not and uses crypt() accordingly
+
+- Stephan van Beerschoten <myth@whacky.net> points out that the Guest user
+  can lock the screen, which is pretty annoying
+  changed in 1.1.3, although now Guest can't see how locking works...
+
+- Icabod <icabod@lump.mine.nu> reports that bbs100 compiles and runs
+  fine on a PowerMac running LinuxPPC.
+
+- Mz Boobala <boobala@whacky.net> of MatrixBBS reports bug; when you hit
+  'd' of delete msg right after you've saved a message, you can delete
+  other people's posts
+  fixed in 1.1.5
+
+- Ruben van Staveren <ruben@verweg.com> reported that Ctrl-R for the
+  room config menu of Home> was not documented in the Help
+  fixed in 1.1.6
+
+- Mz Boobala <boobala@whacky.net> reported that the message number was
+  wrong when replying to a reply
+  fixed in 1.1.6
+
+- Richard Odekerken <richard@odekerken.net> reported that his compiler
+  choked on the control characters in the bbs100 source
+  fixed in 1.1.6
+
+- Unixman, Mz Boobala, Richard, Het Guur, Gabberhead, Mickey (and possible
+  others I forgot to mention) of the test site for helping identify the weird
+  problems for Mac and Windows users
+  (should be) fixed in 1.1.6
+
+- Jeremy Stock <stockj@mediaone.net> for giving the (old) idea of notification
+  that someone is sending/mailing you a message when logging out
+  first appeared in 1.1.7
+
+- Martin Bethlehem <dmouse@brinta.cs.hro.nl> suggested to change "unzappable"
+  to "not zappable".
+  changed in 1.1.8
+
+- The Ruiner of MatrixBBS said that "You do get by this way" is bad grammar.
+  changed in 1.1.8
+
+- Stephan van Beerschoten <myth@whacky.net> reported problem with early 1.1.9
+  distribution; it didn't compile out of the box.
+  Now it's been fixed in an hour later re-release of 1.1.9
+
+- Arend Brouwer <arend@belboek.com> for reporting the double friend
+  notification messages when a user does multiple logins and kills his own
+  (other) login.
+  fixed in 1.1.12
+
+- Mickey of MatrixBBS for reporting bug in anonymous posting
+  fixed in 1.1.12
+
+- Fearlezz of MatrixBBS for a contributed patch that fixed a bug in
+  the Sysop menu, and a patch for better word-wrapping
+  fixed in 1.1.13
+
+- Mutation of MatrixBBS for a contributed patch that added the
+  'Read Again' and 'Read Parent of Reply' options
+  new in 1.1.13
+
+- Shannon Prickett <spameater@metanav.org> contributed a patch
+  Ctrl-W does word erase when editing
+  'ABORT' also aborts an X message
+  new in 1.1.13
+
+- Mz Boobala of MatrixBBS;
+  Lobby> should always be checked for new posts.
+  upon login, Lobby> should be read first if there are new messages
+  fixed in 1.1.13
+
+- Lightspeed of MatrixBBS reported that when you delete all posts
+  in a room using the Room Config menu option Ctrl-R, users are
+  not able to see new posts. You should reset the creation date
+  as well. This is something you don't want to do for invite-
+  only rooms. It is still a bug, but in 1.1.13 it prints a
+  warning message about it.
+  Lightspeed also made a suggestion on how to fix the problem
+  of the Lobby> not being read first (easy, but thanks anyway :)
+
+- Nuke/Banish/Disconnect/Kick user no longer have a default
+  name presented on the prompt
+  Reported by Mz Boobala and Richard of MatrixBBS
+  fixed in 1.1.13
+
+- Erik of MatrixBBS reported some things:
+  Color typo in -anonymous- message header
+  Ability to see how long a user is idle
+  Suggested a hold message mode (under Ctrl-B)
+  done in 1.1.13
+
+- Cease To Resist <v@chained.cx> reported problem with MD5
+  passwords that have long salts
+  fixed in 1.1.13
+
+- When uploading, the connection could hang
+  reported by Mz Boobala of MatrixBBS
+  fixed in 1.1.13
+
+- Donated patches by Richard of MatrixBBS:
+  Press Ctrl-T for a talked-to list (also works on Recipient: prompt)
+  Press Ctrl-D on the roomprompt to change your Doing field
+  Press 'm' to send mail (it doesn't matter which room you are in)
+  typo's fixed: 'receiption' vs. 'reception'
+  typo fixed: "suddenly logged off"
+  Disable/enable Xs remembers if you were available to help others
+  bbs tells you if someone is busy sending you a message in follow-up mode
+  profile shows total amount of time the user is online
+  PARAM_NAME_SYSOP can no longer be used as login name
+  Replies in rooms without subject show up as 'Re: <message number>'
+  new/fixed in 1.1.13
+
+- Myth of MatrixBBS reported problem with loading rooms at startup,
+  if the directory had been moved to <number>.old ...
+  fixed in 1.1.13

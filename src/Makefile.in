@@ -1,0 +1,190 @@
+#
+#   bbs100 1.2.0 WJ102
+#   Copyright (C) 2002  Walter de Jong <walter@heiho.net>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+#	bbs100 @VERSION@ Makefile	WJ99
+#
+
+prefix = @prefix@
+bindir = @bindir@
+VERSION = @VERSION@
+
+CC = @CC@
+RM = @RM@
+RM_F = $(RM) -f
+MV = @MV@
+MKDIR = @MKDIR@
+PRINTWD = @PRINTWD@
+TEST = @TEST@
+TOUCH = @TOUCH@
+SED = @SED@
+TAR = @TAR@
+NM = @NM@
+LN = @LN@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL@ -m 0750
+INSTALL_SCRIPT = @INSTALL@ -m 0750
+INSTALL_DATA = @INSTALL@ -m 0640
+
+CFLAGS = @CFLAGS@ -DEBUG
+LFLAGS = @LDFLAGS@
+LIBCRYPT = @LIBCRYPT@
+LIBXNET = @LIBXNET@
+LIBSOCKET = @LIBSOCKET@
+LIBNSL = @LIBNSL@
+
+INCLUDE = include
+
+.c.o:
+	$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
+
+OBJS = List.o PList.o StringList.o cstring.o CallStack.o \
+	inet.o util.o screens.o edit.o access.o \
+	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
+	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
+	state.o state_login.o state_msg.o state_friendlist.o \
+	state_config.o state_roomconfig.o state_sysop.o \
+	MsgIndex.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
+	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \
+	debug.o SymbolTable.o Types.o HostMap.o \
+	main.o
+
+MORE_OBJS = mkpasswd.o resolver.o logd.o readlogs.o ccat.o
+
+CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
+
+TARGETS = main mkpasswd resolver logd readlogs ccat
+SCRIPTS = bbs expire_accounts.sh stats.pl
+
+all: .depend $(TARGETS)
+
+include .depend
+
+#
+#   Targets
+#
+
+neat:
+	$(RM_F) ../core core *~
+
+clean:
+	$(RM_F) core ../core $(TARGETS) $(OBJS) $(MORE_OBJS) *~ symtab
+
+mrproper: clean
+	$(RM_F) .depend config.status config.cache config.log
+	$(TOUCH) .depend
+
+depend dep .depend:
+	$(CC) -I$(INCLUDE) -M $(CFILES) > .depend
+
+cleanlog:
+	$(RM_F) $(prefix)/log/*/*
+
+
+main: $(OBJS)
+	$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+	$(NM) -P main >symtab
+
+mkpasswd: mkpasswd.o passwd.o copyright.o
+	$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
+
+resolver: resolver.o copyright.o
+	$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+
+logd: logd.o copyright.o
+	$(CC) -I$(INCLUDE) $(CFLAGS) logd.o copyright.o -o logd $(LFLAGS)
+
+readlogs: readlogs.o copyright.o
+	$(CC) -I$(INCLUDE) $(CFLAGS) readlogs.o copyright.o -o readlogs $(LFLAGS)
+
+ccat: ccat.o copyright.o
+	$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o copyright.o -o ccat $(LFLAGS)
+
+
+install upgrade: $(TARGETS) $(SCRIPTS)
+	@umask 027 ; \
+	if $(TEST) ! -d $(bindir)-$(VERSION) ; \
+	then \
+		$(MKDIR) -p $(bindir)-$(VERSION) ; \
+	fi ; \
+	for i in $(TARGETS) ; \
+	do \
+		echo "$(INSTALL_PROGRAM) $$i $(bindir)-$(VERSION)" ; \
+		$(INSTALL_PROGRAM) $$i $(bindir)-$(VERSION) ; \
+	done ; \
+	for i in $(SCRIPTS) ; \
+	do \
+		echo "$(INSTALL_SCRIPT) $$i $(bindir)-$(VERSION)" ; \
+		$(INSTALL_SCRIPT) $$i $(bindir)-$(VERSION) ; \
+	done ; \
+	echo "linking $(bindir)-$(VERSION) to $(bindir)" ; \
+	$(RM_F) $(bindir) ; \
+	$(LN) -s $(bindir)-$(VERSION) $(bindir)
+
+uninstall:
+	@( cd $(bindir) ; $(RM_F) $(TARGETS) $(SCRIPTS) )
+
+setup: install
+	@(	umask 027 ; \
+		cd .. ; \
+		CURRDIR=`$(PRINTWD)` ; \
+		echo " " ; \
+		if $(TEST) x"$(prefix)" != x"$${CURRDIR}" ; \
+		then \
+			echo "copying directories to $(prefix) ..." ; \
+			$(TAR) -cf - etc/ rooms/ | ( cd $(prefix) ; \
+				$(TAR) -xf - ; \
+				$(SED) "/basedir/ s?xxx?$(prefix)?" $(prefix)/etc/param >$(prefix)/etc/param1 ; \
+				$(MV) $(prefix)/etc/param1 $(prefix)/etc/param ; \
+			) ; \
+		fi ; \
+		for DIR in log rooms users trash log/auth log/debug log/errors log/messages trash/rooms trash/users ; \
+		do \
+			if [ ! -d "$(prefix)/$${DIR}" ] ; \
+			then \
+				echo "making directory $(prefix)/$${DIR} ..." ; \
+				$(MKDIR) "$(prefix)/$${DIR}" ; \
+			fi ; \
+		done ; \
+		for DIR in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; \
+		do \
+			if [ ! -d "$(prefix)/trash/users/$${DIR}" ] ; \
+			then \
+				$(MKDIR) "$(prefix)/trash/users/$${DIR}" ; \
+			fi ; \
+			if [ ! -d "$(prefix)/users/$${DIR}" ] ; \
+			then \
+				$(MKDIR) "$(prefix)/users/$${DIR}" ; \
+			fi ; \
+		done ; \
+		echo "setup done" ; \
+		echo "You can now do '$(bindir)/bbs start' to start it up" ; \
+	)
+
+#
+#	This is commented out for safety ...
+#
+#de-setup desetup unsetup:
+#	(	cd $(prefix) ; \
+#		echo "removing everything ..." ; \
+#		$(RM) -rf $(bindir) $(DIRS) ; \
+#		echo "done" ; \
+#	)
+
+# EOB

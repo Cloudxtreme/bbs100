@@ -1,0 +1,56 @@
+bbs100 by Walter de Jong <walter@heiho.net> (C) 2002
+
+bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
+bbs100 is distributed under terms described in the GNU General Public License.
+
+To upgrade from an existing version of bbs100, do the following:
+- read the ChangeLog to see what's new
+- some versions may come with a WHATSNEW file, but not all
+  If the WHATSNEW file is present, read it
+- check the files UPGRADING, INSTALL, and README for new information
+- check the etc/ directory for new files and changes in files (namely the
+  Help files may change)
+- check the etc/param file for new parameters
+
+- make the new version:
+  * cd src and configure --prefix={your prefix}
+  * make upgrade
+
+  'make upgrade' installs the new binairies in ${prefix}/bin-${version}/
+  and symlinks it to ${prefix}/bin
+
+- verify that the new binairies have been installed correctly
+- inform your users and reboot the BBS
+  The new version should come up in a few seconds if all goes well.
+
+
+CLEANING UP
+The make upgrade process leaves the old bin/ directory of the BBS intact.
+If you are satisfied with the new version, you can safely remove the old
+bin directory.
+
+
+ERRORS
+If you are running a pre-1.1.2 installation of bbs100, you may get the
+following error:
+
+    /bin/rm: /home/bbs/bin: is a directory
+
+Or something like that, at the end of 'make upgrade'. To solve this, do the
+following:
+
+    ( cd /home/bbs ; mv bin bin-pre-1.1.2 )
+
+Now try 'make upgrade' again, and you should be alright.
+
+
+THE PARAM FILE
+The etc/param file contains a parameter 'bindir'. People tend to think they
+have to update this parameter each time they install a new version. However,
+the opposite is true; 'bindir' should be set to 'bin' at all times -- the
+symbolic link provides 'bin' for us.
+Same goes for the parameters program_main, program_resolver, and program_logd.
+You should never have to touch these.
+
+
+EOB
