@@ -78,9 +78,9 @@
 
 #define FF1_LOAD_ULONG(x,y)		if (!strcmp(buf, (x))) {	\
 		if (!*p)											\
-			(unsigned long)(y) = 0UL;						\
+			(y) = 0UL;										\
 		else												\
-			(unsigned long)(y) = strtoul(p, NULL, 10);		\
+			(y) = strtoul(p, NULL, 10);						\
 		continue;											\
 	}
 
