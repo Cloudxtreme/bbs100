@@ -2253,7 +2253,7 @@ void state_maximums_menu(User *usr, char c) {
 
 void state_param_cached(User *usr, char c) {
 	Enter(state_param_cached);
-	change_int_param(usr, c, &PARAM_MAX_CACHED);
+	change_int0_param(usr, c, &PARAM_MAX_CACHED);
 
 	if ((PARAM_MAX_CACHED != cache_size) && (resize_Cache() == -1))
 		Print(usr, "<red>Failed to resize the file cache, <yellow>max_cached<red> reset to <white>%d\n", PARAM_MAX_CACHED);
@@ -2821,6 +2821,48 @@ int r;
 				*var = (unsigned int)r;
 				usr->runtime_flags |= RTF_PARAM_EDITED;
 			}
+		} else
+			Put(usr, "<red>Not changed\n");
+		RET(usr);
+	}
+	Return;
+}
+
+/*
+	exactly the same as change_int_param(), except that this one
+	accepts zero as valid value
+*/
+void change_int0_param(User *usr, char c, unsigned int *var) {
+int r;
+
+	if (usr == NULL || var == NULL)
+		return;
+
+	Enter(change_int_param);
+
+	if (c == INIT_STATE)
+		Print(usr, "<green>Enter new value <white>[%u]: <yellow>", *var);
+
+	r = edit_number(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (usr->edit_buf[0]) {
+			if (!strcmp(usr->edit_buf, "0"))
+				r = 0;
+			else {
+				r = atoi(usr->edit_buf);
+				if (r < 1) {
+					Put(usr, "<red>Invalid value; not changed\n");
+					RET(usr);
+					Return;
+				}
+			}
+			*var = (unsigned int)r;
+			usr->runtime_flags |= RTF_PARAM_EDITED;
 		} else
 			Put(usr, "<red>Not changed\n");
 		RET(usr);

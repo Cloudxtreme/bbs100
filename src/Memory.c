@@ -109,7 +109,7 @@ char *mem;
 	if ((mem = (char *)malloc(size + 2*sizeof(unsigned long))) == NULL)
 		return NULL;
 
-	memset(mem, 0, size + 2*sizeof(unsigned long));	/* malloc() sets it to 0, yeah right! :P */
+	memset(mem, 0, size + 2*sizeof(unsigned long));		/* malloc() sets it to 0, yeah right! :P */
 	memory_total += (size + 2*sizeof(unsigned long));
 
 	if (memtype < NUM_TYPES) {

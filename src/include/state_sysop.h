@@ -228,6 +228,7 @@ void state_param_archivedir(User *, char);
 void state_param_crashdir(User *, char);
 
 void change_int_param(User *, char, unsigned int *);
+void change_int0_param(User *, char, unsigned int *);
 void change_string_param(User *, char, char **, char *);
 
 #endif	/* STATE_SYSOP_H_WJ99 */
