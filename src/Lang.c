@@ -30,6 +30,10 @@
 #include "cstring.h"
 #include "defines.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 Hash *languages = NULL;
 
 
@@ -93,8 +97,8 @@ Lang *l;
 Lang *load_phrasebook(char *filename) {
 Lang *l = NULL;
 AtomicFile *f;
-char buf[PRINT_BUF], keybuf[32], *p;
-int line_no, errors, new_paragraph, key;
+char line_buf[PRINT_BUF], buf[PRINT_BUF], keybuf[32], *p;
+int line_no, errors, continued, len, key;
 
 	if (filename == NULL)
 		return NULL;
@@ -102,8 +106,8 @@ int line_no, errors, new_paragraph, key;
 	if ((f = openfile(filename, "r")) == NULL)
 		return NULL;
 
-	line_no = errors = 0;
-	new_paragraph = 1;
+	line_no = errors = continued = 0;
+	line_buf[0] = 0;
 
 	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
 		line_no++;
@@ -114,12 +118,35 @@ int line_no, errors, new_paragraph, key;
 		if (*buf == '#')
 			continue;
 
-		if (!*buf) {
-			new_paragraph = 1;
+		if (!*buf && !continued)
 			continue;
+/*
+	lines can be continued by adding a trailing backslash, which adds a newline in the text
+*/
+		len = strlen(buf) - 1;
+		if (len > 0 && buf[len] == '\\') {
+			buf[len] = 0;
+			cstrip_spaces(buf);
+			continued = 1;
+		} else
+			continued = 0;
+
+		len = strlen(line_buf);
+		if (continued) {
+			line_buf[len++] = '\n';
+			line_buf[len] = 0;
 		}
-		if ((p = cstrchr(buf, ' ')) == NULL)
-			p = cstrchr(buf, '\t');
+		if (len + strlen(buf) + 1 >= PRINT_BUF) {
+			log_err("load_Lang(%s): line too long on line %d, truncated", filename, line_no);
+			buf[len + strlen(buf) + 1 - PRINT_BUF] = 0;
+		}
+		strcpy(line_buf + len, buf);
+
+		if (continued)
+			continue;
+
+		if ((p = cstrchr(line_buf, ' ')) == NULL)
+			p = cstrchr(line_buf, '\t');
 		if (p == NULL) {
 			log_err("load_Lang(%s): syntax error in line %d\n", filename, line_no);
 			errors++;
@@ -138,20 +165,20 @@ int line_no, errors, new_paragraph, key;
 			errors++;
 			continue;
 		}
-		if ((l = add_language(buf)) == NULL) {
-			log_err("load_Lang(%s): failed to add language %s\n", filename, buf);
-			errors++;
-			break;
-		}
 /*
-	if new paragraph, compute new key for the foreign strings to follow
+	if new definition, compute new key for the foreign strings to follow
 	they are stored with the the key of the English text as their own key,
 	so the translated text can be found
 */
-		if (new_paragraph) {
+		if (!strcmp(line_buf, "bbs100")) {
 			key = hashaddr_ascii(p);
 			sprintf(keybuf, "%x", key);
-			new_paragraph = 0;
+			continue;
+		}
+		if ((l = add_language(line_buf)) == NULL) {
+			log_err("load_Lang(%s): failed to add language %s\n", filename, line_buf);
+			errors++;
+			break;
 		}
 		if (add_Hash(l->hash, keybuf, p) == -1) {
 			log_err("load_Lang(%s): failed to add a new phrase\n", filename);

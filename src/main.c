@@ -191,13 +191,13 @@ char buf[256];
 		argv[0] = new_argv0;
 		execv(old_argv0, argv);			/* restart with new name */
 
-		printf("startup failed\n");
+		fprintf(stderr, "bbs100: startup failed\n");
 		exit(-1);
 	}
 	Enter(main);
 
 	if (init_Memory()) {
-		printf("Out of memory (?)\n");
+		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}
 	printf("%s\n", print_copyright(SHORT, "main", buf));
@@ -233,7 +233,7 @@ char buf[256];
 		param_file = cstrdup("etc/param");
 
 	if (param_file == NULL) {
-		printf("Out of memory (?)\n");
+		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}
 	sleep(2);							/* display banner */
@@ -259,7 +259,7 @@ char buf[256];
 	print_Param();
 
 	if (chdir(PARAM_BASEDIR)) {
-		printf("failed to change directory to basedir '%s'\n", PARAM_BASEDIR);
+		fprintf(stderr, "bbs100: failed to change directory to basedir '%s'\n", PARAM_BASEDIR);
 		exit(-1);
 	}
 	write_pidfile();
@@ -270,7 +270,7 @@ char buf[256];
 		init_Signal();
 
 	if (init_FileCache()) {
-		printf("failed to initialize file cache\n");
+		fprintf(stderr, "bbs100: failed to initialize file cache\n");
 		exit(-1);
 	}
 	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
