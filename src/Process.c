@@ -21,6 +21,7 @@
 */
 
 #include "config.h"
+#include "defines.h"
 #include "Process.h"
 #include "inet.h"
 #include "util.h"

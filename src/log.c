@@ -32,6 +32,8 @@
 #include "Param.h"
 #include "util.h"
 #include "Timer.h"
+#include "Lang.h"
+#include "locale_system.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,7 +136,7 @@ char buf[4096];
 	t = rtc;
 	tm = localtime(&t);		/* logging goes in localtime */
 
-	sprintf(buf, "%c%c%c %2d %02d:%02d:%02d %c ", Months[tm->tm_mon][0], Months[tm->tm_mon][1], Months[tm->tm_mon][2],
+	sprintf(buf, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
 	vsprintf(buf+strlen(buf), msg, ap);
 

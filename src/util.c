@@ -33,6 +33,7 @@
 #include "Memory.h"
 #include "OnlineUser.h"
 #include "Lang.h"
+#include "locale_system.h"
 #include "mkdir.h"
 
 #include <stdio.h>
@@ -45,9 +46,6 @@
 
 #define HACK_CHANCE	((rand() % 20) < 4)
 
-char *Months[] = { "January", "February", "March", "April", "May", "June",
-			"July", "August", "September", "October", "November", "December" };
-char *Days[] = { "Sun", "Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur" };
 
 ColorTable color_table[] = {
 	{ "Black",		30,	KEY_CTRL('Z')	},
@@ -61,13 +59,19 @@ ColorTable color_table[] = {
 	{ "Hotkeys",	33, KEY_CTRL('K')	}
 };
 
-char last_helping_hand[MAX_NAME] = "";
+static char last_helping_hand[MAX_NAME] = "";
 
 
+/*
+	Put() translates all texts on the fly
+*/
 void Put(User *usr, char *str) {
 	Out(usr, translate(usr->lang, str));
 }
 
+/*
+	literal 'out' over the wire
+*/
 void Out(User *usr, char *str) {
 char buf[20], c;
 
@@ -762,7 +766,6 @@ struct tm *user_time(User *usr, time_t tt) {
 	Note: date_str should be large enough (80 bytes will do)
 */
 char *print_date(User *usr, time_t tt, char *date_str) {
-char add[2];
 struct tm *t;
 
 	if (date_str == NULL)
@@ -770,93 +773,67 @@ struct tm *t;
 
 	t = user_time(usr, tt);
 
-	if (t->tm_mday >= 10 && t->tm_mday <= 20) {
-		add[0] = 't';
-		add[1] = 'h';
-	} else {
-		switch(t->tm_mday % 10) {
-			case 1:
-				add[0] = 's';
-				add[1] = 't';
-				break;
+	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
+		return usr->lang->locale->print_date(usr->lang->locale, t, usr->flags & USR_12HRCLOCK, date_str);
 
-			case 2:
-				add[0] = 'n';
-				add[1] = 'd';
-				break;
+	if (usr == NULL)
+		return lc_system->print_date(lc_system, t, 0, date_str);
 
-			case 3:
-				add[0] = 'r';
-				add[1] = 'd';
-				break;
-
-			default:
-				add[0] = 't';
-				add[1] = 'h';
-		}
-	}
-	if (usr != NULL && (usr->flags & USR_12HRCLOCK)) {
-		char am_pm = 'A';
-
-		if (t->tm_hour >= 12) {
-			am_pm = 'P';
-			if (t->tm_hour > 12)
-				t->tm_hour -= 12;
-		}
-		sprintf(date_str, "%sday, %s %d%c%c %d %02d:%02d:%02d %cM",
-			Days[t->tm_wday], Months[t->tm_mon], t->tm_mday, add[0], add[1], t->tm_year + 1900,
-			t->tm_hour, t->tm_min, t->tm_sec, am_pm);
-	} else {
-		sprintf(date_str, "%sday, %s %d%c%c %d %02d:%02d:%02d",
-			Days[t->tm_wday], Months[t->tm_mon], t->tm_mday, add[0], add[1], t->tm_year + 1900,
-			t->tm_hour, t->tm_min, t->tm_sec);
-	}
-	return date_str;
+	return lc_system->print_date(lc_system, t, usr->flags & USR_12HRCLOCK, date_str);
 }
 
 /*
-	Note: buf must be large enough (MAX_LINE bytes will do)
+	Note: buf must be large enough (MAX_LINE bytes should do)
 */
-char *print_total_time(unsigned long total, char *buf) {
-int weeks, days, hrs, mins, secs, l = 0;
-
+char *print_total_time(User *usr, unsigned long total, char *buf) {
 	if (buf == NULL)
 		return NULL;
 
-	weeks = total / SECS_IN_WEEK;
-	total %= SECS_IN_WEEK;
+	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
+		return usr->lang->locale->print_total_time(usr->lang->locale, total, buf);
 
-	days = total / SECS_IN_DAY;
-	total %= SECS_IN_DAY;
+	return lc_system->print_total_time(lc_system, total, buf);
+}
 
-	hrs = total / SECS_IN_HOUR;
-	total %= SECS_IN_HOUR;
 
-	mins = total / SECS_IN_MIN;
-	total %= SECS_IN_MIN;
+/*
+	Note: buf must be large enough (at least 21 bytes)
+*/
+char *print_number(User *usr, unsigned long ul, char *buf) {
+	if (buf == NULL)
+		return NULL;
 
-	secs = total;
+	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
+		return usr->lang->locale->print_number(usr->lang->locale, ul, buf);
 
-	if (weeks > 0)
-		l = sprintf(buf, "%d %s, ", weeks, (weeks == 1) ? "week" : "weeks");
-	if (days > 0)
-		l += sprintf(buf+l, "%d %s, ", days, (days == 1) ? "day" : "days");
-	if (hrs > 0)
-		l += sprintf(buf+l, "%d %s, ", hrs, (hrs == 1) ? "hour" : "hours");
-	if (mins > 0)
-		l += sprintf(buf+l, "%d %s, ", mins, (mins == 1) ? "minute" : "minutes");
+	return lc_system->print_number(lc_system, ul, buf);
+}
 
-	if (secs > 0) {
-		if (l > 0)
-			l += sprintf(buf+l, "and ");
-		sprintf(buf+l, "%d %s", secs, (secs == 1) ? "second" : "seconds");
-	} else {
-		if (l > 0)
-			buf[l-2] = 0;
-		else
-			sprintf(buf, "%d %s", secs, (secs == 1) ? "second" : "seconds");
-	}
-	return buf;
+/*
+	print_number() with '1st', '2nd', '3rd', '4th', ... extension
+	Note: buf must be large enough (at least 25 bytes)
+*/
+char *print_numberth(User *usr, unsigned long ul, char *buf) {
+	if (buf == NULL)
+		return NULL;
+
+	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
+		return usr->lang->locale->print_numberth(usr->lang->locale, ul, buf);
+
+	return lc_system->print_numberth(lc_system, ul, buf);
+}
+
+/*
+	Note: buf must be large enough (MAX_LINE bytes in size)
+*/
+char *name_with_s(User *usr, char *name, char *buf) {
+	if (buf == NULL)
+		return NULL;
+
+	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
+		return usr->lang->locale->name_with_s(usr->lang->locale, name, buf);
+
+	return lc_system->name_with_s(lc_system, name, buf);
 }
 
 unsigned long get_mail_top(char *username) {
@@ -880,112 +857,6 @@ unsigned long maxnum = 0UL, n;
 	}
 	closedir(dirp);
 	return maxnum;
-}
-
-/*
-	Print a large number in US notation (with comma's)
-	We use a silly trick to do this ; walk the string in a reverse order and
-	insert comma's into the string representation
-
-	Note: buf must be large enough (at least 21 bytes)
-*/
-char *print_number(unsigned long ul, char *buf) {
-char buf2[21];
-int i, j = 0, n = 0;
-
-	if (buf == NULL)
-		return NULL;
-
-	buf[0] = 0;
-	sprintf(buf2, "%lu", ul);
-	i = strlen(buf2)-1;
-	if (i < 0)
-		return buf;
-
-	while(i >= 0) {
-		buf[j++] = buf2[i--];
-
-		n++;
-		if (i >= 0 && n >= 3) {
-			n = 0;
-			buf[j++] = ',';
-		}
-	}
-	buf[j] = 0;
-
-	strcpy(buf2, buf);
-	i = strlen(buf2)-1;
-	j = 0;
-	while(i >= 0)
-		buf[j++] = buf2[i--];
-	return buf;
-}
-
-/*
-	print_number() with '1st', '2nd', '3rd', '4th', ... extension
-
-	Note: buf must be large enough (at least 25 bytes)
-*/
-char *print_numberth(unsigned long ul, char *buf) {
-char add[3];
-
-	if (buf == NULL)
-		return NULL;
-
-	if (((ul % 100UL) >= 10UL) && ((ul % 100UL) <= 20UL)) {
-		add[0] = 't';
-		add[1] = 'h';
-	} else {
-		switch(ul % 10UL) {
-			case 1:
-				add[0] = 's';
-				add[1] = 't';
-				break;
-
-			case 2:
-				add[0] = 'n';
-				add[1] = 'd';
-				break;
-
-			case 3:
-				add[0] = 'r';
-				add[1] = 'd';
-				break;
-
-			default:
-				add[0] = 't';
-				add[1] = 'h';
-		}
-	}
-	add[2] = 0;
-
-	print_number(ul, buf);
-	strcat(buf, add);
-	return buf;
-}
-
-
-/*
-	Note: buf must be large enough (MAX_NAME+3 bytes in size)
-*/
-char *name_with_s(char *name, char *buf) {
-int i, j;
-
-	if (buf == NULL)
-		return NULL;
-
-	if (name == NULL || !*name) {
-		strcpy(buf, "(NULL)");
-		return buf;
-	}
-	strcpy(buf, name);
-	i = j = strlen(buf)-1;
-	buf[++i] = '\'';
-	if (buf[j] != 'z' && buf[j] != 'Z' &&
-		buf[j] != 's' && buf[j] != 'S')
-		buf[++i] = 's';
-	buf[++i] = 0;
-	return buf;
 }
 
 /*

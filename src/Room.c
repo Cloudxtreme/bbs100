@@ -97,7 +97,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = MAIL_ROOM;
-	sprintf(r->name, "%s Mail", name_with_s(username, name_buf));
+	sprintf(r->name, "%s Mail", name_with_s(NULL, username, name_buf));
 
 	if (in_StringList(r->invited, username) == NULL)
 		add_StringList(&r->invited, new_StringList(username));
@@ -129,7 +129,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = HOME_ROOM;
-	sprintf(r->name, "%s Home", name_with_s(username, name_buf));
+	sprintf(r->name, "%s Home", name_with_s(NULL, username, name_buf));
 
 	if (in_StringList(r->room_aides, username) == NULL)
 		add_StringList(&r->room_aides, new_StringList(username));
@@ -637,7 +637,7 @@ char buf[MAX_LINE], name_buf[MAX_NAME+3];
 	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
 
-	sprintf(buf, "%s Home", name_with_s(username, name_buf));
+	sprintf(buf, "%s Home", name_with_s(NULL, username, name_buf));
 
 	for(r = HomeRooms; r != NULL; r = r->next)
 		if (!strcmp(r->name, buf))

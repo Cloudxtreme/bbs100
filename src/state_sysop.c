@@ -980,7 +980,7 @@ char total_buf[MAX_LINE];
 "<red>This is serious. Enter the reboot password and the system will reboot\n"
 "in %s (including one minute grace period)\n"
 "\n"
-"Enter reboot password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+"Enter reboot password: ", print_total_time(usr, (unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1013,10 +1013,10 @@ char total_buf[MAX_LINE];
 			reboot_timer->restart = TIMEOUT_REBOOT;
 			add_Timer(&timerq, reboot_timer);
 
-			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n", print_total_time(usr, (unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
 
 			sprintf(buf, "The system is now rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+				print_total_time(NULL, (unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1034,7 +1034,7 @@ char total_buf[MAX_LINE];
 
 		if (reboot_timer->sleeptime > 0) {
 			sprintf(buf, "The system is rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+				print_total_time(NULL, (unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1090,7 +1090,7 @@ char total_buf[MAX_LINE];
 "<red>This is serious. Enter the shutdown password and the system will shut\n"
 "down in %s (including one minute grace period)\n"
 "\n"
-"Enter shutdown password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+"Enter shutdown password: ", print_total_time(usr, (unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1122,10 +1122,10 @@ char total_buf[MAX_LINE];
 			shutdown_timer->sleeptime = shutdown_timer->maxtime = usr->read_lines;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
 			add_Timer(&timerq, shutdown_timer);
-			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n", print_total_time(usr, (unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
 
 			sprintf(buf, "The system is now shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+				print_total_time(NULL, (unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1143,7 +1143,7 @@ char total_buf[MAX_LINE];
 
 		if (shutdown_timer->sleeptime > 0) {
 			sprintf(buf, "The system is shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+				print_total_time(NULL, (unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1318,7 +1318,7 @@ void state_malloc_status(User *usr, char c) {
 		int i, len = 0;
 		char num_buf[25];
 
-		Print(usr, "\n<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(memory_total, num_buf));
+		Print(usr, "\n<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(usr, memory_total, num_buf));
 
 		for(i = 0; i < NUM_TYPES+1; i++) {
 			if (strlen(Types_table[i].type) > len)
@@ -1328,7 +1328,7 @@ void state_malloc_status(User *usr, char c) {
 			if (i & 1)
 				Print(usr, "      ");
 
-			Print(usr, "<green>%-*s <yellow>:<white> %12s %c", len, Types_table[i].type, print_number(mem_stats[i], num_buf), (i & 1) ? '\n' : ' ');
+			Print(usr, "<green>%-*s <yellow>:<white> %12s %c", len, Types_table[i].type, print_number(usr, mem_stats[i], num_buf), (i & 1) ? '\n' : ' ');
 		}
 		if (i & 1)
 			Put(usr, "\n");

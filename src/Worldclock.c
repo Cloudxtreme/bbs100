@@ -25,6 +25,7 @@
 #include "Memory.h"
 #include "util.h"
 #include "cstring.h"
+#include "locale_system.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,8 +99,8 @@ char zfn_buf[80];
 /* this is the format that the 'date' command uses by default */
 
 			printf("%c%c%c %c%c%c %2d %02d:%02d:%02d %-4s %04d\n",
-				Days[tm->tm_wday][0], Days[tm->tm_wday][1], Days[tm->tm_wday][2],
-				Months[tm->tm_mon][0], Months[tm->tm_mon][1], Months[tm->tm_mon][2],
+				lc_system->days[tm->tm_wday][0], lc_system->days[tm->tm_wday][1], lc_system->days[tm->tm_wday][2],
+				lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 				tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
 				name_Timezone(tz), tm->tm_year + 1900);
 		}

@@ -35,12 +35,6 @@
 
 #define RND_STR(x)			((x)[rtc % (sizeof(x)/sizeof(char *))])
 
-#define ONE_SECOND			1
-#define SECS_IN_MIN			(60 * ONE_SECOND)
-#define SECS_IN_HOUR		(60 * SECS_IN_MIN)
-#define SECS_IN_DAY			(24 * SECS_IN_HOUR)
-#define SECS_IN_WEEK		(7 * SECS_IN_DAY)
-
 #define UserError(a,b,c,d,e,f)	do {											\
 		Put((a), "<red>ERROR: <yellow>" b "\n\n");								\
 		log_err("%d %s %s%s: [%s] %s", (c), (d), (e), (f), (a)->name, (b));		\
@@ -93,10 +87,10 @@ void system_broadcast(int, char *);
 struct tm *tz_time(Timezone *, time_t);
 struct tm *user_time(User *, time_t);
 char *print_date(User *, time_t, char *);
-char *print_total_time(unsigned long, char *);
-char *print_number(unsigned long, char *);
-char *print_numberth(unsigned long, char *);
-char *name_with_s(char *, char *);
+char *print_total_time(User *, unsigned long, char *);
+char *print_number(User *, unsigned long, char *);
+char *print_numberth(User *, unsigned long, char *);
+char *name_with_s(User *, char *, char *);
 char *room_name(User *, Room *, char *);
 unsigned long get_mail_top(char *);
 char *get_basename(char *);
@@ -106,8 +100,6 @@ char *path_strip(char *);
 long fread_int32(FILE *);
 
 extern ColorTable color_table[];
-extern char *Months[];
-extern char *Days[];
 
 #endif	/* UTIL_H_WJ99 */
 

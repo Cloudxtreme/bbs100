@@ -27,9 +27,24 @@
 
 #include "Hash.h"
 
+#include <time.h>
+
+typedef struct Locale_tag Locale;
+
+struct Locale_tag {
+	char *name, *days[7], *months[12];
+
+	char *(*print_date)(Locale *, struct tm *, int, char *);
+	char *(*print_total_time)(Locale *, unsigned long, char *);
+	char *(*print_number)(Locale *, unsigned long, char *);
+	char *(*print_numberth)(Locale *, unsigned long, char *);
+	char *(*name_with_s)(Locale *, char *, char *);
+};
+
 typedef struct {
 	char *name;
 	Hash *hash;
+	Locale *locale;
 	int refcount;
 } Lang;
 

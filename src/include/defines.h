@@ -44,6 +44,12 @@
 #define TERM_WIDTH			80			/* can be overridden by TELOPT_NAWS */
 #define TERM_HEIGHT			23			/* can be overridden by TELOPT_NAWS */
 
+#define ONE_SECOND			1
+#define SECS_IN_MIN			(60 * ONE_SECOND)
+#define SECS_IN_HOUR		(60 * SECS_IN_MIN)
+#define SECS_IN_DAY			(24 * SECS_IN_HOUR)
+#define SECS_IN_WEEK		(7 * SECS_IN_DAY)
+
 #endif	/* DEFINES_H_WJ99 */
 
 /* EOB */

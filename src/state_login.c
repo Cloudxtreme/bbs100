@@ -479,7 +479,7 @@ char num_buf[25];
 			usr->doing = cstrdup(buf);
 		}
 	}
-	Print(usr, "<green>This is your <yellow>%s<green> login\n", print_numberth(usr->logins, num_buf));
+	Print(usr, "<green>This is your <yellow>%s<green> login\n", print_numberth(usr, usr->logins, num_buf));
 
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
@@ -556,7 +556,7 @@ char num_buf[25];
 		tm = user_time(usr, (time_t)0UL);
 
 		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
-			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
+			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(usr, tm->tm_year - bday_year, num_buf));
 	}
 
 /* if booting/shutting down, inform the user */
