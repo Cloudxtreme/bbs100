@@ -1,6 +1,6 @@
 /*
-    bbs100 1.2.0 WJ102
-    Copyright (C) 2002  Walter de Jong <walter@heiho.net>
+    bbs100 1.2.1 WJ103
+    Copyright (C) 2003  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 	user.h
 */
 
-#ifndef _USER_H_WJ97
-#define _USER_H_WJ97 1
+#ifndef USER_H_WJ97
+#define USER_H_WJ97 1
 
 #include <config.h>
 
@@ -207,6 +207,6 @@ void user_timeout(User *);
 
 User *in_UserList(User *, User *);
 
-#endif	/* _USER_H_WJ97 */
+#endif	/* USER_H_WJ97 */
 
 /* EOB */

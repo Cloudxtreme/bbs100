@@ -1,3 +1,7 @@
+Changes as of October 25th 2003
+- added timezone information for the world clock function
+  which is exciting, because tonight we switch from CEST to CET again
+
 Changes as of October 21st 2003
 - put the source in svn
 - 'g' is for Goto next unread room
