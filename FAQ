@@ -42,6 +42,12 @@ If you run bbs100 on an other platform than listed here, please let me
 know your experiences in building and running the software.
 
 
+IS bbs100 IPv6 ENABLED?
+Nope, it's all IPv4 code. I am interested in making it work on both
+IPv4 and IPv6, so if you can help me any way (patches, or giving good
+IPv6 code examples) I will be most thankful!
+
+
 YAWC
 Why isn't YAWC mentioned anywhere in the README or CREDITS?
 Well, YAWC is yet another clone of DOC by Kenneth Haglund (also known as
