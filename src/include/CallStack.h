@@ -46,7 +46,7 @@
 #define LOOP_STATE	' '
 
 #define CURRENT_STATE(x)			(x)->callstack->ip((x), INIT_STATE)
-#define RET_LOOP(x)					(x)->runtime_flags |= RTF_LOOPING; POP(x)
+#define RET_LOOP(x)					do { (x)->runtime_flags |= RTF_LOOPING; POP(x); } while(0)
 
 
 #ifndef USER_DEFINED

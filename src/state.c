@@ -2638,15 +2638,9 @@ int read_it = 1;
 
 	Enter(print_known_room);
 
-	if ((r->flags & ROOM_HIDDEN) && !(usr->runtime_flags & RTF_SYSOP)) {
-		Return;
-	}
 	status[0] = (char)color_by_name("white");
 	status[1] = ' ';
 
-	if ((r->flags & ROOM_HIDDEN) && !(usr->runtime_flags & RTF_SYSOP)) {
-		Return;
-	}
 	read_it = 1;
 
 	if ((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped) {
@@ -2654,35 +2648,33 @@ int read_it = 1;
 		status[1] = 'Z';
 		read_it = 0;
 	}
-	if (read_it) {
-		if (r->flags & ROOM_ANONYMOUS) {
+	if (read_it && in_StringList(r->kicked, usr->name) != NULL) {
+		status[0] = (char)color_by_name("red");
+		status[1] = 'K';
+		read_it = 0;
+	}
+	if (read_it && (r->flags & ROOM_ANONYMOUS)) {
+		status[0] = (char)color_by_name("green");
+		status[1] = 'A';
+	}
+	if (read_it && (r->flags & ROOM_HIDDEN)) {
+		status[0] = (char)color_by_name("red");
+		status[1] = 'H';
+		read_it = 0;
+	}
+	if (read_it && (r->flags & ROOM_INVITE_ONLY)) {
+		status[1] = 'I';
+		if (in_StringList(r->invited, usr->name) != NULL)
 			status[0] = (char)color_by_name("green");
-			status[1] = 'A';
-		}
-		if (in_StringList(r->kicked, usr->name) != NULL) {
+		else {
 			status[0] = (char)color_by_name("red");
-			status[1] = 'K';
 			read_it = 0;
-		} else {
-			if (r->flags & ROOM_INVITE_ONLY) {
-				status[1] = 'I';
-				if (in_StringList(r->invited, usr->name) != NULL)
-					status[0] = (char)color_by_name("green");
-				else {
-					status[0] = (char)color_by_name("red");
-					read_it = 0;
-				}
-			}
-			if (r->flags & ROOM_CHATROOM) {
-				status[0] = (char)color_by_name("yellow");
-				status[1] = 'C';
-				read_it = 0;
-			}
-			if (read_it && (r->flags & ROOM_HIDDEN)) {
-				status[0] = (char)color_by_name("red");
-				status[1] = 'H';
-			}
 		}
+	}
+	if (read_it && (r->flags & ROOM_CHATROOM)) {
+		status[0] = (char)color_by_name("yellow");
+		status[1] = 'C';
+		read_it = 0;
 	}
 	if (read_it) {
 		if (j != NULL) {
@@ -2743,21 +2735,34 @@ Joined *j;
 		if (r->number <= 2)
 			r = find_Roombynumber(usr, r->number);
 
-		if (!(((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped)
-			|| (r->flags & ROOM_HIDDEN)
-			|| (in_StringList(r->kicked, usr->name) != NULL)
-			|| ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)))
-			print_known_room(usr, r);
+		if (in_StringList(r->room_aides, usr->name) == NULL) {
+			if ((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped)
+				continue;
+/*
+			if (r->flags & ROOM_HIDDEN)
+				continue;
+*/
+			if (in_StringList(r->kicked, usr->name) != NULL)
+				continue;
 
-		if (r->number == 2)
-			unload_Room(r);
+			if ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
+				continue;
+		}
+		print_known_room(usr, r);
 	}
+/*
+	throw away the demand loaded room because we're not using it anyway
+*/
+	if ((r = find_Roombynumber(usr, 2)) != NULL)
+		unload_Room(r);
+
 	read_more(usr);
 	Return;
 }
 
 void allknown_rooms(User *usr) {
 Room *r, *r_next;
+Joined *j;
 
 	Enter(allknown_rooms);
 
@@ -2770,11 +2775,17 @@ Room *r, *r_next;
 		if (r->number <= 2)
 			r = find_Roombynumber(usr, r->number);
 
-		print_known_room(usr, r);
+		if ((r->flags & ROOM_HIDDEN)
+			&& (j = in_Joined(usr->rooms, r->number)) == NULL
+			&& !(usr->runtime_flags & RTF_SYSOP)
+			&& in_StringList(r->room_aides, usr->name) == NULL)
+			continue;
 
-		if (r->number == 2)
-			unload_Room(r);
+		print_known_room(usr, r);
 	}
+	if ((r = find_Roombynumber(usr, 2)) != NULL)
+		unload_Room(r);
+
 	read_more(usr);
 	Return;
 }

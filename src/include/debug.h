@@ -41,8 +41,8 @@
 
 #define TDC			log_debug("%d\n", __LINE__);
 
-#define Enter(x)	if (debug_stackp < DEBUG_STACK_SIZE) debug_stack[debug_stackp++] = (unsigned long)(x)
-#define Leave		if (debug_stackp) debug_stack[--debug_stackp] = 0UL
+#define Enter(x)	do { if (debug_stackp < DEBUG_STACK_SIZE) debug_stack[debug_stackp++] = (unsigned long)(x); } while(0)
+#define Leave		do { if (debug_stackp) debug_stack[--debug_stackp] = 0UL; } while(0)
 #define Return		Leave; return
 
 #define DEBUG_STACK_SIZE	64

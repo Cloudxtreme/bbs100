@@ -91,7 +91,7 @@ void state_sysop_menu(User *usr, char c) {
 			Put(usr,
 				"<hotkey>Uncache file                      <hotkey>Memory allocation status\n"
 				"\n"
-				"<white>Ctrl-<hotkey>P<magenta>arameters                   <hotkey>Password\n"
+				"<white>Ctrl-<hotkey>P<magenta>arameters                   Sysop <hotkey>Password\n"
 				"\n"
 			);
 			if (reboot_timer != NULL)
