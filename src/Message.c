@@ -85,14 +85,12 @@ int version;
 	version = fileformat_version(f);
 	switch(version) {
 		case -1:
+			log_err("load_Message(): error trying to determine file format version of %s", filename);
 			load_func = NULL;
 			break;
 
 		case 0:
-			Fclose(f);
-			if ((f = Fopen(filename)) == NULL)		/* re-open file (stupid version check) */
-				break;
-
+			Frewind(f);
 			load_func = load_Message_version0;
 			break;
 
@@ -228,6 +226,7 @@ err_load_message:
 
 
 int save_Message(Message *m, char *filename) {
+int ret;
 File *f;
 
 	if (m == NULL || filename == NULL || !*filename
@@ -235,8 +234,9 @@ File *f;
 		return -1;
 
 	m->flags &= MSG_ALL;
-
-	return save_Message_version1(f, m);
+	ret = save_Message_version1(f, m);
+	Fclose(f);
+	return ret;
 }
 
 int save_Message_version1(File *f, Message *m) {
@@ -256,7 +256,6 @@ StringList *sl;
 	FF1_SAVE_STRINGLIST("to", m->to);
 	FF1_SAVE_STRINGLIST("msg", m->msg);
 
-	Fclose(f);
 	return 0;
 }
 
@@ -281,8 +280,6 @@ int save_Message_version0(File *f, Message *m) {
 
 /* reply_number */
 	Fprintf(f, "%lu", m->reply_number);
-
-	Fclose(f);
 	return 0;
 }
 

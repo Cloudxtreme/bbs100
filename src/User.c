@@ -229,10 +229,10 @@ int load_User(User *usr, char *username, int flags) {
 File *f;
 char filename[MAX_PATHLEN];
 int version;
+int (*load_func)(File *, User *, char *, int) = NULL;
 
 	if (usr == NULL || username == NULL || !*username)
 		return -1;
-
 /*
 	these should already be NULL but I'm just making sure
 */
@@ -259,17 +259,25 @@ int version;
 	switch(version) {
 		case -1:
 			log_err("load_User(): error trying to determine file format version of %s", filename);
+			load_func = NULL;
 			break;
 
 		case 0:
-			Fclose(f);
-			return load_User_version0(usr, username, flags);
+			Frewind(f);
+			load_func = load_User_version0;
+			break;
 
 		case 1:
-			return load_User_version1(f, usr, username, flags);
+			load_func = load_User_version1;
+			break;
 
 		default:
 			log_err("load_User(): don't know how to load file format version %d of %s", version, filename);
+	}
+	if (load_func != NULL && !load_func(f, usr, username, flags)) {
+		Fclose(f);
+		usr->flags &= USR_ALL;
+		return 0;
 	}
 	Fclose(f);
 	return -1;
@@ -334,12 +342,8 @@ char buf[MAX_PATHLEN], *p;
 			FF1_LOAD_ULONG("read", usr->read);
 
 			FF1_LOAD_INT("time_disp", usr->time_disp);
+			FF1_LOAD_HEX("flags", usr->flags);
 
-/* flags */
-			if (!strcmp(buf, "flags")) {
-				FF1_LOAD_HEX("flags", usr->flags);
-				usr->flags &= USR_ALL;			/* reset non-existant flags */
-			}
 /* custom colors */
 			if (!strcmp(buf, "colors")) {
 				int i;
@@ -473,11 +477,9 @@ char buf[MAX_PATHLEN], *p;
 	Too bad, we can't trigger an error here because we get here all the time
 	due to the way we do partial loading with the LOAD_USER_xxx flags
 
-		log_err("load_User(): unknown keyword '%s' in %s/%c/%s/UserData", buf, PARAM_USERDIR, *username, username);
-		FF1_ERROR;
+		FF1_LOAD_UNKNOWN;
 */
 	}
-	Fclose(f);
 	return 0;
 }
 
@@ -513,20 +515,10 @@ char buf[MAX_PATHLEN], *p;
 	This routine is old, but still in use as long as there are userfiles
 	on your system that have not been converted yet.
 */
-int load_User_version0(User *usr, char *username, int flags) {
-File *f;
+int load_User_version0(File *f, User *usr, char *username, int flags) {
 char buf[MAX_PATHLEN];
 StringList *sl;
 int i;
-
-	if (usr == NULL)
-		return -1;
-
-	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
-	path_strip(buf);
-
-	if ((f = Fopen(buf)) == NULL)
-		return -1;
 
 /* passwd */
 	if (flags & LOAD_USER_PASSWORD) {
@@ -852,11 +844,9 @@ int i;
 	}
 
 end_load_User:
-	Fclose(f);
 	return site_load_User_version0(usr, username, flags);
 
 err_load_User:
-	Fclose(f);
 	return -1;
 }
 
@@ -874,24 +864,21 @@ char buf[MAX_PATHLEN];
 	if ((f = Fopen(buf)) == NULL)
 		return 0;
 
+
 	DO SITE-SPECIFIC STUFF HERE
+
+
+	Fclose(f);
+	Return 0;
 */
 	return 0;
 }
 
 
-
-
 int save_User(User *usr) {
-	return save_User_version1(usr);
-}
-
-int save_User_version1(User *usr) {
-char buf[MAX_LINE];
-int i;
+int ret;
+char filename[MAX_PATHLEN];
 File *f;
-Joined *j;
-StringList *sl;
 
 	if (usr == NULL)
 		return -1;
@@ -902,15 +889,24 @@ StringList *sl;
 	if (is_guest(usr->name))		/* don't save Guest user */
 		return 0;
 
-	Enter(save_User);
+	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
+	path_strip(filename);
 
-	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
-	path_strip(buf);
-
-	if ((f = Fcreate(buf)) == NULL) {
+	if ((f = Fcreate(filename)) == NULL) {
 		Perror(usr, "Failed to save userfile");
-		Return -1;
+		return -1;
 	}
+	usr->flags &= USR_ALL;
+	ret = save_User_version1(f, usr);
+	Fclose(f);
+	return ret;
+}
+
+int save_User_version1(File *f, User *usr) {
+int i;
+Joined *j;
+StringList *sl;
+
 	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("name", usr->name);
 	FF1_SAVE_STR("passwd", usr->passwd);
@@ -980,9 +976,101 @@ StringList *sl;
 	it's okay to add new stuff to the same UserData file, as long as you don't use
 	any keywords that I am going to use in future versions ...
 */
+	return 0;
+}
+
+
+#define SAVE_USERSTRING(x)	Fputs(f, ((x) == NULL) ? "" : (x))
+
+int save_User_version0(File *f, User *usr) {
+Joined *j;
+int i;
+
+	Enter(save_User_version0);
+
+	Fputs(f, usr->passwd);
+
+	SAVE_USERSTRING(usr->real_name);
+	SAVE_USERSTRING(usr->street);
+	SAVE_USERSTRING(usr->zipcode);
+	SAVE_USERSTRING(usr->city);
+	SAVE_USERSTRING(usr->state);
+	SAVE_USERSTRING(usr->country);
+	SAVE_USERSTRING(usr->phone);
+	SAVE_USERSTRING(usr->email);
+	SAVE_USERSTRING(usr->www);
+	SAVE_USERSTRING(usr->doing);
+	SAVE_USERSTRING(usr->reminder);
+	SAVE_USERSTRING(usr->default_anon);
+
+	Fputs(f, usr->from_ip);
+	Fprintf(f, "%d.%d.%d.%d", (int)((usr->ipnum >> 24) & 255), (int)((usr->ipnum >> 16) & 255), (int)((usr->ipnum >> 8) & 255), (int)(usr->ipnum & 255));
+
+	Fprintf(f, "%lu", (unsigned long)usr->birth);
+	Fprintf(f, "%lu", (unsigned long)usr->last_logout);
+	Fprintf(f, "0x%X", usr->flags);
+	Fprintf(f, "%lu", usr->logins);
+	Fprintf(f, "%lu", usr->total_time);
+
+	Fprintf(f, "%lu", usr->xsent);
+	Fprintf(f, "%lu", usr->xrecv);
+	Fprintf(f, "%lu", usr->esent);
+	Fprintf(f, "%lu", usr->erecv);
+	Fprintf(f, "%lu", usr->posted);
+	Fprintf(f, "%lu", usr->read);
+
+	Fprintf(f, "%d %d %d %d %d %d %d %d %d",
+		usr->colors[BACKGROUND],
+		usr->colors[RED],
+		usr->colors[GREEN],
+		usr->colors[YELLOW],
+		usr->colors[BLUE],
+		usr->colors[MAGENTA],
+		usr->colors[CYAN],
+		usr->colors[WHITE],
+		usr->colors[HOTKEY]);
+
+	for(j = usr->rooms; j != NULL; j = j->next)
+		Fprintf(f, "%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
+			j->generation, j->last_read, j->roominfo_read);
+	Fprintf(f, "");
+
+	for(i = 0; i < 10; i++)
+		SAVE_USERSTRING(usr->quick[i]);
+
+	Fputlist(f, usr->friends);
+	Fputlist(f, usr->enemies);
+	Fputlist(f, usr->info);
+
+	Fprintf(f, "%d", usr->time_disp);
+	Fprintf(f, "%lu", usr->fsent);
+	Fprintf(f, "%lu", usr->frecv);
+
+	Return site_save_User_version0(usr);
+}
+
+int site_save_User_version0(User *usr) {
+/*
+File *f;
+char buf[MAX_PATHLEN];
+
+	Enter(site_save_User);
+
+	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, usr->name[0], usr->name);
+	path_strip(buf);
+
+	if ((f = Fcreate(buf)) == NULL) {
+		Perror(usr, "Failed to save site-specific userfile");
+		Return -1;
+	}
+
+	DO SITE-SPECIFIC STUFF HERE
+
 
 	Fclose(f);
 	Return 0;
+*/
+	return 0;
 }
 
 

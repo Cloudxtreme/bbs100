@@ -59,14 +59,12 @@ int version;
 	version = fileformat_version(f);
 	switch(version) {
 		case -1:
+			log_err("load_Stats(): error trying to determine file format version of %s", filename);
 			load_func = NULL;
 			break;
 
 		case 0:
-			Fclose(f);								/* version0 needs explicit re-open */
-			if ((f = Fopen(filename)) == NULL)
-				break;
-
+			Frewind(f);
 			load_func = load_Stats_version0;
 			break;
 
@@ -313,12 +311,15 @@ err_load_Stats:
 
 
 int save_Stats(Stats *st, char *filename) {
+int ret;
 File *f;
 
 	if (st == NULL || filename == NULL || (f = Fcreate(filename)) == NULL)
 		return -1;
 
-	return save_Stats_version1(f, st);
+	ret = save_Stats_version1(f, st);
+	Fclose(f);
+	return ret;
 }
 
 int save_Stats_version1(File *f, Stats *st) {
@@ -349,7 +350,6 @@ int save_Stats_version1(File *f, Stats *st) {
 	Fprintf(f, "posted=%lu", st->posted);
 	Fprintf(f, "read=%lu", st->read);
 
-	Fclose(f);
 	return 0;
 }
 
@@ -380,8 +380,6 @@ int save_Stats_version0(File *f, Stats *st) {
 
 	Fprintf(f, "%lu", st->fsent);
 	Fprintf(f, "%lu", st->frecv);
-
-	Fclose(f);
 	return 0;
 }
 

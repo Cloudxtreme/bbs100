@@ -177,13 +177,14 @@ User *new_User(void);
 void destroy_User(User *);
 
 int load_User(User *, char *, int);
-int save_User(User *);
-
-int load_User_version0(User *, char *, int);
+int load_User_version0(File *, User *, char *, int);
 int site_load_User_version0(User *, char *, int);
-
 int load_User_version1(File *, User *, char *, int);
-int save_User_version1(User *);
+
+int save_User(User *);
+int save_User_version0(File *, User *);
+int site_save_User_version0(User *);
+int save_User_version1(File *, User *);
 
 void Write(User *, char *);
 void Writechar(User *, char);

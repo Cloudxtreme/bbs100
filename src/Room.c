@@ -159,14 +159,12 @@ int version;
 	version = fileformat_version(f);
 	switch(version) {
 		case -1:
+			log_err("load_RoomData(): error trying to determine file format version of %s", filename);
 			load_func = NULL;
 			break;
 
 		case 0:
-			Fclose(f);								/* version0 needs explicit re-open */
-			if ((f = Fopen(filename)) == NULL)
-				break;
-
+			Frewind(f);
 			load_func = load_RoomData_version0;
 			break;
 
@@ -301,6 +299,7 @@ err_load_room:
 /* save the RoomData file */
 
 int save_Room(Room *r) {
+int ret;
 char filename[MAX_PATHLEN];
 File *f;
 
@@ -330,7 +329,9 @@ File *f;
 	if ((f = Fcreate(filename)) == NULL)
 		return -1;
 
-	return save_Room_version1(f, r);
+	ret = save_Room_version1(f, r);
+	Fclose(f);
+	return ret;
 }
 
 int save_Room_version1(File *f, Room *r) {
@@ -349,7 +350,6 @@ StringList *sl;
 	FF1_SAVE_STRINGLIST("kicked", r->kicked);
 	FF1_SAVE_STRINGLIST("chat_history", r->chat_history);
 
-	Fclose(f);
 	return 0;
 }
 
@@ -367,7 +367,6 @@ int save_Room_version0(File *f, Room *r) {
 	if (r->flags & ROOM_CHATROOM)
 		Fputlist(f, r->chat_history);
 
-	Fclose(f);
 	return 0;
 }
 

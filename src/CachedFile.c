@@ -238,6 +238,12 @@ File *f;
 	return f;
 }
 
+void Frewind(File *f) {
+	if (f == NULL)
+		return;
+
+	f->datap = f->data;
+}
 
 char *Fgets(File *f, char *buf, int max) {
 	if (f == NULL || buf == NULL || f->datap == NULL)

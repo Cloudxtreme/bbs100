@@ -67,6 +67,7 @@ void destroy_File(File *);
 File *Fopen(char *);
 void Fclose(File *);
 File *Fcreate(char *);
+void Frewind(File *);
 char *Fgets(File *, char *, int);
 int Fputs(File *, char *);
 int vFprintf(File *, char *, va_list);
