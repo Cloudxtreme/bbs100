@@ -32,6 +32,7 @@
 #include "access.h"
 #include "Memory.h"
 #include "OnlineUser.h"
+#include "Lang.h"
 #include "mkdir.h"
 
 #include <stdio.h>
@@ -64,6 +65,10 @@ char last_helping_hand[MAX_NAME] = "";
 
 
 void Put(User *usr, char *str) {
+	Out(usr, translate(usr->lang, str));
+}
+
+void Out(User *usr, char *str) {
 char buf[20], c;
 
 	if (usr == NULL || str == NULL || usr->socket < 0)

@@ -167,10 +167,10 @@ Lang *l;
 		return;
 
 	l->refcount--;
-	log_debug("unload_language(%s): refcount == %d", lang, l->refcount);
+	log_debug("unload_Language(%s): refcount == %d", lang, l->refcount);
 
 	if (l->refcount <= 0) {
-		log_debug("unload_language(): removing language %s", lang);
+		log_debug("unload_Language(): removing language %s", lang);
 
 		remove_Hash(languages, lang);
 		destroy_Lang(l);
@@ -205,9 +205,6 @@ int line_no, errors, continued, len, key;
 	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
 		line_no++;
 
-		if (!continued)
-			line_buf[0] = 0;
-
 		cstrip_spaces(buf);
 		chop(buf);
 
@@ -228,19 +225,18 @@ int line_no, errors, continued, len, key;
 			continued = 0;
 
 		len = strlen(line_buf);
-		if (continued) {
-			line_buf[len++] = '\n';
-			line_buf[len] = 0;
-		}
-		if (len + strlen(buf) + 1 >= PRINT_BUF) {
+		if (len + strlen(buf) + 2 >= PRINT_BUF)
 			log_err("load_Lang(%s): line too long on line %d, truncated", filename, line_no);
-			buf[len + strlen(buf) + 1 - PRINT_BUF] = 0;
+		else {
+			strcpy(line_buf + len, buf);
+
+			if (continued) {
+				len = strlen(line_buf + len);
+				line_buf[len++] = '\n';
+				line_buf[len] = 0;
+				continue;
+			}
 		}
-		strcpy(line_buf + len, buf);
-
-		if (continued)
-			continue;
-
 		if (!*keybuf) {
 /*
 	if new definition, compute new key for the foreign line that follows
@@ -250,6 +246,9 @@ int line_no, errors, continued, len, key;
 */
 			key = hashaddr_ascii(line_buf);
 			sprintf(keybuf, "%x", key);
+
+			line_buf[0] = 0;
+			continued = 0;
 			continue;
 		}
 		if (add_Hash(l->hash, keybuf, cstrdup(line_buf)) == -1) {
@@ -257,7 +256,8 @@ int line_no, errors, continued, len, key;
 			errors++;
 			break;
 		}
-		keybuf[0] = 0;
+		line_buf[0] = keybuf[0] = 0;
+		continued = 0;
 	}
 	closefile(f);
 
@@ -295,8 +295,9 @@ Lang *l;
 	translate a given system text into a loaded phrasebook text
 */
 char *translate(Lang *l, char *text) {
-int key;
-char keybuf[32], *p;
+int key, n, m;
+char keybuf[32], *p, *endp, *translated;
+static char textbuf[PRINT_BUF];
 
 	if (text == NULL || !*text)
 		return text;
@@ -309,12 +310,45 @@ char keybuf[32], *p;
 		if (l == NULL)
 			return text;
 	}
-	key = hashaddr_ascii(text);
-	sprintf(keybuf, "%x", key);
-	if ((p = (char *)in_Hash(l->hash, keybuf)) == NULL)
+	if (strlen(text) >= PRINT_BUF) {
+		log_err("translate(): bbs100 text too long: '%s'", text);
+		return text;
+	}
+/*
+	the kludge here makes translation also work for strings that have leading
+	and trailing white space, which is quite convenient
+*/
+	n = 0;
+	for(p = text; *p == ' ' || *p == '\n' || *p == '\r' || *p == '\b' || *p == '\t'; p++, n++);
+	if (!*p)
 		return text;
 
-	return p;
+	m = strlen(p) - 1;
+	for(endp = p + m; m >= 0 && (*endp == ' ' || *endp == '\n' || *endp == '\r' || *endp == '\b' || *endp == '\t'); endp--, m--);
+	endp++;
+	m++;
+	if (m > 0) {
+		strncpy(textbuf, p, m);
+		textbuf[m] = 0;
+	} else
+		return text;
+
+	log_debug("translate(): [%s]", textbuf);
+
+	key = hashaddr_ascii(textbuf);
+	sprintf(keybuf, "%x", key);
+	if ((translated = (char *)in_Hash(l->hash, keybuf)) == NULL)
+		return text;
+
+	if (n + strlen(translated) + strlen(endp) >= PRINT_BUF) {
+		log_err("translate(): translated text too long for %s:'%s'", l->name, text);
+		return text;
+	}
+	strncpy(textbuf, text, n);
+	textbuf[n] = 0;
+	strcat(textbuf, translated);
+	strcat(textbuf, endp);
+	return textbuf;
 }
 
 char *translate_by_name(char *lang, char *text) {

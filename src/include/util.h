@@ -78,6 +78,7 @@ typedef struct {
 
 
 void Put(User *, char *);
+void Out(User *, char *);
 int color_by_name(char *);
 int long_color_code(User *, char *);
 int color_strlen(char *);

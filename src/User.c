@@ -45,6 +45,7 @@
 #include "Memory.h"
 #include "FileFormat.h"
 #include "Timezone.h"
+#include "Lang.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,11 +188,13 @@ char buf[PRINT_BUF];
 	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
 		return;
 
+	fmt = translate(usr->lang, fmt);
+
 	va_start(args, fmt);
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	Put(usr, buf);
+	Out(usr, buf);
 }
 
 void Tell(User *usr, char *fmt, ...) {
@@ -200,6 +203,8 @@ char buf[PRINT_BUF];
 
 	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
 		return;
+
+	fmt = translate(usr->lang, fmt);
 
 	va_start(args, fmt);
 	vsprintf(buf, fmt, args);	
@@ -219,7 +224,7 @@ char buf[PRINT_BUF];
 		}
 		add_BufferedMsg(&usr->busy_msgs, m);
 	} else
-		Put(usr, buf);
+		Out(usr, buf);
 }
 
 
