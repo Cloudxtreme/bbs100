@@ -182,7 +182,6 @@ void usage(void) {
 
 int main(int argc, char **argv) {
 int debugger = 0;
-Timezone *tz;
 
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
