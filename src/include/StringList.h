@@ -20,8 +20,8 @@
 	StringList.h    WJ98
 */
 
-#ifndef _STRINGLIST_H_WJ98
-#define _STRINGLIST_H_WJ98 1
+#ifndef STRINGLIST_H_WJ98
+#define STRINGLIST_H_WJ98 1
 
 #include "List.h"
 
@@ -52,6 +52,6 @@ StringList *copy_StringList(StringList *);
 StringList *vadd_String(StringList **, char *, va_list);
 StringList *add_String(StringList **, char *, ...);
 
-#endif	/* _STRINGLIST_H_WJ98 */
+#endif	/* STRINGLIST_H_WJ98 */
 
 /* EOB */

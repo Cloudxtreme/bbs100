@@ -26,6 +26,7 @@
 #include "Feeling.h"
 #include "HostMap.h"
 #include "OnlineUser.h"
+#include "ZoneInfo.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -51,6 +52,7 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "HostMap",			sizeof(HostMap),			},
 	{ "AtomicFile",			sizeof(AtomicFile),			},
 	{ "SU_Passwd",			sizeof(SU_Passwd),			},
+	{ "ZoneInfo",			sizeof(ZoneInfo),			},
 	{ "(unknown)",			0,							},
 };
 

@@ -45,7 +45,8 @@
 #define TYPE_HOSTMAP		19
 #define TYPE_ATOMICFILE		20
 #define TYPE_SU_PASSWD		21
-#define NUM_TYPES			22
+#define TYPE_ZONEINFO		22
+#define NUM_TYPES			23
 
 typedef struct Typedef_tag Typedef;
 

@@ -51,6 +51,7 @@
 #include "HostMap.h"
 #include "copyright.h"
 #include "OnlineUser.h"
+#include "ZoneInfo.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,26 +93,6 @@ char *Str_leave_chatroom[] = {
 	"jumps out",
 	"bounces away",
 	"hops out",
-};
-
-typedef struct {
-	char *city;
-	int offset;
-} TimeZone;
-
-static TimeZone timezones[12] = {
-	{ "Anchorage",		-9 },
-	{ "Amsterdam",		+1 },
-	{ "Los Angeles",	-8 },
-	{ "Chicago",		-6 },
-	{ "New York",		-5 },
-	{ "Rio de Janeiro",	-3 },
-	{ "London",			0 },
-	{ "Cairo",			+2 },
-	{ "Moscow",			+3 },
-	{ "Bangkok",		+7 },
-	{ "Tokyo",			+8 },
-	{ "Sydney",			+10 },
 };
 
 
@@ -3483,7 +3464,9 @@ User *u;
 	Return;
 }
 
+
 #ifndef NO_WORLDCLOCK
+
 static void print_timezone(User *usr, time_t gmt, int zone) {
 struct tm *t;
 int hours;
@@ -3518,7 +3501,9 @@ char zone_color[16], zone_color2[16];
 		Print(usr, "    <%s>%-16s <%s>%02d<white>:<%s>%02d", zone_color, timezones[zone].city,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
-#endif
+
+#endif	/* NO_WORLDCLOCK */
+
 
 void print_calendar(User *usr) {
 time_t gmt, t;
