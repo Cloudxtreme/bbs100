@@ -1,3 +1,7 @@
+Changes as of March 1st 2005
+- removed obsoleted function getpass() from mkpasswd
+- (it's been a year!)
+
 Changes as of February 17th 2004
 - bug in color_strlen() when using multiple '<<<<' signs
 
