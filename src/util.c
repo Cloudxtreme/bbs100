@@ -873,12 +873,14 @@ unsigned long maxnum = 0UL, n;
 	We use a silly trick to do this ; walk the string in a reverse order and
 	insert comma's into the string representation
 
-	Note: returns a static buffer
+	Note: buf must be large enough (at least 21 bytes)
 */
-char *print_number(unsigned long ul) {
-static char buf[21];
+char *print_number(unsigned long ul, char *buf) {
 char buf2[21];
 int i, j = 0, n = 0;
+
+	if (buf == NULL)
+		return NULL;
 
 	buf[0] = 0;
 	sprintf(buf2, "%lu", ul);
@@ -908,11 +910,13 @@ int i, j = 0, n = 0;
 /*
 	print_number() with '1st', '2nd', '3rd', '4th', ... extension
 
-	Note: returns a static buffer
+	Note: buf must be large enough (at least 25 bytes)
 */
-char *print_numberth(unsigned long ul) {
-static char buf[25];
+char *print_numberth(unsigned long ul, char *buf) {
 char add[3];
+
+	if (buf == NULL)
+		return NULL;
 
 	if (((ul % 100UL) >= 10UL) && ((ul % 100UL) <= 20UL)) {
 		add[0] = 't';
@@ -941,7 +945,7 @@ char add[3];
 	}
 	add[2] = 0;
 
-	strcpy(buf, print_number(ul));
+	print_number(ul, buf);
 	strcat(buf, add);
 	return buf;
 }

@@ -839,8 +839,11 @@ int i;
 					m->reply_number = usr->message->number;
 /*
 				else
-					if (usr->curr_room != usr->mail)
-						sprintf(m->subject, "<message #%s>", print_number(usr->message->number));
+					if (usr->curr_room != usr->mail) {
+						char num_buf[25];
+
+						sprintf(m->subject, "<message #%s>", print_number(usr->message->number, num_buf));
+					}
 */
 				destroy_Message(usr->new_message);
 				usr->new_message = m;
@@ -1005,16 +1008,17 @@ void PrintPrompt(User *usr) {
 			if (usr->curr_msg != NULL) {
 				int remaining = -1;
 				MsgIndex *p;
+				char num_buf[25];
 
 				for(p = usr->curr_msg; p != NULL; p = p->next)
 					remaining++;
 
 				if (usr->flags & USR_ROOMNUMBERS)
 					Print(usr, "\n<white>[%u <yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						usr->curr_room->number, roomname, print_number(usr->curr_msg->number), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						usr->curr_room->number, roomname, print_number(usr->curr_msg->number, num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
 					Print(usr, "\n<white>[<yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						roomname, print_number(usr->curr_msg->number), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						roomname, print_number(usr->curr_msg->number, num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 			} else {
 				destroy_Message(usr->message);
 				usr->message = NULL;

@@ -412,6 +412,7 @@ void state_go_online(User *usr, char c) {
 int num_users = 0, num_friends = 0, i, new_mail;
 Joined *j;
 User *u;
+char num_buf[25];
 
 	if (usr == NULL)
 		return;
@@ -466,7 +467,7 @@ User *u;
 			usr->doing = cstrdup(buf);
 		}
 	}
-	Print(usr, "<green>This is your <yellow>%s<green> login\n", print_numberth(usr->logins));
+	Print(usr, "<green>This is your <yellow>%s<green> login\n", print_numberth(usr->logins, num_buf));
 
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
