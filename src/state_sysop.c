@@ -2579,10 +2579,10 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
 
-				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
-				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
 				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"

@@ -424,6 +424,9 @@ char num_buf[25];
 
 	Enter(state_go_online);
 
+	if (!usr->birth)
+		usr->birth = rtc;
+
 /* do periodic saving of user files */
 	add_Timer(&usr->timerq, new_Timer(PARAM_SAVE_TIMEOUT * SECS_IN_MIN, save_timeout, TIMER_RESTART));
 /*
@@ -533,6 +536,23 @@ char num_buf[25];
 
 	if (usr->reminder != NULL && usr->reminder[0])
 		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
+
+/* bbs birthday */
+	if (usr->logins > 1) {
+		struct tm *tm;
+		int bday_day, bday_mon, bday_year;
+		char num_buf[25];
+
+		tm = user_time(usr, usr->birth);
+		bday_day = tm->tm_mday;
+		bday_mon = tm->tm_mon;
+		bday_year = tm->tm_year;
+
+		tm = user_time(usr, (time_t)0UL);
+
+		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
+			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
+	}
 
 /* if booting/shutting down, inform the user */
 	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)

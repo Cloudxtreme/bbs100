@@ -689,6 +689,10 @@ struct tm *tm;
 	}
 }
 
+/*
+	WARNING: return value is static
+	(because gmtime() returns a static value)
+*/
 struct tm *tz_time(Timezone *tz, time_t tt) {
 struct tm *tm;
 time_t the_time;
@@ -736,6 +740,8 @@ time_t the_time;
 /*
 	return 'localtime' for user
 	(each user has its own timezone)
+
+	WARNING: return value is static
 */
 struct tm *user_time(User *usr, time_t tt) {
 	if (usr != NULL)

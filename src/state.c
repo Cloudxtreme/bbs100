@@ -3611,7 +3611,7 @@ char zone_color[16], zone_color2[16];
 void print_calendar(User *usr) {
 time_t t;
 struct tm *tmp;
-int w, d, today, today_month, today_year, old_month, green_color;
+int w, d, today, today_month, today_year, bday_day, bday_mon, bday_year, old_month, green_color;
 char date_buf[MAX_LINE];
 
 	if (usr == NULL)
@@ -3629,6 +3629,11 @@ char date_buf[MAX_LINE];
 	today = tmp->tm_mday;
 	today_month = tmp->tm_mon;
 	today_year = tmp->tm_year;
+
+	tmp = user_time(usr, usr->birth);
+	bday_day = tmp->tm_mday;
+	bday_mon = tmp->tm_mon;
+	bday_year = tmp->tm_year;
 
 	Put(usr, "\n");
 	if (PARAM_HAVE_CALENDAR)
@@ -3652,27 +3657,29 @@ char date_buf[MAX_LINE];
 		Put(usr, "<green>");
 
 	for(w = 0; w < 5; w++) {
-		if (PARAM_HAVE_CALENDAR)
+		if (PARAM_HAVE_CALENDAR) {
 			Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
 
-		for(d = 0; d < 7; d++) {
-			tmp = user_time(usr, t);
+			for(d = 0; d < 7; d++) {
+				tmp = user_time(usr, t);
 
-			if (PARAM_HAVE_CALENDAR && tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
-				Print(usr, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
-			else {
-				if (old_month != tmp->tm_mon) {
-					green_color ^= 1;
-
-					if (PARAM_HAVE_CALENDAR)
-						Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
-
-					old_month = tmp->tm_mon;
+/* highlight today and bbs birthday */
+				if  (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
+					Print(usr, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+				else {
+					if (tmp->tm_mday == bday_day && tmp->tm_mon == bday_mon && tmp->tm_year > bday_year)
+						Print(usr, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+					else {
+						if (old_month != tmp->tm_mon) {
+							green_color ^= 1;
+							Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+							old_month = tmp->tm_mon;
+						}
+						Print(usr, " %2d", tmp->tm_mday);
+					}
 				}
-				if (PARAM_HAVE_CALENDAR)
-					Print(usr, " %2d", tmp->tm_mday);
+				t += SECS_IN_DAY;
 			}
-			t += SECS_IN_DAY;
 		}
 		if (PARAM_HAVE_WORLDCLOCK) {
 			if (PARAM_HAVE_CALENDAR)
