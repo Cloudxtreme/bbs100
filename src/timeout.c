@@ -82,9 +82,8 @@ void save_timeout(void *v) {
 User *usr;
 
 	usr = (User *)v;
-	if (save_User(usr)) {
+	if (save_User(usr))
 		log_err("failed to periodically save user %s", usr->name);
-	}
 }
 
 void reboot_timeout(void *v) {

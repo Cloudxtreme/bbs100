@@ -43,6 +43,7 @@
 #include "strtoul.h"
 #include "Param.h"
 #include "Memory.h"
+#include "FileFormat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,6 +225,271 @@ User *u;
 }
 
 
+int load_User(User *usr, char *username, int flags) {
+File *f;
+char filename[MAX_PATHLEN];
+int version;
+
+	if (usr == NULL || username == NULL || !*username)
+		return -1;
+
+/*
+	these should already be NULL but I'm just making sure
+*/
+	listdestroy_StringList(usr->friends);
+	listdestroy_StringList(usr->enemies);
+	listdestroy_StringList(usr->info);
+	usr->friends = usr->enemies = usr->info = NULL;
+
+	listdestroy_Joined(usr->rooms);
+	usr->rooms = NULL;
+
+	destroy_Room(usr->mail);
+	usr->mail = NULL;
+
+/* open the file for loading */
+	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
+	path_strip(filename);
+
+	if ((f = Fopen(filename)) == NULL)
+		return -1;
+
+/* determine file version */
+	version = fileformat_version(f);
+	switch(version) {
+		case -1:
+			log_err("load_User(): error trying to determine file format version of %s", filename);
+			break;
+
+		case 0:
+			Fclose(f);
+			return load_User_version0(usr, username, flags);
+
+		case 1:
+			return load_User_version1(f, usr, username, flags);
+
+		default:
+			log_err("load_User(): don't know how to load file format version %d of %s", version, filename);
+	}
+	Fclose(f);
+	return -1;
+}
+
+
+int load_User_version1(File *f, User *usr, char *username, int flags) {
+char buf[MAX_PATHLEN], *p;
+
+	if (flags & LOAD_USER_ROOMS)
+		usr->mail = load_Mail(username);
+
+	while(Fgets(f, buf, MAX_PATHLEN) != NULL) {
+		cstrip_line(buf);
+		if ((p = cstrchr(buf, '=')) == NULL)		/* split 'key=value' line */
+			FF1_ERROR;
+
+		*p = 0;
+		p++;
+		if (!*p)
+			continue;
+/*
+	the fun starts here
+	I thought long about how to optimize this code, but the easiest and most
+	comprehensible is really when you just write it all out using macros, and not
+	use any tables with data format loader handler functions and all that crap
+*/
+		FF1_LOAD_LEN("name", usr->name, MAX_NAME);
+
+		if (flags & LOAD_USER_PASSWORD)
+			FF1_LOAD_LEN("passwd", usr->passwd, MAX_CRYPTED_PASSWD);
+
+		if (flags & LOAD_USER_ADDRESS) {
+			FF1_LOAD_DUP("real_name", usr->real_name);
+			FF1_LOAD_DUP("street", usr->street);
+			FF1_LOAD_DUP("zipcode", usr->zipcode);
+			FF1_LOAD_DUP("city", usr->city);
+			FF1_LOAD_DUP("state", usr->state);
+			FF1_LOAD_DUP("country", usr->country);
+			FF1_LOAD_DUP("phone", usr->phone);
+			FF1_LOAD_DUP("email", usr->email);
+			FF1_LOAD_DUP("www", usr->www);
+			FF1_LOAD_DUP("doing", usr->doing);
+			FF1_LOAD_DUP("reminder", usr->reminder);
+			FF1_LOAD_DUP("default_anon", usr->default_anon);
+		}
+		if (!strcmp(buf, "from_ip")) {
+			Free(usr->tmpbuf[TMP_FROM_HOST]);
+			usr->tmpbuf[TMP_FROM_HOST] = NULL;
+			FF1_LOAD_DUP("from_ip", usr->tmpbuf[TMP_FROM_HOST]);
+		}
+		if (!strcmp(buf, "from_ipnum")) {
+			Free(usr->tmpbuf[TMP_FROM_IP]);
+			usr->tmpbuf[TMP_FROM_IP] = NULL;
+			FF1_LOAD_DUP("from_ipnum", usr->tmpbuf[TMP_FROM_IP]);
+		}
+		if (flags & LOAD_USER_DATA) {
+			FF1_LOAD_ULONG("birth", usr->birth);
+			FF1_LOAD_ULONG("last_logout", usr->last_logout);
+			FF1_LOAD_ULONG("logins", usr->logins);
+			FF1_LOAD_ULONG("total_time", usr->total_time);
+			FF1_LOAD_ULONG("xsent", usr->xsent);
+			FF1_LOAD_ULONG("xrecv", usr->xrecv);
+			FF1_LOAD_ULONG("esent", usr->esent);
+			FF1_LOAD_ULONG("erecv", usr->erecv);
+			FF1_LOAD_ULONG("fsent", usr->fsent);
+			FF1_LOAD_ULONG("frecv", usr->frecv);
+			FF1_LOAD_ULONG("posted", usr->posted);
+			FF1_LOAD_ULONG("read", usr->read);
+
+			FF1_LOAD_INT("time_disp", usr->time_disp);
+
+/* flags */
+			if (!strcmp(buf, "flags")) {
+				FF1_LOAD_HEX("flags", usr->flags);
+				usr->flags &= USR_ALL;			/* reset non-existant flags */
+			}
+/* custom colors */
+			if (!strcmp(buf, "colors")) {
+				int i;
+
+				sscanf(p, "%d %d %d %d %d %d %d %d %d",
+					&usr->colors[BACKGROUND],
+					&usr->colors[RED],
+					&usr->colors[GREEN],
+					&usr->colors[YELLOW],
+					&usr->colors[BLUE],
+					&usr->colors[MAGENTA],
+					&usr->colors[CYAN],
+					&usr->colors[WHITE],
+					&usr->colors[HOTKEY]);
+
+/* check for valid values */
+				for(i = 0; i < 8; i++)
+					if (usr->colors[i] < 0 || usr->colors[i] > 7)
+						usr->colors[i] = i;
+
+				if (usr->colors[8] < 0 || usr->colors[8] > 7)
+					usr->colors[8] = 3;
+
+				continue;
+			}
+		}
+/* quicklist */
+		if ((flags & LOAD_USER_QUICKLIST) && !strcmp(buf, "quick")) {
+			char *q;
+			int n;
+
+			if ((q = cstrchr(p, ' ')) == NULL)
+				FF1_ERROR;
+
+			*q = 0;
+			q++;
+			if (!*q)
+				continue;
+
+			n = atoi(p);
+			if (n < 0 || n > 9)
+				FF1_ERROR;
+
+			if (strlen(q) >= MAX_NAME)
+				FF1_ERROR;
+
+			if (!user_exists(q))
+				continue;
+
+			usr->quick[n] = cstrdup(q);
+			continue;
+		}
+		if (flags & LOAD_USER_FRIENDLIST)
+			FF1_LOAD_USERLIST("friends", usr->friends);
+
+		if (flags & LOAD_USER_ENEMYLIST)
+			FF1_LOAD_USERLIST("enemies", usr->enemies);
+
+		if (flags & LOAD_USER_INFO)
+			FF1_LOAD_STRINGLIST("info", usr->info);
+
+/* joined rooms */
+		if ((flags & LOAD_USER_ROOMS) && !strcmp(buf, "rooms")) {
+			Joined *j;
+			Room *r;
+			MsgIndex *m;
+			char zapped;
+			unsigned int number, roominfo_read;
+			unsigned long generation, last_read;
+/*
+	When loading joined rooms, we have to check whether the room still exists,
+	whether the room has changed or not, and whether we're still welcome there
+*/
+			if (sscanf(p, "%c %u %lu %lu %u", &zapped, &number, &generation,
+				&last_read, &roominfo_read) != 5)
+				FF1_ERROR;
+
+/* already joined? */
+			if ((j = in_Joined(usr->rooms, number)) != NULL)
+				continue;
+
+			if ((r = find_Roombynumber_username(usr, username, number)) == NULL)	/* does the room still exist? */
+				continue;
+/*
+	fix last_read field if too large (room was cleaned out)
+*/
+			m = unwind_MsgIndex(r->msgs);
+			if (m == NULL)
+				last_read = 0UL;
+			else
+				if (last_read > m->number)
+					last_read = m->number;
+
+			if (generation != r->generation) {			/* room has changed */
+				generation = r->generation;
+				last_read = 0UL;						/* begin reading */
+
+				if ((r->flags & ROOM_HIDDEN)			/* if hidden or not welcome... */
+					|| in_StringList(r->kicked, usr->name) != NULL
+					|| ((r->flags & ROOM_INVITE_ONLY)
+					&& in_StringList(r->invited, usr->name) == NULL)) {
+					unload_Room(r);
+					continue;
+				}
+				if (zapped == 'Z')
+					zapped = 'J';						/* auto-unzap it */
+			}
+			if ((j = new_Joined()) == NULL) {
+				unload_Room(r);
+				FF1_ERROR;
+			}
+			if (zapped == 'Z' && !(r->flags & ROOM_NOZAP))
+				j->zapped = 1;
+
+			j->number = number;
+			j->generation = generation;
+			j->last_read = last_read;
+			j->roominfo_read = roominfo_read;
+
+			add_Joined(&usr->rooms, j);
+			unload_Room(r);
+			continue;
+		}
+
+/*
+	add site-specific stuff here
+*/
+
+
+/*
+	Too bad, we can't trigger an error here because we get here all the time
+	due to the way we do partial loading with the LOAD_USER_xxx flags
+
+		log_err("load_User(): unknown keyword '%s' in %s/%c/%s/UserData", buf, PARAM_USERDIR, *username, username);
+		FF1_ERROR;
+*/
+	}
+	Fclose(f);
+	return 0;
+}
+
+
+
 #define LOAD_USERSTRING(x)									\
 	Free(x);												\
 	(x) = NULL;												\
@@ -248,7 +514,13 @@ User *u;
 			goto err_load_User;								\
 	}
 
-int load_User(User *usr, char *username, int flags) {
+/*
+	load_User_version0() loads old-style UserData files, in which everything
+	is saved in a specific order
+	This routine is old, but still in use as long as there are userfiles
+	on your system that have not been converted yet.
+*/
+int load_User_version0(User *usr, char *username, int flags) {
 File *f;
 char buf[MAX_PATHLEN];
 StringList *sl;
@@ -588,21 +860,45 @@ int i;
 
 end_load_User:
 	Fclose(f);
-	return site_load_User(usr, username, flags);
+	return site_load_User_version0(usr, username, flags);
 
 err_load_User:
 	Fclose(f);
 	return -1;
 }
 
+int site_load_User_version0(User *usr, char *username, int flags) {
+/*
+File *f;
+char buf[MAX_PATHLEN];
 
-#define SAVE_USERSTRING(x)	Fputs(f, ((x) == NULL) ? "" : (x));
+	if (usr == NULL)
+		return -1;
+
+	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, *username, username);
+	path_strip(buf);
+
+	if ((f = Fopen(buf)) == NULL)
+		return 0;
+
+	DO SITE-SPECIFIC STUFF HERE
+*/
+	return 0;
+}
+
+
+
 
 int save_User(User *usr) {
-File *f;
+	return save_User_version1(usr);
+}
+
+int save_User_version1(User *usr) {
 char buf[MAX_LINE];
-Joined *j;
 int i;
+File *f;
+Joined *j;
+StringList *sl;
 
 	if (usr == NULL)
 		return -1;
@@ -622,38 +918,45 @@ int i;
 		Perror(usr, "Failed to save userfile");
 		Return -1;
 	}
-	Fputs(f, usr->passwd);
+	Fputs(f, "version=1");							/* file format version */
 
-	SAVE_USERSTRING(usr->real_name);
-	SAVE_USERSTRING(usr->street);
-	SAVE_USERSTRING(usr->zipcode);
-	SAVE_USERSTRING(usr->city);
-	SAVE_USERSTRING(usr->state);
-	SAVE_USERSTRING(usr->country);
-	SAVE_USERSTRING(usr->phone);
-	SAVE_USERSTRING(usr->email);
-	SAVE_USERSTRING(usr->www);
-	SAVE_USERSTRING(usr->doing);
-	SAVE_USERSTRING(usr->reminder);
-	SAVE_USERSTRING(usr->default_anon);
+	FF1_SAVE_STR("name", usr->name);
+	FF1_SAVE_STR("passwd", usr->passwd);
+	FF1_SAVE_STR("real_name", usr->real_name);
+	FF1_SAVE_STR("street", usr->street);
+	FF1_SAVE_STR("zipcode", usr->zipcode);
+	FF1_SAVE_STR("city", usr->city);
+	FF1_SAVE_STR("state", usr->state);
+	FF1_SAVE_STR("country", usr->country);
+	FF1_SAVE_STR("phone", usr->phone);
+	FF1_SAVE_STR("email", usr->email);
+	FF1_SAVE_STR("www", usr->www);
+	FF1_SAVE_STR("doing", usr->doing);
+	FF1_SAVE_STR("reminder", usr->reminder);
+	FF1_SAVE_STR("default_anon", usr->default_anon);
 
-	Fputs(f, usr->from_ip);
-	Fprintf(f, "%d.%d.%d.%d", (int)((usr->ipnum >> 24) & 255), (int)((usr->ipnum >> 16) & 255), (int)((usr->ipnum >> 8) & 255), (int)(usr->ipnum & 255));
+	FF1_SAVE_STR("from_ip", usr->from_ip);
 
-	Fprintf(f, "%lu", (unsigned long)usr->birth);
-	Fprintf(f, "%lu", (unsigned long)usr->last_logout);
-	Fprintf(f, "0x%X", usr->flags);
-	Fprintf(f, "%lu", usr->logins);
-	Fprintf(f, "%lu", usr->total_time);
+	Fprintf(f, "from_ipnum=%d.%d.%d.%d",
+		(int)((usr->ipnum >> 24) & 255),
+		(int)((usr->ipnum >> 16) & 255),
+		(int)((usr->ipnum >> 8) & 255),
+		(int)(usr->ipnum & 255)
+	);
+	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
+	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
+	Fprintf(f, "flags=0x%X", usr->flags);
+	Fprintf(f, "logins=%lu", usr->logins);
+	Fprintf(f, "total_time=%lu", usr->total_time);
 
-	Fprintf(f, "%lu", usr->xsent);
-	Fprintf(f, "%lu", usr->xrecv);
-	Fprintf(f, "%lu", usr->esent);
-	Fprintf(f, "%lu", usr->erecv);
-	Fprintf(f, "%lu", usr->posted);
-	Fprintf(f, "%lu", usr->read);
+	Fprintf(f, "xsent=%lu", usr->xsent);
+	Fprintf(f, "xrecv=%lu", usr->xrecv);
+	Fprintf(f, "esent=%lu", usr->esent);
+	Fprintf(f, "erecv=%lu", usr->erecv);
+	Fprintf(f, "posted=%lu", usr->posted);
+	Fprintf(f, "read=%lu", usr->read);
 
-	Fprintf(f, "%d %d %d %d %d %d %d %d %d",
+	Fprintf(f, "colors=%d %d %d %d %d %d %d %d %d",
 		usr->colors[BACKGROUND],
 		usr->colors[RED],
 		usr->colors[GREEN],
@@ -665,73 +968,37 @@ int i;
 		usr->colors[HOTKEY]);
 
 	for(j = usr->rooms; j != NULL; j = j->next)
-		Fprintf(f, "%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
+		Fprintf(f, "rooms=%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
 			j->generation, j->last_read, j->roominfo_read);
-	Fprintf(f, "");
 
 	for(i = 0; i < 10; i++)
-		SAVE_USERSTRING(usr->quick[i]);
+		if (usr->quick[i] != NULL)
+			Fprintf(f, "quick=%d %s", i, usr->quick[i]);
 
-	Fputlist(f, usr->friends);
-	Fputlist(f, usr->enemies);
-	Fputlist(f, usr->info);
+	for(sl = usr->friends; sl != NULL; sl = sl->next)
+		FF1_SAVE_STR("friends", sl->str);
 
-	Fprintf(f, "%d", usr->time_disp);
-	Fprintf(f, "%lu", usr->fsent);
-	Fprintf(f, "%lu", usr->frecv);
+	for(sl = usr->enemies; sl != NULL; sl = sl->next)
+		FF1_SAVE_STR("enemies", sl->str);
+
+	for(sl = usr->info; sl != NULL; sl = sl->next)
+		FF1_SAVE_STR("info", sl->str);
+
+	Fprintf(f, "time_disp=%d", usr->time_disp);
+	Fprintf(f, "fsent=%lu", usr->fsent);
+	Fprintf(f, "frecv=%lu", usr->frecv);
+
+/*
+	add site-specific stuff here
+
+	it's okay to add new stuff to the same UserData file, as long as you don't use
+	any keywords that I am going to use in future versions ...
+*/
 
 	Fclose(f);
-	Return site_save_User(usr);
+	Return 0;
 }
 
-int site_load_User(User *usr, char *username, int flags) {
-/*
-File *f;
-char buf[MAX_PATHLEN];
-
-	if (usr == NULL)
-		return -1;
-
-	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, *username, username);
-	path_strip(buf);
-
-	if ((f = Fopen(buf)) == NULL)
-		return 0;
-
-DO SITE-SPECIFIC STUFF HERE
-*/
-	return 0;
-}
-
-int site_save_User(User *usr) {
-/*
-File *f;
-char buf[MAX_PATHLEN];
-
-	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, usr->name[0], usr->name);
-	path_strip(buf);
-
-	if ((f = Fcreate(buf)) == NULL) {
-		Perror(usr, "Failed to save site-specific userfile");
-		Return -1;
-	}
-
-DO SITE-SPECIFIC STUFF HERE
-*/
-	return 0;
-}
-
-
-User *in_UserList(User *list, User *usr) {
-User *u;
-
-	for(u = list; u != NULL; u = u->next)
-		if (u == usr)
-			return u;
-	return NULL;
-}
-
-/*****************************************************************************/
 
 /*
 	process input and pass it on to the function that is on the callstack

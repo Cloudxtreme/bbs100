@@ -38,6 +38,7 @@
 #include "CallStack.h"
 #include "sys_time.h"
 #include "Param.h"
+#include "CachedFile.h"
 
 #include <sys/types.h>
 
@@ -177,32 +178,24 @@ void destroy_User(User *);
 
 int load_User(User *, char *, int);
 int save_User(User *);
-int site_load_User(User *, char *, int);
-int site_save_User(User *);
 
-void Print(User *, char *, ...);
-void Tell(User *, char *, ...);
+int load_User_version0(User *, char *, int);
+int site_load_User_version0(User *, char *, int);
+
+int load_User_version1(File *, User *, char *, int);
+int save_User_version1(User *);
+
 void Write(User *, char *);
 void Writechar(User *, char);
 void Flush(User *);
-void recvEmote(User *, User *, time_t, char *);
-void recvxMsg(User *, User *, time_t, char **);	
-void bufferMsg1(User *, char *);
-void bufferMsg2(User *, char *, char *);
-void bufferMsg3(User *, char *, char *, char **);
-void spewBuffer(User *);
+void Print(User *, char *, ...);
+void Tell(User *, char *, ...);
+void notify_friends(User *, char *);
 
 void process(User *, char);				/* process input character */
 
-void notify_friends(User *, char *);
-
-void do_room_prompt(User *, char);
-
 extern User *AllUsers;
 extern User *this_user;
-extern char RoomName[MAX_NAME];
-
-User *in_UserList(User *, User *);
 
 #endif	/* USER_H_WJ97 */
 

@@ -40,7 +40,7 @@
 #define SECS_IN_WEEK		(7 * SECS_IN_DAY)
 
 #define UserError(a,b,c,d,e,f)	Put((a), "<red>ERROR: <yellow>" b "\n\n");	\
-								log_err("%d %s %s%s: %s\n", (c), (d), (e), (b))
+								log_err("%d %s %s%s: [%s] %s", (c), (d), (e), (f), (a)->name, (b))
 
 #ifdef __GNUC__
   #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__, __PRETTY_FUNCTION__, "()")
