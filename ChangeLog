@@ -1,3 +1,6 @@
+Changes as of October 28th
+- Timers have void* argument instead of User* argument
+
 Changes as of October 27th 2003
 - automatic log archiving
 - option logrotate: daily/weekly/monthly/none
