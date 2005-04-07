@@ -85,8 +85,10 @@ void state_sysop_menu(User *usr, char c) {
 			else
 				Put(usr, "\n");
 
+			if (PARAM_HAVE_CATEGORY)
+				Put(usr, "Manage cate<hotkey>gories\n");
+
 			Put(usr,
-				"Manage room categ<hotkey>ories\n"
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
 				"<hotkey>Banish user                       Edit <hotkey>Wrappers\n"
 			);
@@ -274,11 +276,14 @@ void state_sysop_menu(User *usr, char c) {
 			}
 			break;
 
-		case 'o':
-		case 'O':
-			Put(usr, "<white>Categories\n");
-			CALL(usr, STATE_CATEGORIES_MENU);
-			Return;
+		case 'g':
+		case 'G':
+			if (PARAM_HAVE_CATEGORY) {
+				Put(usr, "<white>Categories\n");
+				CALL(usr, STATE_CATEGORIES_MENU);
+				Return;
+			}
+			break;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] # ", PARAM_NAME_SYSOP);
 	Return;
@@ -381,7 +386,11 @@ int r;
 		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
 
 		add_Room(&AllRooms, room);					/* add room to all rooms list */
-		AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
+
+		if (PARAM_HAVE_CATEGORY)
+			AllRooms = sort_Room(AllRooms, room_sort_by_category);
+		else
+			AllRooms = sort_Room(AllRooms, room_sort_by_number);
 
 		JMP(usr, STATE_ROOM_CONFIG_MENU);
 		usr->runtime_flags |= RTF_ROOM_EDITED;
@@ -2750,7 +2759,7 @@ void state_features_menu(User *usr, char c) {
 				"X <hotkey>Reply              <white>%-3s<magenta>        Ch<hotkey>at rooms           <white>%s<magenta>\n"
 				"Multi <hotkey>Language       <white>%-3s<magenta>        <hotkey>Home> room           <white>%s<magenta>\n"
 				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Mail> room           <white>%s<magenta>\n"
-				"<hotkey>World clock          <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
+				"<hotkey>World clock          <white>%-3s<magenta>        Cate<hotkey>gories           <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
@@ -2762,8 +2771,11 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
-				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
+				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on"
 			);
+			Print(usr,
+				"Display warnings     <white>%s<magenta>\n",
+				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on");
 			break;
 
 		case ' ':
@@ -2832,6 +2844,20 @@ void state_features_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 			TOGGLE_FEATURE(PARAM_HAVE_HOMEROOM, "the Home> room");
+
+		case 'g':
+		case 'G':
+			PARAM_HAVE_CATEGORY ^= PARAM_TRUE;
+			Print(usr, "<white>%s categories\n", (PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "Disabling" : "Enabling");
+			usr->runtime_flags |= RTF_PARAM_EDITED;
+
+			if (PARAM_HAVE_CATEGORY)
+				AllRooms = sort_Room(AllRooms, room_sort_by_category);
+			else
+				AllRooms = sort_Room(AllRooms, room_sort_by_number);
+
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'd':
 		case 'D':

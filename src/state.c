@@ -2828,7 +2828,7 @@ char *category = NULL;
 			if ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
 				continue;
 		}
-		if ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category))) {
+		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
 			usr->more_text = add_String(&usr->more_text, "");
 			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
 			category = r->category;
@@ -2868,7 +2868,7 @@ char *category = NULL;
 			&& in_StringList(r->room_aides, usr->name) == NULL)
 			continue;
 
-		if ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category))) {
+		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
 			usr->more_text = add_String(&usr->more_text, "");
 			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
 			category = r->category;
@@ -2947,7 +2947,7 @@ Joined *j;
 		} else
 			usr->more_text = add_String(&usr->more_text, "<cyan>%s is<white>: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
 	}
-	if (usr->curr_room->category && usr->curr_room->category[0]) {
+	if (PARAM_HAVE_CATEGORY && usr->curr_room->category && usr->curr_room->category[0]) {
 		if (!in_Category(usr->curr_room->category)) {
 			Free(usr->curr_room->category);
 			usr->curr_room->category = NULL;

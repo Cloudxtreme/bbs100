@@ -53,11 +53,11 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "\n"
 				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
 
-			if (category != NULL) {
+			if (PARAM_HAVE_CATEGORY && category != NULL) {
 				if (usr->curr_room->category != NULL)
-					Print(usr, "Categ<hotkey>ory                    <white>[%s]<magenta>\n", usr->curr_room->category);
+					Print(usr, "Cate<hotkey>gory                    <white>[%s]<magenta>\n", usr->curr_room->category);
 				else
-					Put(usr, "Categ<hotkey>ory\n");
+					Put(usr, "Cate<hotkey>gory\n");
 			}
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
 				Put(usr, "<hotkey>Invite/uninvite             Show <hotkey>invited\n");
@@ -138,9 +138,9 @@ void state_room_config_menu(User *usr, char c) {
 			read_more(usr);
 			Return;
 
-		case 'o':
-		case 'O':
-			if (category != NULL) {
+		case 'g':
+		case 'G':
+			if (PARAM_HAVE_CATEGORY) {
 				Put(usr, "<white>Category\n");
 				CALL(usr, STATE_CHOOSE_CATEGORY);
 				Return;
@@ -425,7 +425,11 @@ StringList *sl;
 				Free(usr->curr_room->category);
 				usr->curr_room->category = NULL;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
-				AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
+
+				if (PARAM_HAVE_CATEGORY)
+					AllRooms = sort_Room(AllRooms, room_sort_by_category);
+				else
+					AllRooms = sort_Room(AllRooms, room_sort_by_number);
 			}
 			RET(usr);
 			Return;
@@ -447,7 +451,11 @@ StringList *sl;
 			Free(usr->curr_room->category);
 			usr->curr_room->category = p;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
-			AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
+
+			if (PARAM_HAVE_CATEGORY)
+				AllRooms = sort_Room(AllRooms, room_sort_by_category);
+			else
+				AllRooms = sort_Room(AllRooms, room_sort_by_number);
 		}
 		RET(usr);
 		Return;

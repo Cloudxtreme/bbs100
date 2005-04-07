@@ -760,7 +760,7 @@ void unload_Room(Room *r) {
 	}
 }
 
-int room_sort_func(void *v1, void *v2) {
+int room_sort_by_category(void *v1, void *v2) {
 int i;
 Room *r1, *r2;
 
@@ -799,6 +799,27 @@ Room *r1, *r2;
 		return 0;
 	}
 	return i;
+}
+
+int room_sort_by_number(void *v1, void *v2) {
+Room *r1, *r2;
+
+	if (v1 == NULL || v2 == NULL)
+		return 0;
+
+	r1 = *(Room **)v1;
+	r2 = *(Room **)v2;
+
+	if (r1 == NULL || r2 == NULL)
+		return 0;
+
+	if (r1->number < r2->number)
+		return -1;
+
+	if (r1->number > r2->number)
+		return 1;
+
+	return 0;
 }
 
 int msgs_sort_func(void *v1, void *v2) {
@@ -889,7 +910,10 @@ unsigned int u;
 	}
 	closedir(dirp);
 
-	AllRooms = sort_Room(AllRooms, room_sort_func);
+	if (PARAM_HAVE_CATEGORY)
+		AllRooms = sort_Room(AllRooms, room_sort_by_category);
+	else
+		AllRooms = sort_Room(AllRooms, room_sort_by_number);
 
 /*
 	find the Lobby>

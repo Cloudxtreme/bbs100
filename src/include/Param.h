@@ -145,7 +145,8 @@
 #define PARAM_HAVE_HOMEROOM			param[PARAM_HAVE_N+12].val.bool
 #define PARAM_HAVE_MAILROOM			param[PARAM_HAVE_N+13].val.bool
 #define PARAM_HAVE_LANGUAGE			param[PARAM_HAVE_N+14].val.bool
-#define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+15].val.bool
+#define PARAM_HAVE_CATEGORY			param[PARAM_HAVE_N+15].val.bool
+#define PARAM_DISABLED_MSG			param[PARAM_HAVE_N+16].val.bool
 
 
 #define DEFAULT_PORT_1234			1234	/* default port number */
