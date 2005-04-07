@@ -971,7 +971,7 @@ StringList *sl;
 		Return;
 	}
 	if (usr->runtime_flags & RTF_LOCKED) {
-		Print(from, "<red>Sorry, but <yellow>%s<red> has suddenly locked the terminal\n", usr->name);
+		Print(from, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", usr->name);
 		goto Rcv_Remove_Recipient;
 	}
 	if (!(from->runtime_flags & RTF_SYSOP)) {
@@ -982,7 +982,7 @@ StringList *sl;
 		}
 		if ((usr->flags & USR_X_DISABLED)
 			&& (in_StringList(usr->friends, from->name) == NULL)) {
-			Print(from, "<red>Sorry, but <yellow>%s<red> has suddenly disabled message reception\n", usr->name);
+			Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
 
 Rcv_Remove_Recipient:
 			if ((sl = in_StringList(from->recipients, usr->name)) != NULL) {

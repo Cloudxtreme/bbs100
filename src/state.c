@@ -1612,7 +1612,7 @@ void loop_send_msg(User *usr, char c) {
 				Return;
 			} else {
 				if (u->runtime_flags & RTF_LOCKED) {
-					Print(usr, "<red>Sorry, but <yellow>%s<red> has suddenly locked the terminal\n", sl->str);
+					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
 					if (PARAM_HAVE_MAILROOM)
 						CALL(usr, STATE_MAIL_SEND_MSG);
 					Return;
@@ -1620,7 +1620,7 @@ void loop_send_msg(User *usr, char c) {
 					if (!(usr->runtime_flags & RTF_SYSOP)
 						&& (u->flags & USR_X_DISABLED)
 						&& (in_StringList(u->friends, usr->name) == NULL)) {
-						Print(usr, "<red>Sorry, but <yellow>%s<red> has suddenly disabled message reception\n", sl->str);
+						Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
 						if (PARAM_HAVE_MAILROOM)
 							CALL(usr, STATE_MAIL_SEND_MSG);
 						Return;
