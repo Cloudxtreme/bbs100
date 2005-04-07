@@ -26,6 +26,7 @@
 #include "User.h"
 
 #define STATE_ROOM_CONFIG_MENU	state_room_config_menu
+#define STATE_CHOOSE_CATEGORY	state_choose_category
 #define STATE_CHANGE_ROOMINFO	state_change_roominfo
 #define STATE_INVITE_PROMPT		state_invite_prompt
 #define STATE_KICKOUT_PROMPT	state_kickout_prompt
@@ -33,6 +34,7 @@
 #define STATE_DELETE_ROOM		state_delete_room
 
 void state_room_config_menu(User *, char);
+void state_choose_category(User *, char);
 void state_change_roominfo(User *, char);
 void state_edit_roominfo(User *, char);
 void state_save_roominfo(User *, char);

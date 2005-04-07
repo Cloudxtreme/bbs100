@@ -52,6 +52,8 @@
 #include "copyright.h"
 #include "OnlineUser.h"
 #include "Worldclock.h"
+#include "Category.h"
+#include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2932,6 +2934,13 @@ Joined *j;
 			usr->more_text = add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
 		} else
 			usr->more_text = add_String(&usr->more_text, "<cyan>%s is<white>: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
+	}
+	if (usr->curr_room->category && usr->curr_room->category[0]) {
+		if (!in_Category(usr->curr_room->category)) {
+			Free(usr->curr_room->category);
+			usr->curr_room->category = NULL;
+		} else
+			usr->more_text = add_String(&usr->more_text, "<cyan>Category<white>:<yellow> %s", usr->curr_room->category);
 	}
 	usr->more_text = add_String(&usr->more_text, "<green>");
 

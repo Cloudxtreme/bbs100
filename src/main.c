@@ -48,6 +48,7 @@
 #include "Timezone.h"
 #include "Worldclock.h"
 #include "Lang.h"
+#include "Category.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -322,6 +323,7 @@ char buf[256];
 			printf("%s\n", name_Timezone(tz));
 	}
 	init_Worldclock();
+	init_Category();
 
 	if (init_Room()) {
 		printf("fatal: Failed to initialize the rooms message system\n");

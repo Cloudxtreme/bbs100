@@ -71,7 +71,7 @@ typedef struct Room_tag Room;
 struct Room_tag {
 	List(Room);
 
-	char name[MAX_LINE];
+	char *name, *category;
 	unsigned int number, flags, roominfo_changed;
 	unsigned long generation;
 	MsgIndex *msgs;

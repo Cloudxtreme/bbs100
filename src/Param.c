@@ -72,6 +72,7 @@ Param param[] = {
 	{ PARAM_STRING, "hosts_access_file",{ NULL },	{ "etc/hosts_access" },			},
 	{ PARAM_STRING,	"banished_file",	{ NULL },	{ "etc/banished" },				},
 	{ PARAM_STRING,	"stat_file",		{ NULL },	{ "etc/stats" },				},
+	{ PARAM_STRING, "categories_file",	{ NULL },	{ "etc/categories" },			},
 	{ PARAM_STRING,	"su_passwd_file",	{ NULL },	{ "etc/su_passwd" },			},
 	{ PARAM_STRING,	"pid_file",			{ NULL },	{ "etc/pid" },					},
 	{ PARAM_STRING,	"symtab_file",		{ NULL },	{ "etc/symtab" },				},

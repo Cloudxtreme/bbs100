@@ -51,6 +51,7 @@
 #include "Memory.h"
 #include "HostMap.h"
 #include "OnlineUser.h"
+#include "Category.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +86,7 @@ void state_sysop_menu(User *usr, char c) {
 				Put(usr, "\n");
 
 			Put(usr,
+				"Manage room categ<hotkey>ories\n"
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
 				"<hotkey>Banish user                       Edit <hotkey>Wrappers\n"
 			);
@@ -271,8 +273,255 @@ void state_sysop_menu(User *usr, char c) {
 				}
 			}
 			break;
+
+		case 'o':
+		case 'O':
+			Put(usr, "<white>Categories\n");
+			CALL(usr, STATE_CATEGORIES_MENU);
+			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] # ", PARAM_NAME_SYSOP);
+	Return;
+}
+
+
+void state_create_room(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_create_room);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Enter new room name<yellow>: ");
+
+	r = edit_roomname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		Room *room, *rm;
+		Joined *j;
+		char buf[MAX_PATHLEN], *p;
+
+		if (usr->edit_buf[0] >= '0' && usr->edit_buf[0] <= '9') {
+			Put(usr, "<red>Room names cannot start with a digit\n");
+			RET(usr);
+			Return;
+		}
+		if (room_exists(usr->edit_buf)) {
+			Put(usr, "<red>Room already exists\n");
+			RET(usr);
+			Return;
+		}
+		if (!strcmp(usr->edit_buf, "Mail") || !strcmp(usr->edit_buf, "Home")) {
+			Put(usr, "<red>The room names <white>Home<red> and <white>Mail<red> are reserved and cannot be used\n");
+			RET(usr);
+			Return;
+		}		
+		if ((p = cstrchr(usr->edit_buf, '\'')) != NULL) {
+			if (!strcmp(p, "'s Mail") || !strcmp(p, "'s Home")
+				|| !strcmp(p, "' Mail") || !strcmp(p, "' Home")) {
+				Put(usr, "<red>The room names <white>Home<red> and <white>Mail<red> are reserved and cannot be used\n");
+				RET(usr);
+				Return;
+			}		
+		}
+		if ((room = new_Room()) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		if ((room->name = cstrdup(usr->edit_buf)) == NULL) {
+			Perror(usr, "Out of memory");
+			destroy_Room(room);
+			RET(usr);
+			Return;
+		}
+		room->generation = (unsigned long)rtc;
+		room->flags = (ROOM_HIDDEN | ROOM_READONLY | ROOM_SUBJECTS | ROOM_INVITE_ONLY);
+
+/* find a room number */
+		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
+		for(rm = AllRooms; rm != NULL; rm = rm->next) {
+			if (room->number == rm->number)
+				room->number++;
+			else
+				if (room->number < rm->number)
+					break;
+		}
+		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
+		path_strip(buf);
+		if (mkdir(buf, (mode_t)0750) < 0) {
+			log_err("failed to create new room directory %s", buf);
+			Perror(usr, "failed to create room directory");
+			destroy_Room(room);
+			RET(usr);
+			Return;
+		}
+		usr->curr_room = room;
+
+/* join this room or problems will occur */
+		if ((j = in_Joined(usr->rooms, room->number)) == NULL) {
+			if ((j = new_Joined()) == NULL) {
+				Perror(usr, "Out of memory");
+			} else {
+				j->number = room->number;
+				j->generation = room->generation;
+				add_Joined(&usr->rooms, j);
+			}
+		} else {
+			j->zapped = 0;
+			j->generation = room->generation;
+			j->last_read = 0UL;
+		}
+		Print(usr, "<yellow>The room has been assigned number <white>%u\n", room->number);
+		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
+
+		add_Room(&AllRooms, room);					/* add room to all rooms list */
+		AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
+
+		JMP(usr, STATE_ROOM_CONFIG_MENU);
+		usr->runtime_flags |= RTF_ROOM_EDITED;
+	}
+	Return;
+}
+
+void state_categories_menu(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_categories_menu);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			if (category != NULL) {
+				StringList *sl;
+				int n;
+
+				Put(usr, "\n");
+				n = 1;
+				for(sl = category; sl != NULL; sl = sl->next) {
+					Print(usr, "<white>%2d<green> %s\n", n, sl->str);
+					n++;
+				}
+			}
+			Print(usr, "<magenta>\n"
+				"<hotkey>Add category\n"
+				"<hotkey>Remove category\n"
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "\n");
+			if (usr->runtime_flags & RTF_CATEGORY_EDITED) {
+				if (save_Category()) {
+					Perror(usr, "failed to save categories file");
+				}
+				usr->runtime_flags &= ~RTF_CATEGORY_EDITED;
+			}
+			RET(usr);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "<white>Add category\n");
+			CALL(usr, STATE_ADD_CATEGORY);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<white>Remove category\n");
+			CALL(usr, STATE_REMOVE_CATEGORY);
+			Return;
+	}
+	Put(usr, "\n<white>[<yellow>Categories<white>] # ");
+	Return;
+}
+
+void state_add_category(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_add_category);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Enter new category<yellow>: ");
+
+	r = edit_roomname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (in_Category(usr->edit_buf))
+			Put(usr, "<red>Category already exists\n");
+		else {
+			add_Category(usr->edit_buf);
+			usr->runtime_flags |= RTF_CATEGORY_EDITED;
+		}
+		RET(usr);
+		Return;
+	}
+	Return;
+}
+
+void state_remove_category(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_remove_category);
+
+	if (c == INIT_STATE)
+		Put(usr, "<green>Enter number of category to remove<yellow>: ");
+
+	r = edit_number(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		int n;
+		StringList *sl;
+
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
+		n = atoi(usr->edit_buf) - 1;
+		if (n < 0) {
+			Put(usr, "<red>No such category\n");
+			RET(usr);
+			Return;
+		}
+		for(sl = category; sl != NULL; sl = sl->next) {
+			if (n <= 0)
+				break;
+			n--;
+		}
+		if (sl == NULL) {
+			Put(usr, "<red>No such category\n");
+			RET(usr);
+			Return;
+		}
+		remove_StringList(&category, sl);
+		destroy_StringList(sl);
+
+		usr->runtime_flags |= RTF_CATEGORY_EDITED;
+
+		RET(usr);
+		Return;
+	}
 	Return;
 }
 
@@ -801,105 +1050,6 @@ int r;
 }
 
 
-void state_create_room(User *usr, char c) {
-int r;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_create_room);
-
-	if (c == INIT_STATE)
-		Put(usr, "<green>Enter new room name<yellow>: ");
-
-	r = edit_roomname(usr, c);
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		Room *room, *rm;
-		Joined *j;
-		char buf[MAX_PATHLEN], *p;
-
-		if (usr->edit_buf[0] >= '0' && usr->edit_buf[0] <= '9') {
-			Put(usr, "<red>Room names cannot start with a digit\n");
-			RET(usr);
-			Return;
-		}
-		if (room_exists(usr->edit_buf)) {
-			Put(usr, "<red>Room already exists\n");
-			RET(usr);
-			Return;
-		}
-		if (!strcmp(usr->edit_buf, "Mail") || !strcmp(usr->edit_buf, "Home")) {
-			Put(usr, "<red>The room names <white>Home<red> and <white>Mail<red> are reserved and cannot be used\n");
-			RET(usr);
-			Return;
-		}		
-		if ((p = cstrchr(usr->edit_buf, '\'')) != NULL) {
-			if (!strcmp(p, "'s Mail") || !strcmp(p, "'s Home")
-				|| !strcmp(p, "' Mail") || !strcmp(p, "' Home")) {
-				Put(usr, "<red>The room names <white>Home<red> and <white>Mail<red> are reserved and cannot be used\n");
-				RET(usr);
-				Return;
-			}		
-		}
-		if ((room = new_Room()) == NULL) {
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
-		strcpy(room->name, usr->edit_buf);
-		room->generation = (unsigned long)rtc;
-		room->flags = (ROOM_HIDDEN | ROOM_READONLY | ROOM_SUBJECTS | ROOM_INVITE_ONLY);
-
-/* find a room number */
-		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
-		for(rm = AllRooms; rm != NULL; rm = rm->next) {
-			if (room->number == rm->number)
-				room->number++;
-			else
-				if (room->number < rm->number)
-					break;
-		}
-		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
-		path_strip(buf);
-		if (mkdir(buf, (mode_t)0750) < 0) {
-			log_err("failed to create new room directory %s", buf);
-			Perror(usr, "failed to create room directory");
-			destroy_Room(room);
-			RET(usr);
-			Return;
-		}
-		usr->curr_room = room;
-
-/* join this room or problems will occur */
-		if ((j = in_Joined(usr->rooms, room->number)) == NULL) {
-			if ((j = new_Joined()) == NULL) {
-				Perror(usr, "Out of memory");
-			} else {
-				j->number = room->number;
-				j->generation = room->generation;
-				add_Joined(&usr->rooms, j);
-			}
-		} else {
-			j->zapped = 0;
-			j->generation = room->generation;
-			j->last_read = 0UL;
-		}
-		Print(usr, "<yellow>The room has been assigned number <white>%u\n", room->number);
-		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
-
-		add_Room(&AllRooms, room);					/* add room to all rooms list */
-		AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
-
-		JMP(usr, STATE_ROOM_CONFIG_MENU);
-		usr->runtime_flags |= RTF_ROOM_EDITED;
-	}
-	Return;
-}
-
 void state_delete_room_name(User *usr, char c) {
 int r;
 
@@ -932,7 +1082,6 @@ int r;
 	Return;
 }
 	
-
 
 void state_reboot_time(User *usr, char c) {
 int r;
@@ -1041,7 +1190,6 @@ char total_buf[MAX_LINE];
 	}
 	Return;
 }
-
 
 
 void state_shutdown_time(User *usr, char c) {

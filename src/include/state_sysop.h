@@ -26,6 +26,9 @@
 #include "User.h"
 
 #define STATE_SYSOP_MENU				state_sysop_menu
+#define STATE_CATEGORIES_MENU			state_categories_menu
+#define STATE_ADD_CATEGORY				state_add_category
+#define STATE_REMOVE_CATEGORY			state_remove_category
 #define STATE_DISCONNECT_USER			state_disconnect_user
 #define STATE_NUKE_USER					state_nuke_user
 #define STATE_BANISH_USER				state_banish_user
@@ -131,6 +134,9 @@
 
 
 void state_sysop_menu(User *, char);
+void state_categories_menu(User *, char);
+void state_add_category(User *, char);
+void state_remove_category(User *, char);
 void state_disconnect_user(User *, char);
 void state_nuke_user(User *, char);
 void state_banish_user(User *, char);

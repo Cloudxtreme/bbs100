@@ -58,6 +58,9 @@ void destroy_Room(Room *r) {
 	if (r == NULL)
 		return;
 
+	Free(r->name);
+	Free(r->category);
+
 	listdestroy_MsgIndex(r->msgs);
 	listdestroy_StringList(r->info);
 	listdestroy_StringList(r->room_aides);
@@ -192,7 +195,7 @@ char buf[MAX_LINE*3], *p;
 	while(Fgets(f, buf, MAX_LINE*3) != NULL) {
 		FF1_PARSE;
 
-		FF1_LOAD_LEN("name", r->name, MAX_LINE);
+		FF1_LOAD_DUP("name", r->name);
 
 		FF1_LOAD_ULONG("generation", r->generation);
 		FF1_LOAD_HEX("flags", r->flags);
@@ -203,6 +206,8 @@ char buf[MAX_LINE*3], *p;
 		FF1_LOAD_STRINGLIST("invited", r->invited);
 		FF1_LOAD_STRINGLIST("kicked", r->kicked);
 		FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
+
+		FF1_LOAD_DUP("category", r->category);
 
 		FF1_LOAD_UNKNOWN;
 	}
@@ -218,8 +223,8 @@ StringList *sl;
 		goto err_load_room;
 
 	cstrip_line(buf);
-	strncpy(r->name, buf, MAX_LINE);
-	r->name[MAX_LINE-1] = 0;
+	Free(r->name);
+	r->name = cstrdup(buf);
 
 /* generation/creation date */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -339,6 +344,7 @@ StringList *sl;
 
 	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("name", r->name);
+	FF1_SAVE_STR("category", r->category);
 
 	Fprintf(f, "generation=%lu", r->generation);
 	Fprintf(f, "flags=0x%x", r->flags);

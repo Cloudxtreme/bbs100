@@ -34,8 +34,11 @@
 #include "CachedFile.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "Category.h"
+#include "Memory.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void state_room_config_menu(User *usr, char c) {
 	if (usr == NULL)
@@ -49,6 +52,9 @@ void state_room_config_menu(User *usr, char c) {
 
 			Put(usr, "\n"
 				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
+
+			if (category != NULL)
+				Put(usr, "Categ<hotkey>ory\n");
 
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
 				Put(usr, "<hotkey>Invite/uninvite             Show <hotkey>invited\n");
@@ -128,6 +134,15 @@ void state_room_config_menu(User *usr, char c) {
 			PUSH(usr, STATE_PRESS_ANY_KEY);
 			read_more(usr);
 			Return;
+
+		case 'o':
+		case 'O':
+			if (category != NULL) {
+				Put(usr, "<white>Category\n");
+				CALL(usr, STATE_CHOOSE_CATEGORY);
+				Return;
+			}
+			break;
 
 		case 'e':
 		case 'E':
@@ -362,6 +377,64 @@ void state_room_config_menu(User *usr, char c) {
 	Return;
 }
 
+void state_choose_category(User *usr, char c) {
+int r, n;
+StringList *sl;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_choose_category);
+
+	if (c == INIT_STATE) {
+		Put(usr, "\n");
+		n = 1;
+		for(sl = category; sl != NULL; sl = sl->next) {
+			Print(usr, "<white>%2d<green> %s\n", n, sl->str);
+			n++;
+		}
+		Put(usr, "\n<green>Choose category<yellow>: ");
+	}
+	r = edit_roomname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		char *p;
+
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
+		n = atoi(usr->edit_buf) - 1;
+		if (n < 0) {
+			Put(usr, "<red>No such category\n");
+			RET(usr);
+			Return;
+		}
+		for(sl = category; sl != NULL; sl = sl->next) {
+			if (n <= 0)
+				break;
+			n--;
+		}
+		if (sl == NULL) {
+			Put(usr, "<red>No such category\n");
+			RET(usr);
+			Return;
+		}
+		if ((p = cstrdup(sl->str)) == NULL)
+			Perror(usr, "failed to set category");
+		else {
+			Free(usr->curr_room->category);
+			usr->curr_room->category = p;
+			usr->runtime_flags |= RTF_ROOM_EDITED;
+		}
+		RET(usr);
+		Return;
+	}
+	Return;
+}
 
 void state_change_roominfo(User *usr, char c) {
 	if (usr == NULL)
@@ -769,8 +842,12 @@ int r;
 				Return;
 			}		
 		}
-		strcpy(usr->curr_room->name, usr->edit_buf);
-		usr->runtime_flags |= RTF_ROOM_EDITED;
+		if ((p = cstrdup(usr->edit_buf)) != NULL) {
+			Free(usr->curr_room->name);
+			usr->curr_room->name = p;
+			usr->runtime_flags |= RTF_ROOM_EDITED;
+		} else
+			Perror(usr, "failed to set new room name");
 		RET(usr);
 	}
 	Return;

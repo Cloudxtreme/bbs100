@@ -97,6 +97,7 @@
 #define RTF_HOLD				0x40000		/* user has messages put on hold */
 #define RTF_SELECT				0x80000		/* input buffer empty (used by mainloop()) */
 #define RTF_WAS_HH				0x100000	/* X-disabled, user was Helping Hand */
+#define RTF_CATEGORY_EDITED		0x200000	/* categories changed in sysop menu */
 
 /* load_User() flags (for faster loading) */
 #define LOAD_USER_ADDRESS		1
