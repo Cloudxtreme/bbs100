@@ -2774,8 +2774,11 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on"
 			);
 			Print(usr,
-				"Display warnings     <white>%s<magenta>\n",
-				(PARAM_DISABLED_MSG == PARAM_FALSE) ? "off" : "on");
+				"C<hotkey>ycle unread rooms   <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
+
+				(PARAM_HAVE_CYCLE_ROOMS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
+			);
 			break;
 
 		case ' ':
@@ -2859,9 +2862,13 @@ void state_features_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case 'y':
+		case 'Y':
+			TOGGLE_FEATURE(PARAM_HAVE_CYCLE_ROOMS, "cycle unread rooms");
+
 		case 'd':
 		case 'D':
-			TOGGLE_FEATURE(PARAM_DISABLED_MSG, "warnings");
+			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
 	Return;

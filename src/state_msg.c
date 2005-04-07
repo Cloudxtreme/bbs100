@@ -2385,7 +2385,7 @@ int i;
 	this is an unseemingly costly operation
 */
 Room *next_unread_room(User *usr) {
-Room *r, *r2;
+Room *r, *r2, *next_joined = NULL;
 MsgIndex *m;
 Joined *j;
 
@@ -2438,15 +2438,25 @@ Joined *j;
 /* we've seen the current room, skip to the next and search for an unread room */
 
 	for(r = r->next; r != NULL; r = r->next) {
+		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
+			next_joined = r;
+
 		if ((r2 = unread_room(usr, r)) != NULL)
 			return r2;
 	}
 /* couldn't find a room, now search from the beginning up to curr_room */
 
 	for(r = AllRooms; r != NULL && r->number != usr->curr_room->number; r = r->next) {
+		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
+			next_joined = r;
+
 		if ((r2 = unread_room(usr, r)) != NULL)
 			return r2;
 	}
+/* couldn't find an unread room; goto next joined room */
+	if (PARAM_HAVE_CYCLE_ROOMS && next_joined != NULL)
+		return next_joined;
+
 /* couldn't find an unread room; goto the Lobby> */
 	return Lobby_room;
 }
@@ -2459,10 +2469,28 @@ Room *unread_room(User *usr, Room *r) {
 Joined *j;
 MsgIndex *m;
 
+	Enter(unread_room);
+
+	if ((j = joined_room(usr, r)) == NULL) {
+		Return NULL;
+	}
+	m = unwind_MsgIndex(r->msgs);
+	if (m != NULL && m->number > j->last_read) {
+		Return r;
+	}
+	Return NULL;
+}
+
+/*
+	return if a room has been joined
+*/
+Joined *joined_room(User *usr, Room *r) {
+Joined *j;
+
 	if (usr == NULL || r == NULL || (r->flags & ROOM_CHATROOM))
 		return NULL;
 
-	Enter(unread_room);
+	Enter(joined_room);
 
 /*
 	NOTE: we skip room #1 and #2 (because they are 'dynamic' in the User
@@ -2508,11 +2536,7 @@ MsgIndex *m;
 		j->generation = r->generation;
 		j->last_read = 0UL;				/* re-read changed room */
 	}
-	m = unwind_MsgIndex(r->msgs);
-	if (m != NULL && m->number > j->last_read) {
-		Return r;
-	}
-	Return NULL;
+	Return j;
 }
 
 /*

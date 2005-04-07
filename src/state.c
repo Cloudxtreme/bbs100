@@ -164,7 +164,7 @@ int i;
 				Put(usr, "<white>Quicklist\n");
 				print_quicklist(usr);
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
@@ -245,7 +245,7 @@ int i;
 				talked_list(usr);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Talked To lists<red> are not enabled on this server\n");
 			break;
 
@@ -274,7 +274,7 @@ int i;
 				CALL(usr, STATE_EDIT_QUESTION);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Questions<red> are not enabled on this server\n");
 			break;
 
@@ -306,7 +306,7 @@ int i;
 				}
 				break;
 			} else {
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Questions<red> and <yellow>Helpers<red> are not enabled on this server\n");
 
 				usr->flags &= ~USR_HELPING_HAND;
@@ -323,7 +323,7 @@ int i;
 				enter_recipients(usr, STATE_X_PROMPT);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
 			break;
 
@@ -359,7 +359,7 @@ int i;
 					Put(usr, "<red>That quicklist entry is empty. Press <white><<yellow>Ctrl<white>-<yellow>C<white>><red> to enter the <yellow>Config menu<red>\n"
 						"so you can configure your quicklist\n");
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
@@ -369,7 +369,7 @@ int i;
 				CALL(usr, STATE_HISTORY_PROMPT);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
 			break;
 
@@ -385,7 +385,7 @@ int i;
 				enter_recipients(usr, STATE_EMOTE_PROMPT);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Emotes<red> are not enabled on this server\n");
 			break;
 
@@ -400,7 +400,7 @@ int i;
 				enter_recipients(usr, STATE_FEELINGS_PROMPT);
 				Return;			
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Feelings<red> are not enabled on this server\n");
 			break;
 
@@ -419,7 +419,7 @@ int i;
 				reply_x(usr, REPLY_X_ONE);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but the <yellow>X Reply<red> feature is not enabled on this server\n");
 			break;
 
@@ -433,7 +433,7 @@ int i;
 				reply_x(usr, REPLY_X_ALL);
 				Return;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but the <yellow>X Reply<red> feature is not enabled on this server\n");
 			break;
 
@@ -482,7 +482,7 @@ int i;
 				}
 				break;
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
 			break;
 
@@ -617,7 +617,7 @@ int i;
 					}
 				}
 			} else {
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Hold Message Mode<red> is not enabled on this server\n");
 
 				usr->runtime_flags &= ~RTF_HOLD;
@@ -661,7 +661,7 @@ int i;
 				if (usr->curr_room != usr->mail)
 					goto_room(usr, usr->mail);		/* 'mail anywhere', by Richard of MatrixBBS */
 			} else {
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but this server has no <yellow>Mail<white>> <red>room\n");
 				break;
 			}
@@ -970,7 +970,7 @@ int i;
 				Print(usr, "<white>Toggle follow-up mode\n"
 					"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
 			} else
-				if (PARAM_DISABLED_MSG)
+				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Follow-up mode<red> is not enabled on this server\n");
 			break;
 

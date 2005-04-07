@@ -86,6 +86,7 @@ void expire_mail(User *);
 void undelete_msg(User *);
 Room *next_unread_room(User *);
 Room *unread_room(User *, Room *);
+Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
 

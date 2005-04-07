@@ -1,3 +1,7 @@
+Changes as of April 9th 2005
+- cycle rooms when there are no new messages
+  behaviour is controlled by PARAM_HAVE_CYCLE_ROOMS
+
 Changes as of April 7th 2005
 - PARAM_LANGUAGEDIR and PARAM_DEFAULT_LANGUAGE in Sysop menu
 - PARAM_HAVE_LANGUAGE

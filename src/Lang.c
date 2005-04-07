@@ -46,7 +46,7 @@
 
 
 Hash *languages = NULL;
-static Lang *default_language = NULL;
+Lang *default_language = NULL;
 
 
 int init_Lang(void) {

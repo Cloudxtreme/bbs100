@@ -93,6 +93,9 @@ have_worldclock			yes
 have_chatrooms          yes
 have_homeroom           yes
 have_mailroom           yes
-disabled_msg			yes
+have_language           yes
+have_category           yes
+have_cycle_rooms        yes
+have_disabled_msg       yes
 
 # EOB

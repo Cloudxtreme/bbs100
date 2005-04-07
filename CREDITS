@@ -188,3 +188,7 @@ Credits for bug fixes et al after public release
   user's Mail> room
 
 - Georbit <georbit@osuny.co.uk> found and fixed a problem with logging in
+
+- Berlin of MatrixBBS suggested that empty rooms be 'cycled' when there
+  are no new messages
+  new in version 2.2

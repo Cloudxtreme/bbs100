@@ -135,7 +135,8 @@ Param param[] = {
 	{ PARAM_BOOL,	"have_mailroom",	{ NULL },	{ (char *)-1 }, },
 	{ PARAM_BOOL,	"have_language",	{ NULL },	{ (char *)-1 }, },
 	{ PARAM_BOOL,	"have_category",	{ NULL },	{ (char *)-1 }, },
-	{ PARAM_BOOL,	"disabled_msg",		{ NULL },	{ (char *)-1 },	},
+	{ PARAM_BOOL,	"have_cycle_rooms",	{ NULL },	{ (char *)-1 }, },
+	{ PARAM_BOOL,	"have_disabled_msg",{ NULL },	{ (char *)-1 },	},
 };
 
 

@@ -49,6 +49,7 @@ typedef struct {
 } Lang;
 
 extern Hash *languages;
+extern Lang *default_language;
 
 int init_Lang(void);
 

@@ -45,6 +45,7 @@
 #include "OnlineUser.h"
 #include "SU_Passwd.h"
 #include "Timezone.h"
+#include "Lang.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,9 +111,8 @@ int r;
 		usr->edit_pos = 0;
 
 		if (!usr->tmpbuf[TMP_NAME][0]) {
-			Put(usr, "\nPress Ctrl-D to exit\n"
-				"Enter your name: ");
-
+			Put(usr, "\nPress Ctrl-D to exit\n");
+			Put(usr, "Enter your name: ");
 			Return;
 		}
 /*
@@ -167,7 +167,7 @@ int r;
 			}
 			log_auth("LOGIN %s (%s)", usr->name, usr->from_ip);
 
-			usr->doing = cstrdup("is just looking around");
+			usr->doing = cstrdup(translate(default_language, "is just looking around"));
 			usr->flags |= USR_X_DISABLED;
 			usr->login_time = usr->online_timer = (unsigned long)rtc;
 
@@ -212,7 +212,7 @@ void state_new_account_yesno(User *usr, char c) {
 	Enter(state_new_account_yesno);
 
 	if (c == INIT_STATE) {
-		Put(usr, "Do you wish to create a new account? (y/N): ");
+		Put(usr, "Do you wish to create a new user? (y/N): ");
 		Return;
 	}
 	switch(yesno(usr, c, 'N')) {
@@ -296,14 +296,14 @@ int r;
 
 
 void state_logout_prompt(User *usr, char c) {
+char buf[MAX_LINE*2];
+
 	if (usr == NULL)
 		return;
 
 	Enter(state_logout_prompt);
 
 	if (c == INIT_STATE) {
-		char buf[MAX_LINE];
-
 		if ((usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL)
 			Print(usr, "<green>You have unread messages held\n");
 		else {
@@ -312,13 +312,15 @@ void state_logout_prompt(User *usr, char c) {
 			for(u = AllUsers; u != NULL; u = u->next) {
 				if (u->runtime_flags & RTF_BUSY) {
 					if ((u->runtime_flags & RTF_BUSY_SENDING)
-						&& in_StringList(u->recipients, usr->name) != NULL)
+						&& in_StringList(u->recipients, usr->name) != NULL) {
 /*
 	warn follow-up mode by Richard of MatrixBBS
 */
-						Print(usr, "<yellow>%s<green> is busy sending you a message%s\n",
-							u->name, (u->flags & USR_FOLLOWUP) ? " in follow-up mode" : "");
-					else {
+						if (u->flags & USR_FOLLOWUP)
+							Print(usr, "<yellow>%s<green> is busy sending you a message in follow-up mode\n", u->name);
+						else
+							Print(usr, "<yellow>%s<green> is busy sending you a message\n", u->name);
+					} else {
 						if ((u->runtime_flags & RTF_BUSY_MAILING)
 							&& u->new_message != NULL
 							&& in_StringList(u->new_message->to, usr->name) != NULL)
@@ -352,7 +354,9 @@ void state_logout_prompt(User *usr, char c) {
 			break;
 
 		default:
-			Print(usr, "<cyan>%s? <white>(<cyan>y<white>/<cyan>N<white>): ", RND_STR(Str_Really_Logout));
+			sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+			Put(usr, buf);
+			Put(usr, "<white>(<cyan>y<white>/<cyan>N<white>): ");
 	}
 	Return;
 }
@@ -478,7 +482,9 @@ char num_buf[25];
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];
 
-			sprintf(buf, "is new to <white>%s", PARAM_BBS_NAME);
+			sprintf(buf, translate(default_language, "is new to "));
+			strcat(buf, "<white>");
+			strcat(buf, PARAM_BBS_NAME);
 			buf[MAX_LINE] = 0;
 			usr->doing = cstrdup(buf);
 		}
@@ -492,11 +498,10 @@ char num_buf[25];
 	if (usr->last_logout > (time_t)0UL) {
 		char date_buf[MAX_LINE];
 
-		if (usr->tmpbuf[TMP_FROM_HOST])
-			Print(usr, "<green>Last login was on <cyan>%s<green>\n"
-				"From host<yellow>: %s\n",
-				print_date(usr, usr->last_logout, date_buf), usr->tmpbuf[TMP_FROM_HOST]);
-		else
+		if (usr->tmpbuf[TMP_FROM_HOST]) {
+			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout, date_buf));
+			Print(usr, "<green>From host<yellow>: %s\n", usr->tmpbuf[TMP_FROM_HOST]);
+		} else
 			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout, date_buf));
 	}
 /* free the tmp buffers as they won't be used anymore for a long time */
@@ -617,9 +622,9 @@ int r;
 		}
 		log_auth("NEWLOGIN (%s)", usr->from_ip);
 
-		Put(usr, "\nHello there, new user! You may choose a name that suits you well.\n"
-			"This name will be your alias for the rest of your BBS life.\n"
-			"Enter your login name: ");
+		Put(usr, "\nHello there, new user! You may choose a name that suits you well.\n");
+		Put(usr, "This name will be your alias for the rest of your BBS life.\n");
+		Put(usr, "Enter your login name: ");
 
 		Free(usr->tmpbuf[TMP_NAME]);
 		usr->tmpbuf[TMP_NAME] = NULL;
@@ -646,8 +651,8 @@ int r;
 			Return;
 		}
 		if (!name[1]) {
-			Put(usr, "\nThat name is too short\n"
-				"Enter your login name: ");
+			Put(usr, "\nThat name is too short\n");
+			Put(usr, "Enter your login name: ");
 			usr->edit_buf[0] = 0;
 			Return;
 		}
@@ -657,14 +662,14 @@ int r;
 			Return;
 		}
 		if (!strcmp(name, "New")) {
-			Put(usr, "\nYou cannot use 'New' as login name, choose another login name\n"
-				"Enter your login name: ");
+			Print(usr, "\nYou cannot use '%s' as login name, choose another login name\n", "New");
+			Put(usr, "Enter your login name: ");
 			usr->edit_buf[0] = 0;
 			Return;
 		}
 		if (!strcmp(name, "Sysop") || !strcmp(name, PARAM_NAME_SYSOP) || is_guest(name)) {
-			Print(usr, "\nYou cannot use '%s' as login name, choose another login name\n"
-				"Enter your login name: ", name);
+			Print(usr, "\nYou cannot use '%s' as login name, choose another login name\n", name);
+			Put(usr, "Enter your login name: ");
 			usr->edit_buf[0] = 0;
 			Return;
 		}
