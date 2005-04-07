@@ -3072,7 +3072,18 @@ void state_lock_password(User *usr, char c) {
 		Return;
 	}
 	if (edit_password(usr, c) == EDIT_RETURN) {
-		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
+		char *pwd;
+
+/* sysops unlock with their sysop password */
+		if (usr->runtime_flags & RTF_SYSOP) {
+			if ((pwd = get_su_passwd(usr->name)) == NULL) {
+				usr->runtime_flags &= ~RTF_SYSOP;
+				pwd = usr->passwd;
+			}
+		} else
+			pwd = usr->passwd;
+
+		if (!verify_phrase(usr->edit_buf, pwd)) {
 			Put(usr, "<yellow>Unlocked\n");
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
