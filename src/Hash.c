@@ -15,6 +15,7 @@
 #include "cstring.h"
 #include "log.h"
 #include "debug.h"
+#include "crc32.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -199,6 +200,10 @@ int addr, c;
 		p++;
 	}
 	return addr;
+}
+
+int hashaddr_crc32(char *key) {
+	return (int)update_crc32(0UL, key, strlen(key));
 }
 
 /* EOB */

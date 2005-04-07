@@ -63,6 +63,7 @@ void *remove_Hash(Hash *, char *);
 void *in_Hash(Hash *, char *);
 
 int hashaddr_ascii(char *);
+int hashaddr_crc32(char *);
 
 #endif	/* HASH_H_WJ103 */
 

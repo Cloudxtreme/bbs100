@@ -189,9 +189,10 @@ int cpos = 0;
 	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
 		return;
 
+	va_start(args, fmt);
+
 	fmt = translate(usr->lang, fmt);
 
-	va_start(args, fmt);
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
@@ -205,9 +206,10 @@ char buf[PRINT_BUF];
 	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
 		return;
 
+	va_start(args, fmt);
+
 	fmt = translate(usr->lang, fmt);
 
-	va_start(args, fmt);
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
@@ -234,14 +236,18 @@ char buf[PRINT_BUF];
 
 void notify_friends(User *usr, char *msg) {
 User *u;
+char buf[PRINT_BUF];
 
 	if (usr == NULL)
 		return;
 
+
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u != usr && u->name[0] && u->socket > 0
-			&& in_StringList(u->friends, usr->name) != NULL)
-			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, msg);
+			&& in_StringList(u->friends, usr->name) != NULL) {
+			strcpy(buf, translate(u->lang, msg));
+			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, buf);
+		}
 	}
 }
 

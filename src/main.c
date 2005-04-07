@@ -49,6 +49,7 @@
 #include "Worldclock.h"
 #include "Lang.h"
 #include "Category.h"
+#include "crc32.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -250,6 +251,8 @@ char buf[256];
 	setvbuf(stdout, NULL, _IOLBF, 256);
 	setvbuf(stderr, NULL, _IOLBF, 256);
 #endif
+	gen_crc32_table();
+
 	init_Param();
 	printf("loading param file %s ... ", param_file);
 	if (load_Param(param_file)) {

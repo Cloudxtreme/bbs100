@@ -39,14 +39,17 @@
 #include "Memory.h"
 #include "log.h"
 #include "util.h"
+#include "crc32.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+
 CachedFile **file_cache = NULL, *fifo_head = NULL, *fifo_tail = NULL;
 int cache_size = 0, num_cached = 0;
 Timer *expire_timer = NULL;
+
 
 int init_FileCache(void) {
 	if (!PARAM_MAX_CACHED)			/* apparently, this site wants no cache at all */
@@ -115,48 +118,23 @@ void destroy_File(File *f) {
 
 /*
 	caculate the hash address
-	this is accurate for about the last 9 to 10 characters of the filename
-	(also depending on sizeof(int))
+
+	CRC32 may seem like overkill here, but this routine used to
+	have lots of overhead to make it perform better
 */
 int filecache_hash_addr(char *filename) {
-int addr, c, data_len;
-char *p, *slashp = NULL;
+int addr;
 
 	if (filename == NULL || !*filename)
 		return -1;
 
 	cstrip_filename(filename);
 
-/*
-	We have a lot of files ending with 'Data' (UserData, RoomData, HomeData)
-	To prevent hash pollution, don't calculate the addr for the last part of
-	the filename if it ends with 'Data' (so we chop it off at the last '/')
-	This is a hack to make the hash perform better
-*/
-	data_len = strlen(filename);
-	if (data_len > 4 && !strcmp(filename+data_len-4, "Data")) {
-		if ((slashp = cstrrchr(filename, '/')) != NULL && slashp != filename)
-			*slashp = 0;
-		else
-			slashp = NULL;
-	}
-	p = filename;
-	addr = *p;
-	p++;
-	while(*p) {
-		c = *p - ' ';
-
-		addr <<= 4;
-		addr ^= c;
-
-		p++;
-	}
+	addr = (int)update_crc32(0UL, filename, strlen(filename));
 	addr %= cache_size;
 	if (addr < 0)
 		addr = -addr;
 
-	if (slashp != NULL)
-		*slashp = '/';				/* undo fix */
 	return addr;
 }
 

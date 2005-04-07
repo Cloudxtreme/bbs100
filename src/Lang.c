@@ -44,6 +44,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define hashaddr_lang	hashaddr_crc32
 
 Hash *languages = NULL;
 Lang *default_language = NULL;
@@ -53,7 +54,7 @@ int init_Lang(void) {
 	if (languages == NULL && (languages = new_Hash()) == NULL)
 		return -1;
 
-	languages->hashaddr = hashaddr_ascii;
+	languages->hashaddr = hashaddr_lang;
 
 	if (!strcmp(PARAM_DEFAULT_LANGUAGE, "bbs100")) {
 		default_language = NULL;
@@ -78,7 +79,7 @@ Lang *l;
 		Free(l);
 		return NULL;
 	}
-	l->hash->hashaddr = hashaddr_ascii;
+	l->hash->hashaddr = hashaddr_lang;
 	return l;
 }
 
@@ -270,7 +271,7 @@ int line_no, errors, continued, len, key;
 	so the translated text can be found
 	Note that it cannot be translated backwards, because there is no index for it
 */
-			key = hashaddr_ascii(line_buf);
+			key = hashaddr_lang(line_buf);
 			sprintf(keybuf, "%x", key);
 
 			line_buf[0] = 0;
@@ -319,6 +320,8 @@ Lang *l;
 
 /*
 	translate a given system text into a loaded phrasebook text
+
+	Warning: may return a static buffer
 */
 char *translate(Lang *l, char *text) {
 int key, n, m, i;
@@ -394,7 +397,7 @@ static char textbuf[PRINT_BUF];
 
 	log_debug("translate(): [%s]", textbuf);
 
-	key = hashaddr_ascii(textbuf);
+	key = hashaddr_lang(textbuf);
 	sprintf(keybuf, "%x", key);
 	if ((translated = (char *)in_Hash(l->hash, keybuf)) == NULL)
 		return text;
