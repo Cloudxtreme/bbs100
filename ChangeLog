@@ -1,3 +1,7 @@
+Changes as of April 7th 2005
+- PARAM_LANGUAGEDIR and PARAM_DEFAULT_LANGUAGE in Sysop menu
+- PARAM_HAVE_LANGUAGE
+
 Changes as of March 30th 2005
 - expand_hline() optimized to work with width as well
 

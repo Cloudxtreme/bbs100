@@ -325,7 +325,7 @@ int key, n, m, i;
 char keybuf[32], *p, *q, *endp, *translated;
 static char textbuf[PRINT_BUF];
 
-	if (text == NULL || !*text)
+	if (PARAM_HAVE_LANGUAGE == PARAM_FALSE || text == NULL || !*text)
 		return text;
 
 	if (l == NULL) {
@@ -413,6 +413,9 @@ static char textbuf[PRINT_BUF];
 }
 
 char *translate_by_name(char *lang, char *text) {
+	if (PARAM_HAVE_LANGUAGE == PARAM_FALSE)
+		return text;
+
 	return translate((Lang *)in_Hash(languages, lang), text);
 }
 

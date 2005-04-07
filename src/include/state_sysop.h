@@ -55,6 +55,7 @@
 #define STATE_PARAM_CONFDIR				state_param_confdir
 #define STATE_PARAM_FEELINGSDIR			state_param_feelingsdir
 #define STATE_PARAM_ZONEINFODIR			state_param_zoneinfodir
+#define STATE_PARAM_LANGUAGEDIR			state_param_languagedir
 #define STATE_PARAM_USERDIR				state_param_userdir
 #define STATE_PARAM_ROOMDIR				state_param_roomdir
 #define STATE_PARAM_TRASHDIR			state_param_trashdir
@@ -88,6 +89,7 @@
 #define STATE_PARAM_SYMTAB_FILE			state_param_symtab_file
 #define STATE_PARAM_HOSTMAP_FILE		state_param_hostmap_file
 #define STATE_PARAM_DEF_TIMEZONE		state_param_def_timezone
+#define STATE_PARAM_DEF_LANGUAGE		state_param_def_language
 
 #define STATE_FEATURES_MENU				state_features_menu
 #define STATE_RELOAD_FILES_MENU			state_reload_files_menu
@@ -158,6 +160,7 @@ void state_param_bindir(User *, char);
 void state_param_confdir(User *, char);
 void state_param_feelingsdir(User *, char);
 void state_param_zoneinfodir(User *, char);
+void state_param_languagedir(User *, char);
 void state_param_userdir(User *, char);
 void state_param_roomdir(User *, char);
 void state_param_trashdir(User *, char);
@@ -188,6 +191,7 @@ void state_param_pid_file(User *, char);
 void state_param_symtab_file(User *, char);
 void state_param_hostmap_file(User *, char);
 void state_param_def_timezone(User *, char);
+void state_param_def_language(User *, char);
 
 void state_features_menu(User *, char);
 void state_reload_files_menu(User *, char);

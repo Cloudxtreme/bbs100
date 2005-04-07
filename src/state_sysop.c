@@ -1468,10 +1468,14 @@ void state_system_config_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"<hotkey>Zoneinfo directory  <white>%s<magenta>\n"
+				"<hotkey>Language directory  <white>%s<magenta>\n",
+				PARAM_ZONEINFODIR,
+				PARAM_LANGUAGEDIR
+			);
+			Print(usr,
 				"<hotkey>User directory      <white>%s<magenta>\n"
 				"<hotkey>Room directory      <white>%s<magenta>\n"
 				"<hotkey>Trash directory     <white>%s<magenta>\n",
-				PARAM_ZONEINFODIR,
 				PARAM_USERDIR,
 				PARAM_ROOMDIR,
 				PARAM_TRASHDIR
@@ -1482,6 +1486,11 @@ void state_system_config_menu(User *usr, char c) {
 				PARAM_PROGRAM_MAIN,
 				PARAM_PROGRAM_RESOLVER
 			);
+			Print(usr, "\n"
+				"Default time<hotkey>zone    <white>%s<magenta>\n"
+				"Default <hotkey>language    <white>%s<magenta>\n",
+				PARAM_DEFAULT_TIMEZONE,
+				PARAM_DEFAULT_LANGUAGE);
 			break;
 
 		case ' ':
@@ -1534,10 +1543,14 @@ void state_system_config_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_FEELINGSDIR);
 			Return;
 
-		case 'z':
 		case 'Z':
 			Put(usr, "Zoneinfo directory\n");
 			CALL(usr, STATE_PARAM_ZONEINFODIR);
+			Return;
+
+		case 'L':
+			Put(usr, "Language directory\n");
+			CALL(usr, STATE_PARAM_LANGUAGEDIR);
 			Return;
 
 		case 'u':
@@ -1569,6 +1582,16 @@ void state_system_config_menu(User *usr, char c) {
 		case 'V':
 			Put(usr, "Resolver program\n");
 			CALL(usr, STATE_PARAM_PROGRAM_RESOLVER);
+			Return;
+
+		case 'z':
+			Put(usr, "Default timezone\n");
+			CALL(usr, STATE_PARAM_DEF_TIMEZONE);
+			Return;
+
+		case 'l':
+			Put(usr, "Default language\n");
+			CALL(usr, STATE_PARAM_DEF_LANGUAGE);
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Sysconf<white># ", PARAM_NAME_SYSOP);
@@ -1621,6 +1644,12 @@ void state_param_feelingsdir(User *usr, char c) {
 void state_param_zoneinfodir(User *usr, char c) {
 	Enter(state_param_zoneinfodir);
 	change_string_param(usr, c, &PARAM_ZONEINFODIR, "<green>Enter zoneinfo directory<yellow>: ");
+	Return;
+}
+
+void state_param_languagedir(User *usr, char c) {
+	Enter(state_param_languagedir);
+	change_string_param(usr, c, &PARAM_LANGUAGEDIR, "<green>Enter language directory<yellow>: ");
 	Return;
 }
 
@@ -1694,7 +1723,6 @@ void state_config_files_menu(User *usr, char c) {
 				PARAM_HOSTS_ACCESS_FILE, PARAM_SU_PASSWD_FILE);
 			Print(usr, "Host <hotkey>map         <white>%-22s<magenta>  S<hotkey>ymbol table     <white>%s<magenta>\n",
 				PARAM_HOSTMAP_FILE, PARAM_SYMTAB_FILE);
-			Print(usr, "Default time<hotkey>zone <white>%-22s<magenta>\n", PARAM_DEFAULT_TIMEZONE);
 			break;
 
 		case ' ':
@@ -1832,11 +1860,6 @@ void state_config_files_menu(User *usr, char c) {
 		case 'Y':
 			Put(usr, "Symbol table file\n");
 			CALL(usr, STATE_PARAM_SYMTAB_FILE);
-			Return;
-
-		case 'z':
-			Put(usr, "Default timezone\n");
-			CALL(usr, STATE_PARAM_DEF_TIMEZONE);
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Files<white># ", PARAM_NAME_SYSOP);
@@ -1976,6 +1999,12 @@ void state_param_def_timezone(User *usr, char c) {
 	Return;
 }
 
+void state_param_def_language(User *usr, char c) {
+	Enter(state_param_def_language);
+	change_string_param(usr, c, &PARAM_DEFAULT_LANGUAGE, "<green>Enter default language<yellow>: ");
+	Return;
+}
+
 
 void state_reload_files_menu(User *usr, char c) {
 StringList *sl;
@@ -1995,6 +2024,7 @@ StringList *sl;
 			Put(usr,
 				"<hotkey>4 Reload crash screen             <hotkey>9 Reload sysop menu help\n"
 				"<hotkey>5 Reload first login screen\n"
+				"\n"
 				"<hotkey>g Reload GPL                      <hotkey>l Reload local mods\n"
 				"<hotkey>h Reload hostmap                  <hotkey>f Reload feelings\n"
 			);
@@ -2570,13 +2600,14 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"X <hotkey>Reply              <white>%-3s<magenta>        Ch<hotkey>at rooms           <white>%s<magenta>\n"
-				"                                <hotkey>Home> room           <white>%s<magenta>\n"
+				"Multi <hotkey>Language       <white>%-3s<magenta>        <hotkey>Home> room           <white>%s<magenta>\n"
 				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Mail> room           <white>%s<magenta>\n"
 				"<hotkey>World clock          <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
 
+				(PARAM_HAVE_LANGUAGE == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
@@ -2629,6 +2660,10 @@ void state_features_menu(User *usr, char c) {
 		case 'r':
 		case 'R':
 			TOGGLE_FEATURE(PARAM_HAVE_X_REPLY, "X Reply");
+
+		case 'l':
+		case 'L':
+			TOGGLE_FEATURE(PARAM_HAVE_LANGUAGE, "Multi Language");
 
 		case 'c':
 		case 'C':
