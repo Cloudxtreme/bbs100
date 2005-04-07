@@ -2800,6 +2800,7 @@ int read_it = 1;
 void known_rooms(User *usr) {
 Room *r, *r_next;
 Joined *j;
+char *category = NULL;
 
 	Enter(known_rooms);
 
@@ -2827,6 +2828,11 @@ Joined *j;
 			if ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
 				continue;
 		}
+		if ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category))) {
+			usr->more_text = add_String(&usr->more_text, "");
+			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
+			category = r->category;
+		}
 		print_known_room(usr, r);
 	}
 /*
@@ -2842,6 +2848,7 @@ Joined *j;
 void allknown_rooms(User *usr) {
 Room *r, *r_next;
 Joined *j;
+char *category = NULL;
 
 	Enter(allknown_rooms);
 
@@ -2861,6 +2868,11 @@ Joined *j;
 			&& in_StringList(r->room_aides, usr->name) == NULL)
 			continue;
 
+		if ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category))) {
+			usr->more_text = add_String(&usr->more_text, "");
+			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
+			category = r->category;
+		}
 		print_known_room(usr, r);
 	}
 	if ((r = find_Roombynumber(usr, 2)) != NULL)

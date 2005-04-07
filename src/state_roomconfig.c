@@ -53,9 +53,12 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "\n"
 				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
 
-			if (category != NULL)
-				Put(usr, "Categ<hotkey>ory\n");
-
+			if (category != NULL) {
+				if (usr->curr_room->category != NULL)
+					Print(usr, "Categ<hotkey>ory                    <white>[%s]<magenta>\n", usr->curr_room->category);
+				else
+					Put(usr, "Categ<hotkey>ory\n");
+			}
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
 				Put(usr, "<hotkey>Invite/uninvite             Show <hotkey>invited\n");
 
@@ -389,8 +392,12 @@ StringList *sl;
 	if (c == INIT_STATE) {
 		Put(usr, "\n");
 		n = 1;
+		Put(usr, "<white> 0<green> (none)\n");
 		for(sl = category; sl != NULL; sl = sl->next) {
-			Print(usr, "<white>%2d<green> %s\n", n, sl->str);
+			if (usr->curr_room->category != NULL && !strcmp(sl->str, usr->curr_room->category))
+				Print(usr, "<white>%2d<yellow> %s\n", n, sl->str);
+			else
+				Print(usr, "<white>%2d<green> %s\n", n, sl->str);
 			n++;
 		}
 		Put(usr, "\n<green>Choose category<yellow>: ");
@@ -407,12 +414,23 @@ StringList *sl;
 			RET(usr);
 			Return;
 		}
-		n = atoi(usr->edit_buf) - 1;
+		n = atoi(usr->edit_buf);
 		if (n < 0) {
 			Put(usr, "<red>No such category\n");
 			RET(usr);
 			Return;
 		}
+		if (!n) {
+			if (usr->curr_room->category != NULL) {
+				Free(usr->curr_room->category);
+				usr->curr_room->category = NULL;
+				usr->runtime_flags |= RTF_ROOM_EDITED;
+				AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
+			}
+			RET(usr);
+			Return;
+		}
+		n--;
 		for(sl = category; sl != NULL; sl = sl->next) {
 			if (n <= 0)
 				break;
@@ -429,6 +447,7 @@ StringList *sl;
 			Free(usr->curr_room->category);
 			usr->curr_room->category = p;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
+			AllRooms = sort_Room(AllRooms, room_sort_func);		/* re-sort the list */
 		}
 		RET(usr);
 		Return;

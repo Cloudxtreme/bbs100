@@ -761,6 +761,7 @@ void unload_Room(Room *r) {
 }
 
 int room_sort_func(void *v1, void *v2) {
+int i;
 Room *r1, *r2;
 
 	if (v1 == NULL || v2 == NULL)
@@ -772,13 +773,32 @@ Room *r1, *r2;
 	if (r1 == NULL || r2 == NULL)
 		return 0;
 
-	if (r1->number < r2->number)
-		return -1;
+	if (r1->category == NULL) {
+		if (r2->category == NULL) {
+			if (r1->number < r2->number)
+				return -1;
 
-	if (r1->number > r2->number)
+			if (r1->number > r2->number)
+				return 1;
+
+			return 0;
+		}
+		return -1;
+	}
+	if (r2->category == NULL)
 		return 1;
 
-	return 0;
+	i = strcmp(r1->category, r2->category);
+	if (!i) {
+		if (r1->number < r2->number)
+			return -1;
+
+		if (r1->number > r2->number)
+			return 1;
+
+		return 0;
+	}
+	return i;
 }
 
 int msgs_sort_func(void *v1, void *v2) {
