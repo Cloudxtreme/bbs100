@@ -2,6 +2,7 @@ Changes as of April 9th 2005
 - cycle rooms when there are no new messages
   behaviour is controlled by PARAM_HAVE_CYCLE_ROOMS
 - crc32 hashkeys for language translations
+- lock screen shows BBS name; practical thing for _addicts_
 
 Changes as of April 7th 2005
 - PARAM_LANGUAGEDIR and PARAM_DEFAULT_LANGUAGE in Sysop menu

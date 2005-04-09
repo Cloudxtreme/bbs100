@@ -192,3 +192,6 @@ Credits for bug fixes et al after public release
 - Berlin of MatrixBBS suggested that empty rooms be 'cycled' when there
   are no new messages
   new in version 2.2
+
+- Richard of MatrixBBS suggested (ages ago) that the BBS name be shown
+  when locked

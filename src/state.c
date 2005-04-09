@@ -3080,7 +3080,8 @@ void state_lock_password(User *usr, char c) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
 			Print(usr, "%c[1;1H%c[2J", KEY_ESC, KEY_ESC);
 
-		Put(usr, "\n<white>Terminal locked\n<red>Enter password to unlock: ");
+		Print(usr, "\n<white>%s terminal locked\n"
+			"<red>Enter password to unlock: ", PARAM_BBS_NAME);
 
 		usr->edit_pos = 0;
 		usr->edit_buf[0] = 0;
