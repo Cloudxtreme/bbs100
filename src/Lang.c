@@ -274,12 +274,15 @@ int line_no, errors, continued, len, key;
 			key = hashaddr_lang(line_buf);
 			sprintf(keybuf, "%x", key);
 
+			if (in_Hash(l->hash, keybuf) != NULL)
+				log_warn("load_phrasebook(%s): duplicate hash key in language %s", filename, lang);
+
 			line_buf[0] = 0;
 			continued = 0;
 			continue;
 		}
 		if (add_Hash(l->hash, keybuf, cstrdup(line_buf)) == -1) {
-			log_err("load_Lang(%s): failed to add a new phrase\n", filename);
+			log_err("load_phrasebook(%s): failed to add a new phrase\n", filename);
 			errors++;
 			break;
 		}
