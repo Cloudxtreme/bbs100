@@ -31,8 +31,9 @@ When in a <yellow>chat room<green>, press <hotkey>/ before giving the command.
      <hotkey><    Block users <yellow>;<green> edit enemy list
      <hotkey>t    Time <yellow>(<green>in UTC<yellow>)<green>
 <white>Shft-<hotkey>S<green>    Display statistics
-<white>Ctrl-<hotkey>L<green>    Lock terminal
 <white>Ctrl-<hotkey>D<green>    Change Doing field
+<white>Ctrl-<hotkey>L<green>    Lock terminal
+     <hotkey>`    For when the boss comes by
 
 <white><<yellow>space<white>><green>   Read next unread message
      <hotkey>e    Enter a message in a room

@@ -3,12 +3,15 @@
 <white><<yellow>space<white>><green>   Leaves the <yellow>Sysop menu<green>
      <hotkey>h/<hotkey>?  Display this <yellow>Help<green> screen
 
-     <hotkey>b    Banish<yellow>/<green>Unbanish username
-     <hotkey>w    Edit wrappers
-     <hotkey>d    Disconnect user
-<white>Ctrl-<hotkey>N<green>    Nuke user <yellow>;<green> remove user data
      <hotkey>c    Create new room
 <white>Ctrl-<hotkey>D<green>    Delete room <yellow>;<green> remove all room data
+     <hotkey>g    Create or delete room categories
+     <hotkey>d    Disconnect user
+<white>Ctrl-<hotkey>N<green>    Nuke user <yellow>;<green> remove user data
+     <hotkey>b    Banish<yellow>/<green>Unbanish username
+     <hotkey>w    Edit TCP wrappers for locking out sites
+     <hotkey>u    Remove file from internal cache
+     <hotkey>m    Display object allocation summary
 
 <white>Ctrl-<hotkey>P<green>    Adjust system parameters and configuration
      <hotkey>p    Change <yellow>Super User<green> mode password

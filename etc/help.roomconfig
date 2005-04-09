@@ -4,6 +4,7 @@
      <hotkey>h/<hotkey>?  Display this <yellow>Help<green> screen
 
      <hotkey>e    Edit room info
+     <hotkey>g    Change room category
 <white>Shft-<hotkey>I<green>    Invite<yellow>/<green>Uninvite user into invite<yellow>-<green>only room
      <hotkey>i    Show invited users in invite<yellow>-<green>only room
 <white>Shft-<hotkey>K<green>    Kickout<yellow>/<green>Undo kickout user
