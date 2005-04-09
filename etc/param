@@ -27,6 +27,7 @@ motd_screen             etc/motd
 reboot_screen           etc/reboot
 shutdown_screen         etc/shutdown
 crash_screen            etc/crash
+boss_screen             etc/boss
 
 first_login             etc/first_login
 help_std                etc/help.std

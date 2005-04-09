@@ -456,7 +456,7 @@ int updated = 0;
 }
 
 void print_stats(User *usr) {
-char buf[PRINT_BUF], copyright_buf[256], date_buf[MAX_LINE], *p;
+char buf[PRINT_BUF], copyright_buf[MAX_LINE], date_buf[MAX_LINE], *p;
 int l, w;
 unsigned long num;
 

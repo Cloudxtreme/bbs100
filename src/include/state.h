@@ -50,8 +50,7 @@
 #define STATE_ZAPALL_PROMPT				state_zapall_prompt
 #define STATE_SU_PROMPT					state_su_prompt
 #define STATE_LOCK_PASSWORD				state_lock_password
-#define STATE_ASSIGN_ROOMAIDE			state_assign_roomaide
-#define STATE_CHANGE_ROOMNAME			state_change_roomname
+#define STATE_BOSS						state_boss
 
 #define LOOP_PING						loop_ping
 #define LOOP_SEND_MSG					loop_send_msg
@@ -75,8 +74,7 @@ void state_zapall_prompt(User *, char);
 void state_profile_user(User *, char);
 void state_su_prompt(User *, char);
 void state_lock_password(User *, char);
-void state_assign_roomaide(User *, char);
-void state_change_roomname(User *, char);
+void state_boss(User *, char);
 
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);

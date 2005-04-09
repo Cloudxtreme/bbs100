@@ -57,9 +57,10 @@ Param param[] = {
 	{ PARAM_STRING,	"nologin_screen",	{ NULL },	{ "etc/nologin" },				},
 	{ PARAM_STRING,	"motd_screen",		{ NULL },	{ "etc/motd" },					},
 	{ PARAM_STRING,	"reboot_screen",	{ NULL },	{ "etc/reboot" },				},
-	{ PARAM_STRING,	"shutdown_screen",	{ NULL },	{ "etc/shutdown" },				},
+	{ PARAM_STRING, "shutdown_screen",	{ NULL },	{ "etc/shutdown" },				},
+	{ PARAM_STRING, "crash_screen",		{ NULL },	{ "etc/crash" },				},
 	{ PARAM_STRING | PARAM_SEPARATOR,
-					"crash_screen",		{ NULL },	{ "etc/crash" },				},
+					"boss_screen",		{ NULL },	{ "etc/boss" },					},
 
 	{ PARAM_STRING,	"first_login",		{ NULL },	{ "etc/first_login" },			},
 	{ PARAM_STRING,	"help_std",			{ NULL },	{ "etc/help.std" },				},

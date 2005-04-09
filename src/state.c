@@ -159,6 +159,10 @@ int i;
 		case INIT_STATE:
 			break;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case KEY_CTRL('Q'):
 			if (PARAM_HAVE_QUICK_X) {
 				Put(usr, "<white>Quicklist\n");
@@ -1167,7 +1171,6 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 	PUSH(usr, state_func);
 	Return;
 }
-
 
 void state_x_prompt(User *usr, char c) {
 	if (usr == NULL)
@@ -3151,6 +3154,79 @@ void state_chatroom(User *usr, char c) {
 	Return;
 }
 
+/*
+	state_boss() is for when the boss walks in
+*/
+void state_boss(User *usr, char c) {
+int r;
+
+	Enter(state_boss);
+
+	if (c == INIT_STATE) {
+		StringList *boss;
+
+		edit_line(usr, EDIT_INIT);
+		usr->runtime_flags |= RTF_BUSY;
+
+		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
+			Print(usr, "%c[1;1H%c[2J%c[0m", KEY_ESC, KEY_ESC, KEY_ESC);
+		else
+			Put(usr, "\n");
+
+		if ((boss = load_screen(PARAM_BOSS_SCREEN)) != NULL) {
+			StringList *sl;
+
+			for(sl = boss; sl != NULL; sl = sl->next)
+				Print(usr, "%s\n", sl->str);
+
+			listdestroy_StringList(boss);
+			boss = NULL;
+		}
+		Put(usr, "$ ");
+	}
+	r = edit_line(usr, c);
+
+	if (r == EDIT_BREAK) {
+		Put(usr, "$ ");
+		edit_line(usr, EDIT_INIT);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		char buf[MAX_LINE];
+
+		if (!usr->edit_buf[0]) {
+			Put(usr, "$ ");
+			edit_line(usr, EDIT_INIT);
+			Return;
+		}
+		if (!strcmp(usr->edit_buf, "date")) {
+			Print(usr, "%s %s\n\n$ ", print_date(usr, (time_t)0UL, buf), name_Timezone(usr->tz));
+			edit_line(usr, EDIT_INIT);
+			Return;
+		}
+		if (!strcmp(usr->edit_buf, "uname")) {
+			Print(usr, "%s %s\n\n$ ", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
+			edit_line(usr, EDIT_INIT);
+			Return;
+		}
+		if (!strcmp(usr->edit_buf, "uptime")) {
+			Print(usr, "last booted on %s\n", print_date(usr, stats.uptime, buf));
+			Print(usr, "uptime is %s\n\n$ ", print_total_time(usr, rtc - stats.uptime, buf));
+			edit_line(usr, EDIT_INIT);
+			Return;
+		}
+		if (!strcmp(usr->edit_buf, "exit")) {
+			usr->runtime_flags &= ~RTF_BUSY;
+			RET(usr);
+			Return;
+		}
+		Print(usr, "%s: command not found\n", usr->edit_buf);
+		Put(usr, "type 'exit' to return\n\n$ ");
+		edit_line(usr, EDIT_INIT);
+		Return;
+	}
+	Return;
+}
 
 void online_friends_list(User *usr) {
 StringList *sl;
