@@ -17,49 +17,40 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Chatter18	WJ97
-	inet.h
+	state_data.c	WJ105
 */
 
-#ifndef _INET_H_WJ97
-#define _INET_H_WJ97 1
+#include "config.h"
+#include "state_data.h"
+#include "edit.h"
+#include "DataCmd.h"
+#include "debug.h"
 
-#include "User.h"
-#include "Wrapper.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <stdarg.h>
 
-#define MAX_NEWCONNS		5
+void state_data_conn(User *usr, char c) {
+int r;
 
-#define TS_DATA				0
-#define TS_IAC				1
-#define TS_ARG				2
-#define TS_WILL				3
-#define TS_DO				4
-#define TS_NAWS				5
-#define TS_NEW_ENVIRON		6
-#define TS_NEW_ENVIRON_IS	7
-#define TS_NEW_ENVIRON_VAR	8
-#define TS_NEW_ENVIRON_VAL	9
+	Enter(state_data_conn);
 
-int inet_sock(unsigned int);
-void new_connection(int);
-void new_data_conn(int);
-void close_connection(User *, char *, ...);
+	if (c == INIT_STATE) {
+		edit_data_cmd(usr, EDIT_INIT);
+		Return;
+	}
+	r = edit_data_cmd(usr, c);
 
-int unix_sock(char *);
-int init_resolver(void);
-void dns_gethostname(char *);
-void dnsserver_io(void);
-int telnet_negotiations(User *, unsigned char);
-void mainloop(void);
-
-extern Wrapper *wrappers;
-extern int main_socket;
-extern int data_port;
-extern int dns_main_socket;
-extern int dns_socket;
-
-#endif
+	if (r == EDIT_BREAK) {
+		edit_data_cmd(usr, EDIT_INIT);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		exec_cmd(usr, usr->edit_buf);
+		edit_data_cmd(usr, EDIT_INIT);
+		Return;
+	}
+	Return;
+}
 
 /* EOB */

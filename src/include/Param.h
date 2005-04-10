@@ -44,8 +44,9 @@
 */
 #define PARAM_BBS_NAME				param[0].val.s
 #define PARAM_PORT_NUMBER			param[1].val.d
+#define PARAM_DATA_PORT				param[2].val.d
 
-#define PARAM_DIR_N					2
+#define PARAM_DIR_N					3
 #define PARAM_BASEDIR				param[PARAM_DIR_N].val.s
 #define PARAM_BINDIR				param[PARAM_DIR_N+1].val.s
 #define PARAM_CONFDIR				param[PARAM_DIR_N+2].val.s
@@ -56,11 +57,11 @@
 #define PARAM_ROOMDIR				param[PARAM_DIR_N+7].val.s
 #define PARAM_TRASHDIR				param[PARAM_DIR_N+8].val.s
 
-#define PARAM_PROGRAM_N				11
+#define PARAM_PROGRAM_N				12
 #define PARAM_PROGRAM_MAIN			param[PARAM_PROGRAM_N].val.s
 #define PARAM_PROGRAM_RESOLVER		param[PARAM_PROGRAM_N+1].val.s
 
-#define PARAM_SCREEN_N				13
+#define PARAM_SCREEN_N				14
 #define PARAM_GPL_SCREEN			param[PARAM_SCREEN_N].val.s
 #define PARAM_MODS_SCREEN			param[PARAM_SCREEN_N+1].val.s
 #define PARAM_LOGIN_SCREEN			param[PARAM_SCREEN_N+2].val.s
@@ -72,14 +73,14 @@
 #define PARAM_CRASH_SCREEN			param[PARAM_SCREEN_N+8].val.s
 #define PARAM_BOSS_SCREEN			param[PARAM_SCREEN_N+9].val.s
 
-#define PARAM_HELP_N				23
+#define PARAM_HELP_N				24
 #define PARAM_FIRST_LOGIN			param[PARAM_HELP_N].val.s
 #define PARAM_HELP_STD				param[PARAM_HELP_N+1].val.s
 #define PARAM_HELP_CONFIG			param[PARAM_HELP_N+2].val.s
 #define PARAM_HELP_ROOMCONFIG		param[PARAM_HELP_N+3].val.s
 #define PARAM_HELP_SYSOP			param[PARAM_HELP_N+4].val.s
 
-#define PARAM_FILE_N				28
+#define PARAM_FILE_N				29
 #define PARAM_HOSTMAP_FILE			param[PARAM_FILE_N].val.s
 #define PARAM_HOSTS_ACCESS_FILE		param[PARAM_FILE_N+1].val.s
 #define PARAM_BANISHED_FILE			param[PARAM_FILE_N+2].val.s
@@ -91,7 +92,7 @@
 #define PARAM_DEFAULT_TIMEZONE		param[PARAM_FILE_N+8].val.s
 #define PARAM_DEFAULT_LANGUAGE		param[PARAM_FILE_N+9].val.s
 
-#define PARAM_LOG_N					38
+#define PARAM_LOG_N					39
 #define PARAM_SYSLOG				param[PARAM_LOG_N].val.s
 #define PARAM_AUTHLOG				param[PARAM_LOG_N+1].val.s
 #define PARAM_LOGROTATE				param[PARAM_LOG_N+2].val.s
@@ -99,7 +100,7 @@
 #define PARAM_ONCRASH				param[PARAM_LOG_N+4].val.s
 #define PARAM_CRASHDIR				param[PARAM_LOG_N+5].val.s
 
-#define PARAM_MAX_N					44
+#define PARAM_MAX_N					45
 #define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.d
 #define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.d
 #define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.d
@@ -114,13 +115,13 @@
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.d
 #define PARAM_CACHE_TIMEOUT			param[PARAM_MAX_N+12].val.d
 
-#define PARAM_NAME_N				57
+#define PARAM_NAME_N				58
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
 #define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
 #define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
 #define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_N				61
+#define PARAM_NOTIFY_N				62
 #define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
 #define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
 #define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s
@@ -130,7 +131,7 @@
 #define PARAM_NOTIFY_ENTER_CHAT		param[PARAM_NOTIFY_N+6].val.s
 #define PARAM_NOTIFY_LEAVE_CHAT		param[PARAM_NOTIFY_N+7].val.s
 
-#define PARAM_HAVE_N				69
+#define PARAM_HAVE_N				70
 #define PARAM_HAVE_XMSGS			param[PARAM_HAVE_N].val.bool
 #define PARAM_HAVE_EMOTES			param[PARAM_HAVE_N+1].val.bool
 #define PARAM_HAVE_FEELINGS			param[PARAM_HAVE_N+2].val.bool
@@ -152,6 +153,7 @@
 
 
 #define DEFAULT_PORT_1234			1234	/* default port number */
+#define DEFAULT_DATA_PORT			1233
 
 #define DEFAULT_MAX_CACHED			256		/* max # of objects in cache */
 #define DEFAULT_MAX_MESSAGES		50		/* max messages kept in a room before expiring */

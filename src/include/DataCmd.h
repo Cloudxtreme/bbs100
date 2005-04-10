@@ -16,50 +16,30 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-/*
-	Chatter18	WJ97
-	inet.h
-*/
 
-#ifndef _INET_H_WJ97
-#define _INET_H_WJ97 1
+#ifndef DATACMD_H_WJ105
+#define DATACMD_H_WJ105	1
 
 #include "User.h"
-#include "Wrapper.h"
 
-#include <stdarg.h>
+typedef struct {
+	char *cmd;
+	void (*func)(User *, char **);
+} DataCmd;
 
-#define MAX_NEWCONNS		5
+extern DataCmd default_cmds[];
+extern DataCmd login_cmds[];
 
-#define TS_DATA				0
-#define TS_IAC				1
-#define TS_ARG				2
-#define TS_WILL				3
-#define TS_DO				4
-#define TS_NAWS				5
-#define TS_NEW_ENVIRON		6
-#define TS_NEW_ENVIRON_IS	7
-#define TS_NEW_ENVIRON_VAR	8
-#define TS_NEW_ENVIRON_VAL	9
+int exec_cmd(User *, char *);
 
-int inet_sock(unsigned int);
-void new_connection(int);
-void new_data_conn(int);
-void close_connection(User *, char *, ...);
+void cmd_logout(User *, char **);
+void cmd_close(User *, char **);
+void cmd_commands(User *, char **);
+void cmd_version(User *, char **);
 
-int unix_sock(char *);
-int init_resolver(void);
-void dns_gethostname(char *);
-void dnsserver_io(void);
-int telnet_negotiations(User *, unsigned char);
-void mainloop(void);
+void cmd_login(User *, char **);
 
-extern Wrapper *wrappers;
-extern int main_socket;
-extern int data_port;
-extern int dns_main_socket;
-extern int dns_socket;
 
-#endif
+#endif	/* DATACMD_H_WJ105 */
 
 /* EOB */

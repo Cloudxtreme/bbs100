@@ -63,7 +63,7 @@ void tab_list(User *, void (*)(User *));
 void backtab_list(User *, void (*)(User *));
 void reset_tablist(User *, char);
 
-void save_msg_line(User *, char);		/* Note: is in state_msg.c */
+int edit_data_cmd(User *, char);
 
 #endif	/* EDIT_H_WJ99 */
 

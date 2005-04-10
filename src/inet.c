@@ -46,6 +46,7 @@
 #include "main.h"
 #include "state.h"
 #include "OnlineUser.h"
+#include "state_data.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -96,7 +97,7 @@
 
 
 Wrapper *wrappers = NULL;
-int main_socket = -1, dns_main_socket = -1, dns_socket = -1;
+int main_socket = -1, data_port = -1, dns_main_socket = -1, dns_socket = -1;
 
 
 int inet_sock(unsigned int port) {
@@ -276,6 +277,62 @@ void close_connection(User *usr, char *reason, ...) {
 	leave_room(usr);
 
 	usr->name[0] = 0;
+	Return;
+}
+
+/*
+	handle new connection on the data port
+	This is also dubbed a 'data' connection, meaning that one can get
+	raw data from the BBS this way
+*/
+void new_data_conn(int fd) {
+User *new_conn;
+struct sockaddr_in client;
+int client_len = sizeof(struct sockaddr_in);
+char buf[256];
+int s;
+char optval;
+
+	Enter(new_data_conn);
+
+	if ((s = accept(fd, (struct sockaddr *)&client, (int *)&client_len)) < 0) {
+		log_err("inet socket accept()");
+		Return;
+	}
+	if ((new_conn = new_User()) == NULL) {
+		log_err("Out of memory allocating new User");
+
+		shutdown(s, 2);
+		close(s);
+		Return;
+	}
+	new_conn->socket = s;
+
+	optval = 1;
+	ioctl(new_conn->socket, FIONBIO, &optval);		/* set non-blocking */
+
+	new_conn->ipnum = ntohl(client.sin_addr.s_addr);
+	strncpy(new_conn->from_ip, inet_ntoa(client.sin_addr), MAX_LINE-1);
+	new_conn->from_ip[MAX_LINE-1] = 0;
+
+	log_auth("CONN (%s)", new_conn->from_ip);
+	add_User(&AllUsers, new_conn);
+	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
+
+	Put(new_conn, print_copyright(SHORT, NULL, buf));
+
+/*
+	This code is commented out, but if you want to lock out sites
+	permanently (rather than for new users only), I suggest you
+	enable this code
+	(inspired by Richard of MatrixBBS)
+
+	if (!allow_Wrapper(wrappers, usr->ipnum)) {
+		close_connection(usr, "connection closed by wrapper");
+		Return;
+	}
+*/
+	CALL(new_conn, STATE_DATA_CONN);
 	Return;
 }
 
@@ -617,6 +674,11 @@ char k;
 		FD_SET(main_socket, &fds);
 		highest_fd = main_socket+1;
 
+		if (data_port > 0) {
+			FD_SET(data_port, &fds);
+			if (data_port >= highest_fd)
+				highest_fd = data_port+1;
+		}
 		if (dns_main_socket > 0) {
 			FD_SET(dns_main_socket, &fds);
 			if (dns_main_socket >= highest_fd)
@@ -742,6 +804,9 @@ char k;
 */
 			if (main_socket > 0 && FD_ISSET(main_socket, &fds))
 				new_connection(main_socket);
+
+			if (data_port > 0 && FD_ISSET(data_port, &fds))
+				new_data_conn(data_port);
 /*
 	handle name resolver I/O
 */
@@ -788,35 +853,9 @@ char k;
 */
 		if (errno == EINTR)			/* interrupted, better luck next time */
 			continue;
-/*
-	there is a bad connection amongst us..!
-	we rebuild the fdset
-*/
-		if (errno == EBADF) {
-			FD_ZERO(&fds);
-			FD_SET(main_socket, &fds);
-			highest_fd = main_socket+1;
 
-			if (dns_main_socket > 0) {
-				FD_SET(dns_main_socket, &fds);
-				if (dns_main_socket >= highest_fd)
-					highest_fd = dns_main_socket+1;
-			}
-			if (dns_socket > 0) {
-				FD_SET(dns_socket, &fds);
-				if (dns_socket >= highest_fd)
-					highest_fd = dns_socket+1;
-			}
-			for(c = AllUsers; c != NULL; c = c->next) {
-				if (c->runtime_flags & RTF_SELECT) {
-					if (c->socket > 0) {
-						FD_SET(c->socket, &fds);
-						if (c->socket >= highest_fd)
-							highest_fd = c->socket+1;
-					} else
-						c->runtime_flags &= ~RTF_SELECT;
-				}
-			}
+		if (errno == EBADF) {
+			log_warn("mainloop(): for some reason select() got EBADF, continuing");
 			continue;
 		}
 /*

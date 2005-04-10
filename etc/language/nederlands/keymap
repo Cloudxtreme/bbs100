@@ -1,0 +1,9 @@
+#
+#	keymap definitions
+#
+
+yesno y Y n N
+yesno j J n N
+
+
+# EOB

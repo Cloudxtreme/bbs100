@@ -1,3 +1,7 @@
+Changes as of April 10th 2005
+- came up with the data port
+  (lots of loose ends)
+
 Changes as of April 9th 2005
 - cycle rooms when there are no new messages
   behaviour is controlled by PARAM_HAVE_CYCLE_ROOMS

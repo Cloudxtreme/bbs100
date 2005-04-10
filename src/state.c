@@ -3205,7 +3205,7 @@ int r;
 			Return;
 		}
 		if (!strcmp(usr->edit_buf, "uname")) {
-			Print(usr, "%s %s\n\n$ ", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
+			Print(usr, "%s %s\n$ ", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
 			edit_line(usr, EDIT_INIT);
 			Return;
 		}

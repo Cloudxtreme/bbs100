@@ -4,6 +4,7 @@
 
 bbs_name                bbs100
 port_number             1234
+data_port               1233
 
 basedir                 xxx
 bindir                  bin/

@@ -937,7 +937,8 @@ int wrapable = 0;
 }
 
 int edit_msg(User *usr, char c) {
-	int wrapable=0;
+int wrapable = 0;
+
 	if (usr == NULL)
 		return 0;
 
@@ -1036,7 +1037,7 @@ int edit_msg(User *usr, char c) {
 				i = usr->edit_pos;
 				while(i > (MAX_LINE >> 1)) {
 					if (usr->edit_buf[i] == ' ')
-						wrapable=1;
+						wrapable = 1;
 					i--;
 				}
 				if (!wrapable)
@@ -1450,5 +1451,34 @@ void reset_tablist(User *usr, char c) {
 		usr->tablist = NULL;
 	}
 }
+
+
+int edit_data_cmd(User *usr, char c) {
+	if (usr == NULL)
+		return 0;
+
+	if (c == EDIT_INIT) {
+		usr->runtime_flags |= RTF_BUSY;
+		usr->runtime_flags &= ~RTF_COLOR_EDITING;
+		usr->edit_pos = 0;
+		usr->edit_buf[0] = 0;
+		return 0;
+	}
+	switch(c) {
+		case KEY_RETURN:
+			return EDIT_RETURN;
+
+		default:
+			if (c < ' ' || c > '~')
+				break;
+
+			if (usr->edit_pos < MAX_LINE-1) {
+				usr->edit_buf[usr->edit_pos++] = c;
+				usr->edit_buf[usr->edit_pos] = 0;
+			}
+	}
+	return 0;
+}
+
 
 /* EOB */

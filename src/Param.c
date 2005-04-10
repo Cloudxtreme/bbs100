@@ -32,8 +32,9 @@
 
 Param param[] = {
 	{ PARAM_STRING,	"bbs_name",			{ NULL },	{ "bbs100" },					},
+	{ PARAM_INT,	"port_number",		{ NULL },	{ (char *)DEFAULT_PORT_1234 },	},
 	{ PARAM_INT | PARAM_SEPARATOR,
-					"port_number",		{ NULL },	{ (char *)DEFAULT_PORT_1234 },	},
+					"data_port",		{ NULL },	{ (char *)DEFAULT_DATA_PORT },	},
 
 	{ PARAM_STRING, "basedir",			{ NULL },	{ "." },						},
 	{ PARAM_STRING,	"bindir",			{ NULL },	{ "bin/" },						},

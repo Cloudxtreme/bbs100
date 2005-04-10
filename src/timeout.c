@@ -47,8 +47,9 @@ User *usr;
 
 	usr = (User *)v;
 	Put(usr, "\nConnection timed out\n");
+
 	log_auth("TIMEOUT %s (%s)", usr->name, usr->from_ip);
-	close_connection(usr, "%s got timed out", usr->name);
+	close_connection(usr, "%s got timed out", (usr->name[0] == 0) ? "connection" : usr->name);
 }
 
 void user_timeout(void *v) {

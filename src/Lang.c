@@ -168,7 +168,10 @@ struct dirent *direntp;
 		sprintf(filename, "%s/%s", dirname, direntp->d_name);
 		path_strip(filename);
 
-		l = load_phrasebook(lang, filename);
+		if (!strcmp(direntp->d_name, "keymap"))
+			l = load_keymap(lang, filename);
+		else
+			l = load_phrasebook(lang, filename);
 	}
 	closedir(dirp);
 
@@ -298,25 +301,66 @@ int line_no, errors, continued, len, key;
 	return l;
 }
 
+/*
+	load a keymap file
+*/
+Lang *load_keymap(char *lang, char *filename) {
+Lang *l = NULL;
+AtomicFile *f;
+int line_no, errors;
+char buf[PRINT_BUF];
+
+	if (filename == NULL)
+		return NULL;
+
+	log_debug("load_keymap(): loading %s", filename);
+
+	if ((l = add_language(lang)) == NULL) {
+		log_err("load_phrasebook(): failed to add language %s", lang);
+		return NULL;
+	}
+	if ((f = openfile(filename, "r")) == NULL) {
+		log_err("load_keymap(): failed to open file %s", filename);
+		return NULL;
+	}
+	line_no = errors = 0;
+
+	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
+		line_no++;
+
+		cstrip_spaces(buf);
+		chop(buf);
+
+		if (*buf == '#')
+			continue;
+
+		if (!*buf)
+			continue;
+
+
+	}
+	return l;
+}
+
 Lang *add_language(char *lang) {
 Lang *l;
 
 	if (lang == NULL || languages == NULL)
 		return NULL;
 
-	cstrlwr(lang);
-	if ((l = (Lang *)in_Hash(languages, lang)) == NULL) {
-		if ((l = new_Lang()) == NULL)
-			return NULL;
+	if ((l = (Lang *)in_Hash(languages, lang)) != NULL)
+		return l;
 
-		if ((l->name = cstrdup(lang)) == NULL) {
-			destroy_Lang(l);
-			return NULL;
-		}
-		if (add_Hash(languages, lang, l) == -1) {
-			destroy_Lang(l);
-			return NULL;
-		}
+	if ((l = new_Lang()) == NULL)
+		return NULL;
+
+	if ((l->name = cstrdup(lang)) == NULL) {
+		destroy_Lang(l);
+		return NULL;
+	}
+	if (add_Hash(languages, lang, l) == -1) {
+		destroy_Lang(l);
+		return NULL;
 	}
 	return l;
 }

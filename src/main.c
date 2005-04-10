@@ -342,7 +342,11 @@ char buf[256];
 		printf("fatal: failed to listen on port %d\n", PARAM_PORT_NUMBER);
 		exit_program(SHUTDOWN);
 	}
-	printf("up and running, listening at port %d\n", PARAM_PORT_NUMBER);
+	if ((data_port = inet_sock(PARAM_DATA_PORT)) < 0) {
+		printf("fatal: failed to listen on port %d\n", PARAM_DATA_PORT);
+		exit_program(SHUTDOWN);
+	}
+	printf("up and running, listening at port %d and %d\n", PARAM_PORT_NUMBER, PARAM_DATA_PORT);
 	if (debugger) {
 		printf("running under debugger, signal handling disabled\n");
 		printf("running under debugger, not going to background\n");

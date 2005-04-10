@@ -41,9 +41,25 @@ struct Locale_tag {
 	char *(*name_with_s)(Locale *, char *, char *);
 };
 
+/*
+	the list is only used during loading
+*/
+typedef struct KeymapList_tag KeymapList;
+
+struct KeymapList_tag {
+	List(KeymapList);
+	unsigned char key, translated_key;
+};
+
+typedef struct {
+	char *id;
+	int size;
+	unsigned char *keymap;
+} Keymap;
+
 typedef struct {
 	char *name;
-	Hash *hash;
+	Hash *hash, *keymaps;
 	Locale *locale;
 	int refcount;
 } Lang;
@@ -59,6 +75,7 @@ void destroy_Lang(Lang *);
 Lang *load_Language(char *);
 void unload_Language(char *);
 Lang *load_phrasebook(char *, char *);
+Lang *load_keymap(char *, char *);
 Lang *add_language(char *);
 
 char *translate(Lang *, char *);
