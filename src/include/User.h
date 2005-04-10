@@ -175,6 +175,7 @@ struct User_tag {
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
 	Lang *lang;
+	PList *cmd_chain;
 
 	CallStack *callstack;
 };

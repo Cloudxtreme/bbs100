@@ -136,6 +136,7 @@ int i;
 
 	usr->idle_timer = NULL;
 	listdestroy_Timer(usr->timerq);
+	listdestroy_PList(usr->cmd_chain);
 	listdestroy_CallStack(usr->callstack);
 
 	if (usr->socket > 0) {

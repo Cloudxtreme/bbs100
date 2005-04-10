@@ -47,6 +47,7 @@
 #include "state.h"
 #include "OnlineUser.h"
 #include "state_data.h"
+#include "DataCmd.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -332,6 +333,9 @@ char optval;
 		Return;
 	}
 */
+	new_conn->cmd_chain = new_PList(default_cmds);
+	add_PList(&new_conn->cmd_chain, new_PList(login_cmds));
+
 	CALL(new_conn, STATE_DATA_CONN);
 	Return;
 }

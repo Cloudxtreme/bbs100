@@ -27,6 +27,7 @@
 #include "version.h"
 #include "util.h"
 #include "inet.h"
+#include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,16 +47,31 @@ DataCmd login_cmds[] = {
 
 
 int exec_cmd(User *usr, char *cmd) {
-int i, num;
+int i;
+char **argv = NULL, *p;
+PList *pl;
+DataCmd *cmds;
 
-	num = sizeof(default_cmds)/sizeof(DataCmd);
-	for(i = 0; i < num; i++) {
-		if (!cstricmp(default_cmds[i].cmd, cmd)) {
-			default_cmds[i].func(usr, NULL);
-			return 0;
+	if (cmd == NULL || !*cmd)
+		return -1;
+
+	if ((p = cstrchr(cmd, ' ')) != NULL) {
+		*p = 0;
+		p++;
+		argv = cstrsplit(p, ' ');
+	}
+	for(pl = usr->cmd_chain; pl != NULL; pl = pl->next) {
+		cmds = (DataCmd *)(pl->p);
+		for(i = 0; cmds[i].cmd != NULL; i++) {
+			if (!cstricmp(cmds[i].cmd, cmd)) {
+				default_cmds[i].func(usr, argv);
+				Free(argv);
+				return 0;
+			}
 		}
 	}
 	Put(usr, "error unknown command\n");
+	Free(argv);
 	return -1;
 }
 
@@ -77,14 +93,17 @@ char buf[MAX_NAME];
 }
 
 void cmd_commands(User *usr, char **argv) {
-int i, num;
+int i;
+PList *pl;
+DataCmd *cmds;
 
 	Enter(cmd_commands);
 
-	num = sizeof(default_cmds)/sizeof(DataCmd);
-	for(i = 0; i < num; i++)
-		Print(usr, " %s\n", default_cmds[i].cmd);
-
+	for(pl = usr->cmd_chain; pl != NULL; pl = pl->next) {
+		cmds = (DataCmd *)(pl->p);
+		for(i = 0; cmds[i].cmd != NULL; i++)
+			Print(usr, " %s\n", default_cmds[i].cmd);
+	}
 	Put(usr, "\n");
 	Return;
 }
