@@ -169,6 +169,7 @@ int sock, optval, sleepcount = 0;
 	return sock;
 }
 
+#ifdef OLD_CODE
 void new_connection(int fd) {
 User *new_conn;
 struct sockaddr_in client;
@@ -238,6 +239,7 @@ char optval;
 	CALL(new_conn, STATE_LOGIN_PROMPT);
 	Return;
 }
+#endif	/* OLD_CODE */
 
 void close_connection(User *usr, char *reason, ...) {
 	if (usr == NULL)
@@ -262,9 +264,9 @@ void close_connection(User *usr, char *reason, ...) {
 		char buf[PRINT_BUF];
 
 		if (usr->name[0])
-			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->from_ip);
+			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->conn->from_ip);
 		else
-			sprintf(buf, "CLOSE (%s): ", usr->from_ip);
+			sprintf(buf, "CLOSE (%s): ", usr->conn->from_ip);
 
 		va_start(ap, reason);
 		vsprintf(buf+strlen(buf), reason, ap);
@@ -272,12 +274,12 @@ void close_connection(User *usr, char *reason, ...) {
 
 		log_auth(buf);
 	}
-	if (usr->socket > 0) {
+	if (usr->conn->sock > 0) {
 		Put(usr, "<default>\n");
 		Flush(usr);
-		shutdown(usr->socket, 2);
-		close(usr->socket);
-		usr->socket = -1;
+		shutdown(usr->conn->sock, 2);
+		close(usr->conn->sock);
+		usr->conn->sock = -1;
 	}
 	leave_room(usr);
 
@@ -285,6 +287,7 @@ void close_connection(User *usr, char *reason, ...) {
 	Return;
 }
 
+#ifdef OLD_CODE
 /*
 	handle new connection on the data port
 	This is also dubbed a 'data' connection, meaning that one can get
@@ -343,6 +346,7 @@ char optval;
 	CALL(new_conn, STATE_DATA_CONN);
 	Return;
 }
+#endif
 
 
 int unix_sock(char *path) {
@@ -422,11 +426,11 @@ char buf[MAX_LINE], *p;
 			return;
 	}
 	if (p != NULL && strcmp(buf, p)) {
-		User *u;
+		Conn *c;
 
-		for(u = AllUsers; u != NULL; u = u->next)
-			if (!strcmp(u->from_ip, buf))
-				strcpy(u->from_ip, p);			/* fill in IP name */
+		for(c = AllConns; c != NULL; c = c->next)
+			if (!strcmp(c->from_ip, buf))
+				strcpy(c->from_ip, p);			/* fill in IP name */
 	}
 }
 
@@ -523,14 +527,14 @@ char buf[20];
 
 				case TELOPT_NEW_ENVIRON:		/* NEW-ENVIRON SEND */
 					sprintf(buf, "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
-					if (usr->socket > 0)
-						write(usr->socket, buf, 6);
+					if (usr->conn->sock > 0)
+						write(usr->conn->sock, buf, 6);
 					break;
 
 				default:
 					sprintf(buf, "%c%c%c", IAC, DONT, c);
-					if (usr->socket > 0)
-						write(usr->socket, buf, 3);
+					if (usr->conn->sock > 0)
+						write(usr->conn->sock, buf, 3);
 			}
 			usr->telnet_state = TS_DATA;
 			Return -1;
@@ -545,8 +549,8 @@ char buf[20];
 
 				default:
 					sprintf(buf, "%c%c%c", IAC, WONT, c);
-					if (usr->socket > 0)
-						write(usr->socket, buf, 3);
+					if (usr->conn->sock > 0)
+						write(usr->conn->sock, buf, 3);
 			}
 			usr->telnet_state = TS_DATA;
 			Return -1;
@@ -658,6 +662,7 @@ char buf[20];
 }
 
 
+#ifdef OLD_CODE
 /*
 	The Main Loop
 */
@@ -874,6 +879,7 @@ char k;
 		kill(0, SIGINT);
 	}
 }
+#endif	/* OLD_CODE */
 
 /*
 	The Main Loop

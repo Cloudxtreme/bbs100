@@ -165,7 +165,7 @@ int r;
 				}
 				strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
 			}
-			log_auth("LOGIN %s (%s)", usr->name, usr->from_ip);
+			log_auth("LOGIN %s (%s)", usr->name, usr->conn->from_ip);
 
 			usr->doing = cstrdup(translate(default_language, "is just looking around"));
 			usr->flags |= USR_X_DISABLED;
@@ -217,7 +217,7 @@ void state_new_account_yesno(User *usr, char c) {
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			if (!allow_Wrapper(wrappers, usr->ipnum)) {
+			if (!allow_Wrapper(wrappers, usr->conn->ipnum)) {
 				Put(usr, "\nSorry, but you're connecting from a site that has been "
 					"locked out of the BBS.\n\n");
 				close_connection(usr, "new user login closed by wrapper");
@@ -272,11 +272,11 @@ int r;
 			Put(usr, "<normal>");
 
 			if ((u = is_online(usr->tmpbuf[TMP_NAME])) != NULL) {
-				Print(u, "\n<red>Connection closed by another login from %s\n", usr->from_ip);
+				Print(u, "\n<red>Connection closed by another login from %s\n", usr->conn->from_ip);
 				close_connection(u, "connection closed by another login");
 			}
 			strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
-			log_auth("LOGIN %s (%s)", usr->name, usr->from_ip);
+			log_auth("LOGIN %s (%s)", usr->name, usr->conn->from_ip);
 
 			if (u == NULL)				/* if (u != NULL) killed by another login */
 				notify_login(usr);		/* tell friends we're here */
@@ -287,7 +287,7 @@ int r;
 			JMP(usr, STATE_DISPLAY_MOTD);
 		} else {
 			Put(usr, "Wrong password!\n\n");
-			log_auth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->from_ip);
+			log_auth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->conn->from_ip);
 			JMP(usr, STATE_LOGIN_PROMPT);
 		}
 	}
@@ -345,8 +345,8 @@ char buf[MAX_LINE*2];
 				for(sl = logout_screen; sl != NULL; sl = sl->next)
 					Print(usr, "%s\n", sl->str);
 			}
-			log_auth("LOGOUT %s (%s)", usr->name, usr->from_ip);
-			close_connection(usr, "%s has logged out from %s", usr->name, usr->from_ip);
+			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->from_ip);
+			close_connection(usr, "%s has logged out from %s", usr->name, usr->conn->from_ip);
 			break;
 
 		case YESNO_NO:
@@ -520,7 +520,7 @@ char num_buf[25];
 		if (u == usr)
 			continue;
 
-		if (u->socket > 0 && u->name[0])
+		if (u->name[0])
 			num_users++;
 
 		if (in_StringList(usr->friends, u->name) != NULL)
@@ -614,13 +614,13 @@ int r;
 	Enter(state_new_login_prompt);
 
 	if (c == INIT_STATE) {
-		if (!allow_Wrapper(wrappers, usr->ipnum)) {
+		if (!allow_Wrapper(wrappers, usr->conn->ipnum)) {
 			Put(usr, "\nSorry, but you're connecting from a site that has been "
 				"locked out of the BBS.\n\n");
 			close_connection(usr, "new user login closed by wrapper");
 			Return;
 		}
-		log_auth("NEWLOGIN (%s)", usr->from_ip);
+		log_auth("NEWLOGIN (%s)", usr->conn->from_ip);
 
 		Put(usr, "\nHello there, new user! You may choose a name that suits you well.\n");
 		Put(usr, "This name will be your alias for the rest of your BBS life.\n");
@@ -798,7 +798,7 @@ int r;
 		if (mkdir(usr->edit_buf, (mode_t)0750))
 			Perror(usr, "Failed to create user directory");
 
-		log_auth("NEWUSER %s (%s)", usr->name, usr->from_ip);
+		log_auth("NEWUSER %s (%s)", usr->name, usr->conn->from_ip);
 
 /* new user gets default timezone */
 		if (usr->timezone == NULL)

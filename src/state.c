@@ -1293,7 +1293,7 @@ void loop_ping(User *usr, char c) {
 	Enter(loop_ping);
 
 	if (c == INIT_STATE) {
-		usr->loop_counter = list_Count(usr->recipients);
+		usr->conn->loop_counter = list_Count(usr->recipients);
 		usr->runtime_flags |= RTF_LOOPING;
 	} else {
 		StringList *sl;
@@ -1302,13 +1302,13 @@ void loop_ping(User *usr, char c) {
 
 		sl = usr->recipients;
 		if (sl == NULL) {
-			usr->loop_counter = 0UL;
+			usr->conn->loop_counter = 0UL;
 			Return;
 		}
-		for(i = 0UL; i < usr->loop_counter; i++) {		/* do the next recipient */
+		for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* do the next recipient */
 			sl = sl->next;
 			if (sl == NULL) {
-				usr->loop_counter = 0UL;
+				usr->conn->loop_counter = 0UL;
 				Return;
 			}
 		}
@@ -1414,11 +1414,15 @@ int r;
 				Print(usr, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
 				if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
-						Print(usr, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]\n", u->from_ip, (int)((u->ipnum >> 24) & 255), (int)((u->ipnum >> 16) & 255), (int)((u->ipnum >> 8) & 255), (int)(u->ipnum & 255));
+						Print(usr, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]\n", u->conn->from_ip,
+							(int)((u->conn->ipnum >> 24) & 255),
+							(int)((u->conn->ipnum >> 16) & 255),
+							(int)((u->conn->ipnum >> 8) & 255),
+							(int)(u->conn->ipnum & 255));
 					else
-						Print(usr, "<green>From host: <yellow>%s\n", u->from_ip);
+						Print(usr, "<green>From host: <yellow>%s\n", u->conn->from_ip);
 				}
-				if ((p = HostMap_desc(u->from_ip)) != NULL)
+				if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
 					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, p);
 
 				Put(usr, "\n");
@@ -1454,7 +1458,7 @@ int r;
 				Return;
 			}
 /* load the proper from_ip */
-			strcpy(u->from_ip, u->tmpbuf[TMP_FROM_HOST]);
+			strcpy(u->conn->from_ip, u->tmpbuf[TMP_FROM_HOST]);
 		} else {
 			listdestroy_StringList(usr->recipients);		/* place entered name in history */
 			usr->recipients = new_StringList(usr->edit_buf);
@@ -1509,9 +1513,9 @@ int r;
 
 			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s", print_date(usr, (time_t)u->last_logout, date_buf));
 			if (usr->runtime_flags & RTF_SYSOP)
-				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->from_ip, u->tmpbuf[TMP_FROM_IP]);
+				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->from_ip, u->tmpbuf[TMP_FROM_IP]);
 
-			if ((p = HostMap_desc(u->from_ip)) != NULL)
+			if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
 				usr->more_text = add_String(&usr->more_text, "<yellow>%s<green> was connected from <yellow>%s", u->name, p);
 		} else {
 /*
@@ -1521,15 +1525,15 @@ int r;
 			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
 			if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
-					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]", u->from_ip,
-						(int)((u->ipnum >> 24) & 255),
-						(int)((u->ipnum >> 16) & 255),
-						(int)((u->ipnum >> 8) & 255),
-						(int)(u->ipnum & 255));
+					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]", u->conn->from_ip,
+						(int)((u->conn->ipnum >> 24) & 255),
+						(int)((u->conn->ipnum >> 16) & 255),
+						(int)((u->conn->ipnum >> 8) & 255),
+						(int)(u->conn->ipnum & 255));
 				else
-					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s", u->from_ip);
+					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s", u->conn->from_ip);
 			}
-			if ((p = HostMap_desc(u->from_ip)) != NULL)
+			if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
 				usr->more_text = add_String(&usr->more_text, "<yellow>%s<green> is connected from <yellow>%s", u->name, p);
 		}
 		if (!allocated)
@@ -1578,7 +1582,7 @@ void loop_send_msg(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= RTF_LOOPING;
-		usr->loop_counter = list_Count(usr->recipients);
+		usr->conn->loop_counter = list_Count(usr->recipients);
 /*
 	this doesn't seem the right place to do this, but we can't do it
 	in recvMsg() because that function doesn't know whether this is a
@@ -1587,7 +1591,7 @@ void loop_send_msg(User *usr, char c) {
 	you do get a copy in your X history buffer
 	Perhaps this design should be changed and turned the other way around...
 */
-		if (usr->loop_counter == 1 && !strcmp(usr->recipients->str, usr->name))
+		if (usr->conn->loop_counter == 1 && !strcmp(usr->recipients->str, usr->name))
 			Print(usr, "<green>Talking to yourself, are you?\n");
 	} else {
 		StringList *sl;
@@ -1596,12 +1600,12 @@ void loop_send_msg(User *usr, char c) {
 
 		if (usr->send_msg == NULL) {
 			Perror(usr, "The message has disappeared!");
-			usr->loop_counter = 0UL;
+			usr->conn->loop_counter = 0UL;
 			Return;
 		}
 		sl = usr->recipients;
 		if (sl != NULL) {
-			for(i = 0UL; i < usr->loop_counter; i++) {		/* do the next recipient */
+			for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* do the next recipient */
 				sl = sl->next;
 				if (sl == NULL)
 					break;
@@ -1633,7 +1637,7 @@ void loop_send_msg(User *usr, char c) {
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
 			}
 		}
-		if (!usr->loop_counter) {
+		if (!usr->conn->loop_counter) {
 /*
 	destroy the copy of the message we just sent
 	there are conditions in which this code is never reached... while this is
@@ -1686,7 +1690,7 @@ StringList *sl;
 	if (sl != NULL) {
 		unsigned long i;
 
-		for(i = 0UL; i < usr->loop_counter; i++) {
+		for(i = 0UL; i < usr->conn->loop_counter; i++) {
 			sl = sl->next;
 			if (sl == NULL)
 				break;
@@ -2385,7 +2389,7 @@ int total;
 			if (u == NULL)
 				continue;
 
-			if (!u->name[0] || u->socket == -1)
+			if (!u->name[0])
 				continue;
 
 			if (u->curr_room != usr->curr_room)
@@ -2398,7 +2402,7 @@ int total;
 		}
 	} else {
 		for(u = AllUsers; u != NULL; u = u->next) {
-			if (!u->name[0] || u->socket == -1)
+			if (!u->name[0])
 				continue;
 
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)

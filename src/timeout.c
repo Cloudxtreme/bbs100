@@ -48,7 +48,7 @@ User *usr;
 	usr = (User *)v;
 	Put(usr, "\nConnection timed out\n");
 
-	log_auth("TIMEOUT %s (%s)", usr->name, usr->from_ip);
+	log_auth("TIMEOUT %s (%s)", usr->name, usr->conn->from_ip);
 	close_connection(usr, "%s got timed out", (usr->name[0] == 0) ? "connection" : usr->name);
 }
 
@@ -74,7 +74,7 @@ User *usr;
 		case (TIMEOUT_USER-2):
 			Put(usr, "\n<beep><red>You are being logged off due to inactivity\n");
 			notify_idle(usr);
-			log_auth("IDLE %s (%s)", usr->name, usr->from_ip);
+			log_auth("IDLE %s (%s)", usr->name, usr->conn->from_ip);
 			close_connection(usr, "%s went idle", usr->name);
 	}
 }

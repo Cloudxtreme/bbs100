@@ -65,7 +65,6 @@ User *usr;
 	if ((usr = (User *)Malloc(sizeof(User), TYPE_USER)) == NULL)
 		return NULL;
 
-	usr->socket = -1;
 	usr->telnet_state = TS_DATA;
 
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
@@ -138,47 +137,22 @@ int i;
 	listdestroy_Timer(usr->timerq);
 	listdestroy_PList(usr->cmd_chain);
 
-	if (usr->socket > 0) {
-		shutdown(usr->socket, 2);
-		close(usr->socket);
-	}
 	Free(usr);
 }
 
 void Write(User *usr, char *str) {
-int c;
-
-	if (usr == NULL)
-		return;
-
-	c = strlen(str);
-
-	if ((usr->output_idx+c) >= (MAX_OUTPUTBUF-1))
-		Flush(usr);
-	strncpy(usr->outputbuf + usr->output_idx, str, c);
-	usr->output_idx += c;
-	usr->outputbuf[usr->output_idx] = 0;
+	if (usr != NULL)
+		write_Conn(usr->conn, str);
 }
 
 void Writechar(User *usr, char c) {
-	if (usr == NULL)
-		return;
-
-	if (usr->output_idx >= (MAX_OUTPUTBUF-1))
-		Flush(usr);
-	usr->outputbuf[usr->output_idx++] = c;
-	usr->outputbuf[usr->output_idx] = 0;
+	if (usr != NULL)
+		putc_Conn(usr->conn, c);
 }
 
 void Flush(User *usr) {
-	if (usr == NULL || usr->conn == NULL)
-		return;
-
-	if (usr->conn->sock > 0 && usr->output_idx > 0) {
-		write(usr->conn->sock, usr->outputbuf, usr->output_idx);
-		usr->outputbuf[0] = 0;
-		usr->output_idx = 0;
-	}
+	if (usr != NULL)
+		flush_Conn(usr->conn);
 }
 
 void Print(User *usr, char *fmt, ...) {
@@ -243,7 +217,7 @@ char buf[PRINT_BUF];
 
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u != usr && u->name[0] && u->socket > 0
+		if (u != usr && u->name[0]
 			&& in_StringList(u->friends, usr->name) != NULL) {
 			strcpy(buf, translate(u->lang, msg));
 			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, buf);
@@ -997,13 +971,13 @@ StringList *sl;
 	FF1_SAVE_STR("timezone", usr->timezone);
 	FF1_SAVE_STR("language", usr->language);
 
-	FF1_SAVE_STR("from_ip", usr->from_ip);
+	FF1_SAVE_STR("from_ip", usr->conn->from_ip);
 
 	Fprintf(f, "from_ipnum=%d.%d.%d.%d",
-		(int)((usr->ipnum >> 24) & 255),
-		(int)((usr->ipnum >> 16) & 255),
-		(int)((usr->ipnum >> 8) & 255),
-		(int)(usr->ipnum & 255)
+		(int)((usr->conn->ipnum >> 24) & 255),
+		(int)((usr->conn->ipnum >> 16) & 255),
+		(int)((usr->conn->ipnum >> 8) & 255),
+		(int)(usr->conn->ipnum & 255)
 	);
 	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
 	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
@@ -1076,8 +1050,12 @@ int i;
 	SAVE_USERSTRING(usr->reminder);
 	SAVE_USERSTRING(usr->default_anon);
 
-	Fputs(f, usr->from_ip);
-	Fprintf(f, "%d.%d.%d.%d", (int)((usr->ipnum >> 24) & 255), (int)((usr->ipnum >> 16) & 255), (int)((usr->ipnum >> 8) & 255), (int)(usr->ipnum & 255));
+	Fputs(f, usr->conn->from_ip);
+	Fprintf(f, "%d.%d.%d.%d",
+		(int)((usr->conn->ipnum >> 24) & 255),
+		(int)((usr->conn->ipnum >> 16) & 255),
+		(int)((usr->conn->ipnum >> 8) & 255),
+		(int)(usr->conn->ipnum & 255));
 
 	Fprintf(f, "%lu", (unsigned long)usr->birth);
 	Fprintf(f, "%lu", (unsigned long)usr->last_logout);

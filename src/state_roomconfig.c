@@ -984,7 +984,7 @@ void (*func)(User *, char *, ...);
 	remove_Room(&AllRooms, room);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u->socket > 0 && u->curr_room == room) {
+		if (u->name[0] && u->curr_room == room) {
 			if (u == usr)
 				func = Print;
 			else

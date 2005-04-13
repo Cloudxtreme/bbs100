@@ -425,7 +425,7 @@ unsigned long num;
 	Enter(sig_mail);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u->socket > 0 && u->name[0] && u->mail != NULL) {
+		if (u->name[0] && u->mail != NULL) {
 			if (u->mail->msgs == NULL)
 				num = 0UL;
 			else {

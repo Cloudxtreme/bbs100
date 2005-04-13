@@ -129,18 +129,15 @@ struct User_tag {
 
 	Conn *conn;
 
-	int socket, telnet_state, in_sub, crashed;
-	int edit_pos, read_lines, total_lines, input_idx, output_idx;
+	int telnet_state, in_sub, crashed;
+	int edit_pos, read_lines, total_lines;
 	int term_width, term_height;
-	unsigned long ipnum, loop_counter;
 
 	char edit_buf[MAX_LINE];
-	char in_sub_buf[MAX_SUB_BUF], inputbuf[MAX_INPUTBUF], outputbuf[MAX_OUTPUTBUF];
+	char in_sub_buf[MAX_SUB_BUF];
 
 	char name[MAX_NAME];
 	char passwd[MAX_CRYPTED_PASSWD];
-
-	char from_ip[MAX_LINE];
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;

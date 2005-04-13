@@ -173,7 +173,7 @@ char many_buf[MAX_LINE*3];
 					usr->runtime_flags |= RTF_MULTI;
 				}
 				for(u = AllUsers; u != NULL; u = u->next) {
-					if (u->socket > 0 && u->name[0])
+					if (u->name[0])
 						usr->recipients = add_StringList(&usr->recipients, new_StringList(u->name));
 				}
 				usr->recipients = rewind_StringList(usr->recipients);

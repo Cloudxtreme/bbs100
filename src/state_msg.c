@@ -2568,7 +2568,7 @@ int l;
 	if (sl != NULL) {
 		unsigned long i;
 
-		for(i = 0UL; i < usr->loop_counter; i++) {
+		for(i = 0UL; i < usr->conn->loop_counter; i++) {
 			sl = sl->next;
 			if (sl == NULL)
 				break;

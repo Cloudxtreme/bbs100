@@ -85,9 +85,9 @@ char buf[MAX_NAME];
 	usr->name[0] = 0;
 
 	if (buf[0])
-		close_connection(usr, "%s closes connection from %s", buf, usr->from_ip);
+		close_connection(usr, "%s closes connection from %s", buf, usr->conn->from_ip);
 	else
-		close_connection(usr, "closing connection from %s", usr->from_ip);
+		close_connection(usr, "closing connection from %s", usr->conn->from_ip);
 
 	Return;
 }
@@ -116,9 +116,9 @@ void cmd_logout(User *usr, char **argv) {
 	Enter(cmd_logout);
 
 	if (usr->name[0])
-		close_connection(usr, "%s has logged out from %s", usr->name, usr->from_ip);
+		close_connection(usr, "%s has logged out from %s", usr->name, usr->conn->from_ip);
 	else
-		close_connection(usr, "logout from %s", usr->from_ip);
+		close_connection(usr, "logout from %s", usr->conn->from_ip);
 
 	Return;
 }

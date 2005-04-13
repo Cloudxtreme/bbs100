@@ -48,14 +48,14 @@ void deinit_OnlineUser(void) {
 
 
 int add_OnlineUser(User *u) {
-	if (u == NULL || !u->name[0] || u->socket <= 0)
+	if (u == NULL || !u->name[0])
 		return -1;
 
 	return add_Hash(online_users, u->name, u);
 }
 
 void remove_OnlineUser(User *u) {
-	if (u == NULL || !u->name[0] || u->socket <= 0)
+	if (u == NULL || !u->name[0])
 		return;
 
 	remove_Hash(online_users, u->name);
@@ -67,7 +67,7 @@ User *u;
 	if (name == NULL || !*name)
 		return NULL;
 
-	if ((u = (User *)in_Hash(online_users, name)) != NULL && u->socket > 0)
+	if ((u = (User *)in_Hash(online_users, name)) != NULL)
 		return u;
 
 	return NULL;
