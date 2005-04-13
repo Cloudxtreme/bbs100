@@ -49,6 +49,7 @@
 #include "Worldclock.h"
 #include "Lang.h"
 #include "Category.h"
+#include "ConnUser.h"
 #include "crc32.h"
 
 #include <stdio.h>
@@ -329,20 +330,20 @@ char buf[256];
 	init_Category();
 
 	if (init_Room()) {
-		printf("fatal: Failed to initialize the rooms message system\n");
+		printf("fatal: failed to initialize the rooms message system\n");
 		exit_program(SHUTDOWN);
 	}
 	if (init_OnlineUser()) {
-		printf("fatal: Failed to initialize the online users hash\n");
+		printf("fatal: failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();			/* init salt table for passwd encryption */
 
-	if ((main_socket = inet_sock(PARAM_PORT_NUMBER)) < 0) {		/* startup inet */
-		printf("fatal: failed to listen on port %d\n", PARAM_PORT_NUMBER);
+	if (init_ConnUser()) {		/* startup inet */
+		printf("fatal: failed to initialize connection code\n");
 		exit_program(SHUTDOWN);
 	}
-	if ((data_port = inet_sock(PARAM_DATA_PORT)) < 0) {
+	if ((data_port = inet_listen(PARAM_DATA_PORT)) < 0) {
 		printf("fatal: failed to listen on port %d\n", PARAM_DATA_PORT);
 		exit_program(SHUTDOWN);
 	}

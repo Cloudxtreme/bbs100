@@ -42,7 +42,7 @@
 #define TS_NEW_ENVIRON_VAR	8
 #define TS_NEW_ENVIRON_VAL	9
 
-int inet_sock(unsigned int);
+int inet_listen(unsigned int);
 void new_connection(int);
 void new_data_conn(int);
 void close_connection(User *, char *, ...);

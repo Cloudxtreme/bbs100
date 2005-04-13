@@ -78,7 +78,7 @@ int cpos = 0;
 void Out(User *usr, char *str, int *cpos) {
 char buf[20], c;
 
-	if (usr == NULL || str == NULL || cpos == NULL || usr->socket < 0)
+	if (usr == NULL || str == NULL || cpos == NULL)
 		return;
 
 	while(*str) {

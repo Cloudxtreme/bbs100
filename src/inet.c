@@ -102,7 +102,7 @@ Wrapper *wrappers = NULL;
 int main_socket = -1, data_port = -1, dns_main_socket = -1, dns_socket = -1;
 
 
-int inet_sock(unsigned int port) {
+int inet_listen(unsigned int port) {
 struct sockaddr_in sin;
 int sock, optval, sleepcount = 0;
 
@@ -661,7 +661,7 @@ char buf[20];
 /*
 	The Main Loop
 */
-void mainloop(void) {
+void old_mainloop(void) {
 struct timeval timeout;
 fd_set fds;
 User *c, *c_next;
@@ -878,7 +878,7 @@ char k;
 /*
 	The Main Loop
 */
-void new_mainloop(void) {
+void mainloop(void) {
 struct timeval timeout;
 fd_set rfds, wfds;
 Conn *c, *c_next;

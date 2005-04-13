@@ -171,11 +171,11 @@ void Writechar(User *usr, char c) {
 }
 
 void Flush(User *usr) {
-	if (usr == NULL)
+	if (usr == NULL || usr->conn == NULL)
 		return;
 
-	if (usr->socket > 0 && usr->output_idx > 0) {
-		write(usr->socket, usr->outputbuf, usr->output_idx);
+	if (usr->conn->sock > 0 && usr->output_idx > 0) {
+		write(usr->conn->sock, usr->outputbuf, usr->output_idx);
 		usr->outputbuf[0] = 0;
 		usr->output_idx = 0;
 	}
@@ -186,7 +186,7 @@ va_list args;
 char buf[PRINT_BUF];
 int cpos = 0;
 
-	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
+	if (usr == NULL || fmt == NULL || !*fmt)
 		return;
 
 	va_start(args, fmt);
@@ -203,7 +203,7 @@ void Tell(User *usr, char *fmt, ...) {
 va_list args;
 char buf[PRINT_BUF];
 
-	if (usr == NULL || fmt == NULL || !*fmt || usr->socket < 0)
+	if (usr == NULL || fmt == NULL || !*fmt)
 		return;
 
 	va_start(args, fmt);
