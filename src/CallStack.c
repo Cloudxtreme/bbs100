@@ -23,7 +23,7 @@
 #include "config.h"
 #include "CallStack.h"
 #include "debug.h"
-#include "User.h"
+#include "Conn.h"
 #include "util.h"
 #include "state.h"
 #include "cstring.h"
@@ -32,14 +32,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-CallStack *new_CallStack(void (*func)(User *, char)) {
-CallStack *cs;
-
-	if ((cs = (CallStack *)Malloc(sizeof(CallStack), TYPE_CALLSTACK)) == NULL)
-		return NULL;
-
-	cs->ip = func;
-	return cs;
+CallStack *new_CallStack(void) {
+	return (CallStack *)Malloc(sizeof(CallStack), TYPE_CALLSTACK);
 }
 
 void destroy_CallStack(CallStack *cs) {
@@ -50,67 +44,68 @@ void destroy_CallStack(CallStack *cs) {
 /*
 	Push() : Go to a new level, but do not call yet (so it doesn't print a prompt)
 */
-CallStack *Push(User *usr, void (*state)(User *, char)) {
+void Push(Conn *conn, void (*state)(void *, char)) {
 CallStack *cs;
 
-	if (usr == NULL || state == NULL)
-		return NULL;
+	if (conn == NULL || state == NULL)
+		return;
 
-	if ((cs = new_CallStack(state)) == NULL) {
-		Perror(usr, "Out of memory");
-		return NULL;
-	}
-	usr->callstack = add_CallStack(&usr->callstack, cs);
-	return cs;
+	if ((cs = new_CallStack()) == NULL)
+		return;
+
+	cs->ip = state;
+	conn->callstack = add_CallStack(&conn->callstack, cs);
 }
 
 /*
 	Call() : Go to a new level; it is immediately initialized
 	         (for printing prompts, initializing vars, etc)
 */
-void Call(User *usr, void (*state)(User *, char)) {
-	if (usr == NULL || state == NULL || Push(usr, state) == NULL)
+void Call(Conn *conn, void (*state)(void *, char)) {
+	if (conn == NULL || state == NULL)
 		return;
 
-	state(usr, INIT_STATE);
+	Push(conn, state);
+	state(conn->data, INIT_STATE);
 }
 
 /*
 	Move() : Replace current level by a new level, don't call init
 */
-void Move(User *usr, void (*state)(User *, char)) {
-	if (usr == NULL || state == NULL)
+void Move(Conn *conn, void (*state)(void *, char)) {
+	if (conn == NULL || state == NULL)
 		return;
 
-	if (usr->callstack == NULL)
-		usr->callstack = new_CallStack(state);
-	else
-		usr->callstack->ip = state;
+	if (conn->callstack == NULL)
+		conn->callstack = new_CallStack();
+
+	if (conn->callstack != NULL)
+		conn->callstack->ip = state;
 }
 
 /*
 	Jump() : Replace current level by a new level, and call init
 */
-void Jump(User *usr, void (*state)(User *, char)) {
-	if (usr == NULL || state == NULL)
+void Jump(Conn *conn, void (*state)(void *, char)) {
+	if (conn == NULL || state == NULL)
 		return;
 
-	Move(usr, state);
-	if (usr->callstack != NULL && usr->callstack->ip != NULL)
-		usr->callstack->ip(usr, INIT_STATE);
+	Move(conn, state);
+	if (conn->callstack != NULL && conn->callstack->ip != NULL)
+		conn->callstack->ip(conn->data, INIT_STATE);
 }
 
 /*
 	Ret() : Pops off the level and calls INIT in the previous level
 	        (for reprinting prompts, initializing vars, etc)
 */
-void Ret(User *usr) {
-	if (usr == NULL)
+void Ret(Conn *conn) {
+	if (conn == NULL)
 		return;
 
-	Pop(usr);
-	if (usr->callstack != NULL && usr->callstack->ip != NULL)
-		usr->callstack->ip(usr, INIT_STATE);
+	Pop(conn);
+	if (conn->callstack != NULL && conn->callstack->ip != NULL)
+		conn->callstack->ip(conn->data, INIT_STATE);
 }
 
 /* EOB */

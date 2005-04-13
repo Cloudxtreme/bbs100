@@ -534,8 +534,8 @@ User *usr;
 			"<red>Something's wrong, the BBS made an illegal instruction\n"
 			"Attempting crash recovery...\n", tm->tm_hour, tm->tm_min);
 
-		listdestroy_CallStack(usr->callstack);
-		usr->callstack = NULL;
+		listdestroy_CallStack(usr->conn->callstack);
+		usr->conn->callstack = NULL;
 		CALL(usr, STATE_ROOM_PROMPT);
 	} else {
 		StringList *sl;

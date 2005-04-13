@@ -23,6 +23,7 @@
 #include "config.h"
 #include "Memory.h"
 #include "memset.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,9 +107,10 @@ char *mem;
 			return (void *)((char *)mem + 2*sizeof(unsigned long));
 		}
 	}
-	if ((mem = (char *)malloc(size + 2*sizeof(unsigned long))) == NULL)
+	if ((mem = (char *)malloc(size + 2*sizeof(unsigned long))) == NULL) {
+		log_err("Malloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(unsigned long), Types_table[memtype].type);
 		return NULL;
-
+	}
 	memset(mem, 0, size + 2*sizeof(unsigned long));		/* malloc() sets it to 0, yeah right! :P */
 	memory_total += (size + 2*sizeof(unsigned long));
 
@@ -132,9 +134,10 @@ unsigned long *mem, size;
 
 	mem = (unsigned long *)((char *)ptr - 2*sizeof(unsigned long));
 
-	if ((mem[1] >> 16) != 'A')		/* crude sanity check */
+	if ((mem[1] >> 16) != 'A') {		/* crude sanity check */
+		log_err("Free(): sanity check failed");
 		return;
-
+	}
 	mem[1] &= 0xff;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
 		if (mem[0] == 1UL && !put_freelist((char *)mem, mem[1]))

@@ -50,7 +50,8 @@
 #define TYPE_HASH			24
 #define TYPE_HASHLIST		25
 #define TYPE_LANG			26
-#define NUM_TYPES			27
+#define TYPE_CONN			27
+#define NUM_TYPES			28
 
 typedef struct Typedef_tag Typedef;
 

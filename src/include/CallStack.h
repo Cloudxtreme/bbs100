@@ -35,44 +35,42 @@
 
 #define Pop(x)						pop_CallStack(&(x)->callstack)
 
-#define PUSH(x,y)					Push((x),(y))
-#define POP(x)						Pop(x)
-#define CALL(x,y)					Call((x),(y))
-#define JMP(x,y)					Jump((x),(y))
-#define MOV(x,y)					Move((x),(y))
-#define RET(x)						Ret(x)
+#define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
+#define POP(x)						Pop((x)->conn)
+#define CALL(x,y)					Call((x)->conn,(void (*)(void *, char))(y))
+#define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
+#define MOV(x,y)					Move((x)->conn,(void (*)(void *, char))(y))
+#define RET(x)						Ret((x)->conn)
 
 #define INIT_STATE	0
 #define LOOP_STATE	' '
 
-#define CURRENT_STATE(x)			(x)->callstack->ip((x), INIT_STATE)
-#define RET_LOOP(x)					do { (x)->runtime_flags |= RTF_LOOPING; POP(x); } while(0)
+#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)
+#define CURRENT_INPUT(x,y)			(x)->conn->callstack->ip((x)->conn->data, (y))
+#define RET_LOOP(x)					do { (x)->conn->state |= CONN_LOOPING; POP(x); } while(0)
 
 
-#ifndef USER_DEFINED
-#define USER_DEFINED 1
-typedef struct User_tag User;
+#ifndef CONN_DEFINED
+#define CONN_DEFINED 1
+typedef struct Conn_tag Conn;
 #endif
 
-#ifndef CALLSTACK_DEFINED
-#define CALLSTACK_DEFINED 1
 typedef struct CallStack_tag CallStack;
-#endif
 
 struct CallStack_tag {
 	List(CallStack);
 
-	void (*ip)(User *, char);
+	void (*ip)(void *, char);
 };
 
-CallStack *new_CallStack(void (*)(User *, char));
+CallStack *new_CallStack(void);
 void destroy_CallStack(CallStack *);
 
-CallStack *Push(User *, void (*)(User *, char));
-void Call(User *, void (*)(User *, char));
-void Move(User *, void (*)(User *, char));
-void Jump(User *, void (*)(User *, char));
-void Ret(User *);
+void Push(Conn *, void (*)(void *, char));
+void Call(Conn *, void (*)(void *, char));
+void Move(Conn *, void (*)(void *, char));
+void Jump(Conn *, void (*)(void *, char));
+void Ret(Conn *);
 
 #endif	/* CALLSTACK_H_WJ99 */
 

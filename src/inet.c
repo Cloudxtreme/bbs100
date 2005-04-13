@@ -48,6 +48,7 @@
 #include "OnlineUser.h"
 #include "state_data.h"
 #include "DataCmd.h"
+#include "Conn.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -231,6 +232,9 @@ char optval;
 		Return;
 	}
 */
+	new_conn->conn = new_Conn();
+	new_conn->conn->data = new_conn;
+
 	CALL(new_conn, STATE_LOGIN_PROMPT);
 	Return;
 }
@@ -626,8 +630,8 @@ char buf[20];
 					int i;
 
 					for(i = 6; i < usr->in_sub; i++)
-						usr->callstack->ip(usr, usr->in_sub_buf[i]);	/* enter it as login name */
-					usr->callstack->ip(usr,  KEY_RETURN);
+						CURRENT_INPUT(usr, usr->in_sub_buf[i]);	/* enter it as login name */
+					CURRENT_INPUT(usr, KEY_RETURN);
 				}
 
 /* variable has been processed ; get next one or end on IAC */
@@ -860,6 +864,175 @@ char k;
 
 		if (errno == EBADF) {
 			log_warn("mainloop(): for some reason select() got EBADF, continuing");
+			continue;
+		}
+/*
+	strange, select() got some other error
+*/
+		log_err("select() got errno %d", errno);
+		log_err("exiting and restarting ; killing myself with SIGINT");
+		kill(0, SIGINT);
+	}
+}
+
+/*
+	The Main Loop
+*/
+void new_mainloop(void) {
+struct timeval timeout;
+fd_set rfds, wfds;
+Conn *c, *c_next;
+int err, highest_fd = -1, wait_for_input, nap;
+
+	Enter(mainloop);
+
+	this_user = NULL;
+
+	setjmp(jumper);			/* trampoline for crashed connections */
+	jump_set = 1;
+	crash_recovery();		/* recover crashed connections */
+
+	nap = 1;
+	while(1) {
+		wait_for_input = 1;
+		highest_fd = 0;
+
+		FD_ZERO(&rfds);
+		FD_ZERO(&wfds);
+
+		for(c = AllConns; c != NULL; c = c_next) {
+			c_next = c->next;
+
+/* remove dead connections */
+			if (c->sock <= 0) {
+				remove_Conn(&AllConns, c);
+				c->conn_type->destroy(c->data);
+				destroy_Conn(c);
+				continue;
+			}
+/*
+	looping connections
+*/
+			if (c->state & CONN_LOOPING) {
+				if (c->loop_counter)
+					c->loop_counter--;
+
+				c->conn_type->process(c, LOOP_STATE);
+
+				if ((c->state & CONN_LOOPING) && !c->loop_counter) {
+					c->state &= ~CONN_LOOPING;
+					Ret(c);
+				}
+				wait_for_input = 0;
+				continue;
+			}
+/*
+	non-blocking listen()
+*/
+			if (c->state & CONN_LISTEN) {
+				FD_SET(c->sock, &rfds);
+				if (highest_fd <= c->sock)
+					highest_fd = c->sock + 1;
+				continue;
+			}
+/*
+	non-blocking connect()
+*/
+			if (c->state & CONN_CONNECTING) {
+				FD_SET(c->sock, &wfds);
+				if (highest_fd <= c->sock)
+					highest_fd = c->sock + 1;
+				continue;
+			}
+/*
+	connected and input ready
+*/
+			if (c->state & CONN_ESTABLISHED) {
+				if (c->input_head < c->input_tail) {
+					c->conn_type->process(c, c->inputbuf[c->input_head++]);
+
+					if (c->input_head < c->input_tail) {
+						wait_for_input = 0;
+						continue;
+					}
+				}
+/*
+	no input ready, try to read()
+
+				if (c->input_head >= c->input_tail) {
+*/
+				c->input_head = 0;
+				if ((err = read(c->sock, c->inputbuf, MAX_INPUTBUF)) > 0) {
+					c->input_tail = err;
+					wait_for_input = 0;
+					continue;
+				}
+#ifdef EWOULDBLOCK
+				if (errno == EWOULDBLOCK) {
+#else
+				if (errno == EAGAIN) {
+#endif
+					FD_SET(c->sock, &rfds);
+					if (highest_fd <= c->sock)
+						highest_fd = c->sock + 1;
+					continue;
+				}
+				if (errno == EINTR)		/* interrupted, try again next time */
+					continue;
+/*
+	something bad happened, probably lost connection
+*/
+				c->conn_type->linkdead(c);
+				continue;
+			}
+		}
+
+/*
+	call select() to see if any more data is ready to arrive
+
+	select() is only called to see if input is ready
+	To make things perfect, we should check if write() causes EWOULDBLOCK,
+	setup an output buffer, and call select() with a write-set as well
+*/
+		timeout.tv_sec = (wait_for_input == 0) ? 0 : nap;
+		timeout.tv_usec = 0;
+		errno = 0;
+		err = select(highest_fd, &rfds, &wfds, NULL, &timeout);
+
+/*
+	first update timers ... if we do it later, new connections can immediately
+	time out
+*/
+		handle_pending_signals();
+		nap = update_timers();
+
+		if (err > 0) {
+			for(c = AllConns; c != NULL; c = c_next) {
+				c_next = c->next;
+
+				if (c->sock > 0) {
+					if (FD_ISSET(c->sock, &rfds))
+						c->conn_type->readable(c);
+
+					if (FD_ISSET(c->sock, &wfds))
+						c->conn_type->writable(c);
+				}
+			}
+		}
+		if (err >= 0)				/* no error return from select() */
+			continue;
+/*
+	handle select() errors
+*/
+		if (errno == EINTR)			/* interrupted, better luck next time */
+			continue;
+
+		if (errno == EBADF) {
+			log_warn("mainloop(): select() got EBADF, continuing");
+			continue;
+		}
+		if (errno == EINVAL) {
+			log_warn("mainloop(): select() got EINVAL, continuing");
 			continue;
 		}
 /*

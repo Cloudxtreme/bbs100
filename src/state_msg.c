@@ -561,7 +561,7 @@ void state_save_text(User *usr, char c) {
 }
 
 void state_abort_text(User *usr, char c) {
-void (*abort_func)(User *, char);
+void (*abort_func)(void *, char);
 
 	if (usr == NULL)
 		return;
@@ -583,7 +583,7 @@ void (*abort_func)(User *, char);
 	the abort() user exit function
 */
 			POP(usr);							/* pop current */
-			abort_func = usr->callstack->ip;	/* abort func */
+			abort_func = usr->conn->callstack->ip;	/* abort func */
 			POP(usr);							/* pop abort func */
 			JMP(usr, abort_func);				/* overwrite save() address */
 			break;

@@ -35,12 +35,12 @@
 #include "Message.h"
 #include "BufferedMsg.h"
 #include "Timer.h"
-#include "CallStack.h"
 #include "sys_time.h"
 #include "Param.h"
 #include "CachedFile.h"
 #include "Timezone.h"
 #include "Lang.h"
+#include "Conn.h"
 
 #include <sys/types.h>
 
@@ -124,13 +124,10 @@
 typedef struct User_tag User;
 #endif
 
-#ifndef DEBUGGER_DEFINED
-#define DEBUGGER_DEFINED 1
-typedef struct Debugger_tag Debugger;
-#endif
-
 struct User_tag {
 	List(User);
+
+	Conn *conn;
 
 	int socket, telnet_state, in_sub, crashed;
 	int edit_pos, read_lines, total_lines, input_idx, output_idx;
@@ -176,8 +173,6 @@ struct User_tag {
 	Timezone *tz;
 	Lang *lang;
 	PList *cmd_chain;
-
-	CallStack *callstack;
 };
 
 User *new_User(void);

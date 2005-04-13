@@ -137,7 +137,6 @@ int i;
 	usr->idle_timer = NULL;
 	listdestroy_Timer(usr->timerq);
 	listdestroy_PList(usr->cmd_chain);
-	listdestroy_CallStack(usr->callstack);
 
 	if (usr->socket > 0) {
 		shutdown(usr->socket, 2);
@@ -1153,7 +1152,7 @@ char buf[MAX_PATHLEN];
 	process input and pass it on to the function that is on the callstack
 */
 void process(User *usr, char c) {
-	if (usr == NULL || usr->callstack == NULL || usr->callstack->ip == NULL
+	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL
 		|| (c = telnet_negotiations(usr, (unsigned char)c)) == (char)-1)
 		return;
 
@@ -1167,7 +1166,7 @@ void process(User *usr, char c) {
 	}
 /* call routine on top of the callstack */
 	this_user = usr;
-	usr->callstack->ip(usr, c);				/* process input */
+	usr->conn->callstack->ip(usr, c);				/* process input */
 	this_user = NULL;
 }
 
