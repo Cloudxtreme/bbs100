@@ -66,7 +66,6 @@ int i, num;
 
 /*
 	If the process is the resolver, create a Unix domain socket
-	If the process is the logger, create a stderr <-> stdin pipe
 */
 int fork_process(Process *proc) {
 	if (proc == NULL)
