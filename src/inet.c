@@ -883,6 +883,7 @@ char k;
 
 /*
 	The Main Loop
+	this is the connection engine
 */
 void mainloop(void) {
 struct timeval timeout;
@@ -956,7 +957,6 @@ int err, highest_fd = -1, wait_for_input, nap;
 			if (c->state & CONN_ESTABLISHED) {
 				if (c->input_head < c->input_tail) {
 					c->conn_type->process(c, c->inputbuf[c->input_head++]);
-
 					if (c->input_head < c->input_tail) {
 						wait_for_input = 0;
 						continue;
@@ -970,9 +970,11 @@ int err, highest_fd = -1, wait_for_input, nap;
 				c->input_head = 0;
 				if ((err = read(c->sock, c->inputbuf, MAX_INPUTBUF)) > 0) {
 					c->input_tail = err;
+					c->inputbuf[c->input_tail] = 0;
 					wait_for_input = 0;
 					continue;
-				}
+				} else
+					c->input_tail = 0;
 #ifdef EWOULDBLOCK
 				if (errno == EWOULDBLOCK) {
 #else
@@ -1017,11 +1019,18 @@ int err, highest_fd = -1, wait_for_input, nap;
 				c_next = c->next;
 
 				if (c->sock > 0) {
-					if (FD_ISSET(c->sock, &rfds))
-						c->conn_type->readable(c);
-
-					if (FD_ISSET(c->sock, &wfds))
-						c->conn_type->writable(c);
+					if (FD_ISSET(c->sock, &rfds)) {
+						if (c->state & CONN_LISTEN)
+							c->conn_type->accept(c);
+						else
+							c->conn_type->readable(c);
+					}
+					if (FD_ISSET(c->sock, &wfds)) {
+						if (c->state & CONN_CONNECTING)
+							c->conn_type->complete_connect(c);
+						else
+							c->conn_type->writable(c);
+					}
 				}
 			}
 		}
