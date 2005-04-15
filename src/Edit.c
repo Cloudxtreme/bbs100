@@ -36,11 +36,11 @@ Edit *e;
 	if ((e = (Edit *)Malloc(sizeof(Edit), TYPE_EDIT)) == NULL)
 		return NULL;
 
-	if ((e->buf = (char *)Malloc(MAX_LINE, TYPE_CHAR)) == NULL) {
+	if ((e->buf = (char *)Malloc(MAX_INPUTBUF, TYPE_CHAR)) == NULL) {
 		destroy_Edit(e);
 		return NULL;
 	}
-	e->size = e->max = MAX_LINE;
+	e->size = e->max = MAX_INPUTBUF;
 	e->idx = 0;
 	return e;
 }
@@ -73,6 +73,28 @@ int edit_input(Edit *e, char c) {
 			if (e->idx < e->size-1) {
 				e->buf[e->idx++] = c;
 				e->buf[e->idx] = 0;
+			} else {
+				if (e->size < e->max) {
+					char *p;
+					int size;
+
+					size = e->size + MAX_INPUTBUF;
+					if (size > e->max)
+						size = e->max;
+
+					if ((p = (char *)Malloc(size, TYPE_CHAR)) == NULL)
+						return -1;
+
+					strcpy(p, e->buf);
+					Free(e->buf);
+					e->buf = p;
+					e->size = size;
+
+					if (e->idx < e->size-1) {
+						e->buf[e->idx++] = c;
+						e->buf[e->idx] = 0;
+					}
+				}
 			}
 	}
 	return 0;

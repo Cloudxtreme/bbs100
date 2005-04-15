@@ -122,13 +122,9 @@ char *p;
 	if (conn == NULL)
 		return;
 
-	log_debug("ConnResolv_process(): processing");
-
 	e = (Edit *)conn->data;
 	if (edit_input(e, k) != EDIT_RETURN)
 		return;
-
-	log_debug("ConnResolv_process(): got [%s]", e->buf);
 
 	if ((p = cstrchr(e->buf, ' ')) != NULL) {
 		*p = 0;
@@ -139,7 +135,6 @@ char *p;
 	if (p != NULL && strcmp(e->buf, p)) {
 		Conn *c;
 
-		log_debug("ConnResolv_process(): filling in [%s] [%s]", e->buf, p);
 		for(c = AllConns; c != NULL; c = c->next)
 			if (!strcmp(c->from_ip, e->buf))
 				strcpy(c->from_ip, p);			/* fill in IP name */
@@ -197,8 +192,6 @@ void ConnResolv_destroy(Conn *c) {
 void dns_gethostname(char *ipnum) {
 	if (ipnum == NULL || !*ipnum || conn_resolver == NULL)
 		return;
-
-	log_debug("resolving %s", ipnum);
 
 	write_Conn(conn_resolver, ipnum);
 	flush_Conn(conn_resolver);
