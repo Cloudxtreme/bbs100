@@ -25,8 +25,11 @@
 
 #include "Conn.h"
 
+int init_ConnResolv(void);
 void ConnResolv_process(Conn *, char);
 void ConnResolv_accept(Conn *);
+void ConnResolv_destroy(Conn *);
+void dns_gethostname(char *);
 
 #endif	/* CONN_RESOLV_H_WJ105 */
 

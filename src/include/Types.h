@@ -51,7 +51,8 @@
 #define TYPE_HASHLIST		25
 #define TYPE_LANG			26
 #define TYPE_CONN			27
-#define NUM_TYPES			28
+#define TYPE_EDIT			28
+#define NUM_TYPES			29
 
 typedef struct Typedef_tag Typedef;
 

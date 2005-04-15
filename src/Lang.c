@@ -181,7 +181,7 @@ struct dirent *direntp;
 
 		l->refcount = 1;
 		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
-		dump_Lang(l);
+/*		dump_Lang(l);	*/
 	} else
 		log_debug("load_Language(%s): failed to load", lang);
 	return l;
@@ -442,7 +442,7 @@ static char textbuf[PRINT_BUF];
 	} else
 		return text;
 
-	log_debug("translate(): [%s]", textbuf);
+/*	log_debug("translate(): [%s]", textbuf);	*/
 
 	key = hashaddr_lang(textbuf);
 	sprintf(keybuf, "%x", key);
@@ -458,7 +458,7 @@ static char textbuf[PRINT_BUF];
 	strcat(textbuf, translated);
 	strcat(textbuf, endp);
 
-	log_debug("translate(): --> [%s]", textbuf);
+/*	log_debug("translate(): --> [%s]", textbuf);	*/
 	return textbuf;
 }
 

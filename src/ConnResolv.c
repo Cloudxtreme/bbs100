@@ -20,17 +20,29 @@
 	ConnResolv.c	WJ105
 */
 
+#include "config.h"
 #include "ConnResolv.h"
+#include "Process.h"
+#include "Param.h"
 #include "cstring.h"
 #include "log.h"
+#include "inet.h"
+#include "util.h"
+#include "Edit.h"
+#include "edit.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 
 
 ConnType ConnResolv = {
@@ -41,12 +53,62 @@ ConnType ConnResolv = {
 	dummy_Conn_handler,
 	dummy_Conn_handler,
 	dummy_Conn_handler,
-	dummy_Conn_handler,
+	ConnResolv_destroy,
+};
+
+/*
+	The external resolver process connects to a listening UNIX socket,
+	creating a new connection named conn_resolver
+	The BBS sends requests for resolving addresses to the resolver,
+	which answers over the same connection
+*/
+static Conn *conn_resolver = NULL;
+
+static char *argv_resolver[3] =	{ "(bbs100 resolver)", NULL, NULL };
+static Process process_resolver = {
+	"resolver", NULL, argv_resolver, (pid_t)-1L, PROC_RESTART, 0, (time_t)0UL
 };
 
 
+/*
+	start the resolver process
+*/
 int init_ConnResolv(void) {
+Conn *listener;
+char buf[MAX_LINE];
 
+	process_resolver.path = PARAM_PROGRAM_RESOLVER;
+
+	if ((listener = new_Conn()) == NULL) {
+		log_warn("name resolving disabled");
+		return -1;
+	}
+	listener->conn_type = &ConnResolv;
+
+/* make pathname for the unix domain socket */
+	sprintf(buf, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
+	path_strip(buf);
+	if ((listener->sock = unix_sock(buf)) < 0) {
+		log_err("failed to create unix domain socket");
+		log_warn("name resolving disabled");
+
+		destroy_Conn(listener);
+		listener = NULL;
+		return -1;
+	}
+	listener->state = CONN_LISTEN;
+
+	log_msg("starting resolver with socket %s", buf);
+	process_resolver.argv[1] = buf;
+
+	if (fork_process(&process_resolver) == -1) {
+		log_err("init_ConnResolv(): failed to start name resolver");
+
+		destroy_Conn(listener);
+		listener = NULL;
+		return -1;
+	}
+	add_Conn(&AllConns, listener);
 	return 0;
 }
 
@@ -54,35 +116,42 @@ int init_ConnResolv(void) {
 	got answer back from asynchronous resolver process
 */
 void ConnResolv_process(Conn *conn, char k) {
+Edit *e;
 char *p;
 
-	if (conn == NULL || conn->input_head <= conn->input_tail)
+	if (conn == NULL)
 		return;
 
-	if (conn->input_tail >= MAX_INPUTBUF)
-		conn->input_tail = MAX_INPUTBUF-1;
-	conn->inputbuf[conn->input_tail] = 0;
+	log_debug("ConnResolv_process(): processing");
 
-	if ((p = cstrchr(conn->inputbuf, ' ')) != NULL) {
+	e = (Edit *)conn->data;
+	if (edit_input(e, k) != EDIT_RETURN)
+		return;
+
+	log_debug("ConnResolv_process(): got [%s]", e->buf);
+
+	if ((p = cstrchr(e->buf, ' ')) != NULL) {
 		*p = 0;
 		p++;
 		if (!*p)
 			return;
 	}
-	if (p != NULL && strcmp(conn->inputbuf, p)) {
+	if (p != NULL && strcmp(e->buf, p)) {
 		Conn *c;
 
+		log_debug("ConnResolv_process(): filling in [%s] [%s]", e->buf, p);
 		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->from_ip, conn->inputbuf))
+			if (!strcmp(c->from_ip, e->buf))
 				strcpy(c->from_ip, p);			/* fill in IP name */
 	}
 	conn->input_head = conn->input_tail = 0;
+	reset_edit((Edit *)e);
 }
 
 void ConnResolv_accept(Conn *conn) {
 int un_len, sock;
 struct sockaddr_un un;
-Conn *new_conn;
+char optval;
 
 	if (conn == NULL)
 		return;
@@ -92,15 +161,47 @@ Conn *new_conn;
 		log_err("ConnResolv_accept(): failed to accept()");
 		return;
 	}
-	if ((new_conn = new_Conn()) == NULL) {
+	if (conn_resolver != NULL) {
+		remove_Conn(&AllConns, conn_resolver);
+		destroy_Conn(conn_resolver);
+		conn_resolver = NULL;
+	}
+	if ((conn_resolver = new_Conn()) == NULL) {
 		shutdown(sock, 2);
 		close(sock);
 		return;
 	}
-	new_conn->sock = sock;
-	new_conn->conn_type = &ConnResolv;
-	new_conn->state |= CONN_ESTABLISHED;
-	AllConns = add_Conn(&AllConns, new_conn);
+	conn_resolver->conn_type = &ConnResolv;
+	conn_resolver->sock = sock;
+	conn_resolver->state |= CONN_ESTABLISHED;
+
+	optval = 1;
+	ioctl(conn_resolver->sock, FIONBIO, &optval);		/* set non-blocking */
+
+	conn_resolver->data = new_Edit();
+
+	add_Conn(&AllConns, conn_resolver);
+}
+
+void ConnResolv_destroy(Conn *c) {
+	if (c == NULL)
+		return;
+
+	destroy_Edit((Edit *)c->data);
+	c->data = NULL;
+}
+
+/*
+	send request for name resolving
+*/
+void dns_gethostname(char *ipnum) {
+	if (ipnum == NULL || !*ipnum || conn_resolver == NULL)
+		return;
+
+	log_debug("resolving %s", ipnum);
+
+	write_Conn(conn_resolver, ipnum);
+	flush_Conn(conn_resolver);
 }
 
 /* EOB */

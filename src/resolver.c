@@ -142,17 +142,17 @@ struct in_addr ipnum;
 			continue;
 		}
 		if (ipv4_aton(buf, &ipnum) == 0) {
-			sprintf(buf2, "%s %s", buf, buf);
+			sprintf(buf2, "%s %s\r", buf, buf);
 			goto reply;
 		}
 		if ((host = gethostbyaddr((char *)&ipnum, 4, AF_INET)) == NULL) {
 			sleep(1);
 			if ((host = gethostbyaddr((char *)&ipnum, 4, AF_INET)) == NULL) {
-				sprintf(buf2, "%s %s", buf, buf);
+				sprintf(buf2, "%s %s\r", buf, buf);
 				goto reply;
 			}
 		}
-		sprintf(buf2, "%s %s", buf, host->h_name);
+		sprintf(buf2, "%s %s\r", buf, host->h_name);
 reply:
 		fprintf(stderr, "resolver: %s\n", buf2);
 		if (write(s, buf2, strlen(buf2)) < 0) {

@@ -49,7 +49,6 @@ void close_connection(User *, char *, ...);
 
 int unix_sock(char *);
 int init_resolver(void);
-void dns_gethostname(char *);
 void dnsserver_io(void);
 int telnet_negotiations(User *, unsigned char);
 void mainloop(void);
@@ -57,8 +56,6 @@ void mainloop(void);
 extern Wrapper *wrappers;
 extern int main_socket;
 extern int data_port;
-extern int dns_main_socket;
-extern int dns_socket;
 
 #endif
 

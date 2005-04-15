@@ -32,6 +32,7 @@
 #include "screens.h"
 #include "state_login.h"
 #include "Param.h"
+#include "ConnResolv.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,7 +112,7 @@ Conn *conn;
 	}
 	conn->state |= CONN_LISTEN;
 
-	AllConns = add_Conn(&AllConns, conn);
+	add_Conn(&AllConns, conn);
 	return 0;
 }
 
@@ -165,7 +166,7 @@ char optval;
 	log_auth("CONN (%s)", new_conn->from_ip);
 	add_Conn(&AllConns, new_conn);
 	add_User(&AllUsers, new_user);
-/*	dns_gethostname(new_conn->from_ip);		send out request for hostname */
+	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
 
 /*
 	display the login screen

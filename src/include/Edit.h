@@ -17,36 +17,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Process.h	WJ99
-
-	for background processes
+	Edit.h	WJ105
 */
 
-#ifndef PROCESS_H_WJ99
-#define PROCESS_H_WJ99 1
-
-#include <config.h>
-#include <sys/types.h>
-
-#include "sys_time.h"
-
-#define PROC_RESTART	1
+#ifndef EDIT_H_WJ105
+#define EDIT_H_WJ105	1
 
 typedef struct {
-	char *name, *path, **argv;
-	pid_t pid;
-	int flags, died_times;
-	time_t start_time;
-} Process;
+	char *buf;
+	int size, idx, max;
+} Edit;
 
-int fork_process(Process *);
-int restart_process(Process *);
-void wait_process(void);
-void process_sigpipe(int);
-void process_sigchld(int);
-int bbs_init_process(void);
-void killall_process(void);
 
-#endif	/* PROCESS_H_WJ99 */
+Edit *new_Edit(void);
+void destroy_Edit(Edit *);
+void reset_edit(Edit *);
+int edit_input(Edit *, char);
+
+#endif	/* EDIT_H_WJ105 */
 
 /* EOB */

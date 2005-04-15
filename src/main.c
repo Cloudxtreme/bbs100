@@ -50,6 +50,7 @@
 #include "Lang.h"
 #include "Category.h"
 #include "ConnUser.h"
+#include "ConnResolv.h"
 #include "crc32.h"
 
 #include <stdio.h>
@@ -159,7 +160,7 @@ int code = 0;
 		if (save_Stats(&stats, PARAM_STAT_FILE))
 			log_err("failed to save stats");
 	}
-	kill_process();						/* kill helper procs like the resolver */
+	killall_process();					/* kill helper procs like the resolver */
 
 	if (reboot) {
 		execlp(PARAM_PROGRAM_MAIN, PARAM_PROGRAM_MAIN, NULL);	/* reboot */
@@ -275,6 +276,8 @@ char buf[256];
 	if (!debugger)
 		init_Signal();
 
+	bbs_init_process();
+
 	if (init_FileCache()) {
 		fprintf(stderr, "bbs100: failed to initialize file cache\n");
 		exit(-1);
@@ -360,8 +363,7 @@ char buf[256];
 	if (!debugger)
 		goto_background();
 
-	if (bbs_init_process())
-		log_err("helper daemons startup failed");
+	init_ConnResolv();
 
 	stats.uptime = rtc = time(NULL);
 

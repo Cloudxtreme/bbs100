@@ -99,7 +99,7 @@
 
 
 Wrapper *wrappers = NULL;
-int main_socket = -1, data_port = -1, dns_main_socket = -1, dns_socket = -1;
+int main_socket = -1, data_port = -1;
 
 
 int inet_listen(unsigned int port) {
@@ -394,47 +394,6 @@ char optval;
 }
 
 
-void dns_gethostname(char *ipnum) {
-	if (ipnum == NULL || !*ipnum || dns_socket < 0)
-		return;
-
-	if (write(dns_socket, ipnum, strlen(ipnum)) < 0) {
-		log_err("dns write()");
-	}
-}
-
-void dnsserver_io(void) {
-int n;
-char buf[MAX_LINE], *p;
-
-	if ((n = read(dns_socket, buf, MAX_LINE-1)) <= 0) {
-		log_err("dns read(), closing socket");
-
-		shutdown(dns_socket, 2);
-		close(dns_socket);
-		dns_socket = -1;
-		return;
-	}
-	if (n >= MAX_LINE)
-		n = MAX_LINE-1;
-	buf[n] = 0;
-
-	if ((p = cstrchr(buf, ' ')) != NULL) {
-		*p = 0;
-		p++;
-		if (!*p)
-			return;
-	}
-	if (p != NULL && strcmp(buf, p)) {
-		Conn *c;
-
-		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->from_ip, buf))
-				strcpy(c->from_ip, p);			/* fill in IP name */
-	}
-}
-
-
 #ifndef TELOPT_NAWS
 #define TELOPT_NAWS 31			/* negotiate about window size */
 #endif
@@ -442,6 +401,7 @@ char buf[MAX_LINE], *p;
 #ifndef TELOPT_NEW_ENVIRON
 #define TELOPT_NEW_ENVIRON 39	/* set new environment variable */
 #endif
+
 
 int telnet_negotiations(User *usr, unsigned char c) {
 char buf[20];
@@ -662,225 +622,6 @@ char buf[20];
 }
 
 
-#ifdef OLD_CODE
-/*
-	The Main Loop
-*/
-void old_mainloop(void) {
-struct timeval timeout;
-fd_set fds;
-User *c, *c_next;
-int err, highest_fd = -1, nap;
-char k;
-
-	Enter(mainloop);
-
-	this_user = NULL;
-
-	setjmp(jumper);			/* trampoline for crashed users */
-	jump_set = 1;
-	crash_recovery();		/* recover crashed users */
-
-	nap = 1;
-	while(main_socket > 0) {
-		FD_ZERO(&fds);
-		FD_SET(main_socket, &fds);
-		highest_fd = main_socket+1;
-
-		if (data_port > 0) {
-			FD_SET(data_port, &fds);
-			if (data_port >= highest_fd)
-				highest_fd = data_port+1;
-		}
-		if (dns_main_socket > 0) {
-			FD_SET(dns_main_socket, &fds);
-			if (dns_main_socket >= highest_fd)
-				highest_fd = dns_main_socket+1;
-		}
-		if (dns_socket > 0) {
-			FD_SET(dns_socket, &fds);
-			if (dns_socket >= highest_fd)
-				highest_fd = dns_socket+1;
-		}
-		timeout.tv_sec = nap;
-		timeout.tv_usec = 0;
-
-		for(c = AllUsers; c != NULL; c = c_next) {
-			c_next = c->next;
-/*
-	dead connections
-*/
-			if (c->socket <= 0) {
-				remove_OnlineUser(c);			/* probably already removed by close_connection() :P */
-				remove_User(&AllUsers, c);
-				destroy_User(c);
-				continue;
-			}
-/*
-	looping users
-*/
-			if (c->runtime_flags & RTF_LOOPING) {
-				if (c->loop_counter)
-					c->loop_counter--;
-
-				process(c, LOOP_STATE);
-
-				if ((c->runtime_flags & RTF_LOOPING) && !c->loop_counter) {
-					c->runtime_flags &= ~RTF_LOOPING;
-					RET(c);
-				}
-				timeout.tv_sec = 0;
-				continue;
-			}
-/*
-	regular users that have input ready
-*/
-			if (c->input_idx) {
-				k = c->inputbuf[0];
-				c->input_idx--;
-				if (c->input_idx) {
-					timeout.tv_sec = 0;
-					memmove(c->inputbuf, &c->inputbuf[1], c->input_idx);	/* this is inefficient; better use a head and tail pointer */
-				}
-				process(c, k);
-
-				if (c->input_idx)
-					continue;
-			}
-			if (!c->input_idx && !(c->runtime_flags & RTF_SELECT)) {
-/*
-	input buffer empty, try to read()
-*/
-				if ((err = read(c->socket, c->inputbuf, MAX_INPUTBUF)) > 0) {
-					c->input_idx = err;
-					timeout.tv_sec = 0;
-					continue;
-				}
-#ifdef EWOULDBLOCK
-				if (errno == EWOULDBLOCK) {
-#else
-				if (errno == EAGAIN) {
-#endif
-					FD_SET(c->socket, &fds);
-					if (c->socket >= highest_fd)
-						highest_fd = c->socket+1;
-
-					c->runtime_flags |= RTF_SELECT;		/* go wait for select() */
-					continue;
-				}
-				if (errno == EINTR)			/* interrupted, try again next time */
-					continue;
-/*
-	something bad happened, probably lost connection
-*/
-				if (c->name[0]) {
-					notify_linkdead(c);
-					log_auth("LINKDEAD %s (%s)", c->name, c->from_ip);
-					close_connection(c, "%s went linkdead", c->name);
-				} else
-					close_connection(c, NULL);
-				continue;
-			}
-/*
-	regular users waiting for select()
-*/
-			if (c->runtime_flags & RTF_SELECT) {
-				FD_SET(c->socket, &fds);
-				if (c->socket >= highest_fd)
-					highest_fd = c->socket+1;
-			}
-		}
-/*
-	call select() to see if any more data is ready to arrive
-
-	Note that the name resolver has no buffers like the users do
-	To make things perfect, the name resolver should be changed to
-	use buffers as well
-
-	select() is only called to see if input is ready
-	To make things perfect, we should check if write() causes EWOULDBLOCK,
-	setup an output buffer, and call select() with a write-set as well
-*/
-		errno = 0;
-		err = select(highest_fd, &fds, NULL, NULL, &timeout);
-
-/*
-	first update timers ... if we do it later, new connections can immediately
-	time out
-*/
-		handle_pending_signals();
-		nap = update_timers();
-
-		if (err > 0) {
-/*
-	handle new connections
-*/
-			if (main_socket > 0 && FD_ISSET(main_socket, &fds))
-				new_connection(main_socket);
-
-			if (data_port > 0 && FD_ISSET(data_port, &fds))
-				new_data_conn(data_port);
-/*
-	handle name resolver I/O
-*/
-			if (dns_socket > 0 && FD_ISSET(dns_socket, &fds))
-				dnsserver_io();
-
-			if (dns_main_socket > 0 && FD_ISSET(dns_main_socket, &fds)) {
-				int un_len;
-				struct sockaddr_un un;
-
-				if (dns_socket > 0) {
-					FD_CLR(dns_socket, &fds);
-					shutdown(dns_socket, 2);
-					close(dns_socket);
-				}
-				un_len = sizeof(struct sockaddr_un);
-				dns_socket = accept(dns_main_socket, (struct sockaddr *)&un, (int *)&un_len);
-				if (dns_socket < 0) {
-					log_err("dns accept()");
-				} else {
-					FD_SET(dns_socket, &fds);
-					if (dns_socket >= highest_fd)
-						highest_fd = dns_socket+1;
-				}
-			}
-/*
-	handle user I/O
-	instead of calling read() immediately, we will do it the next loop
-*/
-			for(c = AllUsers; c != NULL; c = c_next) {
-				c_next = c->next;
-
-				if ((c->runtime_flags & RTF_SELECT) && c->socket > 0 && FD_ISSET(c->socket, &fds)) {
-					c->runtime_flags &= ~RTF_SELECT;
-					c->input_idx = 0;
-					FD_CLR(c->socket, &fds);
-				}
-			}
-		}
-		if (err >= 0)				/* no error return from select() */
-			continue;
-/*
-	handle select() errors
-*/
-		if (errno == EINTR)			/* interrupted, better luck next time */
-			continue;
-
-		if (errno == EBADF) {
-			log_warn("mainloop(): for some reason select() got EBADF, continuing");
-			continue;
-		}
-/*
-	strange, select() got some other error
-*/
-		log_err("select() got errno %d", errno);
-		log_err("exiting and restarting ; killing myself with SIGINT");
-		kill(0, SIGINT);
-	}
-}
-#endif	/* OLD_CODE */
-
 /*
 	The Main Loop
 	this is the connection engine
@@ -1006,7 +747,6 @@ int err, highest_fd = -1, wait_for_input, nap;
 		timeout.tv_usec = 0;
 		errno = 0;
 		err = select(highest_fd, &rfds, &wfds, NULL, &timeout);
-
 /*
 	first update timers ... if we do it later, new connections can immediately
 	time out

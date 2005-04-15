@@ -1,5 +1,6 @@
-Changes as of April 14th 2005
-- still busy implementing Conn (connection) type
+Changes as of April 15th 2005
+- moved all socket code to Conn connection type
+- buffered name resolver using Conn type
 
 Changes as of April 10th 2005
 - came up with the data port

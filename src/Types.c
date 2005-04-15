@@ -28,6 +28,7 @@
 #include "Hash.h"
 #include "Lang.h"
 #include "Conn.h"
+#include "Edit.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -59,6 +60,7 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "HashList",			sizeof(HashList),			},
 	{ "Lang",				sizeof(Lang),				},
 	{ "Conn",				sizeof(Conn),				},
+	{ "Edit.h",				sizeof(Edit),				},
 	{ "(unknown)",			0,							},
 };
 
