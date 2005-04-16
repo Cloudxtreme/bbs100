@@ -67,7 +67,7 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	debug.o SymbolTable.o Types.o HostMap.o FileFormat.o \
 	Timezone.o Worldclock.o Lang.o locale_system.o locales.o \
 	locale_nl.o Category.o crc32.o state_data.o DataCmd.o \
-	Conn.o ConnUser.o ConnResolv.o Edit.o \
+	Conn.o ConnUser.o ConnResolv.o Linebuf.o \
 	main.o
 
 MORE_OBJS = mkpasswd.o resolver.o ipv4_aton.o ccat.o bbs100_convert.o

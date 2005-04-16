@@ -17,10 +17,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Edit.c	WJ105
+	Linebuf.c	WJ105
 */
 
-#include "Edit.h"
+#include "Linebuf.h"
 #include "Types.h"
 #include "Memory.h"
 #include "defines.h"
@@ -30,39 +30,39 @@
 #include <stdlib.h>
 
 
-Edit *new_Edit(void) {
-Edit *e;
+Linebuf *new_Linebuf(void) {
+Linebuf *lb;
 
-	if ((e = (Edit *)Malloc(sizeof(Edit), TYPE_EDIT)) == NULL)
+	if ((lb = (Linebuf *)Malloc(sizeof(Linebuf), TYPE_LINEBUF)) == NULL)
 		return NULL;
 
-	if ((e->buf = (char *)Malloc(MAX_INPUTBUF, TYPE_CHAR)) == NULL) {
-		destroy_Edit(e);
+	if ((lb->buf = (char *)Malloc(MAX_INPUTBUF, TYPE_CHAR)) == NULL) {
+		destroy_Linebuf(lb);
 		return NULL;
 	}
-	e->size = e->max = MAX_INPUTBUF;
-	e->idx = 0;
-	return e;
+	lb->size = lb->max = MAX_INPUTBUF;
+	lb->idx = 0;
+	return lb;
 }
 
-void destroy_Edit(Edit *e) {
-	if (e == NULL)
+void destroy_Linebuf(Linebuf *lb) {
+	if (lb == NULL)
 		return;
 
-	Free(e->buf);
-	Free(e);
+	Free(lb->buf);
+	Free(lb);
 }
 
-void reset_edit(Edit *e) {
-	if (e == NULL || e->buf == NULL)
+void reset_Linebuf(Linebuf *lb) {
+	if (lb == NULL || lb->buf == NULL)
 		return;
 
-	e->idx = 0;
-	e->buf[0] = 0;
+	lb->idx = 0;
+	lb->buf[0] = 0;
 }
 
-int edit_input(Edit *e, char c) {
-	if (e == NULL || e->buf == NULL)
+int input_Linebuf(Linebuf *lb, char c) {
+	if (lb == NULL || lb->buf == NULL)
 		return -1;
 
 	switch(c) {
@@ -70,29 +70,29 @@ int edit_input(Edit *e, char c) {
 			return EDIT_RETURN;
 
 		default:
-			if (e->idx < e->size-1) {
-				e->buf[e->idx++] = c;
-				e->buf[e->idx] = 0;
+			if (lb->idx < lb->size-1) {
+				lb->buf[lb->idx++] = c;
+				lb->buf[lb->idx] = 0;
 			} else {
-				if (e->size < e->max) {
+				if (lb->size < lb->max) {
 					char *p;
 					int size;
 
-					size = e->size + MAX_INPUTBUF;
-					if (size > e->max)
-						size = e->max;
+					size = lb->size + MAX_INPUTBUF;
+					if (size > lb->max)
+						size = lb->max;
 
 					if ((p = (char *)Malloc(size, TYPE_CHAR)) == NULL)
 						return -1;
 
-					strcpy(p, e->buf);
-					Free(e->buf);
-					e->buf = p;
-					e->size = size;
+					strcpy(p, lb->buf);
+					Free(lb->buf);
+					lb->buf = p;
+					lb->size = size;
 
-					if (e->idx < e->size-1) {
-						e->buf[e->idx++] = c;
-						e->buf[e->idx] = 0;
+					if (lb->idx < lb->size-1) {
+						lb->buf[lb->idx++] = c;
+						lb->buf[lb->idx] = 0;
 					}
 				}
 			}

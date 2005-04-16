@@ -17,23 +17,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Edit.h	WJ105
+	Linebuf.h	WJ105
 */
 
-#ifndef EDIT_H_WJ105
-#define EDIT_H_WJ105	1
+#ifndef LINEBUF_H_WJ105
+#define LINEBUF_H_WJ105	1
 
 typedef struct {
 	char *buf;
 	int size, idx, max;
-} Edit;
+} Linebuf;
 
 
-Edit *new_Edit(void);
-void destroy_Edit(Edit *);
-void reset_edit(Edit *);
-int edit_input(Edit *, char);
+Linebuf *new_Linebuf(void);
+void destroy_Linebuf(Linebuf *);
+void reset_Linebuf(Linebuf *);
+int input_Linebuf(Linebuf *, char);
 
-#endif	/* EDIT_H_WJ105 */
+#endif	/* LINEBUF_H_WJ105 */
 
 /* EOB */

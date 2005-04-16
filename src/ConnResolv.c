@@ -28,7 +28,7 @@
 #include "log.h"
 #include "inet.h"
 #include "util.h"
-#include "Edit.h"
+#include "Linebuf.h"
 #include "edit.h"
 
 #include <stdio.h>
@@ -116,31 +116,31 @@ char buf[MAX_LINE];
 	got answer back from asynchronous resolver process
 */
 void ConnResolv_process(Conn *conn, char k) {
-Edit *e;
+Linebuf *lb;
 char *p;
 
 	if (conn == NULL)
 		return;
 
-	e = (Edit *)conn->data;
-	if (edit_input(e, k) != EDIT_RETURN)
+	lb = (Linebuf *)conn->data;
+	if (input_Linebuf(lb, k) != EDIT_RETURN)
 		return;
 
-	if ((p = cstrchr(e->buf, ' ')) != NULL) {
+	if ((p = cstrchr(lb->buf, ' ')) != NULL) {
 		*p = 0;
 		p++;
 		if (!*p)
 			return;
 	}
-	if (p != NULL && strcmp(e->buf, p)) {
+	if (p != NULL && strcmp(lb->buf, p)) {
 		Conn *c;
 
 		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->from_ip, e->buf))
+			if (!strcmp(c->from_ip, lb->buf))
 				strcpy(c->from_ip, p);			/* fill in IP name */
 	}
 	conn->input_head = conn->input_tail = 0;
-	reset_edit((Edit *)e);
+	reset_Linebuf((Linebuf *)lb);
 }
 
 void ConnResolv_accept(Conn *conn) {
@@ -173,7 +173,7 @@ char optval;
 	optval = 1;
 	ioctl(conn_resolver->sock, FIONBIO, &optval);		/* set non-blocking */
 
-	conn_resolver->data = new_Edit();
+	conn_resolver->data = new_Linebuf();
 
 	add_Conn(&AllConns, conn_resolver);
 }
@@ -182,7 +182,7 @@ void ConnResolv_destroy(Conn *c) {
 	if (c == NULL)
 		return;
 
-	destroy_Edit((Edit *)c->data);
+	destroy_Linebuf((Linebuf *)c->data);
 	c->data = NULL;
 }
 
