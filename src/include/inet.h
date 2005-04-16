@@ -24,14 +24,7 @@
 #ifndef _INET_H_WJ97
 #define _INET_H_WJ97 1
 
-#include "User.h"
-
-#include <stdarg.h>
-
-#define MAX_NEWCONNS		5
-
 int inet_listen(unsigned int);
-void close_connection(User *, char *, ...);
 int unix_sock(char *);
 void mainloop(void);
 

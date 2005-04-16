@@ -46,6 +46,7 @@
 #include "FileFormat.h"
 #include "Timezone.h"
 #include "Lang.h"
+#include "OnlineUser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1119,6 +1120,52 @@ char buf[MAX_PATHLEN];
 	Return 0;
 */
 	return 0;
+}
+
+void close_connection(User *usr, char *reason, ...) {
+	if (usr == NULL)
+		return;
+
+	Enter(close_connection);
+
+	if (usr->name[0]) {
+		if (usr->runtime_flags & RTF_WAS_HH)	/* restore HH status before saving the User */
+			usr->flags |= USR_HELPING_HAND;
+
+		usr->last_logout = (unsigned long)rtc;
+		update_stats(usr);
+
+		if (save_User(usr))
+			log_err("failed to save user %s", usr->name);
+
+		remove_OnlineUser(usr);
+	}
+	if (reason != NULL) {			/* log why we're being disconnected */
+		va_list ap;
+		char buf[PRINT_BUF];
+
+		if (usr->name[0])
+			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->conn->from_ip);
+		else
+			sprintf(buf, "CLOSE (%s): ", usr->conn->from_ip);
+
+		va_start(ap, reason);
+		vsprintf(buf+strlen(buf), reason, ap);
+		va_end(ap);
+
+		log_auth(buf);
+	}
+	if (usr->conn->sock > 0) {
+		Put(usr, "<default>\n");
+		Flush(usr);
+		shutdown(usr->conn->sock, 2);
+		close(usr->conn->sock);
+		usr->conn->sock = -1;
+	}
+	leave_room(usr);
+
+	usr->name[0] = 0;
+	Return;
 }
 
 /* EOB */

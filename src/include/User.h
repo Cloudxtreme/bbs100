@@ -190,6 +190,7 @@ void Flush(User *);
 void Print(User *, char *, ...);
 void Tell(User *, char *, ...);
 void notify_friends(User *, char *);
+void close_connection(User *, char *, ...);
 
 extern User *AllUsers;
 extern User *this_user;
