@@ -38,11 +38,7 @@
 #define MAX_PATHLEN			1024		/* MAXPATH variable */
 #define MAX_OUTPUTBUF       128			/* per-user output buffer */
 #define MAX_INPUTBUF		128			/* per-user input buffer */
-#define MAX_SUB_BUF			128			/* for telnet negotiations */
 #define PRINT_BUF			512
-
-#define TERM_WIDTH			80			/* can be overridden by TELOPT_NAWS */
-#define TERM_HEIGHT			23			/* can be overridden by TELOPT_NAWS */
 
 #define ONE_SECOND			1
 #define SECS_IN_MIN			(60 * ONE_SECOND)

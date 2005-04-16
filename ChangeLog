@@ -1,5 +1,6 @@
 Changes as of April 16th 2005
 - data port moved to ConnData code
+- telnet code moved to Telnet.c
 
 Changes as of April 15th 2005
 - moved all socket code to Conn connection type

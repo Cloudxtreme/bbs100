@@ -41,6 +41,7 @@
 #include "Timezone.h"
 #include "Lang.h"
 #include "Conn.h"
+#include "Telnet.h"
 
 #include <sys/types.h>
 
@@ -129,12 +130,9 @@ struct User_tag {
 
 	Conn *conn;
 
-	int telnet_state, in_sub, crashed;
-	int edit_pos, read_lines, total_lines;
-	int term_width, term_height;
+	int edit_pos, read_lines, total_lines, crashed;
 
 	char edit_buf[MAX_LINE];
-	char in_sub_buf[MAX_SUB_BUF];
 
 	char name[MAX_NAME];
 	char passwd[MAX_CRYPTED_PASSWD];
@@ -168,6 +166,7 @@ struct User_tag {
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
+	Telnet *telnet;
 	Lang *lang;
 	PList *cmd_chain;
 };
@@ -191,8 +190,6 @@ void Flush(User *);
 void Print(User *, char *, ...);
 void Tell(User *, char *, ...);
 void notify_friends(User *, char *);
-
-void process(User *, char);				/* process input character */
 
 extern User *AllUsers;
 extern User *this_user;

@@ -418,7 +418,7 @@ char colorbuf[20], buf[20];
 				char buf[PRINT_BUF], *p;
 				int m;
 
-				m = ((usr->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->term_width-1);
+				m = ((usr->telnet->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->telnet->term_width-1);
 				strncpy(buf, base, m);
 				buf[m-1] = 0;
 /*
@@ -431,10 +431,10 @@ char colorbuf[20], buf[20];
 					else
 						p++;
 				}
-				while(*cpos + n < usr->term_width-1)
+				while(*cpos + n < usr->telnet->term_width-1)
 					Out(usr, buf, cpos);					/* recurse */
 
-				if (*cpos + n > usr->term_width-1) {		/* 'partial put' of the remainder */
+				if (*cpos + n > usr->telnet->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
 					Out(usr, buf, cpos);
 				}
@@ -447,7 +447,7 @@ char colorbuf[20], buf[20];
 	}
 	if (!cstrnicmp(code, "<center>", 8)) {
 		code += 8;
-		i = (usr->term_width-1)/2 - color_strlen(code)/2 - *cpos;
+		i = (usr->telnet->term_width-1)/2 - color_strlen(code)/2 - *cpos;
 		while(i > 0) {
 			Writechar(usr, ' ');
 			(*cpos)++;

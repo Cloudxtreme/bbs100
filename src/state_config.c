@@ -1266,7 +1266,7 @@ char filename[MAX_PATHLEN];
 	Put(usr, "\n<magenta>Time zone regions\n\n");
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->telnet->term_width);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_more(usr);
 	Return;
@@ -1397,7 +1397,7 @@ char filename[MAX_PATHLEN];
 	Fclose(f);
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->telnet->term_width);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_more(usr);

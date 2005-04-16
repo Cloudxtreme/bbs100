@@ -65,15 +65,10 @@ User *usr;
 	if ((usr = (User *)Malloc(sizeof(User), TYPE_USER)) == NULL)
 		return NULL;
 
-	usr->telnet_state = TS_DATA;
-
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
-	usr->term_height = TERM_HEIGHT;		/* hard-coded defaults; may be set by TELOPT_NAWS */
-	usr->term_width = TERM_WIDTH;
 	default_colors(usr);
-
 	return usr;
 }
 
@@ -135,6 +130,7 @@ int i;
 
 	usr->idle_timer = NULL;
 	listdestroy_Timer(usr->timerq);
+	destroy_Telnet(usr->telnet);
 	listdestroy_PList(usr->cmd_chain);
 
 	Free(usr);
@@ -1123,29 +1119,6 @@ char buf[MAX_PATHLEN];
 	Return 0;
 */
 	return 0;
-}
-
-
-/*
-	process input and pass it on to the function that is on the callstack
-*/
-void process(User *usr, char c) {
-	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL
-		|| (c = telnet_negotiations(usr, (unsigned char)c)) == (char)-1)
-		return;
-
-/* user is doing something, reset idle timer */
-	usr->idle_time = rtc;
-
-/* reset timeout timer, unless locked */
-	if (!(usr->runtime_flags & RTF_LOCKED) && usr->idle_timer != NULL) {
-		usr->idle_timer->sleeptime = usr->idle_timer->maxtime;
-		usr->idle_timer->restart = TIMEOUT_USER;
-	}
-/* call routine on top of the callstack */
-	this_user = usr;
-	usr->conn->callstack->ip(usr, c);				/* process input */
-	this_user = NULL;
 }
 
 /* EOB */

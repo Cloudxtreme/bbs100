@@ -57,15 +57,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#ifndef TELCMDS
-#define TELCMDS
-#endif
-#ifndef TELOPTS
-#define TELOPTS
-#endif
-
-#include <arpa/telnet.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <signal.h>
@@ -255,6 +246,7 @@ char optval;
 	return sock;
 }
 
+#ifdef OLD_CODE
 
 #ifndef TELOPT_NAWS
 #define TELOPT_NAWS 31			/* negotiate about window size */
@@ -483,6 +475,7 @@ char buf[20];
 	Return -1;
 }
 
+#endif
 
 /*
 	The Main Loop
@@ -516,7 +509,6 @@ int err, highest_fd = -1, wait_for_input, nap;
 /* remove dead connections */
 			if (c->sock <= 0) {
 				remove_Conn(&AllConns, c);
-				c->conn_type->destroy(c->data);
 				destroy_Conn(c);
 				continue;
 			}

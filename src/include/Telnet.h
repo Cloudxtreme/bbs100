@@ -16,25 +16,39 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-/*
-	Chatter18	WJ97
-	inet.h
-*/
 
-#ifndef _INET_H_WJ97
-#define _INET_H_WJ97 1
+#ifndef TELNET_H_WJ105
+#define TELNET_H_WJ105	1
 
-#include "User.h"
+#define MAX_SUB_BUF			128
 
-#include <stdarg.h>
+#define TERM_WIDTH			80
+#define TERM_HEIGHT			23
 
-#define MAX_NEWCONNS		5
+/* telnet states */
+#define TS_DATA				0
+#define TS_IAC				1
+#define TS_ARG				2
+#define TS_WILL				3
+#define TS_DO				4
+#define TS_NAWS				5
+#define TS_NEW_ENVIRON		6
+#define TS_NEW_ENVIRON_IS	7
+#define TS_NEW_ENVIRON_VAR	8
+#define TS_NEW_ENVIRON_VAL	9
 
-int inet_listen(unsigned int);
-void close_connection(User *, char *, ...);
-int unix_sock(char *);
-void mainloop(void);
 
-#endif	/* _INET_H_WJ97 */
+typedef struct {
+	int state, in_sub;
+	int term_width, term_height;
+	char in_sub_buf[MAX_SUB_BUF];
+} Telnet;
+
+
+Telnet *new_Telnet(void);
+void destroy_Telnet(Telnet *);
+int telnet_negotiations(Telnet *, int, unsigned char);
+
+#endif	/* TELNET_H_WJ105 */
 
 /* EOB */

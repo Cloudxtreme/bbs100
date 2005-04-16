@@ -28,6 +28,7 @@
 #include "Hash.h"
 #include "Lang.h"
 #include "Conn.h"
+#include "Telnet.h"
 #include "Linebuf.h"
 #include "Types.h"
 
@@ -60,6 +61,7 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "HashList",			sizeof(HashList),			},
 	{ "Lang",				sizeof(Lang),				},
 	{ "Conn",				sizeof(Conn),				},
+	{ "Telnet",				sizeof(Telnet),				},
 	{ "Linebuf",			sizeof(Linebuf),			},
 	{ "(unknown)",			0,							},
 };

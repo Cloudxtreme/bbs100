@@ -18,8 +18,6 @@
 */
 /*
 	OnlineUser.c	WJ103
-
-	- rewritten to work with a Hash type
 */
 
 #include "config.h"

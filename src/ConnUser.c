@@ -146,6 +146,12 @@ char optval;
 		close(s);
 		Return;
 	}
+	if ((new_user->telnet = new_Telnet()) == NULL) {
+		destroy_User(new_user);
+		shutdown(s, 2);
+		close(s);
+		Return;
+	}
 	if ((new_conn = new_ConnUser()) == NULL) {
 		destroy_User(new_user);
 		shutdown(s, 2);
@@ -207,7 +213,7 @@ User *usr;
 	usr = (User *)conn->data;
 
 	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL
-		|| (c = telnet_negotiations(usr, (unsigned char)c)) == (char)-1)
+		|| (c = telnet_negotiations(usr->telnet, usr->conn->sock, (unsigned char)c)) == (char)-1)
 		return;
 
 /* user is doing something, reset idle timer */

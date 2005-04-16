@@ -1881,7 +1881,7 @@ int r;
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
-		make_feelings_screen(usr->term_width);
+		make_feelings_screen(usr->telnet->term_width);
 		for(sl = feelings_screen; sl != NULL; sl = sl->next)
 			Print(usr, "%s\n", sl->str);
 		Put(usr, "\n<green>Feeling<yellow>: ");
@@ -2524,7 +2524,7 @@ User *u;
 		mins = t / SECS_IN_MIN;
 
 /* 32 is the length of the string with the stats that's to be added at the end */
-		width = (usr->term_width > (PRINT_BUF-32)) ? (PRINT_BUF-32) : usr->term_width;
+		width = (usr->telnet->term_width > (PRINT_BUF-32)) ? (PRINT_BUF-32) : usr->telnet->term_width;
 
 		if (u->doing == NULL || !u->doing[0])
 			sprintf(buf, "%c%s<cyan>", col, u->name);
@@ -2533,7 +2533,7 @@ User *u;
 			expand_center(buf, buf2, PRINT_BUF - 32, width);
 			expand_hline(buf2, buf, PRINT_BUF - 32, width);
 		}
-		l = color_index(buf, usr->term_width - 9);
+		l = color_index(buf, usr->telnet->term_width - 9);
 		buf[l] = 0;
 
 		c = color_strlen(buf);
@@ -2566,7 +2566,7 @@ PList *pl_cols[16];
 
 	total = list_Count(pl);
 
-	cols = usr->term_width / (MAX_NAME+2);
+	cols = usr->telnet->term_width / (MAX_NAME+2);
 	if (cols < 1)
 		cols = 1;
 	else
@@ -2693,7 +2693,7 @@ char buf[PRINT_BUF];
 
 /* draw a line across the full screen width */
 		buf[0] = (char)color_by_name("white");
-		for(l = 1; l < usr->term_width && l < (PRINT_BUF - 1); l++)
+		for(l = 1; l < usr->telnet->term_width && l < (PRINT_BUF - 1); l++)
 			buf[l] = '-';
 		buf[l] = 0;
 		sl = add_StringList(&sl, new_StringList(buf));
