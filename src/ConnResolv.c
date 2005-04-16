@@ -79,13 +79,12 @@ char buf[MAX_LINE];
 
 	process_resolver.path = PARAM_PROGRAM_RESOLVER;
 
-	if ((listener = new_Conn()) == NULL) {
+	if ((listener = new_ConnResolv()) == NULL) {
 		log_warn("name resolving disabled");
 		return -1;
 	}
-	listener->conn_type = &ConnResolv;
-
 /* make pathname for the unix domain socket */
+
 	sprintf(buf, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
 	path_strip(buf);
 	if ((listener->sock = unix_sock(buf)) < 0) {
@@ -110,6 +109,15 @@ char buf[MAX_LINE];
 	}
 	add_Conn(&AllConns, listener);
 	return 0;
+}
+
+Conn *new_ConnResolv(void) {
+Conn *conn;
+
+	if ((conn = new_Conn()) != NULL)
+		conn->conn_type = &ConnResolv;
+
+	return conn;
 }
 
 /*
@@ -161,12 +169,11 @@ char optval;
 		destroy_Conn(conn_resolver);
 		conn_resolver = NULL;
 	}
-	if ((conn_resolver = new_Conn()) == NULL) {
+	if ((conn_resolver = new_ConnResolv()) == NULL) {
 		shutdown(sock, 2);
 		close(sock);
 		return;
 	}
-	conn_resolver->conn_type = &ConnResolv;
 	conn_resolver->sock = sock;
 	conn_resolver->state |= CONN_ESTABLISHED;
 

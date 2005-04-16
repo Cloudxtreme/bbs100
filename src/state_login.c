@@ -46,6 +46,7 @@
 #include "SU_Passwd.h"
 #include "Timezone.h"
 #include "Lang.h"
+#include "Wrapper.h"
 
 #include <stdio.h>
 #include <stdlib.h>

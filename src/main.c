@@ -36,6 +36,7 @@
 #include "Timer.h"
 #include "util.h"
 #include "log.h"
+#include "crc32.h"
 #include "Param.h"
 #include "SymbolTable.h"
 #include "Feeling.h"
@@ -51,7 +52,7 @@
 #include "Category.h"
 #include "ConnUser.h"
 #include "ConnResolv.h"
-#include "crc32.h"
+#include "ConnData.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -153,13 +154,9 @@ int code = 0;
 	else
 		log_msg("exit_program(): shutting down");
 
-	if (main_socket > 0) {
-		shutdown(main_socket, 2);
-		close(main_socket);
+	if (save_Stats(&stats, PARAM_STAT_FILE))
+		log_err("failed to save stats");
 
-		if (save_Stats(&stats, PARAM_STAT_FILE))
-			log_err("failed to save stats");
-	}
 	killall_process();					/* kill helper procs like the resolver */
 
 	if (reboot) {
@@ -346,10 +343,9 @@ char buf[256];
 		printf("fatal: failed to initialize connection code\n");
 		exit_program(SHUTDOWN);
 	}
-	if ((data_port = inet_listen(PARAM_DATA_PORT)) < 0) {
-		printf("fatal: failed to listen on port %d\n", PARAM_DATA_PORT);
-		exit_program(SHUTDOWN);
-	}
+	if (init_ConnData())
+		printf("warning: failed to initalize data port\n");
+
 	printf("up and running, listening at port %d and %d\n", PARAM_PORT_NUMBER, PARAM_DATA_PORT);
 	if (debugger) {
 		printf("running under debugger, signal handling disabled\n");

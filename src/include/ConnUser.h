@@ -26,8 +26,9 @@ extern ConnType ConnUser;
 
 int init_ConnUser(void);
 
-void ConnUser_accept(Conn *);
+Conn *new_ConnUser(void);
 
+void ConnUser_accept(Conn *);
 void ConnUser_readable(Conn *);
 void ConnUser_process(Conn *, char);
 void ConnUser_linkdead(Conn *);

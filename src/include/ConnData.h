@@ -17,23 +17,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	ConnResolv.h	WJ105
+	ConnData.h	WJ105
 */
 
-#ifndef CONN_RESOLV_H_WJ105
-#define CONN_RESOLV_H_WJ105	1
+#ifndef CONNDATA_H_WJ105
+#define CONNDATA_H_WJ105	1
 
 #include "Conn.h"
 
-int init_ConnResolv(void);
+int init_ConnData(void);
 
-Conn *new_ConnResolv(void);
+Conn *new_ConnData(void);
+void ConnData_process(Conn *, char);
+void ConnData_accept(Conn *);
 
-void ConnResolv_process(Conn *, char);
-void ConnResolv_accept(Conn *);
-void ConnResolv_destroy(Conn *);
-void dns_gethostname(char *);
-
-#endif	/* CONN_RESOLV_H_WJ105 */
+#endif	/* CONNDATA_H_WJ105 */
 
 /* EOB */

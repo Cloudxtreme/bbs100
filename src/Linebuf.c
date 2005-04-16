@@ -21,7 +21,6 @@
 */
 
 #include "Linebuf.h"
-#include "Types.h"
 #include "Memory.h"
 #include "defines.h"
 #include "edit.h"

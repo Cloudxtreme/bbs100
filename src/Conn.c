@@ -23,7 +23,6 @@
 #include "config.h"
 #include "Conn.h"
 #include "Memory.h"
-#include "Types.h"
 
 #include <stdio.h>
 #include <stdlib.h>

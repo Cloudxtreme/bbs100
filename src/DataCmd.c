@@ -38,11 +38,14 @@ DataCmd default_cmds[] = {
 	{ "quit",		cmd_logout		},
 	{ "close",		cmd_close		},
 	{ "commands",	cmd_commands	},
+	{ "help",		cmd_commands	},
 	{ "version",	cmd_version		},
+	{ NULL,			NULL			},
 };
 
 DataCmd login_cmds[] = {
 	{ "login",		cmd_login		},
+	{ NULL,			NULL			},
 };
 
 

@@ -41,6 +41,8 @@ struct Wrapper_tag {
 	char *comment;
 };
 
+extern Wrapper *wrappers;
+
 Wrapper *new_Wrapper(int, unsigned long, unsigned long, char *);
 void destroy_Wrapper(Wrapper *);
 Wrapper *make_Wrapper(Wrapper **, char *, char *, char *, char *);

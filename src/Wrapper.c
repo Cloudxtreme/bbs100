@@ -35,6 +35,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+Wrapper *wrappers = NULL;
+
+
 Wrapper *new_Wrapper(int allow, unsigned long net, unsigned long mask,
 	char *comment) {
 Wrapper *w;

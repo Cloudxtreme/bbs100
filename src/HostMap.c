@@ -6,7 +6,6 @@
 #include "HostMap.h"
 #include "cstring.h"
 #include "Memory.h"
-#include "Types.h"
 #include "AtomicFile.h"
 
 #include <stdio.h>

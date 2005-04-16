@@ -25,7 +25,6 @@
 #define _INET_H_WJ97 1
 
 #include "User.h"
-#include "Wrapper.h"
 
 #include <stdarg.h>
 
@@ -43,20 +42,11 @@
 #define TS_NEW_ENVIRON_VAL	9
 
 int inet_listen(unsigned int);
-void new_connection(int);
-void new_data_conn(int);
 void close_connection(User *, char *, ...);
-
 int unix_sock(char *);
-int init_resolver(void);
-void dnsserver_io(void);
 int telnet_negotiations(User *, unsigned char);
 void mainloop(void);
 
-extern Wrapper *wrappers;
-extern int main_socket;
-extern int data_port;
-
-#endif
+#endif	/* _INET_H_WJ97 */
 
 /* EOB */

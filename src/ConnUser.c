@@ -116,6 +116,15 @@ Conn *conn;
 	return 0;
 }
 
+Conn *new_ConnUser(void) {
+Conn *conn;
+
+	if ((conn = new_Conn()) != NULL)
+		conn->conn_type = &ConnUser;
+
+	return conn;
+}
+
 void ConnUser_accept(Conn *conn) {
 User *new_user;
 Conn *new_conn;
@@ -137,7 +146,7 @@ char optval;
 		close(s);
 		Return;
 	}
-	if ((new_conn = new_Conn()) == NULL) {
+	if ((new_conn = new_ConnUser()) == NULL) {
 		destroy_User(new_user);
 		shutdown(s, 2);
 		close(s);
@@ -146,7 +155,6 @@ char optval;
 	new_user->conn = new_conn;
 	new_conn->data = new_user;
 	new_conn->sock = s;
-	new_conn->conn_type = &ConnUser;
 	new_conn->state |= CONN_ESTABLISHED;
 
 	optval = 1;
@@ -155,12 +163,24 @@ char optval;
 	new_conn->ipnum = ntohl(client.sin_addr.s_addr);
 	strncpy(new_conn->from_ip, inet_ntoa(client.sin_addr), MAX_LINE-1);
 	new_conn->from_ip[MAX_LINE-1] = 0;
+/*
+	This code is commented out, but if you want to lock out sites
+	permanently (rather than for new users only), I suggest you
+	enable this code
+	(inspired by Richard of MatrixBBS)
 
+	if (!allow_Wrapper(wrappers, new_conn->ipnum)) {
+		Put(new_user, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
+		log_auth("connection from %s closed by wrapper", new_conn->from_ip);
+		destroy_Conn(new_conn);
+		Return;
+	}
+*/
 	sprintf(buf, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
 		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
 
 	if (write(new_conn->sock, buf, strlen(buf)) < 0) {
-		close_connection(new_user, "bad new connection");
+		destroy_Conn(new_conn);
 		Return;
 	}
 	log_auth("CONN (%s)", new_conn->from_ip);
@@ -177,18 +197,6 @@ char optval;
 		Print(new_user, "%s\n", sl->str);
 	Print(new_user, "        %s\n", print_copyright(SHORT, NULL, buf));
 
-/*
-	This code is commented out, but if you want to lock out sites
-	permanently (rather than for new users only), I suggest you
-	enable this code
-	(inspired by Richard of MatrixBBS)
-
-	if (!allow_Wrapper(wrappers, new_conn->ipnum)) {
-		Put(new_user, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
-		close_connection(new_user, "connection closed by wrapper");
-		Return;
-	}
-*/
 	CALL(new_user, STATE_LOGIN_PROMPT);
 	Return;
 }

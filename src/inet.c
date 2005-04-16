@@ -98,10 +98,6 @@
 #endif
 
 
-Wrapper *wrappers = NULL;
-int main_socket = -1, data_port = -1;
-
-
 int inet_listen(unsigned int port) {
 struct sockaddr_in sin;
 int sock, optval, sleepcount = 0;
@@ -169,78 +165,6 @@ int sock, optval, sleepcount = 0;
 	return sock;
 }
 
-#ifdef OLD_CODE
-void new_connection(int fd) {
-User *new_conn;
-struct sockaddr_in client;
-int client_len = sizeof(struct sockaddr_in);
-char buf[256];
-StringList *sl;
-int s;
-char optval;
-
-	Enter(new_connection);
-
-	if ((s = accept(fd, (struct sockaddr *)&client, (int *)&client_len)) < 0) {
-		log_err("inet socket accept()");
-		Return;
-	}
-	if ((new_conn = new_User()) == NULL) {
-		log_err("Out of memory allocating new User");
-
-		shutdown(s, 2);
-		close(s);
-		Return;
-	}
-	new_conn->socket = s;
-
-	optval = 1;
-	ioctl(new_conn->socket, FIONBIO, &optval);		/* set non-blocking */
-
-	new_conn->ipnum = ntohl(client.sin_addr.s_addr);
-	strncpy(new_conn->from_ip, inet_ntoa(client.sin_addr), MAX_LINE-1);
-	new_conn->from_ip[MAX_LINE-1] = 0;
-
-	sprintf(buf, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
-		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
-
-	if (write(new_conn->socket, buf, strlen(buf)) < 0) {
-		close_connection(new_conn, "bad new connection");
-		Return;
-	}
-	log_auth("CONN (%s)", new_conn->from_ip);
-	add_User(&AllUsers, new_conn);
-	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
-
-/*
-	display the login screen
-	it's a pity that we still do not know the user's terminal height+width,
-	we don't have that input yet, and we're surely not going to wait for it
-*/
-	for(sl = login_screen; sl != NULL; sl = sl->next)
-		Print(new_conn, "%s\n", sl->str);
-	Print(new_conn, "        %s\n", print_copyright(SHORT, NULL, buf));
-
-/*
-	This code is commented out, but if you want to lock out sites
-	permanently (rather than for new users only), I suggest you
-	enable this code
-	(inspired by Richard of MatrixBBS)
-
-	if (!allow_Wrapper(wrappers, usr->ipnum)) {
-		Put(usr, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
-		close_connection(usr, "connection closed by wrapper");
-		Return;
-	}
-*/
-	new_conn->conn = new_Conn();
-	new_conn->conn->data = new_conn;
-
-	CALL(new_conn, STATE_LOGIN_PROMPT);
-	Return;
-}
-#endif	/* OLD_CODE */
-
 void close_connection(User *usr, char *reason, ...) {
 	if (usr == NULL)
 		return;
@@ -286,68 +210,6 @@ void close_connection(User *usr, char *reason, ...) {
 	usr->name[0] = 0;
 	Return;
 }
-
-#ifdef OLD_CODE
-/*
-	handle new connection on the data port
-	This is also dubbed a 'data' connection, meaning that one can get
-	raw data from the BBS this way
-*/
-void new_data_conn(int fd) {
-User *new_conn;
-struct sockaddr_in client;
-int client_len = sizeof(struct sockaddr_in);
-char buf[256];
-int s;
-char optval;
-
-	Enter(new_data_conn);
-
-	if ((s = accept(fd, (struct sockaddr *)&client, (int *)&client_len)) < 0) {
-		log_err("inet socket accept()");
-		Return;
-	}
-	if ((new_conn = new_User()) == NULL) {
-		log_err("Out of memory allocating new User");
-
-		shutdown(s, 2);
-		close(s);
-		Return;
-	}
-	new_conn->socket = s;
-
-	optval = 1;
-	ioctl(new_conn->socket, FIONBIO, &optval);		/* set non-blocking */
-
-	new_conn->ipnum = ntohl(client.sin_addr.s_addr);
-	strncpy(new_conn->from_ip, inet_ntoa(client.sin_addr), MAX_LINE-1);
-	new_conn->from_ip[MAX_LINE-1] = 0;
-
-	log_auth("CONN (%s)", new_conn->from_ip);
-	add_User(&AllUsers, new_conn);
-	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
-
-	Put(new_conn, print_copyright(SHORT, NULL, buf));
-
-/*
-	This code is commented out, but if you want to lock out sites
-	permanently (rather than for new users only), I suggest you
-	enable this code
-	(inspired by Richard of MatrixBBS)
-
-	if (!allow_Wrapper(wrappers, usr->ipnum)) {
-		close_connection(usr, "connection closed by wrapper");
-		Return;
-	}
-*/
-	new_conn->cmd_chain = new_PList(default_cmds);
-	add_PList(&new_conn->cmd_chain, new_PList(login_cmds));
-
-	CALL(new_conn, STATE_DATA_CONN);
-	Return;
-}
-#endif
-
 
 int unix_sock(char *path) {
 struct sockaddr_un un;

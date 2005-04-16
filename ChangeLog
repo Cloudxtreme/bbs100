@@ -1,3 +1,6 @@
+Changes as of April 16th 2005
+- data port moved to ConnData code
+
 Changes as of April 15th 2005
 - moved all socket code to Conn connection type
 - buffered name resolver using Conn type

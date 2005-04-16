@@ -52,6 +52,7 @@
 #include "HostMap.h"
 #include "OnlineUser.h"
 #include "Category.h"
+#include "Wrapper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
