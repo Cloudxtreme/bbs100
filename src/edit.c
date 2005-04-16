@@ -1452,14 +1452,12 @@ void reset_tablist(User *usr, char c) {
 	}
 }
 
-
 int edit_data_cmd(User *usr, char c) {
 	if (usr == NULL)
 		return 0;
 
 	if (c == EDIT_INIT) {
 		usr->runtime_flags |= RTF_BUSY;
-		usr->runtime_flags &= ~RTF_COLOR_EDITING;
 		usr->edit_pos = 0;
 		usr->edit_buf[0] = 0;
 		return 0;
@@ -1479,6 +1477,5 @@ int edit_data_cmd(User *usr, char c) {
 	}
 	return 0;
 }
-
 
 /* EOB */
