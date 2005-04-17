@@ -45,8 +45,9 @@ Param param[] = {
 	{ PARAM_STRING, "languagedir",		{ NULL },	{ "etc/language/" },			},
 	{ PARAM_STRING,	"userdir",			{ NULL },	{ "users/" }, 					},
 	{ PARAM_STRING,	"roomdir",			{ NULL },	{ "rooms/" },					},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"trashdir",			{ NULL },	{ "trash/" },					},
+	{ PARAM_STRING,	"trashdir",			{ NULL },	{ "trash/" },					},
+	{ PARAM_OCTAL | PARAM_SEPARATOR,
+					"umask",			{ NULL },	{ (char *)DEFAULT_UMASK },			},
 
 	{ PARAM_STRING, "program_main",		{ NULL },	{ "bin/main" },					},
 	{ PARAM_STRING | PARAM_SEPARATOR,
@@ -103,9 +104,8 @@ Param param[] = {
 	{ PARAM_INT,	"idle_timeout",		{ NULL },	{ (char *)DEFAULT_IDLE_TIMEOUT },	},
 	{ PARAM_INT,	"lock_timeout",		{ NULL },	{ (char *)DEFAULT_LOCK_TIMEOUT },	},
 	{ PARAM_INT,	"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
-	{ PARAM_INT,	"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
 	{ PARAM_INT | PARAM_SEPARATOR,
-					"umask",			{ NULL },	{ (char *)DEFAULT_UMASK },			},
+					"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
 
 	{ PARAM_STRING,	"name_sysop",		{ NULL },	{ "Sysop" },						},
 	{ PARAM_STRING,	"name_room_aide",	{ NULL },	{ "Room Aide" },					},
@@ -163,6 +163,10 @@ int i, num;
 				param[i].val.d = param[i].default_val.d;
 				break;
 
+			case PARAM_OCTAL:
+				param[i].val.o = param[i].default_val.o;
+				break;
+
 			case PARAM_BOOL:
 				param[i].val.bool = param[i].default_val.bool;
 				break;
@@ -218,32 +222,26 @@ int i, num, line_no, errors;
 								errors++;
 								break;
 							}
-							if (p[0] == '0' && p[1]) {
-								if (p[1] == 'x') {
-									if (strspn(p, "0123456789abcdefABCDEF") != strlen(p)) {
-										fprintf(stderr, "%s:%d: error in hexadecimal integer format for param %s\n", filename, line_no, param[i].var);
-										errors++;
-										break;
-									}
-									param[i].type |= PARAM_INT_HEX;
-									param[i].val.d = (int)strtoul(p, NULL, 16);
-								} else {
-									if (strspn(p, "01234567") != strlen(p)) {
-										fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i].var);
-										errors++;
-										break;
-									}
-									param[i].type |= PARAM_INT_OCTAL;
-									param[i].val.d = (int)strtoul(p, NULL, 8);
-								}
-							} else {
-								if (strspn(p, "0123456789") != strlen(p)) {
-									fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i].var);
-									errors++;
-									break;
-								}
-								param[i].val.d = (int)strtoul(p, NULL, 10);
+							if (strspn(p, "0123456789") != strlen(p)) {
+								fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i].var);
+								errors++;
+								break;
 							}
+							param[i].val.d = (int)strtoul(p, NULL, 10);
+							break;
+
+						case PARAM_OCTAL:
+							if (p[0] == '-') {
+								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i].var);
+								errors++;
+								break;
+							}
+							if (strspn(p, "01234567") != strlen(p)) {
+								fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i].var);
+								errors++;
+								break;
+							}
+							param[i].val.o = (int)strtoul(p, NULL, 8);
 							break;
 
 						case PARAM_BOOL:
@@ -298,13 +296,11 @@ int i, num;
 				break;
 
 			case PARAM_INT:
-				if (param[i].type & PARAM_INT_OCTAL)
-					fprintf(f->f, "%-22s 0%o\n", param[i].var, param[i].val.d);
-				else
-					if (param[i].type & PARAM_INT_HEX)
-						fprintf(f->f, "%-22s 0x%x\n", param[i].var, param[i].val.d);
-					else
-						fprintf(f->f, "%-22s %d\n", param[i].var, param[i].val.d);
+				fprintf(f->f, "%-22s %d\n", param[i].var, param[i].val.d);
+				break;
+
+			case PARAM_OCTAL:
+				fprintf(f->f, "%-22s 0%02o\n", param[i].var, param[i].val.o);
 				break;
 
 			case PARAM_BOOL:
@@ -371,13 +367,11 @@ int i, num;
 				break;
 
 			case PARAM_INT:
-				if (param[i].type & PARAM_INT_OCTAL)
-					printf(" %-22s 0%o\n", param[i].var, param[i].val.d);
-				else
-					if (param[i].type & PARAM_INT_HEX)
-						printf(" %-22s 0x%x\n", param[i].var, param[i].val.d);
-					else
-						printf(" %-22s %d\n", param[i].var, param[i].val.d);
+				printf(" %-22s %d\n", param[i].var, param[i].val.d);
+				break;
+
+			case PARAM_OCTAL:
+				printf(" %-22s 0%02o\n", param[i].var, param[i].val.o);
 				break;
 
 			case PARAM_BOOL:

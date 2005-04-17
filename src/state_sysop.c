@@ -1606,6 +1606,10 @@ void state_system_config_menu(User *usr, char c) {
 	switch(c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			PARAM_UMASK &= 0777;
+			umask(PARAM_UMASK);
+
 			Print(usr, "<magenta>\n"
 				"BBS <hotkey>Name            <white>%s<magenta>\n"
 				"P<hotkey>ort number         <white>%u<magenta>\n"
@@ -1633,10 +1637,12 @@ void state_system_config_menu(User *usr, char c) {
 			Print(usr,
 				"<hotkey>User directory      <white>%s<magenta>\n"
 				"<hotkey>Room directory      <white>%s<magenta>\n"
-				"<hotkey>Trash directory     <white>%s<magenta>\n",
+				"<hotkey>Trash directory     <white>%s<magenta>\n"
+				"umas<hotkey>k               <white>0%02o<magenta>\n",
 				PARAM_USERDIR,
 				PARAM_ROOMDIR,
-				PARAM_TRASHDIR
+				PARAM_TRASHDIR,
+				PARAM_UMASK
 			);
 			Print(usr, "\n"
 				"<hotkey>Main program        <white>%s<magenta>\n"
@@ -1648,7 +1654,8 @@ void state_system_config_menu(User *usr, char c) {
 				"Default time<hotkey>zone    <white>%s<magenta>\n"
 				"Default <hotkey>language    <white>%s<magenta>\n",
 				PARAM_DEFAULT_TIMEZONE,
-				PARAM_DEFAULT_LANGUAGE);
+				PARAM_DEFAULT_LANGUAGE
+			);
 			break;
 
 		case ' ':
@@ -1729,6 +1736,11 @@ void state_system_config_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_TRASHDIR);
 			Return;
 
+		case 'k':
+		case 'K':
+			Put(usr, "umask\n");
+			CALL(usr, STATE_PARAM_UMASK);
+			Return;
 
 		case 'm':
 		case 'M':
@@ -1826,6 +1838,12 @@ void state_param_roomdir(User *usr, char c) {
 void state_param_trashdir(User *usr, char c) {
 	Enter(state_param_trashdir);
 	change_string_param(usr, c, &PARAM_TRASHDIR, "<green>Enter trash directory<yellow>: ");
+	Return;
+}
+
+void state_param_umask(User *usr, char c) {
+	Enter(state_param_umask);
+	change_octal_param(usr, c, &PARAM_UMASK);
 	Return;
 }
 
@@ -3010,7 +3028,7 @@ void state_param_crashdir(User *usr, char c) {
 }
 
 
-void change_int_param(User *usr, char c, unsigned int *var) {
+void change_int_param(User *usr, char c, int *var) {
 int r;
 
 	if (usr == NULL || var == NULL)
@@ -3019,7 +3037,7 @@ int r;
 	Enter(change_int_param);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%u]: <yellow>", *var);
+		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
 
 	r = edit_number(usr, c);
 
@@ -3033,7 +3051,7 @@ int r;
 			if (r < 1)
 				Put(usr, "<red>Invalid value; not changed\n");
 			else {
-				*var = (unsigned int)r;
+				*var = r;
 				usr->runtime_flags |= RTF_PARAM_EDITED;
 			}
 		} else
@@ -3047,7 +3065,7 @@ int r;
 	exactly the same as change_int_param(), except that this one
 	accepts zero as valid value
 */
-void change_int0_param(User *usr, char c, unsigned int *var) {
+void change_int0_param(User *usr, char c, int *var) {
 int r;
 
 	if (usr == NULL || var == NULL)
@@ -3056,7 +3074,7 @@ int r;
 	Enter(change_int_param);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%u]: <yellow>", *var);
+		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
 
 	r = edit_number(usr, c);
 
@@ -3076,7 +3094,35 @@ int r;
 					Return;
 				}
 			}
-			*var = (unsigned int)r;
+			*var = r;
+			usr->runtime_flags |= RTF_PARAM_EDITED;
+		} else
+			Put(usr, "<red>Not changed\n");
+		RET(usr);
+	}
+	Return;
+}
+
+void change_octal_param(User *usr, char c, int *var) {
+int r;
+
+	if (usr == NULL || var == NULL)
+		return;
+
+	Enter(change_octal_param);
+
+	if (c == INIT_STATE)
+		Print(usr, "<green>Enter new octal value <white>[0%02o]: <yellow>", *var);
+
+	r = edit_octal_number(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		if (usr->edit_buf[0]) {
+			*var = (int)strtoul(usr->edit_buf, NULL, 8);
 			usr->runtime_flags |= RTF_PARAM_EDITED;
 		} else
 			Put(usr, "<red>Not changed\n");

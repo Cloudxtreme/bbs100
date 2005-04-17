@@ -15,6 +15,7 @@ languagedir             etc/language/
 userdir                 users/
 roomdir                 rooms/
 trashdir                trash/
+umask                   007
 
 program_main            bin/main
 program_resolver        bin/resolver
@@ -66,7 +67,6 @@ idle_timeout            10
 lock_timeout            30
 periodic_saving         5
 cache_expire			10
-umask                   007
 
 name_sysop              Sysop
 name_room_aide          Room Aide

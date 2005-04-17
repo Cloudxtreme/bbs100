@@ -1123,6 +1123,55 @@ int edit_number(User *usr, char c) {
 	return 0;
 }
 
+int edit_octal_number(User *usr, char c) {
+	if (usr == NULL)
+		return 0;
+
+	switch(c) {
+		case EDIT_INIT:
+			usr->runtime_flags |= RTF_BUSY;
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+			break;
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+			erase_name(usr);
+			Put(usr, "\n");
+			return EDIT_BREAK;
+
+		case KEY_RETURN:
+			Put(usr, "\n");
+			return EDIT_RETURN;
+
+
+		case KEY_BS:
+			if (usr->edit_pos) {
+				usr->edit_pos--;
+				usr->edit_buf[usr->edit_pos] = 0;
+				Put(usr, "\b \b");
+			}
+			break;
+
+		case KEY_ESC:
+		case KEY_CTRL('X'):
+			erase_name(usr);
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+			break;
+
+		default:
+			if (c >= '0' && c <= '7') {
+				if (usr->edit_pos < MAX_NAME-1) {
+					usr->edit_buf[usr->edit_pos++] = c;
+					usr->edit_buf[usr->edit_pos] = 0;
+					Print(usr, "%c", c);
+				}
+			}
+	}
+	return 0;
+}
+
 void edit_color(User *usr, char c) {
 char color = 0;
 

@@ -25,10 +25,9 @@
 
 #define PARAM_STRING				0
 #define PARAM_INT					1
-#define PARAM_BOOL					2
+#define PARAM_OCTAL					2
+#define PARAM_BOOL					3
 #define PARAM_SEPARATOR				0x100
-#define PARAM_INT_OCTAL				0x200
-#define PARAM_INT_HEX				0x400
 #define PARAM_MASK					0xff
 
 #define PARAM_TRUE					1
@@ -55,12 +54,13 @@
 #define PARAM_USERDIR				param[PARAM_DIR_N+6].val.s
 #define PARAM_ROOMDIR				param[PARAM_DIR_N+7].val.s
 #define PARAM_TRASHDIR				param[PARAM_DIR_N+8].val.s
+#define PARAM_UMASK                 param[PARAM_DIR_N+9].val.o
 
-#define PARAM_PROGRAM_N				12
+#define PARAM_PROGRAM_N				13
 #define PARAM_PROGRAM_MAIN			param[PARAM_PROGRAM_N].val.s
 #define PARAM_PROGRAM_RESOLVER		param[PARAM_PROGRAM_N+1].val.s
 
-#define PARAM_SCREEN_N				14
+#define PARAM_SCREEN_N				15
 #define PARAM_GPL_SCREEN			param[PARAM_SCREEN_N].val.s
 #define PARAM_MODS_SCREEN			param[PARAM_SCREEN_N+1].val.s
 #define PARAM_LOGIN_SCREEN			param[PARAM_SCREEN_N+2].val.s
@@ -72,14 +72,14 @@
 #define PARAM_CRASH_SCREEN			param[PARAM_SCREEN_N+8].val.s
 #define PARAM_BOSS_SCREEN			param[PARAM_SCREEN_N+9].val.s
 
-#define PARAM_HELP_N				24
+#define PARAM_HELP_N				25
 #define PARAM_FIRST_LOGIN			param[PARAM_HELP_N].val.s
 #define PARAM_HELP_STD				param[PARAM_HELP_N+1].val.s
 #define PARAM_HELP_CONFIG			param[PARAM_HELP_N+2].val.s
 #define PARAM_HELP_ROOMCONFIG		param[PARAM_HELP_N+3].val.s
 #define PARAM_HELP_SYSOP			param[PARAM_HELP_N+4].val.s
 
-#define PARAM_FILE_N				29
+#define PARAM_FILE_N				30
 #define PARAM_HOSTMAP_FILE			param[PARAM_FILE_N].val.s
 #define PARAM_HOSTS_ACCESS_FILE		param[PARAM_FILE_N+1].val.s
 #define PARAM_BANISHED_FILE			param[PARAM_FILE_N+2].val.s
@@ -91,7 +91,7 @@
 #define PARAM_DEFAULT_TIMEZONE		param[PARAM_FILE_N+8].val.s
 #define PARAM_DEFAULT_LANGUAGE		param[PARAM_FILE_N+9].val.s
 
-#define PARAM_LOG_N					39
+#define PARAM_LOG_N					40
 #define PARAM_SYSLOG				param[PARAM_LOG_N].val.s
 #define PARAM_AUTHLOG				param[PARAM_LOG_N+1].val.s
 #define PARAM_LOGROTATE				param[PARAM_LOG_N+2].val.s
@@ -99,7 +99,7 @@
 #define PARAM_ONCRASH				param[PARAM_LOG_N+4].val.s
 #define PARAM_CRASHDIR				param[PARAM_LOG_N+5].val.s
 
-#define PARAM_MAX_N					45
+#define PARAM_MAX_N					46
 #define PARAM_MAX_CACHED			param[PARAM_MAX_N].val.d
 #define PARAM_MAX_MESSAGES			param[PARAM_MAX_N+1].val.d
 #define PARAM_MAX_MAIL_MSGS			param[PARAM_MAX_N+2].val.d
@@ -113,7 +113,6 @@
 #define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.d
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.d
 #define PARAM_CACHE_TIMEOUT			param[PARAM_MAX_N+12].val.d
-#define PARAM_UMASK					param[PARAM_MAX_N+13].val.d
 
 #define PARAM_NAME_N				59
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
@@ -172,7 +171,7 @@
 
 typedef union {
 	char *str, *s;
-	int i, d, bool;
+	int i, d, o, bool;
 } Param_value;
 
 typedef struct {

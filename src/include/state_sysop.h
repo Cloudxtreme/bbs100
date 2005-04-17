@@ -62,6 +62,7 @@
 #define STATE_PARAM_USERDIR				state_param_userdir
 #define STATE_PARAM_ROOMDIR				state_param_roomdir
 #define STATE_PARAM_TRASHDIR			state_param_trashdir
+#define STATE_PARAM_UMASK				state_param_umask
 #define STATE_PARAM_PROGRAM_MAIN		state_param_program_main
 #define STATE_PARAM_PROGRAM_RESOLVER	state_param_program_resolver
 #define STATE_PARAM_NAME_SYSOP			state_param_name_sysop
@@ -170,6 +171,7 @@ void state_param_languagedir(User *, char);
 void state_param_userdir(User *, char);
 void state_param_roomdir(User *, char);
 void state_param_trashdir(User *, char);
+void state_param_umask(User *, char);
 void state_param_program_main(User *, char);
 void state_param_program_resolver(User *, char);
 
@@ -237,8 +239,9 @@ void state_param_authlog(User *, char);
 void state_param_archivedir(User *, char);
 void state_param_crashdir(User *, char);
 
-void change_int_param(User *, char, unsigned int *);
-void change_int0_param(User *, char, unsigned int *);
+void change_int_param(User *, char, int *);
+void change_int0_param(User *, char, int *);
+void change_octal_param(User *, char, int *);
 void change_string_param(User *, char, char **, char *);
 
 #endif	/* STATE_SYSOP_H_WJ99 */

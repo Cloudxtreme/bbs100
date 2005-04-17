@@ -49,6 +49,7 @@ int edit_line(User *, char);
 int edit_x(User *, char);
 int edit_msg(User *, char);
 int edit_number(User *, char);
+int edit_octal_number(User *, char);
 void edit_color(User *, char);
 
 void erase_word(User *);
