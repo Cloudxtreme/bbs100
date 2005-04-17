@@ -1505,9 +1505,7 @@ char prompt[PRINT_BUF];
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your held messages buffer is gone");
-				usr->runtime_flags &= ~RTF_BUSY;
-				RET(usr);
-				Return;
+				goto Exit_Held_History;
 			}
 			if (usr->held_msgp->prev == NULL) {
 				Put(usr, "<red>Can't go further back\n");
@@ -1531,9 +1529,7 @@ char prompt[PRINT_BUF];
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your held messages buffer is gone");
-				usr->runtime_flags &= ~RTF_BUSY;
-				RET(usr);
-				Return;
+				goto Exit_Held_History;
 			}
 			usr->held_msgp = usr->held_msgp->next;
 			if (usr->held_msgp == NULL)
@@ -1556,9 +1552,7 @@ char prompt[PRINT_BUF];
 Held_History_Reply:
 			if (usr->held_msgp == NULL) {
 				Put(usr, "<red>No message to reply to\n");
-				usr->runtime_flags &= ~RTF_BUSY;
-				RET(usr);
-				Return;
+				goto Exit_Held_History;
 			}
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
@@ -1604,9 +1598,7 @@ Held_History_Reply:
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your held messages buffer is gone");
-				usr->runtime_flags &= ~RTF_BUSY;
-				RET(usr);
-				Return;
+				goto Exit_Held_History;
 			}
 			if (usr->held_msgp->to != NULL && usr->held_msgp->to->next != NULL)
 				Put(usr, "<magenta>Recipients are <yellow>");

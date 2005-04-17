@@ -89,11 +89,10 @@
 #define RTF_BUSY_SENDING		0x4000		/* busy sending a message */
 #define RTF_BUSY_MAILING		0x8000		/* busy mailing a message */
 #define RTF_CHAT_ESCAPE			0x10000		/* user pressed '/' in a chat room */
-#define RTF_LOOPING				0x20000		/* user is in a loop */
-#define RTF_HOLD				0x40000		/* user has messages put on hold */
-#define RTF_SELECT				0x80000		/* input buffer empty (used by mainloop()) */
-#define RTF_WAS_HH				0x100000	/* X-disabled, user was Helping Hand */
-#define RTF_CATEGORY_EDITED		0x200000	/* categories changed in sysop menu */
+#define RTF_HOLD				0x20000		/* user has messages put on hold */
+#define RTF_WAS_HOLDING			0x40000		/* user was in hold message mode when ... */
+#define RTF_WAS_HH				0x80000		/* X-disabled, user was Helping Hand */
+#define RTF_CATEGORY_EDITED		0x100000	/* categories changed in sysop menu */
 
 /* load_User() flags (for faster loading) */
 #define LOAD_USER_ADDRESS		1

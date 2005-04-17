@@ -1294,7 +1294,7 @@ void loop_ping(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		usr->conn->loop_counter = list_Count(usr->recipients);
-		usr->runtime_flags |= RTF_LOOPING;
+		usr->conn->state |= CONN_LOOPING;
 	} else {
 		StringList *sl;
 		User *u;
@@ -1581,7 +1581,7 @@ void loop_send_msg(User *usr, char c) {
 	Enter(loop_send_msg);
 
 	if (c == INIT_STATE) {
-		usr->runtime_flags |= RTF_LOOPING;
+		usr->conn->state |= CONN_LOOPING;
 		usr->conn->loop_counter = list_Count(usr->recipients);
 /*
 	this doesn't seem the right place to do this, but we can't do it
@@ -1663,7 +1663,7 @@ StringList *sl;
 	Enter(state_mail_send_msg);
 
 	if (c == INIT_STATE) {
-		usr->runtime_flags &= ~RTF_LOOPING;
+		usr->conn->state &= ~CONN_LOOPING;
 		usr->runtime_flags |= RTF_BUSY;
 
 		Put(usr, "<cyan>Do you wish to <yellow>Mail<white>><cyan> the message? <white>(<cyan>Y<white>/<cyan>n<white>): ");
@@ -3170,8 +3170,17 @@ int r;
 		StringList *boss;
 
 		edit_line(usr, EDIT_INIT);
-		usr->runtime_flags |= RTF_BUSY;
 
+		if (PARAM_HAVE_HOLD) {
+			if (usr->runtime_flags & RTF_HOLD)
+				usr->runtime_flags |= RTF_WAS_HOLDING;
+			else
+				usr->runtime_flags |= RTF_HOLD;
+		}
+		if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
+			usr->flags &= ~USR_HELPING_HAND;
+			usr->runtime_flags |= RTF_WAS_HH;
+		}
 		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
 			Print(usr, "%c[1;1H%c[2J%c[0m", KEY_ESC, KEY_ESC, KEY_ESC);
 		else
@@ -3191,9 +3200,8 @@ int r;
 	r = edit_line(usr, c);
 
 	if (r == EDIT_BREAK) {
-		Put(usr, "$ ");
-		edit_line(usr, EDIT_INIT);
-		Return;
+		strcpy(usr->edit_buf, "exit");
+		r = EDIT_RETURN;
 	}
 	if (r == EDIT_RETURN) {
 		char buf[MAX_LINE];
@@ -3220,7 +3228,22 @@ int r;
 			Return;
 		}
 		if (!strcmp(usr->edit_buf, "exit")) {
-			usr->runtime_flags &= ~RTF_BUSY;
+			if (usr->runtime_flags & RTF_WAS_HOLDING) {
+/* was on hold, so still on hold now, but not busy anymore */
+				usr->runtime_flags &= ~(RTF_WAS_HOLDING|RTF_BUSY);
+				RET(usr);
+				Return;
+			}
+/* no longer on hold */
+			if (usr->held_msgs != NULL) {
+				JMP(usr, STATE_HELD_HISTORY_PROMPT);
+				Return;
+			}
+			usr->runtime_flags &= ~(RTF_BUSY|RTF_HOLD);
+			if (usr->runtime_flags & RTF_WAS_HH) {
+				usr->runtime_flags &= ~RTF_WAS_HH;
+				usr->flags |= USR_HELPING_HAND;
+			}
 			RET(usr);
 			Return;
 		}

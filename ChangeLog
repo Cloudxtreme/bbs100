@@ -1,6 +1,7 @@
 Changes as of April 17th
 - added param umask, which has octal format
 - PARAM_LONG no longer exists because it was not used anyway
+- boss screen puts messages on hold, if param_have_hold is enabled
 
 Changes as of April 16th 2005
 - data port moved to ConnData code
