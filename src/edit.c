@@ -188,6 +188,7 @@ char many_buf[MAX_LINE*3];
 			}
 			c = KEY_CTRL('C');
 
+		case '-':
 		case KEY_CTRL('R'):				/* remove from list */
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
@@ -197,6 +198,7 @@ char many_buf[MAX_LINE*3];
 		case KEY_ESC:
 			erase_name(usr);
 			switch(c) {
+				case '-':
 				case KEY_CTRL('R'):
 					if ((sl = in_StringList(usr->recipients, usr->edit_buf)) != NULL) {
 						usr->edit_pos = 0;
@@ -272,6 +274,7 @@ char many_buf[MAX_LINE*3];
 			Put(usr, "\n");
 			return EDIT_RETURN;
 
+		case '+':
 		case ',':
 			if (usr->edit_pos > 0 && usr->edit_buf[usr->edit_pos-1] == ' ') {
 				usr->edit_pos--;

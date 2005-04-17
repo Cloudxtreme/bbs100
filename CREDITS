@@ -195,3 +195,6 @@ Credits for bug fixes et al after public release
 
 - Richard of MatrixBBS suggested (ages ago) that the BBS name be shown
   when locked
+
+- WHYz of MatrixBBS suggested the minus key for removing recipients in
+  recipient list editing (this was already available with Ctrl-R)
