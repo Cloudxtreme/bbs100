@@ -241,7 +241,6 @@ char buf[256];
 	sleep(2);							/* display banner */
 
 	rtc = time(NULL);
-	umask(007);							/* allow owner and group, deny others */
 
 #ifdef SETVBUF_REVERSED
 	setvbuf(stdout, _IOLBF, NULL, 256);
@@ -261,6 +260,8 @@ char buf[256];
 		printf("ok\n");
 	check_Param();
 	print_Param();
+
+	umask(PARAM_UMASK);
 
 	if (chdir(PARAM_BASEDIR)) {
 		fprintf(stderr, "bbs100: failed to change directory to basedir '%s'\n", PARAM_BASEDIR);

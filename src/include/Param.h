@@ -25,11 +25,10 @@
 
 #define PARAM_STRING				0
 #define PARAM_INT					1
-#define PARAM_UINT					2
-#define PARAM_LONG					3
-#define PARAM_ULONG					4
-#define PARAM_BOOL					5
+#define PARAM_BOOL					2
 #define PARAM_SEPARATOR				0x100
+#define PARAM_INT_OCTAL				0x200
+#define PARAM_INT_HEX				0x400
 #define PARAM_MASK					0xff
 
 #define PARAM_TRUE					1
@@ -114,14 +113,15 @@
 #define PARAM_LOCK_TIMEOUT			param[PARAM_MAX_N+10].val.d
 #define PARAM_SAVE_TIMEOUT			param[PARAM_MAX_N+11].val.d
 #define PARAM_CACHE_TIMEOUT			param[PARAM_MAX_N+12].val.d
+#define PARAM_UMASK					param[PARAM_MAX_N+13].val.d
 
-#define PARAM_NAME_N				58
+#define PARAM_NAME_N				59
 #define PARAM_NAME_SYSOP			param[PARAM_NAME_N].val.s
 #define PARAM_NAME_ROOMAIDE			param[PARAM_NAME_N+1].val.s
 #define PARAM_NAME_HELPER			param[PARAM_NAME_N+2].val.s
 #define PARAM_NAME_GUEST			param[PARAM_NAME_N+3].val.s
 
-#define PARAM_NOTIFY_N				62
+#define PARAM_NOTIFY_N				63
 #define PARAM_NOTIFY_LOGIN			param[PARAM_NOTIFY_N].val.s
 #define PARAM_NOTIFY_LOGOUT			param[PARAM_NOTIFY_N+1].val.s
 #define PARAM_NOTIFY_LINKDEAD		param[PARAM_NOTIFY_N+2].val.s
@@ -131,7 +131,7 @@
 #define PARAM_NOTIFY_ENTER_CHAT		param[PARAM_NOTIFY_N+6].val.s
 #define PARAM_NOTIFY_LEAVE_CHAT		param[PARAM_NOTIFY_N+7].val.s
 
-#define PARAM_HAVE_N				70
+#define PARAM_HAVE_N				71
 #define PARAM_HAVE_XMSGS			param[PARAM_HAVE_N].val.bool
 #define PARAM_HAVE_EMOTES			param[PARAM_HAVE_N+1].val.bool
 #define PARAM_HAVE_FEELINGS			param[PARAM_HAVE_N+2].val.bool
@@ -168,13 +168,11 @@
 #define DEFAULT_LOCK_TIMEOUT		30		/* 30 minute timeout */
 #define DEFAULT_SAVE_TIMEOUT		5		/* save user every 5 minutes */
 #define DEFAULT_CACHE_TIMEOUT		30		/* expire unused cached files every 30 minutes */
+#define DEFAULT_UMASK				007		/* allow user+group, deny others */
 
 typedef union {
 	char *str, *s;
 	int i, d, bool;
-	unsigned int u, ui;
-	long l, ld;
-	unsigned long ul, lu;
 } Param_value;
 
 typedef struct {

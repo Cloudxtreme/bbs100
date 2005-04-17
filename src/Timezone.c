@@ -23,6 +23,7 @@
 #include "config.h"
 #include "defines.h"
 #include "Timezone.h"
+#include "cstring.h"
 #include "Hash.h"
 #include "AtomicFile.h"
 #include "Param.h"

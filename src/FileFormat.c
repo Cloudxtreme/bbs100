@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
 
 int fileformat_version(File *f) {
 char buf[MAX_PATHLEN];

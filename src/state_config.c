@@ -35,6 +35,7 @@
 #include "screens.h"
 #include "Memory.h"
 #include "Timezone.h"
+#include "Param.h"
 
 #include <stdio.h>
 #include <stdlib.h>

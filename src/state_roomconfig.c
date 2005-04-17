@@ -30,6 +30,7 @@
 #include "edit.h"
 #include "util.h"
 #include "log.h"
+#include "cstring.h"
 #include "screens.h"
 #include "CachedFile.h"
 #include "Param.h"

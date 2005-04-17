@@ -26,6 +26,7 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,8 +103,9 @@ Param param[] = {
 	{ PARAM_INT,	"idle_timeout",		{ NULL },	{ (char *)DEFAULT_IDLE_TIMEOUT },	},
 	{ PARAM_INT,	"lock_timeout",		{ NULL },	{ (char *)DEFAULT_LOCK_TIMEOUT },	},
 	{ PARAM_INT,	"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
+	{ PARAM_INT,	"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
 	{ PARAM_INT | PARAM_SEPARATOR,
-					"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
+					"umask",			{ NULL },	{ (char *)DEFAULT_UMASK },			},
 
 	{ PARAM_STRING,	"name_sysop",		{ NULL },	{ "Sysop" },						},
 	{ PARAM_STRING,	"name_room_aide",	{ NULL },	{ "Room Aide" },					},
@@ -161,18 +163,6 @@ int i, num;
 				param[i].val.d = param[i].default_val.d;
 				break;
 
-			case PARAM_UINT:
-				param[i].val.u = param[i].default_val.u;
-				break;
-
-			case PARAM_LONG:
-				param[i].val.l = param[i].default_val.l;
-				break;
-
-			case PARAM_ULONG:
-				param[i].val.ul = param[i].default_val.ul;
-				break;
-
 			case PARAM_BOOL:
 				param[i].val.bool = param[i].default_val.bool;
 				break;
@@ -189,7 +179,7 @@ int i, num;
 int load_Param(char *filename) {
 AtomicFile *f;
 char buf[PRINT_BUF], *p;
-int i, num;
+int i, num, line_no, errors;
 
 	if (param == NULL)
 		return -1;
@@ -199,7 +189,10 @@ int i, num;
 
 	num = sizeof(param)/sizeof(Param);
 
+	line_no = errors = 0;
 	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
+		line_no++;
+
 		cstrip_line(buf);
 		cstrip_spaces(buf);
 		if (!*buf || *buf == '#')
@@ -220,19 +213,37 @@ int i, num;
 							break;
 
 						case PARAM_INT:
-							param[i].val.d = strtoul(p, NULL, 10);
-							break;
-
-						case PARAM_UINT:
-							param[i].val.u = (unsigned int)strtoul(p, NULL, 10);
-							break;
-
-						case PARAM_LONG:
-							param[i].val.l = (long)strtoul(p, NULL, 10);
-							break;
-
-						case PARAM_ULONG:
-							param[i].val.ul = strtoul(p, NULL, 10);
+							if (p[0] == '-') {
+								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i].var);
+								errors++;
+								break;
+							}
+							if (p[0] == '0' && p[1]) {
+								if (p[1] == 'x') {
+									if (strspn(p, "0123456789abcdefABCDEF") != strlen(p)) {
+										fprintf(stderr, "%s:%d: error in hexadecimal integer format for param %s\n", filename, line_no, param[i].var);
+										errors++;
+										break;
+									}
+									param[i].type |= PARAM_INT_HEX;
+									param[i].val.d = (int)strtoul(p, NULL, 16);
+								} else {
+									if (strspn(p, "01234567") != strlen(p)) {
+										fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i].var);
+										errors++;
+										break;
+									}
+									param[i].type |= PARAM_INT_OCTAL;
+									param[i].val.d = (int)strtoul(p, NULL, 8);
+								}
+							} else {
+								if (strspn(p, "0123456789") != strlen(p)) {
+									fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i].var);
+									errors++;
+									break;
+								}
+								param[i].val.d = (int)strtoul(p, NULL, 10);
+							}
 							break;
 
 						case PARAM_BOOL:
@@ -242,23 +253,28 @@ int i, num;
 								if (!cstricmp(p, "no") || !cstricmp(p, "off") || !cstricmp(p, "false") || !strcmp(p, "0"))
 									param[i].val.bool = PARAM_FALSE;
 								else {
-									fprintf(stderr, "load_Param: unknown value '%s' for param %s\n", p, param[i].var);
+									fprintf(stderr, "%s:%d: unknown value '%s' for param %s\n", filename, line_no, p, param[i].var);
+									errors++;
 									param[i].val.bool = param[i].default_val.bool;
 								}
 							break;
 
 						default:
 							closefile(f);
-							fprintf(stderr, "load_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
-							return -1;
+							fprintf(stderr, "%s:%d BUG! unknown type '%d' for param[%d] (%s)\n", filename, line_no, param[i].type, i, param[i].var);
+							errors++;
 					}
 					break;
 				}
 			}
+			if (i >= num) {
+				fprintf(stderr, "%s:%d: unknown keyword '%s'\n", filename, line_no, buf);
+				errors++;
+			}
 		}
 	}
 	closefile(f);
-	return 0;
+	return -errors;
 }
 
 int save_Param(char *filename) {
@@ -282,19 +298,13 @@ int i, num;
 				break;
 
 			case PARAM_INT:
-				fprintf(f->f, "%-22s %d\n", param[i].var, param[i].val.d);
-				break;
-
-			case PARAM_UINT:
-				fprintf(f->f, "%-22s %u\n", param[i].var, param[i].val.u);
-				break;
-
-			case PARAM_LONG:
-				fprintf(f->f, "%-22s %ld\n", param[i].var, param[i].val.ld);
-				break;
-
-			case PARAM_ULONG:
-				fprintf(f->f, "%-22s %lu\n", param[i].var, param[i].val.lu);
+				if (param[i].type & PARAM_INT_OCTAL)
+					fprintf(f->f, "%-22s 0%o\n", param[i].var, param[i].val.d);
+				else
+					if (param[i].type & PARAM_INT_HEX)
+						fprintf(f->f, "%-22s 0x%x\n", param[i].var, param[i].val.d);
+					else
+						fprintf(f->f, "%-22s %d\n", param[i].var, param[i].val.d);
 				break;
 
 			case PARAM_BOOL:
@@ -302,10 +312,7 @@ int i, num;
 				break;
 
 			default:
-				fclose(f->f);
-				destroy_AtomicFile(f);
-				fprintf(stderr, "save_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
-				return -1;
+				log_err("save_Param(): BUG! unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 		}
 		if (param[i].type & PARAM_SEPARATOR)
 			fprintf(f->f, "\n");
@@ -354,33 +361,23 @@ void check_Param(void) {
 */
 void print_Param(void) {
 int i, num;
-char buf[MAX_PATHLEN];
 
 	num = sizeof(param)/sizeof(Param);
 
 	for(i = 0; i < num; i++) {
-		strcpy(buf, param[i].var);
-		strcat(buf, "    ");
-
 		switch(param[i].type & PARAM_MASK) {
 			case PARAM_STRING:
-				printf(" %-22s %s\n", buf, param[i].val.s);
+				printf(" %-22s %s\n", param[i].var, param[i].val.s);
 				break;
 
 			case PARAM_INT:
-				printf(" %-22s %d\n", buf, param[i].val.d);
-				break;
-
-			case PARAM_UINT:
-				printf(" %-22s %u\n", buf, param[i].val.u);
-				break;
-
-			case PARAM_LONG:
-				printf(" %-22s %ld\n", buf, param[i].val.ld);
-				break;
-
-			case PARAM_ULONG:
-				printf(" %-22s %lu\n", buf, param[i].val.lu);
+				if (param[i].type & PARAM_INT_OCTAL)
+					printf(" %-22s 0%o\n", param[i].var, param[i].val.d);
+				else
+					if (param[i].type & PARAM_INT_HEX)
+						printf(" %-22s 0x%x\n", param[i].var, param[i].val.d);
+					else
+						printf(" %-22s %d\n", param[i].var, param[i].val.d);
 				break;
 
 			case PARAM_BOOL:
@@ -388,7 +385,7 @@ char buf[MAX_PATHLEN];
 				break;
 
 			default:
-				fprintf(stderr, "print_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
+				fprintf(stderr, "print_Param(): BUG! unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
 		}
 	}
 	printf("\n");

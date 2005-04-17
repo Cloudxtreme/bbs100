@@ -23,6 +23,7 @@
 #include "config.h"
 #include "Signal.h"
 #include "debug.h"
+#include "cstring.h"
 #include "User.h"
 #include "screens.h"
 #include "util.h"

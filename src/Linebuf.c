@@ -24,6 +24,7 @@
 #include "Memory.h"
 #include "defines.h"
 #include "edit.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>

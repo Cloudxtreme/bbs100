@@ -29,6 +29,7 @@
 #include "util.h"
 #include "log.h"
 #include "debug.h"
+#include "cstring.h"
 #include "Stats.h"
 #include "screens.h"
 #include "CachedFile.h"

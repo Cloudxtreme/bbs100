@@ -24,24 +24,19 @@
 #ifndef USER_H_WJ97
 #define USER_H_WJ97 1
 
-#include <config.h>
-
 #include "defines.h"
-#include "cstring.h"
-#include "List.h"
+#include "PList.h"
 #include "StringList.h"
 #include "Joined.h"
 #include "Room.h"
 #include "Message.h"
 #include "BufferedMsg.h"
 #include "Timer.h"
-#include "sys_time.h"
-#include "Param.h"
-#include "CachedFile.h"
 #include "Timezone.h"
 #include "Lang.h"
 #include "Conn.h"
 #include "Telnet.h"
+#include "sys_time.h"
 
 #include <sys/types.h>
 

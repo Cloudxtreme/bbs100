@@ -33,6 +33,7 @@
 #include "timeout.h"
 #include "util.h"
 #include "copyright.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>

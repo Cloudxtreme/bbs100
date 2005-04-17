@@ -21,6 +21,7 @@
 #include "Memory.h"
 #include "edit.h"
 #include "debug.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
