@@ -1612,10 +1612,12 @@ void state_system_config_menu(User *usr, char c) {
 
 			Print(usr, "<magenta>\n"
 				"BBS <hotkey>Name            <white>%s<magenta>\n"
-				"P<hotkey>ort number         <white>%u<magenta>\n"
+				"P<hotkey>ort number         <white>%s<magenta>\n"
+				"<hotkey>Data port           <white>%s<magenta>\n"
 				"<hotkey>Param file          <white>%s<magenta>\n",
 				PARAM_BBS_NAME,
 				PARAM_PORT_NUMBER,
+				PARAM_DATA_PORT,
 				param_file
 			);
 			Print(usr, "\n"
@@ -1676,6 +1678,12 @@ void state_system_config_menu(User *usr, char c) {
 		case 'O':
 			Put(usr, "Port number\n");
 			CALL(usr, STATE_PARAM_PORT_NUMBER);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "Data port\n");
+			CALL(usr, STATE_PARAM_DATA_PORT);
 			Return;
 
 		case 'p':
@@ -1777,7 +1785,13 @@ void state_param_bbs_name(User *usr, char c) {
 
 void state_param_port_number(User *usr, char c) {
 	Enter(state_param_port_number);
-	change_int_param(usr, c, &PARAM_PORT_NUMBER);
+	change_string_param(usr, c, &PARAM_PORT_NUMBER, "<green>Enter service name or port number<yellow>: ");
+	Return;
+}
+
+void state_param_data_port(User *usr, char c) {
+	Enter(state_param_data_port);
+	change_string_param(usr, c, &PARAM_DATA_PORT, "<green>Enter service name or port number<yellow>: ");
 	Return;
 }
 

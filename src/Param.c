@@ -33,8 +33,8 @@
 
 Param param[] = {
 	{ PARAM_STRING,	"bbs_name",			{ NULL },	{ "bbs100" },					},
-	{ PARAM_INT,	"port_number",		{ NULL },	{ (char *)DEFAULT_PORT_1234 },	},
-	{ PARAM_INT | PARAM_SEPARATOR,
+	{ PARAM_STRING,	"port_number",		{ NULL },	{ (char *)DEFAULT_PORT_1234 },	},
+	{ PARAM_STRING | PARAM_SEPARATOR,
 					"data_port",		{ NULL },	{ (char *)DEFAULT_DATA_PORT },	},
 
 	{ PARAM_STRING, "basedir",			{ NULL },	{ "." },						},
@@ -337,7 +337,6 @@ void check_Param(void) {
 		printf("invalid value for %s, reset to default %d\n", (x), (z));	\
 	}
 
-	PARAM_CHECK("port_number",		PARAM_PORT_NUMBER,		DEFAULT_PORT_1234);
 	PARAM_CHECK("max_messages",		PARAM_MAX_MESSAGES,		DEFAULT_MAX_MESSAGES);
 	PARAM_CHECK("max_mail_msgs",	PARAM_MAX_MAIL_MSGS,	DEFAULT_MAX_MAIL_MSGS);
 	PARAM_CHECK("max_history",		PARAM_MAX_HISTORY,		DEFAULT_MAX_HISTORY);

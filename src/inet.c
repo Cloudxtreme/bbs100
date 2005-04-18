@@ -93,15 +93,13 @@
 	This function is protocol-family independent, so it supports
 	both IPv4 and IPv6 (and possibly even more ...)
 */
-int inet_listen(unsigned int port, ConnType *conn_type) {
+int inet_listen(char *service, ConnType *conn_type) {
 int sock, err, optval, retval;
 struct addrinfo hints, *res, *ai_p;
-char service[20], host[NI_MAXHOST], serv[NI_MAXSERV];
+char host[NI_MAXHOST], serv[NI_MAXSERV];
 Conn *conn;
 
 	retval = -1;
-
-	sprintf(service, "%u", port);
 
 #ifndef PF_UNSPEC
 #error inet.c: PF_UNSPEC is undefined on this system
@@ -219,7 +217,7 @@ int sock, optval;
 		close(sock);
 		return -1;
 	}
-	if (listen(sock, 3) == -1) {
+	if (listen(sock, MAX_NEWCONNS) == -1) {
 		log_err("unix_sock(): listen() failed: %s", strerror(errno));
 		close(sock);
 		return -1;

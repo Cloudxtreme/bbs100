@@ -41,8 +41,8 @@
 	It would be easier to put the params in a Hash, but this code is much faster
 */
 #define PARAM_BBS_NAME				param[0].val.s
-#define PARAM_PORT_NUMBER			param[1].val.d
-#define PARAM_DATA_PORT				param[2].val.d
+#define PARAM_PORT_NUMBER			param[1].val.s
+#define PARAM_DATA_PORT				param[2].val.s
 
 #define PARAM_DIR_N					3
 #define PARAM_BASEDIR				param[PARAM_DIR_N].val.s
@@ -151,8 +151,8 @@
 #define PARAM_HAVE_DISABLED_MSG		param[PARAM_HAVE_N+17].val.bool
 
 
-#define DEFAULT_PORT_1234			1234	/* default port number */
-#define DEFAULT_DATA_PORT			1233
+#define DEFAULT_PORT_1234			"1234"	/* default port number (can also be a service name) */
+#define DEFAULT_DATA_PORT			"1233"
 
 #define DEFAULT_MAX_CACHED			256		/* max # of objects in cache */
 #define DEFAULT_MAX_MESSAGES		50		/* max messages kept in a room before expiring */

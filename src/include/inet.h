@@ -26,7 +26,7 @@
 
 #include "Conn.h"
 
-int inet_listen(unsigned int, ConnType *);
+int inet_listen(char *, ConnType *);
 int unix_sock(char *);
 void mainloop(void);
 
