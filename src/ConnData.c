@@ -63,19 +63,7 @@ ConnType ConnData = {
 
 
 int init_ConnData(void) {
-Conn *listener;
-
-	if ((listener = new_ConnData()) == NULL)
-		return -1;
-
-	if ((listener->sock = inet_listen(PARAM_DATA_PORT)) < 0) {
-		destroy_Conn(listener);
-		return -1;
-	}
-	listener->state = CONN_LISTEN;
-
-	add_Conn(&AllConns, listener);
-	return 0;
+	return inet_listen(PARAM_DATA_PORT, &ConnData);
 }
 
 Conn *new_ConnData(void) {

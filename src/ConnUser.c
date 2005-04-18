@@ -99,21 +99,7 @@ ConnType ConnUser = {
 
 
 int init_ConnUser(void) {
-Conn *conn;
-
-	if ((conn = new_Conn()) == NULL)
-		return -1;
-
-	conn->conn_type = &ConnUser;
-
-	if ((conn->sock = inet_listen(PARAM_PORT_NUMBER)) < 0) {
-		destroy_Conn(conn);
-		return -1;
-	}
-	conn->state |= CONN_LISTEN;
-
-	add_Conn(&AllConns, conn);
-	return 0;
+	return inet_listen(PARAM_PORT_NUMBER, &ConnUser);
 }
 
 Conn *new_ConnUser(void) {

@@ -87,77 +87,114 @@
 #define MAX_NEWCONNS	5
 
 
-int inet_listen(unsigned int port) {
-struct sockaddr_in sin;
-int sock, optval, sleepcount = 0;
-
-	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		log_err("inet socket()");
-		return -1;
-	}
-	optval = 1;
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
-			sizeof(optval)) == -1) {
-		log_err("inet socket setsockopt()");
-		close(sock);
-		return -1;
-	}
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = INADDR_ANY;
-	sin.sin_port = htons(port);
-
-	while(bind(sock, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
-		if (errno == EACCES) {
-			printf("bind: Permission denied\n");
-			close(sock);
-			return -1;
-		}
-		if (errno == EADDRNOTAVAIL) {
-			printf("bind: Address not available\n");
-			close(sock);
-			return -1;
-		}
-		if (errno == EADDRINUSE) {
-			printf("bind: Address already is in use\n");
-			close(sock);
-			return -1;
-		}
-		if (++sleepcount > 10) {
-			printf("bind took too long, timed out\n");
-			close(sock);
-			return -1;
-		}
-		printf("waiting on bind ...\n");
-		sleep(1);
-	}
 /*
-	This is not needed...
+	listen on a service port
 
-	sin_len = sizeof(sin);
-	if (getsockname(sock, (struct sockaddr *)&sin, (int *)&sin_len) == -1) {
-		log_err("inet socket getsockname()");
-		close(sock);
-		return -1;
-	}
+	This function is protocol-family independent, so it supports
+	both IPv4 and IPv6 (and possibly even more ...)
 */
-	optval = 1;
-	if (ioctl(sock, FIONBIO, &optval) == -1) {
-		log_err("inet socket ioctl()");
-		close(sock);
+int inet_listen(unsigned int port, ConnType *conn_type) {
+int sock, err, optval, retval;
+struct addrinfo hints, *res, *ai_p;
+char service[20], host[NI_MAXHOST], serv[NI_MAXSERV];
+Conn *conn;
+
+	retval = -1;
+
+	sprintf(service, "%u", port);
+
+#ifndef PF_UNSPEC
+#error inet.c: PF_UNSPEC is undefined on this system
+#endif
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+/*	hints.ai_protocol = 0;		already 0 */
+	hints.ai_flags |= AI_PASSIVE;			/* accept clients on any network */
+
+	if ((err = getaddrinfo(NULL, service, &hints, &res)) != 0) {
+		log_err("inet_listen(%s): %s", service, gai_strerror(err));
 		return -1;
 	}
-	if (listen(sock, MAX_NEWCONNS) == -1) {
-		log_err("inet socket listen()");
-		close(sock);
-		return -1;
+	for(ai_p = res; ai_p != NULL; ai_p = ai_p->ai_next) {
+		if (ai_p->ai_family == PF_LOCAL)		/* skip local sockets */
+			continue;
+
+		if ((sock = socket(ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol)) == -1) {
+/* be cool about errors about IPv6 ... not many people have it yet */
+			if (!(errno == EAFNOSUPPORT && ai_p->ai_family == PF_INET6))
+				log_warn("inet_listen(%s): socket(family = %d, socktype = %d, protocol = %d) failed: %s",
+					service, ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol, strerror(errno));
+			continue;
+		}
+/*
+	This is commented out because you don't really want to restrict
+	BBS use to only IPv6 users
+
+#ifdef IPV6_V6ONLY
+		optval = 1;
+		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(optval))) == -1)
+			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, strerror(errno));
+#endif
+*/
+		optval = 1;
+		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
+			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", strerror(errno));
+
+		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
+			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
+				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
+				log_warn("inet_listen(): bind() failed on %s:%s", host, serv);
+			else
+				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
+
+			close(sock);
+			continue;
+		}
+		optval = 1;
+		if (ioctl(sock, FIONBIO, &optval) == -1) {
+			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, strerror(errno));
+			close(sock);
+			continue;
+		}
+		if (listen(sock, MAX_NEWCONNS) == -1) {
+			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
+				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
+				log_err("inet_listen(): listen() failed on %s:%s", host, serv);
+			else
+				log_err("inet_listen(%s): listen() failed", service);
+			close(sock);
+			continue;
+		}
+
+/* add to global list of all connections */
+
+		if ((conn = new_Conn()) == NULL) {
+			log_err("inet_listen(): out of memory allocating Conn");
+			close(sock);
+			freeaddrinfo(res);
+			return -1;
+		}
+		conn->conn_type = conn_type;
+		conn->state |= CONN_LISTEN;
+		conn->sock = sock;
+		add_Conn(&AllConns, conn);
+
+		retval = 0;			/* success */
+
+		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
+			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
+			log_msg("listening on %s:%s", host, serv);
+		else
+			log_msg("listening on port %s", service);
 	}
-	return sock;
+	freeaddrinfo(res);
+	return retval;
 }
 
 int unix_sock(char *path) {
 struct sockaddr_un un;
-int sock;
-char optval;
+int sock, optval;
 
 	unlink(path);
 
@@ -175,24 +212,16 @@ char optval;
 		log_err("unix socket bind()");
 		return -1;
 	}
-/*
-	This is not needed...
-
-	un_len = sizeof(un);
-	if (getsockname(sock, (struct sockaddr *)&un, (int *)&un_len) == -1) {
-		log_err("unix socket getsockname()");
-		return -1;
-	}
-*/
 /* set non-blocking */
 	optval = 1;
 	if (ioctl(sock, FIONBIO, &optval) == -1) {
-		log_err("unix socket ioctl()");
+		log_err("unix_sock(): failed to set socket non-blocking");
+		close(sock);
 		return -1;
 	}
-
 	if (listen(sock, 3) == -1) {
-		log_err("unix socket listen()");
+		log_err("unix_sock(): listen() failed: %s", strerror(errno));
+		close(sock);
 		return -1;
 	}
 	return sock;

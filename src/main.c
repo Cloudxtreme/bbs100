@@ -347,7 +347,6 @@ char buf[256];
 	if (init_ConnData())
 		printf("warning: failed to initalize data port\n");
 
-	printf("up and running, listening at port %d and %d\n", PARAM_PORT_NUMBER, PARAM_DATA_PORT);
 	if (debugger) {
 		printf("running under debugger, signal handling disabled\n");
 		printf("running under debugger, not going to background\n");

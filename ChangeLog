@@ -1,4 +1,8 @@
-Changes as of April 17th
+Changes as of April 18th 2005
+- we're now IPv6 enabled, but it's untested because my dev box
+  does not have IPv6 yet
+
+Changes as of April 17th 2005
 - added param umask, which has octal format
 - PARAM_LONG no longer exists because it was not used anyway
 - boss screen puts messages on hold, if param_have_hold is enabled

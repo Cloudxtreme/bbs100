@@ -24,7 +24,9 @@
 #ifndef _INET_H_WJ97
 #define _INET_H_WJ97 1
 
-int inet_listen(unsigned int);
+#include "Conn.h"
+
+int inet_listen(unsigned int, ConnType *);
 int unix_sock(char *);
 void mainloop(void);
 
