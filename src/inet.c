@@ -89,6 +89,7 @@
 
 /*
 	listen on a service port
+	(actually, this function does a lot more than just listen()ing)
 
 	This function is protocol-family independent, so it supports
 	both IPv4 and IPv6 (and possibly even more ...)
@@ -149,7 +150,10 @@ Conn *conn;
 			close(sock);
 			continue;
 		}
-		optval = 1;
+/*
+	I don't think FIONBIO is needed on a listening socket, but just
+	to make sure ...
+*/
 		if (ioctl(sock, FIONBIO, &optval) == -1) {
 			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, strerror(errno));
 			close(sock);
@@ -189,6 +193,7 @@ Conn *conn;
 	freeaddrinfo(res);
 	return retval;
 }
+
 
 int unix_sock(char *path) {
 struct sockaddr_un un;

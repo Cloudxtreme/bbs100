@@ -114,16 +114,15 @@ Conn *conn;
 void ConnUser_accept(Conn *conn) {
 User *new_user;
 Conn *new_conn;
-struct sockaddr_in client;
-int client_len = sizeof(struct sockaddr_in);
 char buf[256];
 StringList *sl;
-int s;
-char optval;
+int s, err, optval;
+struct sockaddr_storage client;
+socklen_t client_len = sizeof(struct sockaddr_storage);
 
 	Enter(ConnUser_accept);
 
-	if ((s = accept(conn->sock, (struct sockaddr *)&client, (int *)&client_len)) < 0) {
+	if ((s = accept(conn->sock, (struct sockaddr *)&client, &client_len)) < 0) {
 		log_err("ConnUser_accept(): failed to accept()");
 		Return;
 	}
@@ -152,9 +151,10 @@ char optval;
 	optval = 1;
 	ioctl(new_conn->sock, FIONBIO, &optval);		/* set non-blocking */
 
-	new_conn->ipnum = ntohl(client.sin_addr.s_addr);
-	strncpy(new_conn->from_ip, inet_ntoa(client.sin_addr), MAX_LINE-1);
-	new_conn->from_ip[MAX_LINE-1] = 0;
+	if ((err = getnameinfo((struct sockaddr *)&client, client_len, new_conn->from_ip, MAX_LINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
+		log_warn("ConnUser_accept(): getnameinfo(): %s", gai_strerror(err));
+		strcpy(new_conn->from_ip, "0.0.0.0");
+	}
 /*
 	This code is commented out, but if you want to lock out sites
 	permanently (rather than for new users only), I suggest you

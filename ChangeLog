@@ -1,6 +1,8 @@
+Changes as of April 19th 2005
+- IPv6 capable name resolver
+
 Changes as of April 18th 2005
-- we're now IPv6 enabled, but it's untested because my dev box
-  does not have IPv6 yet
+- we're now IPv6 enabled
 - PARAM_PORT_NUMBER and PARAM_DATA_PORT are strings; they can
   also be specified by service name
 

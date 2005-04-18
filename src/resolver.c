@@ -19,45 +19,25 @@
 /*
 	resolver.c	WJ99
 
-	IP name resolver
+	IP name resolver (IPv6 enabled)
 	It is forked by the main program, and communicates with its parent
 	through a Unix domain socket 
 */
 
 #include "config.h"
 #include "copyright.h"
-#include "sys_time.h"
 #include "cstring.h"
 #include "strerror.h"
-#include "ipv4_aton.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <arpa/telnet.h>
-#include <netdb.h>
-#include <sys/socket.h>
+#include <errno.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/un.h>
-#include <errno.h>
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-
-#ifdef HAVE_SYS_IOCTL_H
-#include <sys/ioctl.h>
-#endif
-
-#ifdef HAVE_SYS_SIGNAL_H
-#include <sys/signal.h>
-#endif
+#include <netdb.h>
 
 
 char *get_basename(char *path) {
@@ -88,21 +68,54 @@ struct sigaction old_sa;
 	sigaction(SIGPIPE, &sa, &old_sa);
 }
 
+/*
+	resolve IP number in 'ip', return hostname in 'host'
+	this function is IPv6 enabled
+*/
+int resolv(char *ip, char *host) {
+int err;
+struct addrinfo hints, *res, *ai_p;
+
+#ifndef PF_UNSPEC
+#error inet.c: PF_UNSPEC is undefined on this system
+#endif
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if ((err = getaddrinfo(ip, NULL, &hints, &res)) != 0) {
+		fprintf(stderr, "resolver: getaddrinfo(): %s\n", gai_strerror(err));
+		return -1;
+	}
+	for(ai_p = res; ai_p != NULL; ai_p = ai_p->ai_next) {
+		if ((err = getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
+			host, NI_MAXHOST, NULL, 0, 0)) == 0)
+			break;			/* use first name you get */
+		else {
+			fprintf(stderr, "resolver: getnameinfo(): %s\n", gai_strerror(err));
+			freeaddrinfo(res);
+			return -1;
+		}
+	}
+	freeaddrinfo(res);
+	return 0;
+}
 
 int main(int argc, char **argv) {
-char buf[256], buf2[256];
+char request[128], result[NI_MAXHOST];
 struct sockaddr_un un;
 int s, n, un_len;
-struct hostent *host;
-struct in_addr ipnum;
 
-	printf("%s", print_copyright(SHORT, "resolver", buf));
+	printf("%s", print_copyright(SHORT, "resolver", result));
 
 	if (strcmp(get_basename(argv[0]), "(bbs100 resolver)")) {
 		printf("You must not run this program by hand. It is supposed to be started by\n"
 			"the bbs100 main program.\n");
 		exit(1);
 	}
+/*
+	connect to unix named socket
+*/
 	s = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (s < 0) {
 		perror("socket()");
@@ -129,33 +142,32 @@ struct in_addr ipnum;
 	init_signals();
 
 	for(;;) {
-		if ((n = read(s, buf, 256)) <= 0) {
+		if ((n = read(s, request, 127)) <= 0) {
 			fprintf(stderr, "resolver: read(): %s\n", strerror(errno));
 			break;
 		}
-		if (n >= 256)
-			n = 255;
-		buf[n] = 0;
+		request[n] = 0;
 
-		if (sscanf(buf, "%d.%d.%d.%d", &n, &n, &n, &n) != 4) {
-			fprintf(stderr, "resolver: got malformed ip address '%s'\n", buf);
+		if (resolv(request, result) < 0)
 			continue;
+
+		fprintf(stderr, "resolver: %s\n", result);
+/*
+	write the answer back to the unix socket connection
+*/
+		if (write(s, request, strlen(request)) < 0) {
+			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			break;
 		}
-		if (ipv4_aton(buf, &ipnum) == 0) {
-			sprintf(buf2, "%s %s\r", buf, buf);
-			goto reply;
+		if (write(s, " ", 1) < 0) {
+			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			break;
 		}
-		if ((host = gethostbyaddr((char *)&ipnum, 4, AF_INET)) == NULL) {
-			sleep(1);
-			if ((host = gethostbyaddr((char *)&ipnum, 4, AF_INET)) == NULL) {
-				sprintf(buf2, "%s %s\r", buf, buf);
-				goto reply;
-			}
+		if (write(s, result, strlen(result)) < 0) {
+			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			break;
 		}
-		sprintf(buf2, "%s %s\r", buf, host->h_name);
-reply:
-		fprintf(stderr, "resolver: %s\n", buf2);
-		if (write(s, buf2, strlen(buf2)) < 0) {
+		if (write(s, "\r", 1) < 0) {
 			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
 			break;
 		}

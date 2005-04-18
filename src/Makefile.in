@@ -70,7 +70,7 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	Conn.o ConnUser.o ConnResolv.o ConnData.o Linebuf.o Telnet.o \
 	main.o
 
-MORE_OBJS = mkpasswd.o resolver.o ipv4_aton.o ccat.o bbs100_convert.o
+MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o
 
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
@@ -115,9 +115,9 @@ mkpasswd: mkpasswd.o passwd.o copyright.o
 	@echo '  BUILD     mkpasswd'
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
 
-resolver: resolver.o ipv4_aton.o copyright.o
+resolver: resolver.o copyright.o
 	@echo '  BUILD     resolver'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o ipv4_aton.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
 
 ccat: ccat.o copyright.o
 	@echo '  BUILD     ccat'
