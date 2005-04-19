@@ -27,8 +27,11 @@
 #include "Conn.h"
 
 const char *inet_error(int);
+char *inet_printaddr(char *, char *);
+
 int inet_listen(char *, ConnType *);
 int unix_sock(char *);
+
 void mainloop(void);
 
 #endif	/* _INET_H_WJ97 */

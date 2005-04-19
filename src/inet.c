@@ -31,24 +31,10 @@
 #include "defines.h"
 #include "debug.h"
 #include "inet.h"
-#include "util.h"
+#include "cstring.h"
 #include "log.h"
-#include "state_login.h"
-#include "CallStack.h"
-#include "Stats.h"
-#include "Wrapper.h"
-#include "screens.h"
-#include "Timer.h"
+#include "User.h"
 #include "Signal.h"
-#include "Param.h"
-#include "edit.h"
-#include "sys_time.h"
-#include "main.h"
-#include "state.h"
-#include "OnlineUser.h"
-#include "state_data.h"
-#include "DataCmd.h"
-#include "Conn.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -92,6 +78,20 @@ const char *inet_error(int err) {
 		return (const char *)strerror(errno);
 
 	return (const char *)gai_strerror(err);
+}
+
+/*
+	WARNING: returns a static buffer
+*/
+char *inet_printaddr(char *host, char *service) {
+static char buf[MAX_LINE*2];
+
+	if (cstrchr(host, ':') != NULL)
+		sprintf(buf, "[%s]:%s", host, service);
+	else
+		sprintf(buf, "%s:%s", host, service);
+
+	return buf;
 }
 
 
@@ -151,7 +151,7 @@ Conn *conn;
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_warn("inet_listen(): bind() failed on %s:%s", host, serv);
+				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv));
 			else
 				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
 
@@ -170,7 +170,7 @@ Conn *conn;
 		if (listen(sock, MAX_NEWCONNS) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_err("inet_listen(): listen() failed on %s:%s", host, serv);
+				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv));
 			else
 				log_err("inet_listen(%s): listen() failed", service);
 			close(sock);
@@ -190,13 +190,14 @@ Conn *conn;
 		conn->sock = sock;
 		add_Conn(&AllConns, conn);
 
-		retval = 0;			/* success */
-
 		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-			log_msg("listening on %s:%s", host, serv);
+			log_msg("listening on %s", inet_printaddr(host, serv));
 		else
 			log_msg("listening on port %s", service);
+
+		retval = 0;			/* success */
+		break;
 	}
 	freeaddrinfo(res);
 	return retval;
