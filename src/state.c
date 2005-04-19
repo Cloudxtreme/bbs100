@@ -1444,6 +1444,12 @@ int r;
 				RET(usr);
 				Return;
 			}
+			if ((u->conn = new_Conn()) == NULL) {
+				destroy_User(u);
+				Perror(usr, "Out of memory");
+				RET(usr);
+				Return;
+			}
 			allocated = 1;
 
 			if (load_User(u, usr->edit_buf,
@@ -1551,9 +1557,11 @@ int r;
 			&& strcmp(usr->message->from, usr->name)) {
 			log_msg("%s profiled anonymous post", usr->name);
 		}
-		if (allocated)
+		if (allocated) {
+			destroy_Conn(u->conn);
+			u->conn = NULL;
 			destroy_User(u);
-
+		}
 		Put(usr, "\n");
 
 		usr->textp = usr->more_text = rewind_StringList(usr->more_text);
