@@ -2,8 +2,11 @@
 #	bbs100 hostmap file	WJ100
 #
 
-localhost		the local machine <white>bbs100<yellow> runs on		# comment
+localhost		the local machine <white>bbs100<yellow> runs on			# comment
 127.0.0.1		the local machine <white>bbs100<yellow> runs on
+::ffff:127.0.0.1	the local machine <white>bbs100<yellow> runs on		# IPv4 on IPv6
+::1				the local machine <white>bbs100<yellow> runs on			# IPv6
+ip6-localhost	the local machine <white>bbs100<yellow> runs on			# IPv6
 
 #.com			commercial site
 #.org			an organization
