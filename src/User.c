@@ -361,15 +361,15 @@ char buf[MAX_PATHLEN], *p;
 				}
 			}
 		}
-		if (!strcmp(buf, "from_ip")) {
+		if (!strcmp(buf, "hostname")) {
 			Free(usr->tmpbuf[TMP_FROM_HOST]);
 			usr->tmpbuf[TMP_FROM_HOST] = NULL;
-			FF1_LOAD_DUP("from_ip", usr->tmpbuf[TMP_FROM_HOST]);
+			FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
 		}
-		if (!strcmp(buf, "from_ipnum")) {
+		if (!strcmp(buf, "ipnum")) {
 			Free(usr->tmpbuf[TMP_FROM_IP]);
 			usr->tmpbuf[TMP_FROM_IP] = NULL;
-			FF1_LOAD_DUP("from_ipnum", usr->tmpbuf[TMP_FROM_IP]);
+			FF1_LOAD_DUP("ipnum", usr->tmpbuf[TMP_FROM_IP]);
 		}
 		if (flags & LOAD_USER_DATA) {
 			FF1_LOAD_ULONG("birth", usr->birth);
@@ -968,14 +968,9 @@ StringList *sl;
 	FF1_SAVE_STR("timezone", usr->timezone);
 	FF1_SAVE_STR("language", usr->language);
 
-	FF1_SAVE_STR("from_ip", usr->conn->from_ip);
+	FF1_SAVE_STR("hostname", usr->conn->hostname);
+	FF1_SAVE_STR("ipnum", usr->conn->ipnum);
 
-	Fprintf(f, "from_ipnum=%d.%d.%d.%d",
-		(int)((usr->conn->ipnum >> 24) & 255),
-		(int)((usr->conn->ipnum >> 16) & 255),
-		(int)((usr->conn->ipnum >> 8) & 255),
-		(int)(usr->conn->ipnum & 255)
-	);
 	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
 	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
 	Fprintf(f, "flags=0x%x", usr->flags);
@@ -1023,105 +1018,6 @@ StringList *sl;
 	return 0;
 }
 
-
-#define SAVE_USERSTRING(x)	Fputs(f, ((x) == NULL) ? "" : (x))
-
-int save_User_version0(File *f, User *usr) {
-Joined *j;
-int i;
-
-	Enter(save_User_version0);
-
-	Fputs(f, usr->passwd);
-
-	SAVE_USERSTRING(usr->real_name);
-	SAVE_USERSTRING(usr->street);
-	SAVE_USERSTRING(usr->zipcode);
-	SAVE_USERSTRING(usr->city);
-	SAVE_USERSTRING(usr->state);
-	SAVE_USERSTRING(usr->country);
-	SAVE_USERSTRING(usr->phone);
-	SAVE_USERSTRING(usr->email);
-	SAVE_USERSTRING(usr->www);
-	SAVE_USERSTRING(usr->doing);
-	SAVE_USERSTRING(usr->reminder);
-	SAVE_USERSTRING(usr->default_anon);
-
-	Fputs(f, usr->conn->from_ip);
-	Fprintf(f, "%d.%d.%d.%d",
-		(int)((usr->conn->ipnum >> 24) & 255),
-		(int)((usr->conn->ipnum >> 16) & 255),
-		(int)((usr->conn->ipnum >> 8) & 255),
-		(int)(usr->conn->ipnum & 255));
-
-	Fprintf(f, "%lu", (unsigned long)usr->birth);
-	Fprintf(f, "%lu", (unsigned long)usr->last_logout);
-	Fprintf(f, "0x%X", usr->flags);
-	Fprintf(f, "%lu", usr->logins);
-	Fprintf(f, "%lu", usr->total_time);
-
-	Fprintf(f, "%lu", usr->xsent);
-	Fprintf(f, "%lu", usr->xrecv);
-	Fprintf(f, "%lu", usr->esent);
-	Fprintf(f, "%lu", usr->erecv);
-	Fprintf(f, "%lu", usr->posted);
-	Fprintf(f, "%lu", usr->read);
-
-	Fprintf(f, "%d %d %d %d %d %d %d %d %d",
-		usr->colors[BACKGROUND],
-		usr->colors[RED],
-		usr->colors[GREEN],
-		usr->colors[YELLOW],
-		usr->colors[BLUE],
-		usr->colors[MAGENTA],
-		usr->colors[CYAN],
-		usr->colors[WHITE],
-		usr->colors[HOTKEY]);
-
-	for(j = usr->rooms; j != NULL; j = j->next)
-		Fprintf(f, "%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
-			j->generation, j->last_read, j->roominfo_read);
-	Fprintf(f, "");
-
-	for(i = 0; i < 10; i++)
-		SAVE_USERSTRING(usr->quick[i]);
-
-	Fputlist(f, usr->friends);
-	Fputlist(f, usr->enemies);
-	Fputlist(f, usr->info);
-
-/*	Fprintf(f, "%d", usr->time_disp);		deprecated by timezones	*/
-	Fprintf(f, "0");
-	Fprintf(f, "%lu", usr->fsent);
-	Fprintf(f, "%lu", usr->frecv);
-
-	Return site_save_User_version0(usr);
-}
-
-int site_save_User_version0(User *usr) {
-/*
-File *f;
-char buf[MAX_PATHLEN];
-
-	Enter(site_save_User);
-
-	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, usr->name[0], usr->name);
-	path_strip(buf);
-
-	if ((f = Fcreate(buf)) == NULL) {
-		Perror(usr, "Failed to save site-specific userfile");
-		Return -1;
-	}
-
-	DO SITE-SPECIFIC STUFF HERE
-
-
-	Fclose(f);
-	Return 0;
-*/
-	return 0;
-}
-
 void close_connection(User *usr, char *reason, ...) {
 	if (usr == NULL)
 		return;
@@ -1145,9 +1041,9 @@ void close_connection(User *usr, char *reason, ...) {
 		char buf[PRINT_BUF];
 
 		if (usr->name[0])
-			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->conn->from_ip);
+			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->conn->hostname);
 		else
-			sprintf(buf, "CLOSE (%s): ", usr->conn->from_ip);
+			sprintf(buf, "CLOSE (%s): ", usr->conn->hostname);
 
 		va_start(ap, reason);
 		vsprintf(buf+strlen(buf), reason, ap);

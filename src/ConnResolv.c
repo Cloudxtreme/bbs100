@@ -143,8 +143,8 @@ char *p;
 		Conn *c;
 
 		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->from_ip, lb->buf))
-				strcpy(c->from_ip, p);			/* fill in IP name */
+			if (!strcmp(c->ipnum, lb->buf))
+				strcpy(c->hostname, p);			/* fill in IP name */
 	}
 	conn->input_head = conn->input_tail = 0;
 	reset_Linebuf((Linebuf *)lb);

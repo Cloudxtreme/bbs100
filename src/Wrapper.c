@@ -220,8 +220,12 @@ int n, m;
 	since whole networks can be denied and specific hosts within those networks
 	can be allowed, we have to check both
 */
-int allow_Wrapper(Wrapper *root, unsigned long addr) {
+int allow_Wrapper(Wrapper *root, char *ipnum) {
 Wrapper *w;
+unsigned long addr;
+
+	ipnum = NULL;
+	addr = 0x7f000001UL;		/* TEMP HACK */
 
 /* see if allowed */
 	for(w = root; w != NULL; w = w->next)

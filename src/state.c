@@ -1414,15 +1414,11 @@ int r;
 				Print(usr, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
 				if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
-						Print(usr, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]\n", u->conn->from_ip,
-							(int)((u->conn->ipnum >> 24) & 255),
-							(int)((u->conn->ipnum >> 16) & 255),
-							(int)((u->conn->ipnum >> 8) & 255),
-							(int)(u->conn->ipnum & 255));
+						Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
 					else
-						Print(usr, "<green>From host: <yellow>%s\n", u->conn->from_ip);
+						Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 				}
-				if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
+				if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
 					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, p);
 
 				Put(usr, "\n");
@@ -1457,8 +1453,8 @@ int r;
 				RET(usr);
 				Return;
 			}
-/* load the proper from_ip */
-			strcpy(u->conn->from_ip, u->tmpbuf[TMP_FROM_HOST]);
+/* load the proper hostname */
+			strcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST]);
 		} else {
 			listdestroy_StringList(usr->recipients);		/* place entered name in history */
 			usr->recipients = new_StringList(usr->edit_buf);
@@ -1513,9 +1509,9 @@ int r;
 
 			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s", print_date(usr, (time_t)u->last_logout, date_buf));
 			if (usr->runtime_flags & RTF_SYSOP)
-				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->from_ip, u->tmpbuf[TMP_FROM_IP]);
+				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
-			if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
+			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
 				usr->more_text = add_String(&usr->more_text, "<yellow>%s<green> was connected from <yellow>%s", u->name, p);
 		} else {
 /*
@@ -1525,15 +1521,11 @@ int r;
 			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
 			if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
-					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%d.%d.%d.%d]", u->conn->from_ip,
-						(int)((u->conn->ipnum >> 24) & 255),
-						(int)((u->conn->ipnum >> 16) & 255),
-						(int)((u->conn->ipnum >> 8) & 255),
-						(int)(u->conn->ipnum & 255));
+					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->hostname, u->conn->ipnum);
 				else
-					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s", u->conn->from_ip);
+					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s", u->conn->hostname);
 			}
-			if ((p = HostMap_desc(u->conn->from_ip)) != NULL)
+			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
 				usr->more_text = add_String(&usr->more_text, "<yellow>%s<green> is connected from <yellow>%s", u->name, p);
 		}
 		if (!allocated)

@@ -87,6 +87,14 @@
 #define MAX_NEWCONNS	5
 
 
+const char *inet_error(int err) {
+	if (err == EAI_SYSTEM)
+		return (const char *)strerror(errno);
+
+	return (const char *)gai_strerror(err);
+}
+
+
 /*
 	listen on a service port
 	(actually, this function does a lot more than just listen()ing)
@@ -112,7 +120,7 @@ Conn *conn;
 	hints.ai_flags |= AI_PASSIVE;			/* accept clients on any network */
 
 	if ((err = getaddrinfo(NULL, service, &hints, &res)) != 0) {
-		log_err("inet_listen(%s): %s", service, gai_strerror(err));
+		log_err("inet_listen(%s): %s", service, inet_error(err));
 		return -1;
 	}
 	for(ai_p = res; ai_p != NULL; ai_p = ai_p->ai_next) {

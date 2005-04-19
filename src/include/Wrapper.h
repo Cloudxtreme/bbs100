@@ -48,7 +48,7 @@ void destroy_Wrapper(Wrapper *);
 Wrapper *make_Wrapper(Wrapper **, char *, char *, char *, char *);
 int load_Wrapper(Wrapper **, char *);
 int save_Wrapper(Wrapper *, char *);
-int allow_Wrapper(Wrapper *, unsigned long);
+int allow_Wrapper(Wrapper *, char *);
 
 #endif	/* _WRAPPER_H_WJ99 */
 

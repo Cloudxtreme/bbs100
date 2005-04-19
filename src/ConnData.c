@@ -41,6 +41,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -133,10 +134,11 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	optval = 1;
 	ioctl(new_conn->sock, FIONBIO, &optval);		/* set non-blocking */
 
-	if ((err = getnameinfo((struct sockaddr *)&client, client_len, new_conn->from_ip, MAX_LINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
-		log_warn("ConnData_accept(): getnameinfo(): %s", gai_strerror(err));
-		strcpy(new_conn->from_ip, "0.0.0.0");
+	if ((err = getnameinfo((struct sockaddr *)&client, client_len, new_conn->ipnum, MAX_LINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
+		log_warn("ConnData_accept(): getnameinfo(): %s", inet_error(err));
+		strcpy(new_conn->ipnum, "0.0.0.0");
 	}
+	strcpy(new_conn->hostname, new_conn->ipnum);
 /*
 	This code is commented out, but if you want to lock out sites
 	permanently (rather than for new users only), I suggest you
@@ -145,15 +147,15 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 
 	if (!allow_Wrapper(wrappers, new_conn->ipnum)) {
 		Put(new_user, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
-		log_auth("connection from %s closed by wrapper", new_conn->from_ip);
+		log_auth("connection from %s closed by wrapper", new_conn->ipnum);
 		destroy_Conn(new_conn);
 		Return;
 	}
 */
-	log_auth("DATACONN (%s)", new_conn->from_ip);
+	log_auth("DATACONN (%s)", new_conn->ipnum);
 	add_Conn(&AllConns, new_conn);
 	add_User(&AllUsers, new_user);
-	dns_gethostname(new_conn->from_ip);		/* send out request for hostname */
+	dns_gethostname(new_conn->ipnum);		/* send out request for hostname */
 
 	Put(new_user, print_copyright(SHORT, NULL, buf));
 
