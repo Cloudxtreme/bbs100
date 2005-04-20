@@ -125,7 +125,6 @@ int i;
 	destroy_Room(usr->mail);
 
 	listdestroy_BufferedMsg(usr->history);
-	listdestroy_BufferedMsg(usr->busy_msgs);
 	listdestroy_BufferedMsg(usr->held_msgs);
 	destroy_BufferedMsg(usr->send_msg);
 
@@ -196,7 +195,7 @@ char buf[PRINT_BUF];
 			Perror(usr, "Out of memory buffering message");
 			return;
 		}
-		add_BufferedMsg(&usr->busy_msgs, m);
+		add_BufferedMsg(&usr->held_msgs, m);
 	} else {
 		int cpos = 0;
 

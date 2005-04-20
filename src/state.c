@@ -1043,7 +1043,7 @@ int i;
 	} else {
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING | RTF_BUSY_MAILING);
 
-		if (usr->busy_msgs != NULL)
+		if (!(usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL)
 			Put(usr, "\n<green>The following messages were held while you were busy<yellow>:\n");
 	}
 	PrintPrompt(usr);
@@ -1057,9 +1057,13 @@ void PrintPrompt(User *usr) {
 
 	Enter(PrintPrompt);
 
-	if (!(usr->runtime_flags & RTF_BUSY))
-		spew_BufferedMsg(usr);
-
+	if (!(usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) && usr->held_msgs != NULL) {
+		if (usr->flags & USR_HOLD_BUSY) {
+			CALL(usr, STATE_HELD_HISTORY_PROMPT);
+			Return;
+		} else
+			spew_BufferedMsg(usr);
+	}
 	if (!(usr->runtime_flags & RTF_BUSY)) {
 
 /* print a short prompt for chatrooms */

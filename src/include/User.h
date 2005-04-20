@@ -69,7 +69,8 @@
 #define USR_SHOW_ALL			0x800		/* show all users when inside a chat room */
 #define USR_SHOW_ENEMIES		0x1000		/* show enemies in who list */
 #define USR_12HRCLOCK			0x2000		/* show time in 12 hr clock format with AM/PM */
-#define USR_ALL					0x3fff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_HOLD_BUSY			0x4000		/* hold message mode when busy */
+#define USR_ALL					0x7fff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -156,7 +157,7 @@ struct User_tag {
 	Message *message, *new_message;
 	Room *mail, *curr_room;
 	MsgIndex *curr_msg;
-	BufferedMsg *history, *history_p, *busy_msgs, *held_msgs, *held_msgp;
+	BufferedMsg *history, *history_p, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
 	Timezone *tz;

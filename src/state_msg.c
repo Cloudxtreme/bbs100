@@ -1048,14 +1048,14 @@ Rcv_Remove_Recipient:
 	if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
 		if (!(msg->flags & ~BUFMSG_SEEN)) {		/* one-shot message */
 			if (usr->runtime_flags & RTF_BUSY)
-				add_BufferedMsg(&usr->busy_msgs, new_msg);
+				add_BufferedMsg(&usr->held_msgs, new_msg);
 			else
 				add_BufferedMsg(&usr->history, new_msg);
 		} else
 			add_BufferedMsg(&usr->held_msgs, new_msg);
 	} else
 		if (usr->runtime_flags & RTF_BUSY)
-			add_BufferedMsg(&usr->busy_msgs, new_msg);
+			add_BufferedMsg(&usr->held_msgs, new_msg);
 		else
 			add_BufferedMsg(&usr->history, new_msg);
 
@@ -1118,12 +1118,12 @@ BufferedMsg *m;
 
 	Enter(spew_BufferedMsg);
 
-	while(usr->busy_msgs != NULL) {
-		m = usr->busy_msgs;
+	while(usr->held_msgs != NULL) {
+		m = usr->held_msgs;
 
-		usr->busy_msgs = usr->busy_msgs->next;
-		if (usr->busy_msgs != NULL)
-			usr->busy_msgs->prev = NULL;
+		usr->held_msgs = usr->held_msgs->next;
+		if (usr->held_msgs != NULL)
+			usr->held_msgs->prev = NULL;
 
 		m->prev = m->next = NULL;
 
