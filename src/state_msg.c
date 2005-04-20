@@ -1309,11 +1309,10 @@ char prompt[PRINT_BUF];
 				RET(usr);
 				Return;
 			}
-			if (usr->history_p->prev == NULL) {
+			if (usr->history_p->prev == NULL)
 				Put(usr, "<red>Can't go further back\n");
-				break;
-			}
-			usr->history_p = usr->history_p->prev;
+			else
+				usr->history_p = usr->history_p->prev;
 			print_buffered_msg(usr, usr->history_p);
 			break;
 
@@ -1507,11 +1506,10 @@ char prompt[PRINT_BUF];
 				Perror(usr, "Your held messages buffer is gone");
 				goto Exit_Held_History;
 			}
-			if (usr->held_msgp->prev == NULL) {
+			if (usr->held_msgp->prev == NULL)
 				Put(usr, "<red>Can't go further back\n");
-				break;
-			}
-			usr->held_msgp = usr->held_msgp->prev;
+			else
+				usr->held_msgp = usr->held_msgp->prev;
 			print_buffered_msg(usr, usr->held_msgp);
 			break;
 

@@ -37,13 +37,11 @@
 #define TS_NEW_ENVIRON_VAR	8
 #define TS_NEW_ENVIRON_VAL	9
 
-
 typedef struct {
 	int state, in_sub;
 	int term_width, term_height;
 	char in_sub_buf[MAX_SUB_BUF];
 } Telnet;
-
 
 Telnet *new_Telnet(void);
 void destroy_Telnet(Telnet *);
