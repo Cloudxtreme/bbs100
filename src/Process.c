@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 #include <sys/socket.h>
 
@@ -122,7 +123,7 @@ Process *proc;
 
 	pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
 	if (pid == (pid_t)-1L) {
-		log_err("waitpid()");
+		log_err("waitpid(): %s", strerror(errno));
 		return;
 	}
 	if (pid == (pid_t)0L) {

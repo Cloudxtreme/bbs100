@@ -52,7 +52,7 @@ void state_config_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Terminal settings\n"
-				"Profile <hotkey>info                 Customize <hotkey>Who list\n"
+				"Profile <hotkey>Info                 Customize <hotkey>Who list\n"
 				"<hotkey>Doing                        <hotkey>Options\n"
 				"<hotkey>Reminder"
 			);

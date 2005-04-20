@@ -323,8 +323,6 @@ int err, highest_fd = -1, wait_for_input, nap;
 				}
 /*
 	no input ready, try to read()
-
-				if (c->input_head >= c->input_tail) {
 */
 				c->input_head = 0;
 				if ((err = read(c->sock, c->inputbuf, MAX_INPUTBUF)) > 0) {
@@ -334,6 +332,13 @@ int err, highest_fd = -1, wait_for_input, nap;
 					continue;
 				} else
 					c->input_tail = 0;
+
+				if (!err) {					/* EOF, connection closed */
+					c->conn_type->linkdead(c);
+					close(c->sock);
+					c->sock = -1;
+					continue;
+				}
 #ifdef EWOULDBLOCK
 				if (errno == EWOULDBLOCK) {
 #else
@@ -347,13 +352,17 @@ int err, highest_fd = -1, wait_for_input, nap;
 				if (errno == EINTR)		/* interrupted, try again next time */
 					continue;
 /*
-	something bad happened, probably lost connection
+	something bad happened, and I don't know what
 */
-				c->conn_type->linkdead(c);
+				log_err("mainloop(): read(): %s", strerror(errno));
+				if (c->sock >= 0) {
+					c->conn_type->linkdead(c);
+					close(c->sock);
+					c->sock = -1;
+				}
 				continue;
 			}
 		}
-
 /*
 	call select() to see if any more data is ready to arrive
 
@@ -372,7 +381,7 @@ int err, highest_fd = -1, wait_for_input, nap;
 		handle_pending_signals();
 		nap = update_timers();
 
-		if (err > 0) {
+		if (err > 0) {			/* number of ready fds */
 			for(c = AllConns; c != NULL; c = c_next) {
 				c_next = c->next;
 
@@ -382,12 +391,18 @@ int err, highest_fd = -1, wait_for_input, nap;
 							c->conn_type->accept(c);
 						else
 							c->conn_type->readable(c);
+						err--;
 					}
 					if (FD_ISSET(c->sock, &wfds)) {
 						if (c->state & CONN_CONNECTING)
 							c->conn_type->complete_connect(c);
 						else
 							c->conn_type->writable(c);
+						err--;
+					}
+					if (err <= 0) {
+						err = 0;
+						break;
 					}
 				}
 			}

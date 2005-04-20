@@ -79,7 +79,7 @@ void state_sysop_menu(User *usr, char c) {
 			}
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
-				"<hotkey>Create new room");
+				"Create new <hotkey>Room");
 
 			if (usr->curr_room->number >= SPECIAL_ROOMS)
 				Put(usr, "                   <white>Ctrl-<hotkey>D<magenta>elete Room\n");
@@ -87,7 +87,7 @@ void state_sysop_menu(User *usr, char c) {
 				Put(usr, "\n");
 
 			if (PARAM_HAVE_CATEGORY)
-				Put(usr, "Manage cate<hotkey>gories\n");
+				Put(usr, "Manage <hotkey>Categories\n");
 
 			Put(usr,
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
@@ -100,7 +100,7 @@ void state_sysop_menu(User *usr, char c) {
 				"\n"
 			);
 			if (reboot_timer != NULL)
-				Print(usr, "<white>Ctrl-<hotkey>R<magenta>eboot <white>(in progress)<magenta>         Cancel <hotkey>Reboot\n");
+				Print(usr, "<white>Ctrl-<hotkey>R<magenta>eboot <white>(in progress)<magenta>         Cancel Reb<hotkey>oot\n");
 			else
 				Put(usr, "<white>Ctrl-<hotkey>R<magenta>eboot\n");
 
@@ -133,8 +133,8 @@ void state_sysop_menu(User *usr, char c) {
 			read_more(usr);
 			Return;
 
-		case 'c':
-		case 'C':
+		case 'r':
+		case 'R':
 			Put(usr, "<white>Create room\n");
 			CALL(usr, STATE_CREATE_ROOM);
 			Return;
@@ -143,6 +143,15 @@ void state_sysop_menu(User *usr, char c) {
 			if (usr->curr_room->number >= SPECIAL_ROOMS) {
 				Put(usr, "<white>Delete room\n");
 				CALL(usr, STATE_DELETE_ROOM_NAME);
+				Return;
+			}
+			break;
+
+		case 'c':
+		case 'C':
+			if (PARAM_HAVE_CATEGORY) {
+				Put(usr, "<white>Categories\n");
+				CALL(usr, STATE_CATEGORIES_MENU);
 				Return;
 			}
 			break;
@@ -207,8 +216,8 @@ void state_sysop_menu(User *usr, char c) {
 			CALL(usr, STATE_REBOOT_TIME);
 			Return;
 
-		case 'r':
-		case 'R':
+		case 'o':
+		case 'O':
 			if (reboot_timer != NULL) {
 				Put(usr, "<white>Cancel reboot\n"
 					"<red>Reboot cancelled\n"
@@ -274,15 +283,6 @@ void state_sysop_menu(User *usr, char c) {
 					CURRENT_STATE(usr);
 					Return;
 				}
-			}
-			break;
-
-		case 'g':
-		case 'G':
-			if (PARAM_HAVE_CATEGORY) {
-				Put(usr, "<white>Categories\n");
-				CALL(usr, STATE_CATEGORIES_MENU);
-				Return;
 			}
 			break;
 	}
