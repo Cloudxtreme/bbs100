@@ -158,18 +158,21 @@ void state_config_menu(User *usr, char c) {
 
 		case 'w':
 		case 'W':
+		case KEY_CTRL('W'):
 			Put(usr, "<white>Who list\n");
 			CALL(usr, STATE_CONFIG_WHO);
 			Return;
 
 		case 'o':
 		case 'O':
+		case KEY_CTRL('O'):
 			Put(usr, "<white>Options\n");
 			CALL(usr, STATE_CONFIG_OPTIONS);
 			Return;
 
 		case 'q':
 		case 'Q':
+		case KEY_CTRL('Q'):
 			if (PARAM_HAVE_QUICK_X) {
 				CALL(usr, STATE_QUICKLIST_PROMPT);
 				Return;
@@ -1076,16 +1079,23 @@ void state_config_options(User *usr, char c) {
 
 			Print(usr, "\n<magenta>"
 				"<hotkey>Beep on message arrival              <white>%s<magenta>\n"
-				"<hotkey>Rooms beep on new postings           <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
+				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
+				"<hotkey>Follow up mode (auto reply)          <white>%s<magenta>\n"
 				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_X_DISABLED) ? "Disabled" : "Enabled",
+				(usr->flags & USR_FOLLOWUP) ? "On" : "Off",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No"
 			);
-			Print(usr,
+			Print(usr, "\n"
+				"<hotkey>Rooms beep on new postings           <white>%s<magenta>\n"
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
+
+				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
+			);
+			Print(usr, "\n"
 				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
 				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
 				"\n"
@@ -1114,6 +1124,30 @@ void state_config_options(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case 'm':
+		case 'M':
+			usr->flags ^= USR_X_DISABLED;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Print(usr, "<white>%s message reception\n", (usr->flags & USR_X_DISABLED) ? "Disable" : "Enable");
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'f':
+		case 'F':
+			usr->flags ^= USR_FOLLOWUP;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Print(usr, "<white>%s follow up mode\n", (usr->flags & USR_FOLLOWUP) ? "Enable" : "Disable");
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'h':
+		case 'H':
+			Put(usr, "<white>Hold message mode when busy\n");
+			usr->flags ^= USR_HOLD_BUSY;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'r':
 		case 'R':
 			Put(usr, "<white>Beep on new postings\n");
@@ -1126,14 +1160,6 @@ void state_config_options(User *usr, char c) {
 		case 'N':
 			Put(usr, "<white>Show room number\n");
 			usr->flags ^= USR_ROOMNUMBERS;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
-
-		case 'h':
-		case 'H':
-			Put(usr, "<white>Hold message mode when busy\n");
-			usr->flags ^= USR_HOLD_BUSY;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
 			Return;

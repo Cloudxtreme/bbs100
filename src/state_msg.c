@@ -1111,30 +1111,39 @@ Rcv_Remove_Recipient:
 
 void spew_BufferedMsg(User *usr) {
 StringList *sl;
-BufferedMsg *m;
+BufferedMsg *m, *m_next;
+int printed;
 
 	if (usr == NULL)
 		return;
 
 	Enter(spew_BufferedMsg);
 
-	while(usr->held_msgs != NULL) {
-		m = usr->held_msgs;
+/*
+	one-shot messages are received 'out of order'
+	This is because they are system messages that you do not want to wait
+	for until after you've gone through all the auto-reply Xs
+*/
+	printed = 0;
+	for(m = usr->held_msgs; m != NULL; m = m_next) {
+		m_next = m->next;
 
-		usr->held_msgs = usr->held_msgs->next;
-		if (usr->held_msgs != NULL)
-			usr->held_msgs->prev = NULL;
-
-		m->prev = m->next = NULL;
-
-		if (!m->flags) {							/* one shot message */
+		if (!m->flags) {						/* one shot message */
 			for(sl = m->msg; sl != NULL; sl = sl->next)
 				Print(usr, "%s\n", sl->str);
 
-			destroy_BufferedMsg(m);					/* one-shots are not remembered */
-			continue;
+			printed++;
+			remove_BufferedMsg(&usr->held_msgs, m);
+			destroy_BufferedMsg(m);				/* one-shots are not remembered */
 		}
-		add_BufferedMsg(&usr->history, m);			/* remember this message */
+	}
+	if (printed)
+		Put(usr, "<white>");					/* do color correction */
+
+	while(usr->held_msgs != NULL) {
+		m = usr->held_msgs;
+		remove_BufferedMsg(&usr->held_msgs, m);
+		add_BufferedMsg(&usr->history, m);		/* remember this message */
 
 		Put(usr, "<beep>");
 		print_buffered_msg(usr, m);
@@ -1463,12 +1472,33 @@ History_Reply_Code:
 */
 void state_held_history_prompt(User *usr, char c) {
 StringList *sl;
+BufferedMsg *m, *m_next;
 char prompt[PRINT_BUF];
+int printed;
 
 	if (usr == NULL)
 		return;
 
 	Enter(state_held_history_prompt);
+
+/*
+	spit out any received one-shot messages
+	it is not as elegant, but you have to deal with them some time
+*/
+	printed = 0;
+	for(m = usr->held_msgs; m != NULL; m = m_next) {
+		m_next = m->next;
+		if (!m->flags) {						/* one shot message */
+			for(sl = m->msg; sl != NULL; sl = sl->next)
+				Print(usr, "%s\n", sl->str);
+
+			printed++;
+			remove_BufferedMsg(&usr->held_msgs, m);
+			destroy_BufferedMsg(m);			/* one-shots are not remembered */
+		}
+	}
+	if (printed)
+		Put(usr, "<white>");				/* do color correction */
 
 	switch(c) {
 		case INIT_STATE:
@@ -1476,8 +1506,11 @@ char prompt[PRINT_BUF];
 				usr->held_msgp = usr->held_msgs;
 
 			while(usr->held_msgp != NULL) {
-				if (usr->held_msgp->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION))
+				if (usr->held_msgp->flags & (BUFMSG_XMSG|BUFMSG_EMOTE|BUFMSG_FEELING|BUFMSG_QUESTION))
 					break;
+				else
+					log_err("state_held_history_prompt(): BUG ! Got message with unchecked flags 0x%x", usr->held_msgp->flags);
+
 				usr->held_msgp = usr->held_msgp->prev;
 			}
 			if (usr->held_msgp == NULL) {

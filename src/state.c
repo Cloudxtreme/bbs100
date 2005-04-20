@@ -462,32 +462,27 @@ int i;
 			Return;
 
 		case 'X':
-			if (PARAM_HAVE_XMSGS) {
-				Put(usr, "<white>Toggle message reception\n");
-				if (is_guest(usr->name)) {
-					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot enable message reception\n", PARAM_NAME_GUEST);
-					break;
-				}
-				usr->flags ^= USR_X_DISABLED;
-				Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
-
-				if (usr->flags & USR_X_DISABLED) {
-					if (usr->flags & USR_HELPING_HAND) {
-						usr->flags &= ~USR_HELPING_HAND;
-						Put(usr, "<magenta>You are no longer available to help others\n");
-						usr->runtime_flags |= RTF_WAS_HH;
-					}
-				} else {
-					if (usr->runtime_flags & RTF_WAS_HH) {
-						usr->flags |= USR_HELPING_HAND;
-						usr->runtime_flags &= ~RTF_WAS_HH;
-						Put(usr, "<magenta>You are now available to help others\n");
-					}
-				}
+			Put(usr, "<white>Toggle message reception\n");
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot enable message reception\n", PARAM_NAME_GUEST);
 				break;
-			} else
-				if (PARAM_HAVE_DISABLED_MSG)
-					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
+			}
+			usr->flags ^= USR_X_DISABLED;
+			Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
+
+			if (usr->flags & USR_X_DISABLED) {
+				if (usr->flags & USR_HELPING_HAND) {
+					usr->flags &= ~USR_HELPING_HAND;
+					Put(usr, "<magenta>You are no longer available to help others\n");
+					usr->runtime_flags |= RTF_WAS_HH;
+				}
+			} else {
+				if (usr->runtime_flags & RTF_WAS_HH) {
+					usr->flags |= USR_HELPING_HAND;
+					usr->runtime_flags &= ~RTF_WAS_HH;
+					Put(usr, "<magenta>You are now available to help others\n");
+				}
+			}
 			break;
 
 		case 'l':

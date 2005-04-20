@@ -3,11 +3,11 @@ Changes as of April 23th 2005
 - added possibility to lock out all users or New users only
 - this is controlled by PARAM_HAVE_WRAPPER_ALL
 - fixed bug in the defaults for boolean parameters
-- config option menu
-- config option hold messages when busy
-- config option room beep
-- config option hide address from non-friends (by default enabled)
-- config option hide profile from enemies (by default enabled)
+- config option menu with some old options in it
+- new config option hold messages when busy
+- new config option room beep
+- new config option hide address from non-friends (by default enabled)
+- new config option hide profile from enemies (by default enabled)
 
 Changes as of April 19th 2005
 - IPv6 capable name resolver
