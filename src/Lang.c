@@ -119,12 +119,9 @@ int i;
 
 	i = 0;
 	for(lc = all_locales[i]; lc != NULL; i++, lc = all_locales[i])
-		if (!cstricmp(lang, lc->name)) {
-			log_debug("load_Language(): binding locale for %s", lang);
+		if (!cstricmp(lang, lc->name))
 			return lc;
-		}
 
-	log_debug("load_Language(): locale %s not found, binding to lc_system", lang);
 	return lc_system;
 }
 
@@ -145,15 +142,13 @@ struct dirent *direntp;
 
 	if ((l = in_Hash(languages, lang)) != NULL) {
 		l->refcount++;
-		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
 		return l;
 	}
-	log_debug("load_Language(): loading %s", lang);
 	sprintf(dirname, "%s/%s", PARAM_LANGUAGEDIR, lang);
 	path_strip(dirname);
 
 	if ((dirp = opendir(dirname)) == NULL) {
-		log_debug("load_Language(): failed to opendir %s", dirname);
+		log_err("load_Language(%s): failed to read directory %s", lang, dirname);
 		return NULL;
 	}
 	while((direntp = readdir(dirp)) != NULL) {
@@ -179,10 +174,8 @@ struct dirent *direntp;
 			l->locale = bind_locale(lang);
 
 		l->refcount = 1;
-		log_debug("load_Language(%s): refcount == %d", lang, l->refcount);
 /*		dump_Lang(l);	*/
-	} else
-		log_debug("load_Language(%s): failed to load", lang);
+	}
 	return l;
 }
 
@@ -196,11 +189,7 @@ Lang *l;
 		return;
 
 	l->refcount--;
-	log_debug("unload_Language(%s): refcount == %d", lang, l->refcount);
-
 	if (l->refcount <= 0) {
-		log_debug("unload_Language(): removing language %s", lang);
-
 		remove_Hash(languages, lang);
 		destroy_Lang(l);
 	}
@@ -217,8 +206,6 @@ int line_no, errors, continued, len, key;
 
 	if (filename == NULL)
 		return NULL;
-
-	log_debug("load_phrasebook(): loading %s", filename);
 
 	if ((l = add_language(lang)) == NULL) {
 		log_err("load_phrasebook(): failed to add language %s", lang);
@@ -311,8 +298,6 @@ char buf[PRINT_BUF];
 
 	if (filename == NULL)
 		return NULL;
-
-	log_debug("load_keymap(): loading %s", filename);
 
 	if ((l = add_language(lang)) == NULL) {
 		log_err("load_phrasebook(): failed to add language %s", lang);
