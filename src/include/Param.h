@@ -148,7 +148,8 @@
 #define PARAM_HAVE_LANGUAGE			param[PARAM_HAVE_N+14].val.bool
 #define PARAM_HAVE_CATEGORY			param[PARAM_HAVE_N+15].val.bool
 #define PARAM_HAVE_CYCLE_ROOMS		param[PARAM_HAVE_N+16].val.bool
-#define PARAM_HAVE_DISABLED_MSG		param[PARAM_HAVE_N+17].val.bool
+#define PARAM_HAVE_WRAPPER_ALL		param[PARAM_HAVE_N+17].val.bool
+#define PARAM_HAVE_DISABLED_MSG		param[PARAM_HAVE_N+18].val.bool
 
 
 #define DEFAULT_PORT_1234			"1234"	/* default port number (can also be a service name) */

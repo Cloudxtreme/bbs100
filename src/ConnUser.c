@@ -158,7 +158,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	}
 	strcpy(new_conn->hostname, new_conn->ipnum);
 
-	if (!allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
+	if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
 		write_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
 		log_auth("connection from %s closed by wrapper", new_conn->ipnum);
 		destroy_Conn(new_conn);

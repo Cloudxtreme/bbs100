@@ -1,6 +1,8 @@
 Changes as of April 23th 2005
 - IPv6 capable wrappers
 - added possibility to lock out all users or New users only
+- this is controlled by PARAM_HAVE_WRAPPER_ALL
+- fixed bug in the defaults for boolean parameters
 
 Changes as of April 19th 2005
 - IPv6 capable name resolver

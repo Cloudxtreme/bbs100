@@ -99,6 +99,7 @@ have_mailroom           yes
 have_language           yes
 have_category           yes
 have_cycle_rooms        yes
+have_wrapper_all        yes
 have_disabled_msg       yes
 
 # EOB

@@ -451,7 +451,7 @@ void state_categories_menu(User *usr, char c) {
 			CALL(usr, STATE_REMOVE_CATEGORY);
 			Return;
 	}
-	Put(usr, "\n<white>[<yellow>Categories<white>] # ");
+	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Categories<white># ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -721,17 +721,22 @@ int i;
 	if (c == INIT_STATE) {
 		char buf[MAX_LINE*3], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 
-		if (!allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
+		if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
 			Put(usr, "\n<red>WARNING<yellow>:<red> You are currently locked out yourself\n");
 
 		Print(usr, "\n<yellow> 1 <white>Add new wrapper\n");
 		i = 2;
 		for(w = AllWrappers; w != NULL; w = w->next) {
-			sprintf(buf, "<yellow>%2d <white>%s%s %s/%s",
-				i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
-				(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
-				print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags)
-			);
+			if (PARAM_HAVE_WRAPPER_ALL)
+				sprintf(buf, "<yellow>%2d <white>%s%s %s/%s",
+					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
+					(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
+					print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags));
+			else
+				sprintf(buf, "<yellow>%2d <white>%s %s/%s",
+					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
+					print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags));
+
 			if (w->comment != NULL)
 				Print(usr, "%-40s <cyan># %s\n", buf, w->comment);
 			else
@@ -788,8 +793,6 @@ int i;
 				Return;
 			}
 			usr->read_lines = i-2;
-
-			Put(usr, "<white>Edit wrapper\n");
 		}
 		CALL(usr, STATE_EDIT_WRAPPER);
 	}
@@ -824,29 +827,28 @@ char buf[MAX_LINE];
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			if (!allow_one_Wrapper(w, usr->conn->ipnum, WRAPPER_ALL_USERS))
+			if (PARAM_HAVE_WRAPPER_ALL && !allow_one_Wrapper(w, usr->conn->ipnum, WRAPPER_ALL_USERS))
 				Put(usr, "\n<red>WARNING<yellow>:<red> You are locking yourself out\n");
 
 			Print(usr, "<magenta>\n"
-				"<hotkey>Allow/deny connection        <white>%s<magenta>\n"
-				"This rule applies <hotkey>to ...     <white>%s<magenta>\n",
-				(w->flags & WRAPPER_ALLOW) ? "Allow" : "Deny",
-				(w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only"
-			);
-			Print(usr,
-				"<hotkey>IP address                   <white>%s<magenta>\n",
-				print_inet_addr(w->addr, buf, w->flags)
-			);
-			Print(usr,
-				"IP <hotkey>mask                      <white>%s<magenta>\n",
-				print_inet_mask(w->mask, buf, w->flags)
-			);
+				"<hotkey>Allow/deny connection        <white>%s<magenta>\n",
+				(w->flags & WRAPPER_ALLOW) ? "Allow" : "Deny");
+
+			if (PARAM_HAVE_WRAPPER_ALL)
+				Print(usr, "This rule applies <hotkey>to ...     <white>%s<magenta>\n",
+					(w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
+
+			Print(usr, "<hotkey>IP address                   <white>%s<magenta>\n",
+				print_inet_addr(w->addr, buf, w->flags));
+
+			Print(usr, "IP <hotkey>mask                      <white>%s<magenta>\n",
+				print_inet_mask(w->mask, buf, w->flags));
+
 			Print(usr,
 				"<hotkey>Comment                      <cyan>%s<magenta>\n"
 				"\n"
-				"Add <hotkey>new wrapper              <hotkey>Delete this wrapper\n"
-				"\n"
-				"<white>[<yellow>Edit wrapper<white>] # ",
+				"Add <hotkey>new wrapper              <hotkey>Delete this wrapper\n",
+
 				(w->comment == NULL) ? "" : w->comment
 			);
 			break;
@@ -868,11 +870,14 @@ char buf[MAX_LINE];
 
 		case 't':
 		case 'T':
-			w->flags ^= WRAPPER_APPLY_ALL;
-			Print(usr, "<white>Apply to %s\n", (w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
-			usr->runtime_flags |= RTF_WRAPPER_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			if (PARAM_HAVE_WRAPPER_ALL) {
+				w->flags ^= WRAPPER_APPLY_ALL;
+				Print(usr, "<white>Apply to %s\n", (w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
+				usr->runtime_flags |= RTF_WRAPPER_EDITED;
+				CURRENT_STATE(usr);
+				Return;
+			}
+			break;
 
 		case 'i':
 		case 'I':
@@ -920,6 +925,7 @@ char buf[MAX_LINE];
 			RET(usr);
 			Return;
 	}
+	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Wrapper<white># ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2771,10 +2777,10 @@ void state_features_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			Print(usr, "\n<magenta>"
-				"e<hotkey>Xpress Messages     <white>%-3s<magenta>        Quic<hotkey>k X messaging    <white>%s<magenta>\n"
-				"<hotkey>Emotes               <white>%-3s<magenta>        <hotkey>Talked To list       <white>%s<magenta>\n"
-				"<hotkey>Feelings             <white>%-3s<magenta>        H<hotkey>old message mode    <white>%s<magenta>\n"
-				"<hotkey>Questions            <white>%-3s<magenta>        Follow-<hotkey>up mode       <white>%s<magenta>\n",
+				"e<hotkey>Xpress Messages      <white>%-3s<magenta>        Quic<hotkey>k X messaging     <white>%s<magenta>\n"
+				"<hotkey>Emotes                <white>%-3s<magenta>        <hotkey>Talked To list        <white>%s<magenta>\n"
+				"<hotkey>Feelings              <white>%-3s<magenta>        H<hotkey>old message mode     <white>%s<magenta>\n"
+				"<hotkey>Questions             <white>%-3s<magenta>        Follow-<hotkey>up mode        <white>%s<magenta>\n",
 
 				(PARAM_HAVE_XMSGS == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_QUICK_X == PARAM_FALSE) ? "off" : "on",
@@ -2789,10 +2795,10 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_FOLLOWUP == PARAM_FALSE) ? "off" : "on"
 			);
 			Print(usr,
-				"X <hotkey>Reply              <white>%-3s<magenta>        Ch<hotkey>at rooms           <white>%s<magenta>\n"
-				"Multi <hotkey>Language       <white>%-3s<magenta>        <hotkey>Home> room           <white>%s<magenta>\n"
-				"<hotkey>Calendar             <white>%-3s<magenta>        <hotkey>Mail> room           <white>%s<magenta>\n"
-				"<hotkey>World clock          <white>%-3s<magenta>        Cate<hotkey>gories           <white>%s<magenta>\n",
+				"X <hotkey>Reply               <white>%-3s<magenta>        Ch<hotkey>at rooms            <white>%s<magenta>\n"
+				"Multi <hotkey>Language        <white>%-3s<magenta>        <hotkey>Home> room            <white>%s<magenta>\n"
+				"<hotkey>Calendar              <white>%-3s<magenta>        <hotkey>Mail> room            <white>%s<magenta>\n"
+				"<hotkey>World clock           <white>%-3s<magenta>        Cate<hotkey>gories            <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
@@ -2807,9 +2813,11 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on"
 			);
 			Print(usr,
-				"C<hotkey>ycle unread rooms   <white>%-3s<magenta>        <hotkey>Display warnings     <white>%s<magenta>\n",
+				"C<hotkey>ycle unread rooms    <white>%-3s<magenta>        Wrapper a<hotkey>pply to All  <white>%s<magenta>\n"
+				"<hotkey>Display warnings      <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CYCLE_ROOMS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			break;
@@ -2902,6 +2910,10 @@ void state_features_menu(User *usr, char c) {
 		case 'd':
 		case 'D':
 			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
+
+		case 'p':
+		case 'P':
+			TOGGLE_FEATURE(PARAM_HAVE_WRAPPER_ALL, "wrapper apply to All");
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
 	Return;

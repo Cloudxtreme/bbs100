@@ -1098,7 +1098,6 @@ int edit_number(User *usr, char c) {
 			Put(usr, "\n");
 			return EDIT_RETURN;
 
-
 		case KEY_BS:
 			if (usr->edit_pos) {
 				usr->edit_pos--;
@@ -1115,6 +1114,10 @@ int edit_number(User *usr, char c) {
 			break;
 
 		default:
+			if (c == ' ' && !usr->edit_pos) {
+				Put(usr, "\n");
+				return EDIT_BREAK;
+			}
 			if (c >= '0' && c <= '9') {
 				if (usr->edit_pos < MAX_NAME-1) {
 					usr->edit_buf[usr->edit_pos++] = c;
@@ -1147,7 +1150,6 @@ int edit_octal_number(User *usr, char c) {
 			Put(usr, "\n");
 			return EDIT_RETURN;
 
-
 		case KEY_BS:
 			if (usr->edit_pos) {
 				usr->edit_pos--;
@@ -1164,6 +1166,10 @@ int edit_octal_number(User *usr, char c) {
 			break;
 
 		default:
+			if (c == ' ' && !usr->edit_pos) {
+				Put(usr, "\n");
+				return EDIT_BREAK;
+			}
 			if (c >= '0' && c <= '7') {
 				if (usr->edit_pos < MAX_NAME-1) {
 					usr->edit_buf[usr->edit_pos++] = c;
