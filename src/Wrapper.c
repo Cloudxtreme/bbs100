@@ -144,7 +144,6 @@ err_load_Wrapper:
 Wrapper *make_Wrapper(char *allowbuf, char *netbuf, char *maskbuf, char *comment) {
 Wrapper *w;
 int flags, addr[8], mask[8];
-char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 
 	if (allowbuf == NULL || !*allowbuf
 		|| netbuf == NULL || !*netbuf
@@ -181,7 +180,6 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 		destroy_Wrapper(w);
 		return NULL;
 	}
-	log_debug("load_Wrapper(): got %s/%s", print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags));
 	return w;
 }
 
@@ -226,103 +224,56 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 int allow_Wrapper(char *ipnum, int apply_all) {
 Wrapper *w;
 int addr[8], flags;
-char buf[MAX_LINE];
 
 	flags = 0;
-	log_debug("allow_Wrapper(%s): reading inet addr", ipnum);
 	if (read_inet_addr(ipnum, addr, &flags)) {
 		log_err("allow_Wrapper(): read_inet_addr(%s) failed (bug?), allowing connection", ipnum);
 		return 1;
 	}
-	log_debug("allow_Wrapper(%s): ipnum reads as %s", ipnum, print_inet_addr(addr, buf, 0));
-
 /* see if it is explicitly allowed */
 	for(w = AllWrappers; w != NULL; w = w->next) {
 		if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
 			continue;
 
-		if (w->flags & WRAPPER_ALLOW) {
-
-/* w->addr == (addr & w->mask) */
-
-			log_debug("allow_Wrapper(%s): checking for allow against %s", ipnum, print_inet_addr(w->addr, buf, 0));
-			log_debug("allow_Wrapper(%s): with mask %s", ipnum, print_inet_mask(w->mask, buf, 0));
-
-			if (mask_Wrapper(w, addr)) {
-				log_debug("allow_Wrapper(%s): explicitly allowed", ipnum);
-				return 1;
-			}
-		}
+		if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+			return 1;
 	}
 /* see if denied */
 	for(w = AllWrappers; w != NULL; w = w->next) {
-		if (!(w->flags & WRAPPER_ALLOW)) {
-			if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
-				continue;
+		if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
+			continue;
 
-/* w->net == (addr & w->mask) */
-
-			log_debug("allow_Wrapper(%s): checking for deny against %s", ipnum, print_inet_addr(w->addr, buf, 0));
-			log_debug("allow_Wrapper(%s): with mask %s", ipnum, print_inet_mask(w->mask, buf, 0));
-
-			if (mask_Wrapper(w, addr)) {
-				log_debug("allow_Wrapper(%s): denied", ipnum);
-				return 0;
-			}
-		}
+		if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+			return 0;
 	}
-/* default: allowed */
-	log_debug("allow_Wrapper(%s): default: allowed", ipnum);
+/* default: allow */
 	return 1;
 }
 
 int allow_one_Wrapper(Wrapper *w, char *ipnum, int apply_all) {
 int addr[8], flags;
-char buf[MAX_LINE];
 
 	if (w == NULL)
 		return 1;
 
 	flags = 0;
-	log_debug("allow_Wrapper(%s): reading inet addr", ipnum);
 	if (read_inet_addr(ipnum, addr, &flags)) {
 		log_err("allow_one_Wrapper(): read_inet_addr(%s) failed (bug?), allowing connection", ipnum);
 		return 1;
 	}
-	log_debug("allow_one_Wrapper(%s): ipnum reads as %s", ipnum, print_inet_addr(addr, buf, 0));
-
 /* see if it is explicitly allowed */
 
 	if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
 		return 1;
 
-	if (w->flags & WRAPPER_ALLOW) {
+	if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+		return 1;
 
-/* w->addr == (addr & w->mask) */
-
-		log_debug("allow_one_Wrapper(%s): checking for allow against %s", ipnum, print_inet_addr(w->addr, buf, 0));
-		log_debug("allow_one_Wrapper(%s): with mask %s", ipnum, print_inet_mask(w->mask, buf, 0));
-
-		if (mask_Wrapper(w, addr)) {
-			log_debug("allow_one_Wrapper(%s): explicitly allowed", ipnum);
-			return 1;
-		}
-	}
 /* see if denied */
-	if (!(w->flags & WRAPPER_ALLOW)) {
+	if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+		return 0;
 
-/* w->net == (addr & w->mask) */
-
-		log_debug("allow_one_Wrapper(%s): checking for deny against %s", ipnum, print_inet_addr(w->addr, buf, 0));
-		log_debug("allow_one_Wrapper(%s): with mask %s", ipnum, print_inet_mask(w->mask, buf, 0));
-
-		if (mask_Wrapper(w, addr)) {
-			log_debug("allow_one_Wrapper(%s): denied", ipnum);
-			return 0;
-		}
-	}
-/* default: allowed */
-	log_debug("allow_one_Wrapper(%s): default: allowed", ipnum);
+/* default: allow */
 	return 1;
 }
 
