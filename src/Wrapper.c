@@ -373,7 +373,7 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			|| a2 < 0 || a2 > 255
 			|| a3 < 0 || a3 > 255
 			|| a4 < 0 || a4 > 255) {
-			log_err("read_inet_addr(): invalid IPv4 address %s", addr);
+			log_err("read_inet_addr(): invalid IPv4 address %s", ipnum);
 			return -1;
 		}
 		ip6[0] = ip6[1] = ip6[2] = ip6[3] = ip6[4] = 0;
@@ -385,13 +385,13 @@ char addr[MAX_LINE], *p, *startp, *endp;
 	}
 	*flags = 0;
 	if (cstrchr(addr, ':') == NULL) {
-		log_err("read_inet_addr(): invalid address '%s'\n", addr);
+		log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 		return -1;
 	}
 	if (*addr == '[') {
 		l = strlen(addr)-1;
 		if (addr[l] != ']') {
-			log_err("read_inet_addr(): missing ']' at the end of address '%s'\n", addr);
+			log_err("read_inet_addr(): missing ']' at the end of address '%s'\n", ipnum);
 			return -1;
 		}
 		addr[l] = 0;
@@ -408,7 +408,7 @@ char addr[MAX_LINE], *p, *startp, *endp;
 		*p = 0;
 		num_colons++;
 		if (num_colons > 7) {
-			log_err("read_inet_addr(): too many colons in '%s'\n", addr);
+			log_err("read_inet_addr(): too many colons in '%s'\n", ipnum);
 			return -1;
 		}
 		p++;
@@ -416,31 +416,31 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			abbrev = 1;
 			num_colons++;
 			if (num_colons > 7) {
-				log_err("read_inet_addr(): too many colons in '%s'\n", addr);
+				log_err("read_inet_addr(): too many colons in '%s'\n", ipnum);
 				return -1;
 			}
 			p++;
 			if (*p == ':') {
-				log_err("read_inet_addr(): invalid syntax '%s'\n", addr);
+				log_err("read_inet_addr(): invalid syntax '%s'\n", ipnum);
 				return -1;
 			}
 			if (!*startp)
 				break;
 		}
 		if (!*startp) {
-			log_err("read_inet_addr(): invalid address '%s'\n", addr);
+			log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 			return -1;
 		}
 		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
 			if (i != 6) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
 				return -1;
 			}
 			if (a1 < 0 || a1 > 255
 				|| a2 < 0 || a2 > 255
 				|| a3 < 0 || a3 > 255
 				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", addr);
+				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
 				return -1;
 			}
 			ip6[6] = (a1 << 8) | a2;
@@ -450,11 +450,16 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			*flags |= WRAPPER_MIXED;
 			break;
 		} else {
-			ip6[i++] = (int)strtoul(startp, &endp, 16);
+			ip6[i] = (int)strtoul(startp, &endp, 16);
 			if (*endp) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			if (ip6[i] < 0 || ip6[i] > 0xffff) {
+				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
+				return -1;
+			}
+			i++;
 		}
 		if (abbrev)			/* found a double colon */
 			break;
@@ -464,14 +469,14 @@ char addr[MAX_LINE], *p, *startp, *endp;
 	if (p == NULL && startp != NULL && *startp) {
 		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
 			if (i != 6) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
 				return -1;
 			}
 			if (a1 < 0 || a1 > 255
 				|| a2 < 0 || a2 > 255
 				|| a3 < 0 || a3 > 255
 				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", addr);
+				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
 				return -1;
 			}
 			ip6[6] = (a1 << 8) | a2;
@@ -480,11 +485,16 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			num_colons++;
 			*flags |= WRAPPER_MIXED;
 		} else {
-			ip6[i++] = (int)strtoul(startp, &endp, 16);
+			ip6[i] = (int)strtoul(startp, &endp, 16);
 			if (*endp) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			if (ip6[i] < 0 || ip6[i] > 0xffff) {
+				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
+				return -1;
+			}
+			i++;
 		}
 	}
 	if (p != NULL && *p) {
@@ -498,25 +508,25 @@ char addr[MAX_LINE], *p, *startp, *endp;
 				return -1;
 			}
 			if (abbrev && p > startp && p[-1] == ':') {
-				log_err("read_inet_addr(): multiple double colons in '%s'\n", addr);
+				log_err("read_inet_addr(): multiple double colons in '%s'\n", ipnum);
 				return -1;
 			}
 			*p = 0;
 			p++;
 			if (!*p) {
-				log_err("read_inet_addr(): invalid address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 				return -1;
 			}
 			if (sscanf(p, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
 				if (i != 7) {
-					log_err("read_inet_addr(): invalid mixed address '%s'\n", addr);
+					log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
 					return -1;
 				}
 				if (a1 < 0 || a1 > 255
 					|| a2 < 0 || a2 > 255
 					|| a3 < 0 || a3 > 255
 					|| a4 < 0 || a4 > 255) {
-					log_err("read_inet_addr(): invalid mixed address %s", addr);
+					log_err("read_inet_addr(): invalid mixed address %s", ipnum);
 					return -1;
 				}
 				ip6[6] = (a1 << 8) | a2;
@@ -525,11 +535,16 @@ char addr[MAX_LINE], *p, *startp, *endp;
 				num_colons++;
 				*flags |= WRAPPER_MIXED;
 			} else {
-				ip6[i--] = (int)strtoul(p, &endp, 16);
+				ip6[i] = (int)strtoul(p, &endp, 16);
 				if (*endp) {
-					log_err("read_inet_addr(): invalid characters in address '%s'\n", addr);
+					log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 					return -1;
 				}
+				if (ip6[i] < 0 || ip6[i] > 0xffff) {
+					log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
+					return -1;
+				}
+				i--;
 			}
 			if (i < 0)
 				break;
@@ -538,14 +553,14 @@ char addr[MAX_LINE], *p, *startp, *endp;
 	if (p == NULL && startp != NULL && *startp && i >= 0) {
 		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
 			if (i != 7) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
 				return -1;
 			}
 			if (a1 < 0 || a1 > 255
 				|| a2 < 0 || a2 > 255
 				|| a3 < 0 || a3 > 255
 				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", addr);
+				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
 				return -1;
 			}
 			ip6[6] = (a1 << 8) | a2;
@@ -554,15 +569,20 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			num_colons++;
 			*flags |= WRAPPER_MIXED;
 		} else {
-			ip6[i--] = (int)strtoul(startp, &endp, 16);
+			ip6[i] = (int)strtoul(startp, &endp, 16);
 			if (*endp) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", addr);
+				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			if (ip6[i] < 0 || ip6[i] > 0xffff) {
+				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
+				return -1;
+			}
+			i--;
 		}
 	}
 	if (!abbrev && num_colons != 7) {
-		log_err("read_inet_addr(): too few colons in '%s'\n", addr);
+		log_err("read_inet_addr(): too few colons in '%s'\n", ipnum);
 		return -1;
 	}
 	return 0;
