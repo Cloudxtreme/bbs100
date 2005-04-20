@@ -65,6 +65,7 @@ void destroy_Conn(Conn *c) {
 	c->conn_type->destroy(c);
 
 	if (c->sock > 0) {
+		flush_Conn(c);
 		shutdown(c->sock, 2);
 		close(c->sock);
 		c->sock = -1;

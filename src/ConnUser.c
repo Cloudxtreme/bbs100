@@ -33,6 +33,7 @@
 #include "state_login.h"
 #include "Param.h"
 #include "ConnResolv.h"
+#include "Wrapper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -156,19 +157,13 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		strcpy(new_conn->ipnum, "0.0.0.0");
 	}
 	strcpy(new_conn->hostname, new_conn->ipnum);
-/*
-	This code is commented out, but if you want to lock out sites
-	permanently (rather than for new users only), I suggest you
-	enable this code
-	(inspired by Richard of MatrixBBS)
 
-	if (!allow_Wrapper(wrappers, new_conn->ipnum)) {
-		Put(new_user, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
+	if (!allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
+		write_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
 		log_auth("connection from %s closed by wrapper", new_conn->ipnum);
 		destroy_Conn(new_conn);
 		Return;
 	}
-*/
 	sprintf(buf, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
 		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
 

@@ -218,9 +218,9 @@ void state_new_account_yesno(User *usr, char c) {
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			if (!allow_Wrapper(wrappers, usr->conn->ipnum)) {
+			if (!allow_Wrapper(usr->conn->ipnum, WRAPPER_NEW_USER)) {
 				Put(usr, "\nSorry, but you're connecting from a site that has been "
-					"locked out of the BBS.\n\n");
+					"locked out of the BBS.\n");
 				close_connection(usr, "new user login closed by wrapper");
 				Return;
 			}
@@ -615,9 +615,9 @@ int r;
 	Enter(state_new_login_prompt);
 
 	if (c == INIT_STATE) {
-		if (!allow_Wrapper(wrappers, usr->conn->ipnum)) {
+		if (!allow_Wrapper(usr->conn->ipnum, WRAPPER_NEW_USER)) {
 			Put(usr, "\nSorry, but you're connecting from a site that has been "
-				"locked out of the BBS.\n\n");
+				"locked out of the BBS.\n");
 			close_connection(usr, "new user login closed by wrapper");
 			Return;
 		}

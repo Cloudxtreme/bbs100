@@ -81,10 +81,11 @@ const char *inet_error(int err) {
 }
 
 /*
-	WARNING: returns a static buffer
+	WARNING: buf should be large enough
 */
-char *inet_printaddr(char *host, char *service) {
-static char buf[MAX_LINE*2];
+char *inet_printaddr(char *host, char *service, char *buf) {
+	if (buf == NULL)
+		return NULL;
 
 	if (cstrchr(host, ':') != NULL)
 		sprintf(buf, "[%s]:%s", host, service);
@@ -105,7 +106,7 @@ static char buf[MAX_LINE*2];
 int inet_listen(char *service, ConnType *conn_type) {
 int sock, err, optval, retval;
 struct addrinfo hints, *res, *ai_p;
-char host[NI_MAXHOST], serv[NI_MAXSERV];
+char host[NI_MAXHOST], serv[NI_MAXSERV], buf[NI_MAXHOST+NI_MAXSERV+MAX_LINE];
 Conn *conn;
 
 	retval = -1;
@@ -151,7 +152,7 @@ Conn *conn;
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv));
+				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv, buf));
 			else
 				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
 
@@ -170,7 +171,7 @@ Conn *conn;
 		if (listen(sock, MAX_NEWCONNS) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv));
+				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv, buf));
 			else
 				log_err("inet_listen(%s): listen() failed", service);
 			close(sock);
@@ -192,7 +193,7 @@ Conn *conn;
 
 		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-			log_msg("listening on %s", inet_printaddr(host, serv));
+			log_msg("listening on %s", inet_printaddr(host, serv, buf));
 		else
 			log_msg("listening on port %s", service);
 

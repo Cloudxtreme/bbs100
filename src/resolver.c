@@ -98,6 +98,8 @@ struct addrinfo hints, *res, *ai_p;
 		}
 	}
 	freeaddrinfo(res);
+
+	fprintf(stderr, "D %s => %s", ip, host);
 	return 0;
 }
 

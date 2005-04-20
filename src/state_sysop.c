@@ -71,7 +71,7 @@ void state_sysop_menu(User *usr, char c) {
 		case INIT_STATE:
 /* I had to put the save_Wrapper() code here due to needed strange construction.. :P */
 			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
-				if (save_Wrapper(wrappers, PARAM_HOSTS_ACCESS_FILE))
+				if (save_Wrapper(AllWrappers, PARAM_HOSTS_ACCESS_FILE))
 					Perror(usr, "failed to save wrappers");
 
 				log_msg("SYSOP %s edited wrappers", usr->name);
@@ -719,19 +719,19 @@ int i;
 	Enter(state_add_wrapper);
 
 	if (c == INIT_STATE) {
-		unsigned long n, m;
-		char buf[MAX_LINE];
+		char buf[MAX_LINE*3], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
+
+		if (!allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
+			Put(usr, "\n<red>WARNING<yellow>:<red> You are currently locked out yourself\n");
 
 		Print(usr, "\n<yellow> 1 <white>Add new wrapper\n");
 		i = 2;
-		for(w = wrappers; w != NULL; w = w->next) {
-			n = w->net;
-			m = w->mask;
-			sprintf(buf, "<yellow>%2d <white>%s %lu.%lu.%lu.%lu/%lu.%lu.%lu.%lu",
-				i, (w->allow == 0) ? "deny" : "allow",
-				(n >> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255,
-				(m >> 24) & 255, (m >> 16) & 255, (m >> 8) & 255, m & 255);
-
+		for(w = AllWrappers; w != NULL; w = w->next) {
+			sprintf(buf, "<yellow>%2d <white>%s%s %s/%s",
+				i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
+				(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
+				print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags)
+			);
 			if (w->comment != NULL)
 				Print(usr, "%-40s <cyan># %s\n", buf, w->comment);
 			else
@@ -747,6 +747,8 @@ int i;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
+		int j;
+
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
@@ -758,19 +760,26 @@ int i;
 			Return;
 		}
 		if (i == 1) {
+			int addr[8], mask[8];
+
 			Put(usr, "<white>Add wrapper\n");
-			if ((w = new_Wrapper(0, 0UL, 0xffffffffUL, NULL)) == NULL) {
+			if ((w = new_Wrapper()) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
 				Return;
 			}
-			add_Wrapper(&wrappers, w);
-			usr->read_lines = list_Count(wrappers) - 1;
+			memset(addr, 0, sizeof(int)*8);
+
+			for(j = 0; j < 8; j++)
+				mask[j] = 0xffff;
+
+			set_Wrapper(w, 0, addr, mask, NULL);
+			add_Wrapper(&AllWrappers, w);
+			usr->read_lines = list_Count(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		} else {
-			int j = 2;
-
-			for(w = wrappers; w != NULL && j < i; w = w->next)
+			j = 2;
+			for(w = AllWrappers; w != NULL && j < i; w = w->next)
 				j++;
 
 			if (w == NULL) {
@@ -792,15 +801,16 @@ int i;
 */
 void state_edit_wrapper(User *usr, char c) {
 Wrapper *w;
-int i = 0;
-unsigned long n, m;
+int i, addr[8], mask[8];
+char buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
 
 	Enter(state_edit_wrapper);
 
-	for(w = wrappers; w != NULL; w = w->next) {
+	i = 0;
+	for(w = AllWrappers; w != NULL; w = w->next) {
 		if (i == usr->read_lines)
 			break;
 		i++;
@@ -814,22 +824,29 @@ unsigned long n, m;
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			n = w->net;
-			m = w->mask;
+			if (!allow_one_Wrapper(w, usr->conn->ipnum, WRAPPER_ALL_USERS))
+				Put(usr, "\n<red>WARNING<yellow>:<red> You are locking yourself out\n");
+
 			Print(usr, "<magenta>\n"
-				"<hotkey>Allow/deny access            <white>[%s]<magenta>\n"
-				"<hotkey>IP net address               <white>%lu.%lu.%lu.%lu<magenta>\n",
-				(w->allow == 0) ? "Deny" : "Allow",
-				(n >> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255
+				"<hotkey>Allow/deny connection        <white>%s<magenta>\n"
+				"This rule applies <hotkey>to ...     <white>%s<magenta>\n",
+				(w->flags & WRAPPER_ALLOW) ? "Allow" : "Deny",
+				(w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only"
 			);
 			Print(usr,
-				"IP <hotkey>mask                      <white>%lu.%lu.%lu.%lu<magenta>\n"
+				"<hotkey>IP address                   <white>%s<magenta>\n",
+				print_inet_addr(w->addr, buf, w->flags)
+			);
+			Print(usr,
+				"IP <hotkey>mask                      <white>%s<magenta>\n",
+				print_inet_mask(w->mask, buf, w->flags)
+			);
+			Print(usr,
 				"<hotkey>Comment                      <cyan>%s<magenta>\n"
 				"\n"
 				"Add <hotkey>new wrapper              <hotkey>Delete this wrapper\n"
 				"\n"
 				"<white>[<yellow>Edit wrapper<white>] # ",
-				(m >> 24) & 255, (m >> 16) & 255, (m >> 8) & 255, m & 255,
 				(w->comment == NULL) ? "" : w->comment
 			);
 			break;
@@ -843,15 +860,23 @@ unsigned long n, m;
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Allow/deny\n");
-			w->allow ^= 1;
+			Put(usr, "<white>Allow/deny connection\n");
+			w->flags ^= WRAPPER_ALLOW;
+			usr->runtime_flags |= RTF_WRAPPER_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 't':
+		case 'T':
+			w->flags ^= WRAPPER_APPLY_ALL;
+			Print(usr, "<white>Apply to %s\n", (w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 			CURRENT_STATE(usr);
 			Return;
 
 		case 'i':
 		case 'I':
-			Put(usr, "<white>IP net address\n");
+			Put(usr, "<white>IP address\n");
 			CALL(usr, STATE_IPADDR_WRAPPER);
 			Return;
 
@@ -870,13 +895,18 @@ unsigned long n, m;
 		case 'n':
 		case 'N':
 			Put(usr, "<white>Add new wrapper\n");
-			if ((w = new_Wrapper(0, 0UL, 0xffffffffUL, NULL)) == NULL) {
+			if ((w = new_Wrapper()) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
 				Return;
 			}
-			add_Wrapper(&wrappers, w);
-			usr->read_lines = list_Count(wrappers) - 1;
+			memset(addr, 0, sizeof(int)*8);
+			for(i = 0; i < 8; i++)
+				mask[i] = 0xffff;
+
+			set_Wrapper(w, 0, addr, mask, NULL);
+			add_Wrapper(&AllWrappers, w);
+			usr->read_lines = list_Count(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 			CURRENT_STATE(usr);
 			Return;
@@ -884,7 +914,7 @@ unsigned long n, m;
 		case 'd':
 		case 'D':
 			Put(usr, "<white>Delete\n");
-			remove_Wrapper(&wrappers, w);
+			remove_Wrapper(&AllWrappers, w);
 			destroy_Wrapper(w);
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 			RET(usr);
@@ -902,7 +932,7 @@ int r;
 	Enter(state_ipaddr_wrapper);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter IP net address<yellow>: ");
+		Put(usr, "<green>Enter IP address<yellow>: ");
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
@@ -911,13 +941,14 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		Wrapper *w;
-		int i = 0, n1, n2, n3, n4;
+		int i;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
-		for(w = wrappers; w != NULL; w = w->next) {
+		i = 0;
+		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (i == usr->read_lines)
 				break;
 			i++;
@@ -927,27 +958,11 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (sscanf(usr->edit_buf, "%d.%d.%d.%d", &n1, &n2, &n3, &n4) != 4) {
-			Put(usr, "<red>Malformed IP net address (should be in standard dot notation)\n");
+		if (read_inet_addr(usr->edit_buf, w->addr, &w->flags)) {
+			Put(usr, "<red>Bad IP net address (use numeric notation)\n");
 			RET(usr);
 			Return;
 		}
-		if (n1 < 0 || n1 > 255
-			|| n2 < 0 || n2 > 255
-			|| n3 < 0 || n3 > 255
-			|| n4 < 0 || n4 > 255) {
-			Put(usr, "<red>Malformed IP net address\n");
-			RET(usr);
-			Return;
-		}
-		w->net = n1;
-		w->net <<= 8;
-		w->net |= n2;
-		w->net <<= 8;
-		w->net |= n3;
-		w->net <<= 8;
-		w->net |= n4;
-
 		usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		RET(usr);
 	}
@@ -972,13 +987,14 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		Wrapper *w;
-		int i = 0, m1, m2, m3, m4;
+		int i;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
-		for(w = wrappers; w != NULL; w = w->next) {
+		i = 0;
+		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (i == usr->read_lines)
 				break;
 			i++;
@@ -988,27 +1004,11 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (sscanf(usr->edit_buf, "%d.%d.%d.%d", &m1, &m2, &m3, &m4) != 4) {
-			Put(usr, "<red>Malformed IP mask (should be in standard dot notation)\n");
+		if (read_inet_mask(usr->edit_buf, w->mask, w->flags)) {
+			Put(usr, "<red>Bad IP mask\n");
 			RET(usr);
 			Return;
 		}
-		if (m1 < 0 || m1 > 255
-			|| m2 < 0 || m2 > 255
-			|| m3 < 0 || m3 > 255
-			|| m4 < 0 || m4 > 255) {
-			Put(usr, "<red>Malformed IP mask\n");
-			RET(usr);
-			Return;
-		}
-		w->mask = m1;
-		w->mask <<= 8;
-		w->mask |= m2;
-		w->mask <<= 8;
-		w->mask |= m3;
-		w->mask <<= 8;
-		w->mask |= m4;
-
 		usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		RET(usr);
 	}
@@ -1039,7 +1039,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		for(w = wrappers; w != NULL; w = w->next) {
+		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (i == usr->read_lines)
 				break;
 			i++;

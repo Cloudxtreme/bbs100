@@ -101,7 +101,7 @@ struct stat statbuf;
 		if (rename("core", filename) == -1)
 			printf("savecore(): failed to save core as %s\n\n", filename);
 		else
-			printf("saving core as %s ...\n\n", filename);
+			printf("saving core as %s\n\n", filename);
 	}
 	return 0;
 }
@@ -299,7 +299,7 @@ char buf[256];
 	printf("%s\n", (load_HostMap(PARAM_HOSTMAP_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading hosts_access %s ... ", PARAM_HOSTS_ACCESS_FILE);
-	printf("%s\n", (load_Wrapper(&wrappers, PARAM_HOSTS_ACCESS_FILE) != 0) ? "failed" : "ok");
+	printf("%s\n", (load_Wrapper(PARAM_HOSTS_ACCESS_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading banished_file %s ... ", PARAM_BANISHED_FILE);
 	printf("%s\n", ((banished = load_StringList(PARAM_BANISHED_FILE)) == NULL) ? "failed" : "ok");
