@@ -47,7 +47,6 @@
 
 #define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)
 #define CURRENT_INPUT(x,y)			(x)->conn->callstack->ip((x)->conn->data, (y))
-#define RET_LOOP(x)					do { (x)->conn->state |= CONN_LOOPING; POP(x); } while(0)
 
 
 #ifndef CONN_DEFINED

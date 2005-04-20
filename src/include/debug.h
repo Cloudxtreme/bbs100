@@ -34,15 +34,27 @@
 #include <stdio.h>
 
 #ifdef __GNUC__
-  #define TD		log_debug("%d %s %s()\n", __LINE__, __FILE__, __PRETTY_FUNCTION__);
+  #define TD		log_debug("%d %s %s()", __LINE__, __FILE__, __PRETTY_FUNCTION__);
 #else
-  #define TD		log_debug("%d %s\n", __LINE__, __FILE__);
+  #define TD		log_debug("%d %s", __LINE__, __FILE__);
 #endif
 
-#define TDC			log_debug("%d\n", __LINE__);
+#define TDC			log_debug("%d", __LINE__);
 
-#define Enter(x)	do { if (debug_stackp < DEBUG_STACK_SIZE) debug_stack[debug_stackp++] = (unsigned long)(x); } while(0)
-#define Leave		do { if (debug_stackp) debug_stack[--debug_stackp] = 0UL; } while(0)
+#define Enter(x)	do {										\
+		if (debug_stackp < DEBUG_STACK_SIZE)					\
+			debug_stack[debug_stackp++] = (unsigned long)(x);	\
+	} while(0)
+
+#define Leave		do {						\
+		if (debug_stackp > 0)					\
+			debug_stack[--debug_stackp] = 0UL;	\
+	} while(0)
+
+/*
+	blast, no do { } while construct possible here, making this
+	a 'dangerous' macro
+*/
 #define Return		Leave; return
 
 #define DEBUG_STACK_SIZE	64
@@ -58,7 +70,7 @@ void dump_debug_stack(void);
 #define TDC
 #define Enter(x)
 
-#define Return		return
+#define Return	return
 
 #endif	/* DEBUG */
 

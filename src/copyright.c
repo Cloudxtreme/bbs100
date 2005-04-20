@@ -44,7 +44,7 @@ char *print_copyright(int full, char *progname, char *buf) {
 		strcat(buf, " ");
 		strcat(buf, progname);
 	}
-	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2004\n");
+	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2005\n");
 
 	if (full) {
 		struct utsname uts;

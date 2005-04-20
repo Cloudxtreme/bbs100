@@ -38,7 +38,7 @@ int debug_stackp = 0;
 void dump_debug_stack(void) {
 int i;
 
-	fprintf(stderr, "TD \n"
+	fprintf(stderr, "TD\n"
 		"TD *** debug stack dump ***\n");
 
 	if (symbol_table != NULL) {
@@ -57,7 +57,7 @@ int i;
 			fprintf(stderr, "TD   %08lx\n", debug_stack[i]);
 	}
 	fprintf(stderr, "TD *** dump completed ***\n"
-		"TD \n");
+		"TD\n");
 }
 
 #endif	/* DEBUG */

@@ -528,17 +528,17 @@ char buf[MAX_PATHLEN], *p;
 }
 
 
-
-#define LOAD_USERSTRING(x)									\
-	Free(x);												\
-	(x) = NULL;												\
-	if (Fgets(f, buf, MAX_LINE) == NULL)					\
-		goto err_load_User;									\
-	cstrip_line(buf);										\
-	if (*buf) {												\
-		if (((x) = cstrdup(buf)) == NULL)					\
+#define LOAD_USERSTRING(x)	do {							\
+		Free(x);											\
+		(x) = NULL;											\
+		if (Fgets(f, buf, MAX_LINE) == NULL)				\
 			goto err_load_User;								\
-	}
+		cstrip_line(buf);									\
+		if (*buf) {											\
+			if (((x) = cstrdup(buf)) == NULL)				\
+				goto err_load_User;							\
+		}													\
+	} while(0)
 
 #define LOAD_USER_SKIPLIST									\
 	while(Fgets(f, buf, MAX_LINE) != NULL) {				\
@@ -572,9 +572,8 @@ int i;
 		cstrip_line(buf);
 		strncpy(usr->passwd, buf, MAX_CRYPTED_PASSWD-1);
 		usr->passwd[MAX_CRYPTED_PASSWD-1] = 0;
-	} else {
+	} else
 		LOAD_USER_SKIPLINES(1);
-	}
 
 	if (flags & LOAD_USER_ADDRESS) {
 		LOAD_USERSTRING(usr->real_name);
@@ -589,9 +588,8 @@ int i;
 		LOAD_USERSTRING(usr->doing);
 		LOAD_USERSTRING(usr->reminder);
 		LOAD_USERSTRING(usr->default_anon);
-	} else {
+	} else
 		LOAD_USER_SKIPLINES(12);
-	}
 
 /* from_ip */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -718,9 +716,8 @@ int i;
 				usr->colors[i] = i;
 		if (usr->colors[8] < 0 || usr->colors[8] > 7)
 			usr->colors[8] = 3;
-	} else {
+	} else
 		LOAD_USER_SKIPLINES(12);
-	}
 
 /* load joined rooms */
 	if (flags & LOAD_USER_ROOMS) {
@@ -796,9 +793,8 @@ int i;
 			add_Joined(&usr->rooms, j);
 			unload_Room(r);
 		}
-	} else {
+	} else
 		LOAD_USER_SKIPLIST;
-	}
 
 /* quicklist */
 	if (flags & LOAD_USER_QUICKLIST) {
@@ -813,9 +809,8 @@ int i;
 			if (*buf && user_exists(buf))
 				usr->quick[i] = cstrdup(buf);
 		}
-	} else {
+	} else
 		LOAD_USER_SKIPLINES(10);
-	}
 		
 /* friendlist */
 	if (flags & LOAD_USER_FRIENDLIST) {
@@ -831,9 +826,8 @@ int i;
 				usr->friends = add_StringList(&usr->friends, sl);
 		}
 		usr->friends = rewind_StringList(usr->friends);
-	} else {
+	} else
 		LOAD_USER_SKIPLIST;
-	}
 
 /* enemy list */
 	if (flags & LOAD_USER_ENEMYLIST) {
@@ -849,17 +843,15 @@ int i;
 				usr->enemies = add_StringList(&usr->enemies, sl);
 		}
 		usr->enemies = rewind_StringList(usr->enemies);
-	} else {
+	} else
 		LOAD_USER_SKIPLIST;
-	}
 
 /* info */
 	if (flags & LOAD_USER_INFO) {
 		listdestroy_StringList(usr->info);
 		usr->info = Fgetlist(f);
-	} else {
+	} else
 		LOAD_USER_SKIPLIST;
-	}
 
 /* time displacement */
 	if (flags & LOAD_USER_DATA) {

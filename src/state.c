@@ -1718,7 +1718,8 @@ StringList *sl;
 			destroy_StringList(sl);
 		}
 	}
-	RET_LOOP(usr);			/* return back into the loop */
+	usr->conn->state |= CONN_LOOPING;
+	POP(usr);
 	Return;
 }
 
