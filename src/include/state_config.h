@@ -48,6 +48,7 @@
 #define STATE_CHANGE_PASSWORD			state_change_password
 #define STATE_CONFIG_ANON				state_config_anon
 #define STATE_CONFIG_WHO				state_config_who
+#define STATE_CONFIG_OPTIONS			state_config_options
 #define STATE_CONFIG_WHO_SYSOP			state_config_who_sysop
 #define STATE_CONFIG_TIMEZONE			state_config_timezone
 #define STATE_SELECT_TZ_CONTINENT		state_select_tz_continent
@@ -79,6 +80,7 @@ void state_change_password(User *, char);
 void state_config_anon(User *, char);
 void state_config_who(User *, char);
 void state_config_who_sysop(User *, char);
+void state_config_options(User *, char);
 void state_config_timezone(User *, char);
 void state_select_tz_continent(User *, char);
 void state_select_tz_city(User *, char);

@@ -69,6 +69,8 @@ User *usr;
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
+/* set sane defaults */
+	usr->flags = USR_HIDE_ADDRESS|USR_HIDE_INFO;
 	default_colors(usr);
 	return usr;
 }

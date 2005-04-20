@@ -83,7 +83,7 @@ char filename[MAX_PATHLEN];
 
 Room *load_Mail(char *username) {
 Room *r;
-char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
+char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
 
 	if (username == NULL || !*username || !user_exists(username))
 		return NULL;
@@ -100,7 +100,9 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = MAIL_ROOM;
-	sprintf(r->name, "%s Mail", name_with_s(NULL, username, name_buf));
+	sprintf(roomname, "%s Mail", name_with_s(NULL, username, name_buf));
+	Free(r->name);
+	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->invited, username) == NULL)
 		add_StringList(&r->invited, new_StringList(username));
@@ -115,7 +117,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 
 Room *load_Home(char *username) {
 Room *r;
-char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
+char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
 
 	if (username == NULL || !*username || !user_exists(username))
 		return NULL;
@@ -132,7 +134,9 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = HOME_ROOM;
-	sprintf(r->name, "%s Home", name_with_s(NULL, username, name_buf));
+	sprintf(roomname, "%s Home", name_with_s(NULL, username, name_buf));
+	Free(r->name);
+	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->room_aides, username) == NULL)
 		add_StringList(&r->room_aides, new_StringList(username));

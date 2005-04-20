@@ -70,7 +70,10 @@
 #define USR_SHOW_ENEMIES		0x1000		/* show enemies in who list */
 #define USR_12HRCLOCK			0x2000		/* show time in 12 hr clock format with AM/PM */
 #define USR_HOLD_BUSY			0x4000		/* hold message mode when busy */
-#define USR_ALL					0x7fff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_ROOMBEEP			0x8000		/* rooms beep when new postings are made */
+#define USR_HIDE_ADDRESS		0x10000		/* hide address info from non-friends */
+#define USR_HIDE_INFO			0x20000		/* hide profile info from enemies */
+#define USR_ALL					0x3ffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */

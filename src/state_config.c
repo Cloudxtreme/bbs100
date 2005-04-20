@@ -52,7 +52,8 @@ void state_config_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Terminal settings\n"
-				"<hotkey>Doing                        Customize <hotkey>Who list\n"
+				"Profile <hotkey>info                 Customize <hotkey>Who list\n"
+				"<hotkey>Doing                        <hotkey>Options\n"
 				"<hotkey>Reminder"
 			);
 			if (PARAM_HAVE_QUICK_X)
@@ -61,8 +62,8 @@ void state_config_menu(User *usr, char c) {
 				Put(usr, "\n");
 
 			Put(usr,
-				"Profile <hotkey>info                 <hotkey>Friends/<hotkey>Enemies\n"
-				"Default an<hotkey>onymous alias      Time <hotkey>Zone\n"
+				"Anon<hotkey>ymous alias              Time <hotkey>Zone\n"
+				"<hotkey>Friends and <hotkey>Enemies\n"
 				"<hotkey>Password                     <hotkey>Help\n"
 			);
 			break;
@@ -80,35 +81,10 @@ void state_config_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
-		case 'h':
-		case 'H':
-		case '?':
-			Put(usr, "<white>Help\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_HELP_CONFIG)) == NULL) {
-				Put(usr, "<red>No help available\n");
-				break;
-			}
-			PUSH(usr, STATE_PRESS_ANY_KEY);
-			read_more(usr);
-			Return;
-
 		case 'a':
 		case 'A':
 			Put(usr, "<white>Address\n");
 			CALL(usr, STATE_CONFIG_ADDRESS);
-			Return;
-
-		case 'd':
-		case 'D':
-			Put(usr, "<white>Doing\n");
-			CALL(usr, STATE_CONFIG_DOING);
-			Return;
-
-		case 'r':
-		case 'R':
-			Put(usr, "<white>Reminder\n");
-			CALL(usr, STATE_CONFIG_REMINDER);
 			Return;
 
 		case 'i':
@@ -136,10 +112,36 @@ void state_config_menu(User *usr, char c) {
 			}
 			Return;
 
-		case 'o':
-		case 'O':
+		case 'd':
+		case 'D':
+			Put(usr, "<white>Doing\n");
+			CALL(usr, STATE_CONFIG_DOING);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<white>Reminder\n");
+			CALL(usr, STATE_CONFIG_REMINDER);
+			Return;
+
+		case 'y':
+		case 'Y':
 			Put(usr, "<white>Default anonymous alias\n");
 			CALL(usr, STATE_CONFIG_ANON);
+			Return;
+
+		case 'f':
+		case 'F':
+		case '>':
+			Put(usr, "<white>Friends\n");
+			CALL(usr, STATE_FRIENDLIST_PROMPT);
+			Return;
+
+		case 'e':
+		case 'E':
+		case '<':
+			Put(usr, "<white>Enemies\n");
+			CALL(usr, STATE_ENEMYLIST_PROMPT);
 			Return;
 
 		case 'p':
@@ -160,6 +162,12 @@ void state_config_menu(User *usr, char c) {
 			CALL(usr, STATE_CONFIG_WHO);
 			Return;
 
+		case 'o':
+		case 'O':
+			Put(usr, "<white>Options\n");
+			CALL(usr, STATE_CONFIG_OPTIONS);
+			Return;
+
 		case 'q':
 		case 'Q':
 			if (PARAM_HAVE_QUICK_X) {
@@ -168,26 +176,24 @@ void state_config_menu(User *usr, char c) {
 			}
 			break;
 
-		case 'f':
-		case 'F':
-		case '>':
-			Put(usr, "<white>Friends\n");
-			CALL(usr, STATE_FRIENDLIST_PROMPT);
-			Return;
-
-		case 'e':
-		case 'E':
-		case '<':
-			Put(usr, "<white>Enemies\n");
-			CALL(usr, STATE_ENEMYLIST_PROMPT);
-			Return;
-
 		case 'z':
 		case 'Z':
 			Put(usr, "<white>Time Zone\n");
 			CALL(usr, STATE_CONFIG_TIMEZONE);
 			Return;
 
+		case 'h':
+		case 'H':
+		case '?':
+			Put(usr, "<white>Help\n");
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_HELP_CONFIG)) == NULL) {
+				Put(usr, "<red>No help available\n");
+				break;
+			}
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_more(usr);
+			Return;
 	}
 	Print(usr, "\n<white>[<yellow>Config<white>] %c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -555,13 +561,11 @@ int r;
 
 			Free(usr->tmpbuf[TMP_PASSWD]);
 			usr->tmpbuf[TMP_PASSWD] = NULL;
-
 			RET(usr);
 		}
 	}
 	Return;
 }
-
 
 
 void state_quicklist_prompt(User *usr, char c) {
@@ -662,18 +666,11 @@ void state_config_terminal(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Print(usr, "<normal>\n"
-				"<hotkey>T<magenta>erminal emulation ANSI/dumb            <white>[<yellow>%s<white>]\n"
-				"<magenta>Make use of bold/bright <hotkey>attribute       <white>[<yellow>%-3s<white>]\n",
+			Print(usr, "<normal><magenta>\n"
+				"<hotkey>Terminal emulation                   <white>%s<magenta>\n"
+				"Make use of bold/bright <hotkey>attribute    <white>%-3s<magenta>\n",
 				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
 				(usr->flags & USR_BOLD) ? "Yes"  : "No"
-			);
-			Print(usr, "<hotkey>B<magenta>eep on arrival of messages             <white>[<yellow>%-3s<white>]\n"
-				"<magenta>Show room <hotkey>number in room prompt         <white>[<yellow>%-3s<white>]\n"
-				"<hotkey>H<magenta>4ck3rZ M0De                            <white>[<yellow>%-3s<white>]\n",
-				(usr->flags & USR_BEEP) ? "Yes"  : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
-				(usr->flags & USR_HACKERZ) ? "Oh Yeah!" : "No"
 			);
 			if (usr->flags & USR_ANSI) {
 				Print(usr, "\n"
@@ -727,30 +724,6 @@ void state_config_terminal(User *usr, char c) {
 			Put(usr, "<white>Attribute bold/bright<default>\n");
 			usr->flags ^= USR_BOLD;
 			Put(usr, "<normal>");
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
-
-		case 'b':
-		case 'B':
-			Put(usr, "<white>Beep\n");
-			usr->flags ^= USR_BEEP;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
-
-		case 'n':
-		case 'N':
-			Put(usr, "<white>Show room number\n");
-			usr->flags ^= USR_ROOMNUMBERS;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
-
-		case 'h':
-		case 'H':
-			usr->flags ^= USR_HACKERZ;
-			Put(usr, "<white>Hackers mode\n");
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
 			Return;
@@ -1088,6 +1061,108 @@ void state_config_who(User *usr, char c) {
 void state_config_who_sysop(User *usr, char c) {
 	POP(usr);
 	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Who<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+}
+
+
+void state_config_options(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_options);
+
+	switch(c) {
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			Print(usr, "\n<magenta>"
+				"<hotkey>Beep on message arrival              <white>%s<magenta>\n"
+				"<hotkey>Rooms beep on new postings           <white>%s<magenta>\n"
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
+				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n",
+
+				(usr->flags & USR_BEEP) ? "Yes" : "No",
+				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No"
+			);
+			Print(usr,
+				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
+				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
+				"\n"
+				"Hackers m<hotkey>0de                         <white>%s<magenta>\n",
+
+				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No",
+				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No",
+				(usr->flags & USR_HACKERZ) ? "Oh Yeah" : "Off"
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "\n\n<white>Config menu\n");
+			RET(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+			Put(usr, "<white>Beep\n");
+			usr->flags ^= USR_BEEP;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "<white>Beep on new postings\n");
+			usr->flags ^= USR_ROOMBEEP;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'n':
+		case 'N':
+			Put(usr, "<white>Show room number\n");
+			usr->flags ^= USR_ROOMNUMBERS;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'h':
+		case 'H':
+			Put(usr, "<white>Hold message mode when busy\n");
+			usr->flags ^= USR_HOLD_BUSY;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "<white>Hide address information\n");
+			usr->flags ^= USR_HIDE_ADDRESS;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'p':
+		case 'P':
+			Put(usr, "<white>Hide profile information\n");
+			usr->flags ^= USR_HIDE_INFO;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case '0':
+			usr->flags ^= USR_HACKERZ;
+			Put(usr, "<white>Hackers mode\n");
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+	}
+	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Options<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
 }
 
 

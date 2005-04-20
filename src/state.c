@@ -589,6 +589,11 @@ int i;
 
 		case 'B':
 			usr->flags ^= USR_BEEP;
+			if (usr->flags & USR_BEEP)
+				usr->flags |= USR_ROOMBEEP;
+			else
+				usr->flags &= ~USR_ROOMBEEP;
+
 			Print(usr, "<white>Toggle beeping\n"
 				"<magenta>Messages will %s beep on arrival\n", (usr->flags & USR_BEEP) ? "now" : "<yellow>not<magenta>");
 			break;
@@ -1386,8 +1391,8 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		User *u = NULL;
-		int allocated = 0;
-		char total_buf[MAX_LINE], *p;
+		int allocated = 0, visible;
+		char total_buf[MAX_LINE], *p, *hidden;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -1475,38 +1480,47 @@ int r;
 
 		usr->more_text = add_String(&usr->more_text, "<white>%s", u->name);
 
-		if (u->real_name != NULL && u->real_name[0])
-			usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->real_name);
-
-		if (u->street != NULL && u->street[0])
-			usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->street);
-
-		if (u->zipcode != NULL && u->zipcode[0]) {
-			if (u->city != NULL && u->city[0])
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s %s", u->zipcode, u->city);
+		visible = 1;
+		hidden = "";
+		if (((u->flags & USR_HIDE_ADDRESS) && in_StringList(u->friends, usr->name) == NULL)
+			|| ((u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)) {
+			if ((usr->runtime_flags & RTF_SYSOP) || u == usr)
+				hidden = "<white>(hidden) ";
 			else
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->zipcode);
-		} else
+				visible = 0;
+		}
+		if (u->real_name != NULL && u->real_name[0] && visible)
+			usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->real_name);
+
+		if (u->street != NULL && u->street[0] && visible)
+			usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->street);
+
+		if (u->zipcode != NULL && u->zipcode[0] && visible) {
 			if (u->city != NULL && u->city[0])
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->city);
-
-		if (u->state != NULL && u->state[0]) {
-			if (u->country != NULL && u->country[0])
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s, %s", u->state, u->country);
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s %s", hidden, u->zipcode, u->city);
 			else
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->state);
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->zipcode);
 		} else
+			if (u->city != NULL && u->city[0] && visible)
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->city);
+
+		if (u->state != NULL && u->state[0] && visible) {
 			if (u->country != NULL && u->country[0])
-				usr->more_text = add_String(&usr->more_text, "<yellow>%s", u->country);
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s, %s", hidden, u->state, u->country);
+			else
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->state);
+		} else
+			if (u->country != NULL && u->country[0] && visible)
+				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s", hidden, u->country);
 
-		if (u->phone != NULL && u->phone[0])
-			usr->more_text = add_String(&usr->more_text, "<green>Phone: <yellow>%s", u->phone);
+		if (u->phone != NULL && u->phone[0] && visible)
+			usr->more_text = add_String(&usr->more_text, "%s<green>Phone: <yellow>%s", hidden, u->phone);
 
-		if (u->email != NULL && u->email[0])
-			usr->more_text = add_String(&usr->more_text, "<green>E-mail: <cyan>%s", u->email);
+		if (u->email != NULL && u->email[0] && visible)
+			usr->more_text = add_String(&usr->more_text, "%s<green>E-mail: <cyan>%s", hidden, u->email);
 
-		if (u->www != NULL && u->www[0])
-			usr->more_text = add_String(&usr->more_text, "<green>WWW: <cyan>%s", u->www);
+		if (u->www != NULL && u->www[0] && visible)
+			usr->more_text = add_String(&usr->more_text, "%s<green>WWW: <cyan>%s", hidden, u->www);
 
 		if (u->doing != NULL && u->doing[0]) {
 			if (allocated)
@@ -1548,19 +1562,24 @@ int r;
 		if (in_StringList(u->friends, usr->name) != NULL)
 			usr->more_text = add_String(&usr->more_text, "<green>You are on <yellow>%s<green> friend list", name_with_s(usr, u->name, total_buf));
 
-		if (in_StringList(u->enemies, usr->name) != NULL)
+		visible = 1;
+		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
+			&& (u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)
+			visible = 0;
+
+		if (visible && in_StringList(u->enemies, usr->name) != NULL)
 			usr->more_text = add_String(&usr->more_text, "<yellow>%s<red> does not wish to receive any messages from you", u->name);
 
-		if (u->info != NULL) {
+		if (visible && u->info != NULL) {
 			usr->more_text = add_StringList(&usr->more_text, new_StringList("<green>"));
 			if ((usr->more_text->next = copy_StringList(u->info)) != NULL)
 				usr->more_text->next->prev = usr->more_text;
 		}
 		if (usr->message != NULL && usr->message->anon[0]
 			&& !strcmp(usr->message->from, u->name)
-			&& strcmp(usr->message->from, usr->name)) {
+			&& strcmp(usr->message->from, usr->name))
 			log_msg("%s profiled anonymous post", usr->name);
-		}
+
 		if (allocated) {
 			destroy_Conn(u->conn);
 			u->conn = NULL;
@@ -2768,11 +2787,15 @@ int read_it = 1;
 	if (read_it) {
 		if (j != NULL) {
 			idx = unwind_MsgIndex(r->msgs);
-			if (idx != NULL && idx->number > j->last_read)
+			if (idx != NULL && idx->number > j->last_read) {
+				status[0] = (char)color_by_name("cyan");
 				status[1] = '*';
+			}
 		} else {
-			if (r->msgs != NULL)			/* there are messages in this room */
+			if (r->msgs != NULL) {			/* there are messages in this room */
+				status[0] = (char)color_by_name("cyan");
 				status[1] = '*';
+			}
 		}
 	}
 	sprintf(buf, "%c%c%c %3u %c%s%c>",

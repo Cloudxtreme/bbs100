@@ -2634,7 +2634,8 @@ User *u;
 		if (u->runtime_flags & RTF_BUSY)
 			continue;
 
-		Put(u, "<beep>");
+		if (u->flags & USR_ROOMBEEP)
+			Put(u, "<beep>");
 	}
 	Return;
 }
