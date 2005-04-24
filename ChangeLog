@@ -8,6 +8,7 @@ Changes as of April 23th 2005
 - new config option room beep
 - new config option hide address from non-friends (by default enabled)
 - new config option hide profile from enemies (by default enabled)
+- profile and login now show for how long someone was online last time
 
 Changes as of April 19th 2005
 - IPv6 capable name resolver

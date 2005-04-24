@@ -519,9 +519,9 @@ unsigned long num;
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>User statistics"));
 
-	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s<green>", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Oldest user is <white>%s<green>,", stats.oldest);
-	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s<green>", print_total_time(usr, stats.oldest_age, date_buf));
+	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
+	usr->more_text = add_String(&usr->more_text, "<green>Oldest user is <white>%s<green>,", stats.oldest);
+	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s", print_total_time(usr, stats.oldest_age, date_buf));
 	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
 
 /*
@@ -546,21 +546,21 @@ unsigned long num;
 	if ((l = strlen(stats.most_read)) > w)
 		w = l;
 
-	usr->more_text = add_String(&usr->more_text, "Most logins are by                     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_logins, print_number(usr, stats.logins, date_buf));
+	usr->more_text = add_String(&usr->more_text, "<green>Most logins are by                     <white>%-*s<green> : <yellow>%s", w, stats.most_logins, print_number(usr, stats.logins, date_buf));
 	if (PARAM_HAVE_XMSGS) {
-		usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xsent, print_number(usr, stats.xsent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s<green>", w, stats.most_xrecv, print_number(usr, stats.xrecv, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s", w, stats.most_xsent, print_number(usr, stats.xsent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s", w, stats.most_xrecv, print_number(usr, stats.xrecv, date_buf));
 	}
 	if (PARAM_HAVE_EMOTES) {
-		usr->more_text = add_String(&usr->more_text, "Most emotes were sent by               <white>%-*s<green> : <yellow>%s<green>", w, stats.most_esent, print_number(usr, stats.esent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "Most emotes were received by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_erecv, print_number(usr, stats.erecv, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s", w, stats.most_esent, print_number(usr, stats.esent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s", w, stats.most_erecv, print_number(usr, stats.erecv, date_buf));
 	}
 	if (PARAM_HAVE_FEELINGS) {
-		usr->more_text = add_String(&usr->more_text, "Most Feelings were sent by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_fsent, print_number(usr, stats.fsent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "Most Feelings were received by         <white>%-*s<green> : <yellow>%s<green>", w, stats.most_frecv, print_number(usr, stats.frecv, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s", w, stats.most_fsent, print_number(usr, stats.fsent, date_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s", w, stats.most_frecv, print_number(usr, stats.frecv, date_buf));
 	}
-	usr->more_text = add_String(&usr->more_text, "Most messages were posted by           <white>%-*s<green> : <yellow>%s<green>", w, stats.most_posted, print_number(usr, stats.posted, date_buf));
-	usr->more_text = add_String(&usr->more_text, "Most messages were read by             <white>%-*s<green> : <yellow>%s<green>", w, stats.most_read, print_number(usr, stats.read, date_buf));
+	usr->more_text = add_String(&usr->more_text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s", w, stats.most_posted, print_number(usr, stats.posted, date_buf));
+	usr->more_text = add_String(&usr->more_text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s", w, stats.most_read, print_number(usr, stats.read, date_buf));
 
 	if (!is_guest(usr->name)) {
 		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));

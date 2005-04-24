@@ -375,6 +375,7 @@ char buf[MAX_PATHLEN], *p;
 		if (flags & LOAD_USER_DATA) {
 			FF1_LOAD_ULONG("birth", usr->birth);
 			FF1_LOAD_ULONG("last_logout", usr->last_logout);
+			FF1_LOAD_ULONG("last_online_time", usr->last_online_time);
 			FF1_LOAD_ULONG("logins", usr->logins);
 			FF1_LOAD_ULONG("total_time", usr->total_time);
 			FF1_LOAD_ULONG("xsent", usr->xsent);
@@ -925,6 +926,8 @@ File *f;
 	if (is_guest(usr->name))		/* don't save Guest user */
 		return 0;
 
+	usr->last_online_time = (unsigned long)rtc - (unsigned long)usr->login_time;
+
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
 	path_strip(filename);
 
@@ -966,6 +969,7 @@ StringList *sl;
 
 	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
 	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
+	Fprintf(f, "last_online_time=%lu", usr->last_online_time);
 	Fprintf(f, "flags=0x%x", usr->flags);
 	Fprintf(f, "logins=%lu", usr->logins);
 	Fprintf(f, "total_time=%lu", usr->total_time);

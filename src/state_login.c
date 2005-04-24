@@ -431,7 +431,7 @@ void state_go_online(User *usr, char c) {
 int num_users = 0, num_friends = 0, i, new_mail;
 Joined *j;
 User *u;
-char num_buf[25];
+char num_buf[25], exclaim[5];
 
 	if (usr == NULL)
 		return;
@@ -490,20 +490,33 @@ char num_buf[25];
 			usr->doing = cstrdup(buf);
 		}
 	}
-	Print(usr, "<green>This is your <yellow>%s<green> login\n", print_numberth(usr, usr->logins, num_buf));
+/* yell out on a hundredth login */
+	if (!(usr->logins % 100))
+		sprintf(exclaim, "!!!");
+	else
+		exclaim[0] = 0;
+	Print(usr, "<green>This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
 
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
 	note that new users do not have a last_logout time
 */
 	if (usr->last_logout > (time_t)0UL) {
-		char date_buf[MAX_LINE];
+		char date_buf[MAX_LINE], online_for[MAX_LINE+10];
+
+		if (usr->last_online_time > 0UL) {
+			int l;
+
+			l = sprintf(online_for, "%c for %c", color_by_name("green"), color_by_name("yellow"));
+			print_total_time(usr, usr->last_online_time, online_for+l);
+		} else
+			online_for[0] = 0;
 
 		if (usr->tmpbuf[TMP_FROM_HOST]) {
-			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout, date_buf));
+			Print(usr, "\n<green>Last login<yellow>: <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
 			Print(usr, "<green>From host<yellow>: %s\n", usr->tmpbuf[TMP_FROM_HOST]);
 		} else
-			Print(usr, "<green>Last login was on <cyan>%s\n", print_date(usr, usr->last_logout, date_buf));
+			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
 	}
 /* free the tmp buffers as they won't be used anymore for a long time */
 	for(i = 0; i < NUM_TMP; i++) {

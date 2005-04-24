@@ -140,7 +140,7 @@ struct User_tag {
 	char *timezone, *language;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
-	unsigned long logins, total_time;
+	unsigned long logins, total_time, last_online_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, posted, read;
 	unsigned int flags, runtime_flags;
 	int colors[9], color;

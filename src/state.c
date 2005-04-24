@@ -1415,8 +1415,8 @@ int r;
 			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
-				if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
+				Print(usr, "<green>Online for <cyan>%s", print_total_time(usr, (unsigned long)rtc - (unsigned long)u->login_time, total_buf));
+				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
 						Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
 					else
@@ -1524,9 +1524,17 @@ int r;
 				usr->more_text = add_String(&usr->more_text, "<green>Doing: <yellow>%s <cyan>%s", u->name, u->doing);
 		}
 		if (allocated) {
-			char date_buf[MAX_LINE];
+			char date_buf[MAX_LINE], online_for[MAX_LINE+10];
 
-			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s", print_date(usr, (time_t)u->last_logout, date_buf));
+			if (u->last_online_time > 0UL) {
+				int l;
+
+				l = sprintf(online_for, "%c for %c", color_by_name("green"), color_by_name("yellow"));
+				print_total_time(usr, u->last_online_time, online_for+l);
+			} else
+				online_for[0] = 0;
+
+			usr->more_text = add_String(&usr->more_text, "<green>Last online: <cyan>%s%s", print_date(usr, (time_t)u->last_logout, date_buf), online_for);
 			if (usr->runtime_flags & RTF_SYSOP)
 				usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
@@ -1535,10 +1543,10 @@ int r;
 		} else {
 /*
 	display for how long someone is online
-	print_total_time() by Richard of MatrixBBS
+	by Richard of MatrixBBS
 */
 			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
-			if (!strcmp(usr->name, u->name) || (usr->runtime_flags & RTF_SYSOP)) {
+			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
 					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->hostname, u->conn->ipnum);
 				else
