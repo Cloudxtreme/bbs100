@@ -73,6 +73,7 @@ typedef struct {
 
 void Put(User *, char *);
 void Out(User *, char *, int *);
+int word_len(char *);
 int hackerz_mode(int);
 int color_by_name(char *);
 int long_color_code(User *, char *, int *);

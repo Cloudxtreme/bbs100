@@ -73,7 +73,8 @@
 #define USR_ROOMBEEP			0x8000		/* rooms beep when new postings are made */
 #define USR_HIDE_ADDRESS		0x10000		/* hide address info from non-friends */
 #define USR_HIDE_INFO			0x20000		/* hide profile info from enemies */
-#define USR_ALL					0x3ffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_FORCE_TERM			0x40000		/* force terminal width and height */
+#define USR_ALL					0x7ffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -128,7 +129,7 @@ struct User_tag {
 
 	Conn *conn;
 
-	int edit_pos, read_lines, total_lines, crashed;
+	int edit_pos, read_lines, total_lines, crashed, term_width, term_height;
 
 	char edit_buf[MAX_LINE];
 

@@ -1717,7 +1717,7 @@ StringList *sl;
 				Return;
 			}
 			l = 0;
-			for(sl = usr->textp; l < usr->telnet->term_height-1 && sl != NULL;) {
+			for(sl = usr->textp; l < usr->term_height-1 && sl != NULL;) {
 				Print(usr, "%s\n", sl->str);
 				sl = sl->next;
 				usr->read_lines++;
@@ -1729,13 +1729,13 @@ StringList *sl;
 
 		case 'b':
 		case 'B':
-			for(l = 0; l < (usr->telnet->term_height * 2); l++) {
+			for(l = 0; l < (usr->term_height * 2); l++) {
 				if (usr->textp->prev != NULL) {
 					usr->textp = usr->textp->prev;
 					if (usr->read_lines)
 						usr->read_lines--;
 				} else {
-					if (l <= usr->telnet->term_height)
+					if (l <= usr->term_height)
 						l = -1;			/* user that's keeping 'b' pressed */
 					break;
 				}
@@ -1748,7 +1748,7 @@ StringList *sl;
 		case ' ':
 		case 'n':
 		case 'N':
-			for(l = 0; l < usr->telnet->term_height && usr->textp != NULL; l++) {
+			for(l = 0; l < usr->term_height && usr->textp != NULL; l++) {
 				Print(usr, "%s\n", usr->textp->str);
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -1767,7 +1767,7 @@ StringList *sl;
 		case KEY_BS:
 		case '-':
 		case '_':
-			for(l = 0; l < (usr->telnet->term_height+1); l++) {
+			for(l = 0; l < (usr->term_height+1); l++) {
 				if (usr->textp->prev != NULL) {
 					usr->textp = usr->textp->prev;
 					if (usr->read_lines)
@@ -1775,7 +1775,7 @@ StringList *sl;
 				} else
 					break;
 			}
-			for(l = 0; l < usr->telnet->term_height; l++) {
+			for(l = 0; l < usr->term_height; l++) {
 				if (usr->textp != NULL)
 					Print(usr, "%s\n", usr->textp->str);
 				else
@@ -1789,7 +1789,7 @@ StringList *sl;
 			usr->textp = usr->more_text;
 			usr->read_lines = 0;
 
-			for(l = 0; l < usr->telnet->term_height; l++) {
+			for(l = 0; l < usr->term_height; l++) {
 				if (usr->textp != NULL)
 					Print(usr, "%s\n", usr->textp->str);
 				else
@@ -1809,7 +1809,7 @@ StringList *sl;
 
 /* go one screen back */
 			l = 0;
-			while(sl != NULL && sl->prev != NULL && l < usr->telnet->term_height) {
+			while(sl != NULL && sl->prev != NULL && l < usr->term_height) {
 				sl = sl->prev;
 				l++;
 			}
@@ -1817,7 +1817,7 @@ StringList *sl;
 			usr->read_lines -= l;
 
 /* display it */
-			for(l = 0; l < usr->telnet->term_height; l++) {
+			for(l = 0; l < usr->term_height; l++) {
 				if (usr->textp != NULL)
 					Print(usr, "%s\n", usr->textp->str);
 				else
@@ -1888,7 +1888,7 @@ int r, l;
 
 	if (r == EDIT_BREAK) {
 		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height; sl = sl->prev)
+		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height; sl = sl->prev)
 			l++;
 		usr->textp = sl;
 		usr->read_lines -= l;
@@ -1899,7 +1899,7 @@ int r, l;
 		Put(usr, "<cr>                             <cr>");
 		if (!usr->edit_buf[0]) {
 			l = 0;
-			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height; sl = sl->prev)
+			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height; sl = sl->prev)
 				l++;
 			usr->textp = sl;
 			usr->read_lines -= l;
@@ -1908,7 +1908,7 @@ int r, l;
 		}
 /* always search from the top */
 		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height-1; sl = sl->prev)
+		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height-1; sl = sl->prev)
 			l++;
 
 		l = -l;
@@ -1944,7 +1944,7 @@ int r, l;
 
 	if (r == EDIT_BREAK) {
 		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height; sl = sl->prev)
+		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height; sl = sl->prev)
 			l++;
 		usr->textp = sl;
 		usr->read_lines -= l;
@@ -1955,7 +1955,7 @@ int r, l;
 		Put(usr, "<cr>                             <cr>");
 		if (!usr->edit_buf[0]) {
 			l = 0;
-			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height; sl = sl->prev)
+			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height; sl = sl->prev)
 				l++;
 			usr->textp = sl;
 			usr->read_lines -= l;
@@ -1964,7 +1964,7 @@ int r, l;
 		}
 /* always search from the top */
 		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < (usr->telnet->term_height+1); sl = sl->prev)
+		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < (usr->term_height+1); sl = sl->prev)
 			l++;
 
 		for(; sl != NULL; sl = sl->prev) {
@@ -1999,7 +1999,7 @@ void state_more_notfound(User *usr, char c) {
 		StringList *sl;
 		int l = 0;
 
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->telnet->term_height; sl = sl->prev)
+		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->term_height; sl = sl->prev)
 			l++;
 		usr->textp = sl;
 		usr->read_lines -= l;
@@ -2304,7 +2304,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 		StringList *sl;
 		int l, dl, max_dl;			/* l = strlen, dl = display length */
 
-		max_dl = usr->telnet->term_width-1;
+		max_dl = usr->term_width-1;
 		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
 			max_dl = MAX_LINE*3-1;
 

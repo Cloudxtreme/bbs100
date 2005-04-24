@@ -71,7 +71,10 @@ User *usr;
 
 /* set sane defaults */
 	usr->flags = USR_HIDE_ADDRESS|USR_HIDE_INFO;
+	usr->term_width = TERM_WIDTH;
+	usr->term_height = TERM_HEIGHT;
 	default_colors(usr);
+
 	return usr;
 }
 
@@ -318,6 +321,10 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 
 int load_User_version1(File *f, User *usr, char *username, int flags) {
 char buf[MAX_PATHLEN], *p;
+int term_width, term_height;
+
+	term_width = TERM_WIDTH;
+	term_height = TERM_HEIGHT;
 
 	if (flags & LOAD_USER_ROOMS)
 		usr->mail = load_Mail(username);
@@ -386,6 +393,8 @@ char buf[MAX_PATHLEN], *p;
 			FF1_LOAD_ULONG("frecv", usr->frecv);
 			FF1_LOAD_ULONG("posted", usr->posted);
 			FF1_LOAD_ULONG("read", usr->read);
+			FF1_LOAD_INT("term_width", term_width);
+			FF1_LOAD_INT("term_height", term_height);
 
 			FF1_LOAD_HEX("flags", usr->flags);
 
@@ -524,6 +533,20 @@ char buf[MAX_PATHLEN], *p;
 
 		FF1_LOAD_UNKNOWN;
 */
+	}
+	if (usr->flags & USR_FORCE_TERM) {
+		if (term_width < 1)
+			term_width = TERM_WIDTH;
+		if (term_height < 1)
+			term_height = TERM_HEIGHT;
+
+		if (term_width > MAX_TERM)
+			term_width = MAX_TERM;
+		if (term_height > MAX_TERM)
+			term_height = MAX_TERM;
+
+		usr->term_width = term_width;
+		usr->term_height = term_height;
 	}
 	return 0;
 }
@@ -982,6 +1005,9 @@ StringList *sl;
 	Fprintf(f, "frecv=%lu", usr->frecv);
 	Fprintf(f, "posted=%lu", usr->posted);
 	Fprintf(f, "read=%lu", usr->read);
+
+	Fprintf(f, "term_width=%d", usr->term_width);
+	Fprintf(f, "term_height=%d", usr->term_height);
 
 	Fprintf(f, "colors=%d %d %d %d %d %d %d %d %d",
 		usr->colors[BACKGROUND],

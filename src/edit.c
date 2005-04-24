@@ -1215,6 +1215,9 @@ char color = 0;
 			color = (char)color_by_name("blue");
 			break;
 
+		case 'p':				/* purple */
+		case 'P':
+		case KEY_CTRL('P'):
 		case 'm':
 		case 'M':
 		case KEY_CTRL('M'):

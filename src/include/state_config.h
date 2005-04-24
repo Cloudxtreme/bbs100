@@ -32,6 +32,8 @@
 #define STATE_QUICKLIST_PROMPT			state_quicklist_prompt
 #define STATE_EDIT_QUICKLIST			state_edit_quicklist
 #define STATE_CONFIG_TERMINAL			state_config_terminal
+#define STATE_CONFIG_WIDTH				state_config_width
+#define STATE_CONFIG_HEIGHT				state_config_height
 #define STATE_CUSTOM_COLORS				state_custom_colors
 #define STATE_CONFIG_ADDRESS			state_config_address
 #define STATE_CHANGE_REALNAME			state_change_realname
@@ -63,6 +65,9 @@ void state_change_profile(User *, char);
 void state_quicklist_prompt(User *, char);
 void state_edit_quicklist(User *, char);
 void state_config_terminal(User *, char);
+void state_config_width(User *, char);
+void state_config_height(User *, char);
+void config_dimensions(User *, char, int *, void (*)(User *, char));
 void state_custom_colors(User *, char);
 void state_config_address(User *, char);
 void state_change_realname(User *, char);

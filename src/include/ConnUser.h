@@ -21,6 +21,7 @@
 */
 
 #include "Conn.h"
+#include "Telnet.h"
 
 extern ConnType ConnUser;
 
@@ -33,5 +34,7 @@ void ConnUser_readable(Conn *);
 void ConnUser_process(Conn *, char);
 void ConnUser_linkdead(Conn *);
 void ConnUser_destroy(Conn *);
+
+void ConnUser_window_event(Telnet *);
 
 /* EOB */

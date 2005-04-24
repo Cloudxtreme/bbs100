@@ -23,7 +23,8 @@
 #define MAX_SUB_BUF			128
 
 #define TERM_WIDTH			80
-#define TERM_HEIGHT			23
+#define TERM_HEIGHT			24
+#define MAX_TERM			500
 
 /* telnet states */
 #define TS_DATA				0
@@ -45,7 +46,7 @@ typedef struct {
 
 Telnet *new_Telnet(void);
 void destroy_Telnet(Telnet *);
-int telnet_negotiations(Telnet *, int, unsigned char);
+int telnet_negotiations(Telnet *, int, unsigned char, void (*)(Telnet *));
 
 #endif	/* TELNET_H_WJ105 */
 

@@ -1479,8 +1479,8 @@ void state_malloc_status(User *usr, char c) {
 	Enter(state_malloc_status);
 
 	if (c == INIT_STATE) {
-		int i, len = 0;
-		char num_buf[25];
+		int i, len = 0, l;
+		char num_buf[25], line[PRINT_BUF];
 
 		Print(usr, "\n<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(usr, memory_total, num_buf));
 
@@ -1488,11 +1488,24 @@ void state_malloc_status(User *usr, char c) {
 			if (strlen(Types_table[i].type) > len)
 				len = strlen(Types_table[i].type);
 		}
+		l = 0;
+		line[0] = 0;
 		for(i = 0; i < NUM_TYPES+1; i++) {
 			if (i & 1)
-				Print(usr, "      ");
+				l += sprintf(line+l, "      ");
 
-			Print(usr, "<green>%-*s <yellow>:<white> %12s %c", len, Types_table[i].type, print_number(usr, mem_stats[i], num_buf), (i & 1) ? '\n' : ' ');
+			l += sprintf(line+l, "<green>%-*s <yellow>:<white> %12s ", len, Types_table[i].type, print_number(usr, mem_stats[i], num_buf));
+
+			if (i & 1) {
+				line[l++] = '\n';
+				line[l] = 0;
+				Put(usr, line);
+				l = 0;
+				line[0] = 0;
+			} else {
+				line[l++] = ' ';
+				line[l] = 0;
+			}
 		}
 		if (i & 1)
 			Put(usr, "\n");

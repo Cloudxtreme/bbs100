@@ -53,7 +53,12 @@ void destroy_Telnet(Telnet *t) {
 	Free(t);
 }
 
-int telnet_negotiations(Telnet *t, int sock, unsigned char c) {
+/*
+	this is a funny construction with the window_event handler, but
+	I want to keep the telnet code separated from the rest as much as
+	possible
+*/
+int telnet_negotiations(Telnet *t, int sock, unsigned char c, void (*window_event)(Telnet *)) {
 char buf[20];
 
 	if (t == NULL)
@@ -183,14 +188,21 @@ char buf[20];
 
 				t->term_width = width;
 				if (t->term_width < 1)
-					t->term_width = 80;
+					t->term_width = TERM_WIDTH;
+				if (t->term_width > MAX_TERM)
+					t->term_width = MAX_TERM;
 
 				t->term_height = height-1;
 				if (t->term_height < 1)
-					t->term_height = 23;
+					t->term_height = TERM_HEIGHT;
+				if (t->term_height > MAX_TERM)
+					t->term_height = MAX_TERM;
 
 				t->in_sub = 0;
 				t->state = TS_IAC;			/* expect SE */
+
+				if (window_event != NULL)
+					window_event(t);
 			}
 			Return -1;
 

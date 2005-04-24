@@ -1908,7 +1908,7 @@ int r;
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
-		make_feelings_screen(usr->telnet->term_width);
+		make_feelings_screen(usr->term_width);
 		for(sl = feelings_screen; sl != NULL; sl = sl->next)
 			Print(usr, "%s\n", sl->str);
 		Put(usr, "\n<green>Feeling<yellow>: ");
@@ -2550,21 +2550,21 @@ User *u;
 		t %= SECS_IN_HOUR;
 		mins = t / SECS_IN_MIN;
 
-/* 32 is the length of the string with the stats that's to be added at the end */
-		width = (usr->telnet->term_width > (PRINT_BUF-32)) ? (PRINT_BUF-32) : usr->telnet->term_width;
+/* 36 is the length of the string with the stats that's to be added at the end, plus margin */
+		width = (usr->term_width > (PRINT_BUF-36)) ? (PRINT_BUF-36) : usr->term_width;
 
 		if (u->doing == NULL || !u->doing[0])
 			sprintf(buf, "%c%s<cyan>", col, u->name);
 		else {
 			sprintf(buf, "%c%s <cyan>%s", col, u->name, u->doing);
-			expand_center(buf, buf2, PRINT_BUF - 32, width);
-			expand_hline(buf2, buf, PRINT_BUF - 32, width);
+			expand_center(buf, buf2, PRINT_BUF - 36, width);
+			expand_hline(buf2, buf, PRINT_BUF - 36, width);
 		}
-		l = color_index(buf, usr->telnet->term_width - 9);
+		l = color_index(buf, width - 9);
 		buf[l] = 0;
 
 		c = color_strlen(buf);
-		while(c < (width-9) && l < (PRINT_BUF-32)) {
+		while(c < (width-9) && l < (PRINT_BUF-36)) {
 			buf[l++] = ' ';
 			c++;
 		}
@@ -2593,7 +2593,7 @@ PList *pl_cols[16];
 
 	total = list_Count(pl);
 
-	cols = usr->telnet->term_width / (MAX_NAME+2);
+	cols = usr->term_width / (MAX_NAME+2);
 	if (cols < 1)
 		cols = 1;
 	else
@@ -2720,7 +2720,7 @@ char buf[PRINT_BUF];
 
 /* draw a line across the full screen width */
 		buf[0] = (char)color_by_name("white");
-		for(l = 1; l < usr->telnet->term_width && l < (PRINT_BUF - 1); l++)
+		for(l = 1; l < usr->term_width && l < (PRINT_BUF - 1); l++)
 			buf[l] = '-';
 		buf[l] = 0;
 		sl = add_StringList(&sl, new_StringList(buf));
@@ -3732,8 +3732,10 @@ User *u;
 	Return;
 }
 
-
-static void print_worldclock(User *usr, int item) {
+/*
+	mind that 'buf' must be large enough to contain all data
+*/
+static int print_worldclock(User *usr, int item, char *buf) {
 struct tm *t, ut;
 char zone_color[16], zone_color2[16];
 
@@ -3765,20 +3767,20 @@ char zone_color[16], zone_color2[16];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		Print(usr, "<cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
+		return sprintf(buf, "<cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, zone_color2, t->tm_min, am_pm);
-	} else
-		Print(usr, "<cyan>%-15s <%s>%02d<white>:<%s>%02d",
-			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
-			zone_color2, t->tm_hour, zone_color2, t->tm_min);
+	}
+	return sprintf(buf, "<cyan>%-15s <%s>%02d<white>:<%s>%02d",
+		(worldclock[item].name == NULL) ? "" : worldclock[item].name,
+		zone_color2, t->tm_hour, zone_color2, t->tm_min);
 }
 
 void print_calendar(User *usr) {
 time_t t;
 struct tm *tmp;
-int w, d, today, today_month, today_year, bday_day, bday_mon, bday_year, old_month, green_color;
-char date_buf[MAX_LINE];
+int w, d, today, today_month, today_year, bday_day, bday_mon, bday_year, old_month, green_color, l;
+char date_buf[MAX_LINE], line[PRINT_BUF];
 
 	if (usr == NULL)
 		return;
@@ -3802,17 +3804,24 @@ char date_buf[MAX_LINE];
 	bday_year = tmp->tm_year;
 
 	Put(usr, "\n");
+	l = 0;
 	if (PARAM_HAVE_CALENDAR)
-		Put(usr, "<magenta>  S  M Tu  W Th  F  S");
+		l += sprintf(line, "<magenta>  S  M Tu  W Th  F  S");
 
 	if (PARAM_HAVE_WORLDCLOCK) {
 		if (PARAM_HAVE_CALENDAR)
-			Put(usr, "    ");
-		print_worldclock(usr, 0);
-		Put(usr, "    ");
-		print_worldclock(usr, 1);
+			l += sprintf(line+l, "    ");
+
+		l += print_worldclock(usr, 0, line+l);
+		l += sprintf(line+l, "    ");
+		l += print_worldclock(usr, 1, line+l);
 	}
-	Put(usr, "\n");
+	line[l++] = '\n';
+	line[l] = 0;
+	Put(usr, line);
+
+	line[0] = 0;
+	l = 0;
 
 	t = rtc - (14 + w) * SECS_IN_DAY;
 	tmp = user_time(usr, t);
@@ -3820,28 +3829,28 @@ char date_buf[MAX_LINE];
 	green_color = 1;
 
 	if (PARAM_HAVE_CALENDAR)
-		Put(usr, "<green>");
+		l += sprintf(line, "<green>");
 
 	for(w = 0; w < 5; w++) {
 		if (PARAM_HAVE_CALENDAR) {
-			Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+			l += sprintf(line+l, (green_color == 0) ? "<yellow>" : "<green>");
 
 			for(d = 0; d < 7; d++) {
 				tmp = user_time(usr, t);
 
 /* highlight today and bbs birthday */
 				if  (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
-					Print(usr, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+					l += sprintf(line+l, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 				else {
 					if (tmp->tm_mday == bday_day && tmp->tm_mon == bday_mon && tmp->tm_year > bday_year)
-						Print(usr, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+						l += sprintf(line+l, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 					else {
 						if (old_month != tmp->tm_mon) {
 							green_color ^= 1;
-							Put(usr, (green_color == 0) ? "<yellow>" : "<green>");
+							l += sprintf(line+l, (green_color == 0) ? "<yellow>" : "<green>");
 							old_month = tmp->tm_mon;
 						}
-						Print(usr, " %2d", tmp->tm_mday);
+						l += sprintf(line+l, " %2d", tmp->tm_mday);
 					}
 				}
 				t += SECS_IN_DAY;
@@ -3849,12 +3858,19 @@ char date_buf[MAX_LINE];
 		}
 		if (PARAM_HAVE_WORLDCLOCK) {
 			if (PARAM_HAVE_CALENDAR)
-				Put(usr, "    ");
-			print_worldclock(usr, w+2);
-			Put(usr, "    ");
-			print_worldclock(usr, w+7);
+				l += sprintf(line+l, "    ");
+
+			l += print_worldclock(usr, w+2, line+l);
+			l += sprintf(line+l, "    ");
+			l += print_worldclock(usr, w+7, line+l);
 		}
-		Put(usr, "\n");
+		line[l++] = '\n';
+		line[l] = 0;
+
+		Put(usr, line);
+
+		line[0] = 0;
+		l = 0;
 	}
 	Return;
 }

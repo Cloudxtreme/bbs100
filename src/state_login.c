@@ -428,10 +428,10 @@ void state_display_motd(User *usr, char c) {
 }
 
 void state_go_online(User *usr, char c) {
-int num_users = 0, num_friends = 0, i, new_mail;
+int num_users = 0, num_friends = 0, i, new_mail, l;
 Joined *j;
 User *u;
-char num_buf[25], exclaim[5];
+char num_buf[25], exclaim[5], line[PRINT_BUF];
 
 	if (usr == NULL)
 		return;
@@ -477,8 +477,10 @@ char num_buf[25], exclaim[5];
 	update_stats(usr);
 
 	Put(usr, "\n");
+	l = 0;
+	line[0] = 0;
 	if (usr->logins > 1)
-		Print(usr, "<green>Welcome back, <yellow>%s<green>! ", usr->name);
+		l += sprintf(line, "<green>Welcome back, <yellow>%s<green>! ", usr->name);
 	else {
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];
@@ -495,7 +497,10 @@ char num_buf[25], exclaim[5];
 		sprintf(exclaim, "!!!");
 	else
 		exclaim[0] = 0;
-	Print(usr, "<green>This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
+	l += sprintf(line+l, "This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
+	Put(usr, line);
+	l = 0;
+	line[0] = 0;
 
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
@@ -507,13 +512,13 @@ char num_buf[25], exclaim[5];
 		if (usr->last_online_time > 0UL) {
 			int l;
 
-			l = sprintf(online_for, "%c for %c", color_by_name("green"), color_by_name("yellow"));
+			l = sprintf(online_for, "%c, for %c", color_by_name("green"), color_by_name("yellow"));
 			print_total_time(usr, usr->last_online_time, online_for+l);
 		} else
 			online_for[0] = 0;
 
 		if (usr->tmpbuf[TMP_FROM_HOST]) {
-			Print(usr, "\n<green>Last login<yellow>: <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
+			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
 			Print(usr, "<green>From host<yellow>: %s\n", usr->tmpbuf[TMP_FROM_HOST]);
 		} else
 			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);

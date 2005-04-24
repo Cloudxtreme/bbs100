@@ -83,13 +83,13 @@ void state_config_menu(User *usr, char c) {
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Address\n");
+			Put(usr, "Address\n");
 			CALL(usr, STATE_CONFIG_ADDRESS);
 			Return;
 
 		case 'i':
 		case 'I':
-			Put(usr, "<white>Profile info\n");
+			Put(usr, "Profile info\n");
 
 			listdestroy_StringList(usr->more_text);
 			usr->more_text = usr->textp = NULL;
@@ -114,59 +114,59 @@ void state_config_menu(User *usr, char c) {
 
 		case 'd':
 		case 'D':
-			Put(usr, "<white>Doing\n");
+			Put(usr, "Doing\n");
 			CALL(usr, STATE_CONFIG_DOING);
 			Return;
 
 		case 'r':
 		case 'R':
-			Put(usr, "<white>Reminder\n");
+			Put(usr, "Reminder\n");
 			CALL(usr, STATE_CONFIG_REMINDER);
 			Return;
 
 		case 'y':
 		case 'Y':
-			Put(usr, "<white>Default anonymous alias\n");
+			Put(usr, "Default anonymous alias\n");
 			CALL(usr, STATE_CONFIG_ANON);
 			Return;
 
 		case 'f':
 		case 'F':
 		case '>':
-			Put(usr, "<white>Friends\n");
+			Put(usr, "Friends\n");
 			CALL(usr, STATE_FRIENDLIST_PROMPT);
 			Return;
 
 		case 'e':
 		case 'E':
 		case '<':
-			Put(usr, "<white>Enemies\n");
+			Put(usr, "Enemies\n");
 			CALL(usr, STATE_ENEMYLIST_PROMPT);
 			Return;
 
 		case 'p':
 		case 'P':
-			Put(usr, "<white>Password\n");
+			Put(usr, "Password\n");
 			CALL(usr, STATE_CONFIG_PASSWORD);
 			Return;
 
 		case 't':
 		case 'T':
-			Put(usr, "<white>Terminal settings\n");
+			Put(usr, "Terminal settings\n");
 			CALL(usr, STATE_CONFIG_TERMINAL);
 			Return;
 
 		case 'w':
 		case 'W':
 		case KEY_CTRL('W'):
-			Put(usr, "<white>Who list\n");
+			Put(usr, "Who list\n");
 			CALL(usr, STATE_CONFIG_WHO);
 			Return;
 
 		case 'o':
 		case 'O':
 		case KEY_CTRL('O'):
-			Put(usr, "<white>Options\n");
+			Put(usr, "Options\n");
 			CALL(usr, STATE_CONFIG_OPTIONS);
 			Return;
 
@@ -181,14 +181,14 @@ void state_config_menu(User *usr, char c) {
 
 		case 'z':
 		case 'Z':
-			Put(usr, "<white>Time Zone\n");
+			Put(usr, "Time Zone\n");
 			CALL(usr, STATE_CONFIG_TIMEZONE);
 			Return;
 
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "<white>Help\n");
+			Put(usr, "Help\n");
 			listdestroy_StringList(usr->more_text);
 			if ((usr->more_text = load_screen(PARAM_HELP_CONFIG)) == NULL) {
 				Put(usr, "<red>No help available\n");
@@ -236,37 +236,37 @@ void state_config_address(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "\n\n<white>Config menu\n");
+			Put(usr, "\n\nConfig menu\n");
 			RET(usr);
 			Return;
 
 		case 'r':
 		case 'R':
-			Put(usr, "<white>Real name\n");
+			Put(usr, "Real name\n");
 			CALL(usr, STATE_CHANGE_REALNAME);
 			Return;
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Address\n");
+			Put(usr, "Address\n");
 			CALL(usr, STATE_CHANGE_ADDRESS);
 			Return;
 
 		case 'p':
 		case 'P':
-			Put(usr, "<white>Phone number\n");
+			Put(usr, "Phone number\n");
 			CALL(usr, STATE_CHANGE_PHONE);
 			Return;
 
 		case 'e':
 		case 'E':
-			Put(usr, "<white>E-mail address\n");
+			Put(usr, "E-mail address\n");
 			CALL(usr, STATE_CHANGE_EMAIL);
 			Return;
 
 		case 'w':
 		case 'W':
-			Put(usr, "<white>WWW address\n");
+			Put(usr, "WWW address\n");
 			CALL(usr, STATE_CHANGE_WWW);
 			Return;
 	}
@@ -493,9 +493,9 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
+		if (!verify_phrase(usr->edit_buf, usr->passwd))
 			JMP(usr, STATE_CHANGE_PASSWORD);
-		} else {
+		else {
 			Put(usr, "<red>Wrong password\n");
 			RET(usr);
 		}
@@ -570,7 +570,6 @@ int r;
 	Return;
 }
 
-
 void state_quicklist_prompt(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -581,7 +580,7 @@ void state_quicklist_prompt(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Put(usr, "<white>Quicklist\n\n");
+			Put(usr, "Quicklist\n\n");
 			print_quicklist(usr);
 			break;
 
@@ -675,11 +674,18 @@ void state_config_terminal(User *usr, char c) {
 				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
 				(usr->flags & USR_BOLD) ? "Yes"  : "No"
 			);
+			Print(usr, "\n"
+				"<hotkey>Force screen width and height        <white>%s<magenta>\n"
+				"<hotkey>Screen dimensions                    <white>%dx%d<magenta>\n",
+
+				(usr->flags & USR_FORCE_TERM) ? "Yes" : "No",
+				usr->term_width, usr->term_height
+			);
 			if (usr->flags & USR_ANSI) {
 				Print(usr, "\n"
 					"<white>Customize colors<magenta>\n"
 					"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
-					"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         Bl<hotkey>ue       <white>[%c%-7s<white>]<magenta>\n",
+					"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
 					color_table[usr->colors[WHITE]].key,	color_table[usr->colors[WHITE]].name,
 					color_table[usr->colors[CYAN]].key,		color_table[usr->colors[CYAN]].name,
 					color_table[usr->colors[YELLOW]].key,	color_table[usr->colors[YELLOW]].name,
@@ -709,7 +715,7 @@ void state_config_terminal(User *usr, char c) {
 
 		case 't':
 		case 'T':
-			Put(usr, "<white>Terminal emulation<default>\n");
+			Put(usr, "Terminal emulation<default>\n");
 
 			usr->flags ^= USR_ANSI;
 
@@ -724,11 +730,29 @@ void state_config_terminal(User *usr, char c) {
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Attribute bold/bright<default>\n");
 			usr->flags ^= USR_BOLD;
-			Put(usr, "<normal>");
+			Put(usr, "Attribute bold/bright<default><normal>\n");
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
+			Return;
+
+		case 'f':
+		case 'F':
+			usr->flags ^= USR_FORCE_TERM;
+			Print(usr, "%s screen width and height\n", (usr->flags & USR_FORCE_TERM) ? "Force" : "Don't force");
+
+			if (!(usr->flags & USR_FORCE_TERM) && usr->telnet != NULL) {
+				usr->term_width = usr->telnet->term_width;
+				usr->term_height = usr->telnet->term_height;
+			}
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 's':
+		case 'S':
+			Put(usr, "Screen dimensions\n");
+			CALL(usr, STATE_CONFIG_WIDTH);
 			Return;
 
 		case 'w':
@@ -781,8 +805,8 @@ void state_config_terminal(User *usr, char c) {
 			}
 			break;
 
-		case 'u':
-		case 'U':
+		case 'b':
+		case 'B':
 			if (usr->flags & USR_ANSI) {
 				usr->read_lines = BLUE;
 				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
@@ -831,6 +855,83 @@ void state_config_terminal(User *usr, char c) {
 			Return;
 	}
 	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Terminal<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+void state_config_width(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	if (c == INIT_STATE)
+		Print(usr, "<green>Enter screen width <white>[<yellow>%d<white>]: ", usr->term_width);
+
+	config_dimensions(usr, c, &usr->term_width, STATE_CONFIG_HEIGHT);
+}
+
+void state_config_height(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	if (c == INIT_STATE)
+		Print(usr, "<green>Enter screen height <white>[<yellow>%d<white>]: ", usr->term_height);
+
+	config_dimensions(usr, c, &usr->term_height, NULL);
+}
+
+void config_dimensions(User *usr, char c, int *var, void (*next_state)(User *, char)) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	if (var == NULL) {
+		log_err("state_config_integer(): BUG !");
+		RET(usr);
+		return;
+	}
+	Enter(config_dimensions);
+
+	r = edit_number(usr, c);
+
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		char *endp;
+
+		if (!usr->edit_buf[0]) {
+			if (next_state != NULL) {
+				JMP(usr, next_state);
+				Return;
+			}
+			RET(usr);
+			Return;
+		}
+		r = (int)strtoul(usr->edit_buf, &endp, 10);
+		if (endp == NULL || *endp)
+			r = -1;
+
+		if (r < 1) {
+			Put(usr, "<red>Invalid value; not changed\n");
+			RET(usr);
+			Return;
+		}
+		if (r > MAX_TERM) {
+			Put(usr, "<red>Too large, not changed\n");
+			RET(usr);
+			Return;
+		}
+		*var = r;
+		usr->flags |= USR_FORCE_TERM;
+		usr->runtime_flags |= RTF_CONFIG_EDITED;
+
+		if (next_state != NULL) {
+			JMP(usr, next_state);
+			Return;
+		}
+		RET(usr);
+	}
 	Return;
 }
 
@@ -910,7 +1011,7 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'w':
 		case 'W':
-			Put(usr, "<white>White\n\n");
+			Put(usr, "White\n\n");
 			usr->colors[usr->read_lines] = WHITE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			RET(usr);
@@ -918,7 +1019,7 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'k':
 		case 'K':
-			Put(usr, "<black>Black\n\n");
+			Put(usr, "Black\n\n");
 			usr->colors[usr->read_lines] = BLACK;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			RET(usr);
@@ -926,7 +1027,7 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'd':
 		case 'D':
-			Put(usr, "<white>Default\n\n");
+			Put(usr, "Default\n\n");
 			if (usr->read_lines == HOTKEY)
 				usr->colors[usr->read_lines] = YELLOW;
 			else
@@ -954,7 +1055,7 @@ void state_config_who(User *usr, char c) {
 	switch(c) {
 		case KEY_RETURN:			/* convenience for sysops that use Ctrl-W/W ... */
 			if (!(usr->runtime_flags & RTF_SYSOP)) {
-				Put(usr, "<white>Exit\n");
+				Put(usr, "Exit\n");
 				RET(usr);
 				Return;
 			} else
@@ -994,27 +1095,27 @@ void state_config_who(User *usr, char c) {
 		case KEY_ESC:
 		case ' ':
 		case KEY_BS:
-			Put(usr, "<white>Exit\n");
+			Put(usr, "Exit\n");
 			RET(usr);
 			Return;
 
 		case 'f':
 		case 'F':
-			Put(usr, "<white>Format\n");
+			Put(usr, "Format\n");
 			usr->flags ^= USR_SHORT_WHO;
 			CURRENT_STATE(usr);
 			Return;
 
 		case 'b':
 		case 'B':
-			Put(usr, "<white>Sort by\n");
+			Put(usr, "Sort by\n");
 			usr->flags ^= USR_SORT_BYNAME;
 			CURRENT_STATE(usr);
 			Return;
 
 		case 'o':
 		case 'O':
-			Put(usr, "<white>Sort order\n");
+			Put(usr, "Sort order\n");
 			usr->flags ^= USR_SORT_DESCENDING;
 			CURRENT_STATE(usr);
 			Return;
@@ -1022,7 +1123,7 @@ void state_config_who(User *usr, char c) {
 		case 'c':
 		case 'C':
 			if (PARAM_HAVE_CHATROOMS) {
-				Put(usr, "<white>In a chat room...\n");
+				Put(usr, "In a chat room...\n");
 				usr->flags ^= USR_SHOW_ALL;
 				CURRENT_STATE(usr);
 				Return;
@@ -1031,8 +1132,8 @@ void state_config_who(User *usr, char c) {
 
 		case 'e':
 		case 'E':
-			Put(usr, "<white>Show enemies\n");
 			usr->flags ^= USR_SHOW_ENEMIES;
+			Print(usr, "%s enemies\n", (usr->flags & USR_SHOW_ENEMIES) ? "Show" : "Don't show");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1043,7 +1144,7 @@ void state_config_who(User *usr, char c) {
 
 			PUSH(usr, state_config_who_sysop);
 
-			Put(usr, "<white>Who\n");
+			Put(usr, "Who\n");
 			who_list(usr, WHO_LIST_LONG | WHO_LIST_ROOM);
 			Return;
 
@@ -1053,7 +1154,7 @@ void state_config_who(User *usr, char c) {
 
 			PUSH(usr, state_config_who_sysop);
 
-			Put(usr, "<white>Who\n");
+			Put(usr, "Who\n");
 			who_list(usr, WHO_LIST_SHORT | WHO_LIST_ROOM);
 			Return;
 	}
@@ -1118,7 +1219,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			Put(usr, "<white>Beep\n");
+			Put(usr, "Beep\n");
 			usr->flags ^= USR_BEEP;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1128,7 +1229,7 @@ void state_config_options(User *usr, char c) {
 		case 'M':
 			usr->flags ^= USR_X_DISABLED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			Print(usr, "<white>%s message reception\n", (usr->flags & USR_X_DISABLED) ? "Disable" : "Enable");
+			Print(usr, "%s message reception\n", (usr->flags & USR_X_DISABLED) ? "Disable" : "Enable");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1136,13 +1237,13 @@ void state_config_options(User *usr, char c) {
 		case 'F':
 			usr->flags ^= USR_FOLLOWUP;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			Print(usr, "<white>%s follow up mode\n", (usr->flags & USR_FOLLOWUP) ? "Enable" : "Disable");
+			Print(usr, "%s follow up mode\n", (usr->flags & USR_FOLLOWUP) ? "Enable" : "Disable");
 			CURRENT_STATE(usr);
 			Return;
 
 		case 'h':
 		case 'H':
-			Put(usr, "<white>Hold message mode when busy\n");
+			Put(usr, "Hold message mode when busy\n");
 			usr->flags ^= USR_HOLD_BUSY;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1150,7 +1251,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'r':
 		case 'R':
-			Put(usr, "<white>Beep on new postings\n");
+			Put(usr, "Beep on new postings\n");
 			usr->flags ^= USR_ROOMBEEP;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1158,7 +1259,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'n':
 		case 'N':
-			Put(usr, "<white>Show room number\n");
+			Put(usr, "Show room number\n");
 			usr->flags ^= USR_ROOMNUMBERS;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1166,7 +1267,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Hide address information\n");
+			Put(usr, "Hide address information\n");
 			usr->flags ^= USR_HIDE_ADDRESS;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1174,7 +1275,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'p':
 		case 'P':
-			Put(usr, "<white>Hide profile information\n");
+			Put(usr, "Hide profile information\n");
 			usr->flags ^= USR_HIDE_INFO;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -1182,7 +1283,7 @@ void state_config_options(User *usr, char c) {
 
 		case '0':
 			usr->flags ^= USR_HACKERZ;
-			Put(usr, "<white>Hackers mode\n");
+			Put(usr, "Hackers mode\n");
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
 			Return;
@@ -1230,20 +1331,20 @@ char buf[MAX_LINE], *p;
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "<white>Exit\n");
+			Put(usr, "Exit\n");
 			RET(usr);
 			Return;
 
 		case 'd':
 		case 'D':
-			Put(usr, "<white>Display time\n");
+			Put(usr, "Display time\n");
 			usr->flags ^= USR_12HRCLOCK;
 			CURRENT_STATE(usr);
 			Return;
 
 		case 's':
 		case 'S':
-			Put(usr, "<white>Select time zone\n");
+			Put(usr, "Select time zone\n");
 			select_tz_continent(usr);
 			Return;
 	}
@@ -1368,7 +1469,7 @@ char filename[MAX_PATHLEN];
 	Put(usr, "\n<magenta>Time zone regions\n\n");
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->telnet->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_more(usr);
 	Return;
@@ -1499,7 +1600,7 @@ char filename[MAX_PATHLEN];
 	Fclose(f);
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->telnet->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_more(usr);

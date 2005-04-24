@@ -194,8 +194,13 @@ User *usr;
 
 	usr = (User *)conn->data;
 
-	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL
-		|| (c = telnet_negotiations(usr->telnet, usr->conn->sock, (unsigned char)c)) == (char)-1)
+	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL)
+		return;
+
+	this_user = usr;
+	c = telnet_negotiations(usr->telnet, usr->conn->sock, (unsigned char)c, ConnUser_window_event);
+	this_user = NULL;
+	if (c == (char)-1)
 		return;
 
 /* user is doing something, reset idle timer */
@@ -238,6 +243,20 @@ User *usr;
 	destroy_User(usr);
 
 	conn->data = NULL;
+}
+
+/*
+	window size changed
+	(I'm not talking about TCP window size here)
+*/
+void ConnUser_window_event(Telnet *t) {
+	if (t == NULL || this_user == NULL || this_user->telnet != t)
+		return;
+
+	if (!(this_user->flags & USR_FORCE_TERM)) {
+		this_user->term_width = t->term_width;
+		this_user->term_height = t->term_height;
+	}
 }
 
 /* EOB */

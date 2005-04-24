@@ -169,6 +169,19 @@ char buf[20], c;
 			case '<':
 				str += long_color_code(usr, str, cpos);
 				break;
+/*
+	word-wrapping for long strings
+*/
+			case ' ':
+				if (*cpos + word_len(str+1) >= usr->term_width) {
+					Writechar(usr, '\r');
+					Writechar(usr, '\n');
+					*cpos = 0;
+					while(str[1] == ' ')
+						str++;
+					break;
+				}
+/* fall through to default */
 
 			default:
 				Writechar(usr, c);
@@ -178,6 +191,48 @@ char buf[20], c;
 			str++;
 	}
 	Flush(usr);
+}
+
+/*
+	try to determine the length of the next word
+	this is used by the word wrapper in Out()
+	do NOT try to use this function for anything else, because it is
+	way crappy
+	scans at most only 15 characters ahead
+*/
+int word_len(char *str) {
+int len;
+
+	len = 0;
+
+	while(*str) {
+		switch(*str) {
+			case '<':
+				str += skip_long_color_code(str);
+				break;
+
+			case KEY_CTRL('X'):
+			case '\r':
+				return -1000;		/* fool him */
+
+			case ' ':
+			case '\n':
+			case '\t':
+			case '-':				/* OK to break on a dash */
+				return len;
+
+			default:
+/* count as printable character (this is NOT always the case, however) */
+				if (*str >= ' ' && *str <= '~') {
+					len++;
+					if (len >= 15)
+						return len;
+				}
+		}
+		if (*str)
+			str++;
+	}
+	return len;
 }
 
 /*
@@ -282,7 +337,6 @@ int colors, i;
 
 	return 0;
 }
-
 
 /*
 	long color codes look like '<yellow>', '<white>', '<hotkey>', etc.
@@ -418,7 +472,7 @@ char colorbuf[20], buf[20];
 				char buf[PRINT_BUF], *p;
 				int m;
 
-				m = ((usr->telnet->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->telnet->term_width-1);
+				m = ((usr->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->term_width-1);
 				strncpy(buf, base, m);
 				buf[m-1] = 0;
 /*
@@ -431,10 +485,10 @@ char colorbuf[20], buf[20];
 					else
 						p++;
 				}
-				while(*cpos + n < usr->telnet->term_width-1)
+				while(*cpos + n < usr->term_width-1)
 					Out(usr, buf, cpos);					/* recurse */
 
-				if (*cpos + n > usr->telnet->term_width-1) {		/* 'partial put' of the remainder */
+				if (*cpos + n > usr->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
 					Out(usr, buf, cpos);
 				}
@@ -447,7 +501,7 @@ char colorbuf[20], buf[20];
 	}
 	if (!cstrnicmp(code, "<center>", 8)) {
 		code += 8;
-		i = (usr->telnet->term_width-1)/2 - color_strlen(code)/2 - *cpos;
+		i = (usr->term_width-1)/2 - color_strlen(code)/2 - *cpos;
 		while(i > 0) {
 			Writechar(usr, ' ');
 			(*cpos)++;
@@ -667,27 +721,57 @@ int cpos, i;
 	return cpos;
 }
 
-
 int Ansi_Color(User *usr, int c) {
 	if (usr == NULL)
 		return 0;
 
 	switch(c) {
-		case KEY_CTRL('Z'): c = BLACK;		break;
-		case KEY_CTRL('R'):	c = RED;		break;
-		case KEY_CTRL('G'):	c = GREEN;		break;
-		case KEY_CTRL('Y'):	c = YELLOW;		break;
-		case KEY_CTRL('B'):	c = BLUE;		break;
+		case KEY_CTRL('Z'):
+			c = BLACK;
+			break;
+
+		case KEY_CTRL('R'):
+			c = RED;
+			break;
+
+		case KEY_CTRL('G'):
+			c = GREEN;
+			break;
+
+		case KEY_CTRL('Y'):
+			c = YELLOW;
+			break;
+
+		case KEY_CTRL('B'):
+			c = BLUE;
+			break;
+
 		case KEY_CTRL('P'):
-		case KEY_CTRL('M'):	c = MAGENTA;	break;
-		case KEY_CTRL('C'):	c = CYAN;		break;
-		case KEY_CTRL('W'):	c = WHITE;		break;
+		case KEY_CTRL('M'):
+			c = MAGENTA;
+			break;
 
-		case KEY_CTRL('K'): c = HOTKEY;		break;
+		case KEY_CTRL('C'):
+			c = CYAN;
+			break;
 
-		case KEY_CTRL('D'):	return 33;
-/*		case KEY_CTRL('F'):	return 5;	*/
-		case KEY_CTRL('N'):	return 0;
+		case KEY_CTRL('W'):
+			c = WHITE;
+			break;
+
+		case KEY_CTRL('K'):
+			c = HOTKEY;
+			break;
+
+		case KEY_CTRL('D'):
+			return 33;
+
+/*
+		case KEY_CTRL('F'):
+			return 5;
+*/
+		case KEY_CTRL('N'):
+			return 0;
 
 		default:
 			c = 0;
