@@ -7,11 +7,11 @@ Credits are due to:
   iscaBBS is the BBS of the Iowa Student Computer Association at
   bbs.isca.uiowa.edu
 - Serendipity of iscaBBS
-- Edward Breedveld <edward@sara.nl> aka Freddy Krueger and
-  Jaap Dijkshoorn <jaap@sara.nl> aka Distroyer of BrintaBBS for founding
-  BrintaBBS
+- Edward Breedveld aka Freddy Krueger and Jaap Dijkshoorn <jaap@sara.nl>
+  aka Distroyer of BrintaBBS for founding BrintaBBS
 - Ruben van Staveren <ruben@verweg.com> aka The Guru aka Het Guur for running
-  as first beta tester at erg.verweg.com and for registering heiho.net domain
+  as first beta tester at erg.verweg.com and for early registration of the
+  heiho.net domain
 - Petros Mylonopoulos <r00t__beer@hotmail.com> aka Afterworld and
   Stephan van Beerschoten <myth@whacky.net> aka Myth
   for encouraging the bbs100 project and beta testing
@@ -115,18 +115,16 @@ Credits for bug fixes et al after public release
   upon login, Lobby> should be read first if there are new messages
   fixed in 1.1.13
 
-- Lightspeed of MatrixBBS reported that when you delete all posts
-  in a room using the Room Config menu option Ctrl-R, users are
-  not able to see new posts. You should reset the creation date
-  as well. This is something you don't want to do for invite-
-  only rooms. It is still a bug, but in 1.1.13 it prints a
-  warning message about it.
-  Lightspeed also made a suggestion on how to fix the problem
-  of the Lobby> not being read first (easy, but thanks anyway :)
+- Lightspeed of MatrixBBS reported that when you delete all posts in a room
+  using the Room Config menu option Ctrl-R, users are not able to see new
+  posts. You should reset the creation date as well. This is something you
+  don't want to do for invite-only rooms. It is still a bug, but in 1.1.13
+  it prints a warning message about it.
+  Lightspeed also made a suggestion on how to fix the problem of the Lobby>
+  not being read first (easy, but thanks anyway :)
 
-- Nuke/Banish/Disconnect/Kick user no longer have a default
-  name presented on the prompt
-  Reported by Mz Boobala and Richard of MatrixBBS
+- Nuke/Banish/Disconnect/Kick user no longer have a default name presented
+  on the prompt. Reported by Mz Boobala and Richard of MatrixBBS
   fixed in 1.1.13
 
 - Erik of MatrixBBS reported some things:
@@ -135,8 +133,8 @@ Credits for bug fixes et al after public release
   Suggested a hold message mode (under Ctrl-B)
   done in 1.1.13
 
-- Cease To Resist <v@chained.cx> reported problem with MD5
-  passwords that have long salts
+- Cease To Resist <v@chained.cx> reported problem with MD5 passwords that
+  have long salts
   fixed in 1.1.13
 
 - When uploading, the connection could hang
@@ -160,9 +158,8 @@ Credits for bug fixes et al after public release
   if the directory had been moved to <number>.old ...
   fixed in 1.1.13
 
-- Eeyore of MatrixBBS reported that no friend notification is sent
-  when a friend locks the terminal, and then unlocks it by logging
-  in again
+- Eeyore of MatrixBBS reported that no friend notification is sent when
+  a friend locks the terminal, and then unlocks it by logging in again
   fixed in 1.2.1
 
 - Ove <ove@swedishchef.org> reported problems with building on Solaris
@@ -198,3 +195,7 @@ Credits for bug fixes et al after public release
 
 - WHYz of MatrixBBS suggested the minus key for removing recipients in
   recipient list editing (this was already available with Ctrl-R)
+
+- Lord Lerkista reported a bug in restartable timers
+  fixed in 2.2
+

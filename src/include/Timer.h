@@ -44,14 +44,14 @@ struct Timer_tag {
 	void (*action)(void *);
 };
 
+extern time_t rtc;
+extern Timer *timerq;
+
 Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
 Timer *add_Timer(Timer **, Timer *);
 int init_rtc(void);
 int update_timers(void);
-
-extern volatile time_t rtc;
-extern Timer *timerq;
 
 #endif	/* TIMER_H_WJ99 */
 

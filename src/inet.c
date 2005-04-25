@@ -354,7 +354,9 @@ int err, highest_fd = -1, wait_for_input, nap;
 /*
 	something bad happened, and I don't know what
 */
-				log_err("mainloop(): read(): %s", strerror(errno));
+				if (errno != EBADF)
+					log_warn("mainloop(): read(): %s, closing connection", strerror(errno));
+
 				if (c->sock >= 0) {
 					c->conn_type->linkdead(c);
 					close(c->sock);
@@ -416,7 +418,7 @@ int err, highest_fd = -1, wait_for_input, nap;
 			continue;
 
 		if (errno == EBADF) {
-			log_warn("mainloop(): select() got EBADF, continuing");
+/*			log_warn("mainloop(): select() got EBADF, continuing");	*/
 			continue;
 		}
 		if (errno == EINVAL) {

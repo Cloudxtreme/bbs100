@@ -1,3 +1,6 @@
+Changes as of April 25th 2005
+- fixed bug in restartable timers
+
 Changes as of April 24th 2005
 - profile and login now show for how long someone was online last time
 - option force screen dimensions, with word-wrap

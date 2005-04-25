@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-volatile time_t rtc = (time_t)0UL;
+time_t rtc = (time_t)0UL;
 
 Timer *timerq = NULL;
 
@@ -51,7 +51,6 @@ Timer *t;
 	t->sleeptime = t->maxtime = s;
 	t->restart = r;
 	t->action = func;
-
 	return t;
 }
 
@@ -100,12 +99,12 @@ Timer *q, *q_prev;
 	return t;
 }
 
-
 static int update_timerqueue(Timer **queue, void *arg, int tdiff) {
-int nap;
 Timer *t, *t_next;
 
-	nap = 10 * SECS_IN_MIN;
+	if (queue == NULL || *queue == NULL)
+		return 10 * SECS_IN_MIN;
+
 	for(t = *queue; t != NULL; t = t_next) {
 		t_next = t->next;
 
@@ -113,11 +112,9 @@ Timer *t, *t_next;
 			t->sleeptime -= tdiff;
 			tdiff = 0;
 		}
-		if (t->sleeptime > 0) {
-			if (t->sleeptime < nap)
-				nap = t->sleeptime;
+		if (t->sleeptime > 0)
 			break;
-		}
+
 		if (t->sleeptime <= 0) {
 			t->sleeptime = t->maxtime;
 
@@ -134,7 +131,7 @@ Timer *t, *t_next;
 				add_Timer(queue, t);
 		}
 	}
-	return nap;
+	return (*queue == NULL) ? 10 * SECS_IN_MIN : (*queue)->sleeptime;
 }
 
 /*
@@ -171,7 +168,6 @@ User *usr, *usr_next;
 		if (n < nap)
 			nap = n;
 	}
-
 /* now process timers that are not bound to a user */
 
 	n = update_timerqueue(&timerq, NULL, tdiff);
