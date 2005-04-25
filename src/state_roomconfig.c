@@ -83,27 +83,27 @@ void state_room_config_menu(User *usr, char c) {
 				}
 				Print(usr, "\n"
 					"Flags\n"
-					"<hotkey>1 <magenta>Room has subject lines    <white>[<yellow>%-3s<white>]\n"
-					"<hotkey>2 <magenta>Allow anonymous posts     <white>[<yellow>%-3s<white>]\n",
+					"<hotkey>1 <magenta>Room has subject lines    <white>%s\n"
+					"<hotkey>2 <magenta>Allow anonymous posts     <white>%s\n",
 					(usr->curr_room->flags & ROOM_SUBJECTS)  ? "Yes" : "No",
 					(usr->curr_room->flags & ROOM_ANONYMOUS) ? "Yes" : "No"
 				);
 				if (usr->runtime_flags & RTF_SYSOP) {
 					Print(usr,
-						"<hotkey>3 <magenta>Room is invite-only       <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>4 <magenta>Room is read-only         <white>[<yellow>%-3s<white>]\n",
+						"<hotkey>3 <magenta>Room is invite-only       <white>%s\n"
+						"<hotkey>4 <magenta>Room is read-only         <white>%s\n",
 						(usr->curr_room->flags & ROOM_INVITE_ONLY) ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_READONLY)    ? "Yes" : "No"
 					);
 					Print(usr,
-						"<hotkey>5 <magenta>Room is not zappable      <white>[<yellow>%-3s<white>]\n"
-						"<hotkey>6 <magenta>Room is hidden            <white>[<yellow>%-3s<white>]\n",
+						"<hotkey>5 <magenta>Room is not zappable      <white>%s\n"
+						"<hotkey>6 <magenta>Room is hidden            <white>%s\n",
 						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No"
 					);
 					if (PARAM_HAVE_CHATROOMS)
 						Print(usr,
-							"<hotkey>7 <magenta>Room is a chat room       <white>[<yellow>%-3s<white>]\n",
+							"<hotkey>7 <magenta>Room is a chat room       <white>%s\n",
 							(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
 						);
 				}
@@ -129,7 +129,7 @@ void state_room_config_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "<white>Help\n");
+			Put(usr, "Help\n");
 			listdestroy_StringList(usr->more_text);
 			if ((usr->more_text = load_screen(PARAM_HELP_ROOMCONFIG)) == NULL) {
 				Put(usr, "<red>No help available\n");
@@ -142,7 +142,7 @@ void state_room_config_menu(User *usr, char c) {
 		case 'g':
 		case 'G':
 			if (PARAM_HAVE_CATEGORY) {
-				Put(usr, "<white>Category\n");
+				Put(usr, "Category\n");
 				CALL(usr, STATE_CHOOSE_CATEGORY);
 				Return;
 			}
@@ -151,7 +151,7 @@ void state_room_config_menu(User *usr, char c) {
 		case 'e':
 		case 'E':
 		case KEY_CTRL('E'):
-			Put(usr, "<white>Edit room info\n");
+			Put(usr, "Edit room info\n");
 
 			listdestroy_StringList(usr->more_text);
 			usr->more_text = usr->textp = NULL;
@@ -176,7 +176,7 @@ void state_room_config_menu(User *usr, char c) {
 
 		case 'I':
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY) {
-				Put(usr, "<white>Invite\n");
+				Put(usr, "Invite\n");
 				enter_name(usr, STATE_INVITE_PROMPT);
 				Return;
 			}
@@ -184,7 +184,7 @@ void state_room_config_menu(User *usr, char c) {
 
 		case 'i':
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY) {
-				Put(usr, "<white>Show Invited\n");
+				Put(usr, "Show Invited\n");
 				if (usr->curr_room->invited == NULL)
 					Put(usr, "<red>No one is invited here\n");
 				else
@@ -193,7 +193,7 @@ void state_room_config_menu(User *usr, char c) {
 			break;
 
 		case 'K':
-			Put(usr, "<white>Kickout\n");
+			Put(usr, "Kickout\n");
 			if (usr->curr_room == Lobby_room) {
 				Print(usr, "<red>You can't kick anyone from the <yellow>%s<white>>\n", Lobby_room->name);
 				break;
@@ -209,7 +209,7 @@ void state_room_config_menu(User *usr, char c) {
 			Return;
 
 		case 'k':
-			Put(usr, "<white>Show kicked\n");
+			Put(usr, "Show kicked\n");
 			if (usr->curr_room->kicked == NULL)
 				Put(usr, "<red>No one has been kicked out\n");
 			else
@@ -221,7 +221,7 @@ void state_room_config_menu(User *usr, char c) {
 			if (!(usr->runtime_flags & RTF_SYSOP) || (usr->curr_room->flags & ROOM_HOME))
 				break;
 
-			Print(usr, "<white>Assign/unassign %s\n\n", PARAM_NAME_ROOMAIDE);
+			Print(usr, "Assign/unassign %s\n\n", PARAM_NAME_ROOMAIDE);
 			if (usr->curr_room->room_aides != NULL) {
 				StringList *sl;
 
@@ -246,7 +246,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM) {
-				Put(usr, "<white>Change room name\n");
+				Put(usr, "Change room name\n");
 				CALL(usr, STATE_CHANGE_ROOMNAME);
 				Return;
 			}
@@ -258,7 +258,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>Reset creation date\n");
+				Put(usr, "Reset creation date\n");
 				usr->curr_room->generation = (unsigned long)rtc;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
@@ -270,7 +270,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>Remove all posts\n");
+				Put(usr, "Remove all posts\n");
 				CALL(usr, STATE_REMOVE_ALL_POSTS);
 				Return;
 			}
@@ -281,7 +281,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>Delete room\n");
+				Put(usr, "Delete room\n");
 				CALL(usr, STATE_DELETE_ROOM);
 				Return;
 			}
@@ -291,7 +291,7 @@ void state_room_config_menu(User *usr, char c) {
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
-			Put(usr, "<white>1 (subjects)\n");
+			Put(usr, "1 (subjects)\n");
 			usr->curr_room->flags ^= ROOM_SUBJECTS;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
 			CURRENT_STATE(usr);
@@ -301,7 +301,7 @@ void state_room_config_menu(User *usr, char c) {
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
-			Put(usr, "<white>2 (anonymous)\n");
+			Put(usr, "2 (anonymous)\n");
 			usr->curr_room->flags ^= ROOM_ANONYMOUS;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
 			CURRENT_STATE(usr);
@@ -312,7 +312,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>3 (invite-only)\n");
+				Put(usr, "3 (invite-only)\n");
 				usr->curr_room->flags ^= ROOM_INVITE_ONLY;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
@@ -325,7 +325,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>4 (read-only)\n");
+				Put(usr, "4 (read-only)\n");
 				usr->curr_room->flags ^= ROOM_READONLY;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
@@ -338,7 +338,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>5 (not zappable)\n");
+				Put(usr, "5 (not zappable)\n");
 				usr->curr_room->flags ^= ROOM_NOZAP;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
@@ -351,7 +351,7 @@ void state_room_config_menu(User *usr, char c) {
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
-				Put(usr, "<white>6 (hidden)\n");
+				Put(usr, "6 (hidden)\n");
 				usr->curr_room->flags ^= ROOM_HIDDEN;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 				CURRENT_STATE(usr);
@@ -365,7 +365,7 @@ void state_room_config_menu(User *usr, char c) {
 					break;
 
 				if (usr->runtime_flags & RTF_SYSOP) {
-					Put(usr, "<white>7 (chat)\n");
+					Put(usr, "7 (chat)\n");
 					usr->curr_room->flags ^= ROOM_CHATROOM;
 					usr->runtime_flags |= RTF_ROOM_EDITED;
 					CURRENT_STATE(usr);

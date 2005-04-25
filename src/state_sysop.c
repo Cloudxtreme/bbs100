@@ -123,7 +123,7 @@ void state_sysop_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "<white>Help\n");
+			Put(usr, "Help\n");
 			listdestroy_StringList(usr->more_text);
 			if ((usr->more_text = load_screen(PARAM_HELP_SYSOP)) == NULL) {
 				Put(usr, "<red>No help available\n");
@@ -135,13 +135,13 @@ void state_sysop_menu(User *usr, char c) {
 
 		case 'r':
 		case 'R':
-			Put(usr, "<white>Create room\n");
+			Put(usr, "Create room\n");
 			CALL(usr, STATE_CREATE_ROOM);
 			Return;
 
 		case KEY_CTRL('D'):
 			if (usr->curr_room->number >= SPECIAL_ROOMS) {
-				Put(usr, "<white>Delete room\n");
+				Put(usr, "Delete room\n");
 				CALL(usr, STATE_DELETE_ROOM_NAME);
 				Return;
 			}
@@ -150,7 +150,7 @@ void state_sysop_menu(User *usr, char c) {
 		case 'c':
 		case 'C':
 			if (PARAM_HAVE_CATEGORY) {
-				Put(usr, "<white>Categories\n");
+				Put(usr, "Categories\n");
 				CALL(usr, STATE_CATEGORIES_MENU);
 				Return;
 			}
@@ -158,7 +158,7 @@ void state_sysop_menu(User *usr, char c) {
 
 		case 'd':
 		case 'D':
-			Put(usr, "<white>Disconnect user\n");
+			Put(usr, "Disconnect user\n");
 
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
@@ -167,7 +167,7 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('N'):
-			Put(usr, "<white>Nuke user\n");
+			Put(usr, "Nuke user\n");
 
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
@@ -177,20 +177,20 @@ void state_sysop_menu(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			Put(usr, "<white>Banish user\n");
+			Put(usr, "Banish user\n");
 			CALL(usr, STATE_BANISH_USER);
 			Return;
 
 		case 'w':
 		case 'W':
-			Put(usr, "<white>Edit wrappers\n");
+			Put(usr, "Edit wrappers\n");
 			usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
 			CALL(usr, STATE_ADD_WRAPPER);
 			Return;
 
 		case 'u':
 		case 'U':
-			Put(usr, "<white>Uncache file\n");
+			Put(usr, "Uncache file\n");
 			CALL(usr, STATE_UNCACHE_FILE);
 			Return;
 
@@ -201,25 +201,25 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('P'):
-			Put(usr, "<white>Parameters\n");
+			Put(usr, "Parameters\n");
 			CALL(usr, STATE_PARAMETERS_MENU);
 			Return;
 
 		case 'p':
 		case 'P':
-			Put(usr, "<white>Password\n");
+			Put(usr, "Password\n");
 			CALL(usr, STATE_SU_PASSWD);
 			Return;
 
 		case KEY_CTRL('R'):
-			Put(usr, "<white>Reboot\n");
+			Put(usr, "Reboot\n");
 			CALL(usr, STATE_REBOOT_TIME);
 			Return;
 
 		case 'o':
 		case 'O':
 			if (reboot_timer != NULL) {
-				Put(usr, "<white>Cancel reboot\n"
+				Put(usr, "Cancel reboot\n"
 					"<red>Reboot cancelled\n"
 				);
 				remove_Timer(&timerq, reboot_timer);
@@ -234,14 +234,14 @@ void state_sysop_menu(User *usr, char c) {
 			break;
 
 		case KEY_CTRL('S'):
-			Put(usr, "<white>Shutdown\n");
+			Put(usr, "Shutdown\n");
 			CALL(usr, STATE_SHUTDOWN_TIME);
 			Return;
 
 		case 's':
 		case 'S':
 			if (shutdown_timer != NULL) {
-				Put(usr, "<white>Cancel shutdown\n"
+				Put(usr, "Cancel shutdown\n"
 					"<red>Shutdown cancelled\n"
 				);
 				remove_Timer(&timerq, shutdown_timer);
@@ -258,7 +258,7 @@ void state_sysop_menu(User *usr, char c) {
 		case 'n':
 		case 'N':
 			if (nologin_screen != NULL) {
-				Put(usr, "<white>Deactivate nologin\n");
+				Put(usr, "Deactivate nologin\n");
 
 				listdestroy_StringList(nologin_screen);
 				nologin_screen = NULL;
@@ -270,7 +270,7 @@ void state_sysop_menu(User *usr, char c) {
 			} else {
 				StringList *sl;
 
-				Put(usr, "<white>Activate nologin\n");
+				Put(usr, "Activate nologin\n");
 
 				if ((sl = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL) {
 					Perror(usr, "Failed to load nologin_screen");
@@ -441,13 +441,13 @@ void state_categories_menu(User *usr, char c) {
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Add category\n");
+			Put(usr, "Add category\n");
 			CALL(usr, STATE_ADD_CATEGORY);
 			Return;
 
 		case 'r':
 		case 'R':
-			Put(usr, "<white>Remove category\n");
+			Put(usr, "Remove category\n");
 			CALL(usr, STATE_REMOVE_CATEGORY);
 			Return;
 	}
@@ -767,7 +767,7 @@ int i;
 		if (i == 1) {
 			int addr[8], mask[8];
 
-			Put(usr, "<white>Add wrapper\n");
+			Put(usr, "Add wrapper\n");
 			if ((w = new_Wrapper()) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
@@ -862,7 +862,7 @@ char buf[MAX_LINE];
 
 		case 'a':
 		case 'A':
-			Put(usr, "<white>Allow/deny connection\n");
+			Put(usr, "Allow/deny connection\n");
 			w->flags ^= WRAPPER_ALLOW;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 			CURRENT_STATE(usr);
@@ -872,7 +872,7 @@ char buf[MAX_LINE];
 		case 'T':
 			if (PARAM_HAVE_WRAPPER_ALL) {
 				w->flags ^= WRAPPER_APPLY_ALL;
-				Print(usr, "<white>Apply to %s\n", (w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
+				Print(usr, "Apply to %s\n", (w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
 				usr->runtime_flags |= RTF_WRAPPER_EDITED;
 				CURRENT_STATE(usr);
 				Return;
@@ -881,25 +881,25 @@ char buf[MAX_LINE];
 
 		case 'i':
 		case 'I':
-			Put(usr, "<white>IP address\n");
+			Put(usr, "IP address\n");
 			CALL(usr, STATE_IPADDR_WRAPPER);
 			Return;
 
 		case 'm':
 		case 'M':
-			Put(usr, "<white>IP mask\n");
+			Put(usr, "IP mask\n");
 			CALL(usr, STATE_IPMASK_WRAPPER);
 			Return;
 
 		case 'c':
 		case 'C':
-			Put(usr, "<white>Comment\n");
+			Put(usr, "Comment\n");
 			CALL(usr, STATE_COMMENT_WRAPPER);
 			Return;
 
 		case 'n':
 		case 'N':
-			Put(usr, "<white>Add new wrapper\n");
+			Put(usr, "Add new wrapper\n");
 			if ((w = new_Wrapper()) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
@@ -918,7 +918,7 @@ char buf[MAX_LINE];
 
 		case 'd':
 		case 'D':
-			Put(usr, "<white>Delete\n");
+			Put(usr, "Delete\n");
 			remove_Wrapper(&AllWrappers, w);
 			destroy_Wrapper(w);
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
@@ -2264,26 +2264,26 @@ StringList *sl;
 	Return
 
 		case '1':
-			Put(usr, "<white>Reload login screen\n");
+			Put(usr, "Reload login screen\n");
 			RELOAD_FILE(PARAM_LOGIN_SCREEN, login_screen);
 
 		case '2':
-			Put(usr, "<white>Reload logout screen\n");
+			Put(usr, "Reload logout screen\n");
 			RELOAD_FILE(PARAM_LOGOUT_SCREEN, logout_screen);
 
 		case '3':
-			Put(usr, "<white>Reload motd\n");
+			Put(usr, "Reload motd\n");
 			RELOAD_FILE(PARAM_MOTD_SCREEN, motd_screen);
 /*
 	the crash screen is not cached
 	(just in case the cache becomes corrupted as well)
 */
 		case '4':
-			Put(usr, "<white>Reload crash screen\n");
+			Put(usr, "Reload crash screen\n");
 			RELOAD_FILE(PARAM_CRASH_SCREEN, crash_screen);
 
 		case '5':
-			Put(usr, "<white>Reload first login screen\n");
+			Put(usr, "Reload first login screen\n");
 			UNCACHE_FILE(PARAM_FIRST_LOGIN);
 
 		case '6':
@@ -2905,7 +2905,7 @@ void state_features_menu(User *usr, char c) {
 		case 'g':
 		case 'G':
 			PARAM_HAVE_CATEGORY ^= PARAM_TRUE;
-			Print(usr, "<white>%s categories\n", (PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "Disabling" : "Enabling");
+			Print(usr, "%s categories\n", (PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "Disabling" : "Enabling");
 			usr->runtime_flags |= RTF_PARAM_EDITED;
 
 			if (PARAM_HAVE_CATEGORY)

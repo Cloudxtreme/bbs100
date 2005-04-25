@@ -173,7 +173,17 @@ char buf[20], c;
 	word-wrapping for long strings
 */
 			case ' ':
+			case '.':
+			case ':':
+			case ';':
+			case ',':
+			case '-':
+			case '[':
+			case '{':
 				if (*cpos + word_len(str+1) >= usr->term_width) {
+					if (*str != ' ')
+						Writechar(usr, *str);
+
 					Writechar(usr, '\r');
 					Writechar(usr, '\n');
 					*cpos = 0;
