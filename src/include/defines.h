@@ -46,6 +46,8 @@
 #define SECS_IN_DAY			(24 * SECS_IN_HOUR)
 #define SECS_IN_WEEK		(7 * SECS_IN_DAY)
 
+#define SOME_TIME			(10 * SECS_IN_MIN)
+
 #endif	/* DEFINES_H_WJ99 */
 
 /* EOB */

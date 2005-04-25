@@ -103,7 +103,7 @@ static int update_timerqueue(Timer **queue, void *arg, int tdiff) {
 Timer *t, *t_next;
 
 	if (queue == NULL || *queue == NULL)
-		return 10 * SECS_IN_MIN;
+		return SOME_TIME;
 
 	for(t = *queue; t != NULL; t = t_next) {
 		t_next = t->next;
@@ -131,7 +131,7 @@ Timer *t, *t_next;
 				add_Timer(queue, t);
 		}
 	}
-	return (*queue == NULL) ? 10 * SECS_IN_MIN : (*queue)->sleeptime;
+	return (*queue == NULL) ? SOME_TIME : (*queue)->sleeptime;
 }
 
 /*
@@ -155,7 +155,7 @@ User *usr, *usr_next;
 	tdiff = (int)((unsigned long)rtc - (unsigned long)old_rtc);
 	old_rtc = rtc;
 
-	nap = 10 * SECS_IN_MIN;			/* 10 minutes */
+	nap = SOME_TIME;
 
 /* update the user timers */
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {
