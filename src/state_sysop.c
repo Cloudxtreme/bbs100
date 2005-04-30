@@ -472,6 +472,10 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
 		if (in_Category(usr->edit_buf))
 			Put(usr, "<red>Category already exists\n");
 		else {
@@ -804,7 +808,7 @@ int i;
 */
 void state_edit_wrapper(User *usr, char c) {
 Wrapper *w;
-int i, addr[8], mask[8];
+int i;
 char buf[MAX_LINE];
 
 	if (usr == NULL)
@@ -847,7 +851,7 @@ char buf[MAX_LINE];
 			Print(usr,
 				"<hotkey>Comment                      <cyan>%s<magenta>\n"
 				"\n"
-				"Add <hotkey>new wrapper              <hotkey>Delete this wrapper\n",
+				"<hotkey>Delete this wrapper\n",
 
 				(w->comment == NULL) ? "" : w->comment
 			);
@@ -895,25 +899,6 @@ char buf[MAX_LINE];
 		case 'C':
 			Put(usr, "Comment\n");
 			CALL(usr, STATE_COMMENT_WRAPPER);
-			Return;
-
-		case 'n':
-		case 'N':
-			Put(usr, "Add new wrapper\n");
-			if ((w = new_Wrapper()) == NULL) {
-				Perror(usr, "Out of memory");
-				RET(usr);
-				Return;
-			}
-			memset(addr, 0, sizeof(int)*8);
-			for(i = 0; i < 8; i++)
-				mask[i] = 0xffff;
-
-			set_Wrapper(w, 0, addr, mask, NULL);
-			add_Wrapper(&AllWrappers, w);
-			usr->read_lines = list_Count(AllWrappers) - 1;
-			usr->runtime_flags |= RTF_WRAPPER_EDITED;
-			CURRENT_STATE(usr);
 			Return;
 
 		case 'd':

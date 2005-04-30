@@ -59,13 +59,14 @@ typedef struct {
 
 typedef struct {
 	char *name;
-	Hash *hash, *keymaps;
+	Hash *hash, *keymaps, *unknown;
 	Locale *locale;
 	int refcount;
 } Lang;
 
 extern Hash *languages;
 extern Lang *default_language;
+extern int lang_debug;
 
 int init_Lang(void);
 
@@ -80,6 +81,8 @@ Lang *add_language(char *);
 
 char *translate(Lang *, char *);
 char *translate_by_name(char *, char *);
+
+void log_unknown_translation(char *, char *);
 
 void dump_Lang(Lang *);
 void dump_languages(void);

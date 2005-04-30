@@ -49,6 +49,7 @@ Hash *h;
 		return NULL;
 	}
 	h->size = HASH_MIN_SIZE;
+	h->hashaddr = hashaddr_crc32;
 	return h;
 }
 

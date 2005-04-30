@@ -48,6 +48,8 @@
 Hash *languages = NULL;
 Lang *default_language = NULL;
 
+int lang_debug = 1;
+
 
 int init_Lang(void) {
 	if (languages == NULL && (languages = new_Hash()) == NULL)
@@ -79,6 +81,9 @@ Lang *l;
 		return NULL;
 	}
 	l->hash->hashaddr = hashaddr_lang;
+
+	if (lang_debug)
+		l->unknown = new_Hash();
 	return l;
 }
 
@@ -107,6 +112,10 @@ HashList *hl;
 	}
 	destroy_Hash(l->hash);
 	l->hash = NULL;
+
+	destroy_Hash(l->unknown);
+	l->unknown = NULL;
+
 	Free(l);
 }
 
@@ -175,6 +184,10 @@ struct dirent *direntp;
 
 		l->refcount = 1;
 /*		dump_Lang(l);	*/
+	}
+	if (lang_debug) {
+		sprintf(filename, "log/unknown.%s", lang);
+		unlink(filename);
 	}
 	return l;
 }
@@ -430,9 +443,15 @@ static char textbuf[PRINT_BUF];
 
 	key = hashaddr_lang(textbuf);
 	sprintf(keybuf, "%x", key);
-	if ((translated = (char *)in_Hash(l->hash, keybuf)) == NULL)
+	if ((translated = (char *)in_Hash(l->hash, keybuf)) == NULL) {
+		if (lang_debug) {
+			if (in_Hash(l->unknown, keybuf) == NULL) {
+				add_Hash(l->unknown, keybuf, cstrdup(textbuf));
+				log_unknown_translation(l->name, textbuf);
+			}
+		}
 		return text;
-
+	}
 	if (n + strlen(translated) + strlen(endp) >= PRINT_BUF) {
 		log_err("translate(): translated text too long for %s:'%s'", l->name, text);
 		return text;
@@ -453,6 +472,15 @@ char *translate_by_name(char *lang, char *text) {
 	return translate((Lang *)in_Hash(languages, lang), text);
 }
 
+void log_unknown_translation(char *lang, char *text) {
+FILE *f;
+char filename[MAX_PATHLEN];
+
+	sprintf(filename, "log/unknown.%s", lang);
+	f = fopen(filename, "a+");
+	fprintf(f, "%s\n\n", text);
+	fclose(f);
+}
 
 void dump_Lang(Lang *l) {
 int i;
