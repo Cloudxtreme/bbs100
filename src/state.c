@@ -1590,15 +1590,11 @@ int r;
 		}
 		Put(usr, "\n");
 
-		usr->textp = usr->more_text = rewind_StringList(usr->more_text);
-		usr->read_lines = 0;
-		usr->total_lines = list_Count(usr->more_text);
-
-		JMP(usr, STATE_MORE_PROMPT);	/* read profile with --More-- prompt */
+		POP(usr);
+		read_more(usr);
 	}
 	Return;
 }
-
 
 void loop_send_msg(User *usr, char c) {
 	if (usr == NULL)

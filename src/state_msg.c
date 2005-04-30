@@ -854,11 +854,9 @@ Joined *j;
 			strcpy(stats.most_read, usr->name);
 		}
 	}
-	usr->textp = usr->more_text = rewind_StringList(usr->more_text);
-	usr->read_lines = 0;
-	usr->total_lines = list_Count(usr->more_text);
+	POP(usr);
+	read_more(usr);
 
-	JMP(usr, STATE_MORE_PROMPT);
 	Return;
 }
 
@@ -1701,7 +1699,7 @@ void read_more(User *usr) {
 }
 
 void state_more_prompt(User *usr, char c) {
-int l;
+int l, cpos;
 StringList *sl;
 
 	if (usr == NULL)
@@ -1718,7 +1716,10 @@ StringList *sl;
 			}
 			l = 0;
 			for(sl = usr->textp; l < usr->term_height-1 && sl != NULL;) {
-				Print(usr, "%s\n", sl->str);
+				cpos = 0;
+				Out(usr, sl->str, &cpos);
+				Out(usr, "\n", &cpos);
+
 				sl = sl->next;
 				usr->read_lines++;
 				l++;
@@ -1749,7 +1750,10 @@ StringList *sl;
 		case 'n':
 		case 'N':
 			for(l = 0; l < usr->term_height && usr->textp != NULL; l++) {
-				Print(usr, "%s\n", usr->textp->str);
+				cpos = 0;
+				Out(usr, usr->textp->str, &cpos);
+				Out(usr, "\n", &cpos);
+
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
 			}
@@ -1758,8 +1762,11 @@ StringList *sl;
 		case KEY_RETURN:
 		case '+':
 		case '=':
-			if (usr->textp->str != NULL)
-				Print(usr, "%s\n", usr->textp->str);
+			if (usr->textp->str != NULL) {
+				cpos = 0;
+				Out(usr, usr->textp->str, &cpos);
+				Out(usr, "\n", &cpos);
+			}
 			usr->textp = usr->textp->next;
 			usr->read_lines++;
 			break;
@@ -1776,9 +1783,11 @@ StringList *sl;
 					break;
 			}
 			for(l = 0; l < usr->term_height; l++) {
-				if (usr->textp != NULL)
-					Print(usr, "%s\n", usr->textp->str);
-				else
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
 					break;
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -1790,9 +1799,11 @@ StringList *sl;
 			usr->read_lines = 0;
 
 			for(l = 0; l < usr->term_height; l++) {
-				if (usr->textp != NULL)
-					Print(usr, "%s\n", usr->textp->str);
-				else
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
 					break;
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -1818,9 +1829,11 @@ StringList *sl;
 
 /* display it */
 			for(l = 0; l < usr->term_height; l++) {
-				if (usr->textp != NULL)
-					Print(usr, "%s\n", usr->textp->str);
-				else
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
 					break;
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -2008,7 +2021,6 @@ void state_more_notfound(User *usr, char c) {
 		Put(usr, "<beep>");
 	Return;
 }
-
 
 void state_enter_forward_recipients(User *usr, char c) {
 	if (usr == NULL)
