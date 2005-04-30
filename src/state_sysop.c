@@ -1507,7 +1507,7 @@ void state_malloc_status(User *usr, char c) {
 				line[l] = 0;
 			}
 		}
-		if (i & 1)
+		if (!(i & 1))
 			Put(usr, "\n");
 
 		Put(usr, "\n"

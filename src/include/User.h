@@ -40,9 +40,9 @@
 
 #include <sys/types.h>
 
-#define add_User(x,y)			add_List((x), (y))
-#define concat_User(x,y)		concat_List((x), (y))
-#define remove_User(x,y)		remove_List((x), (y))
+#define add_User(x,y)			(User *)add_List((x), (y))
+#define concat_User(x,y)		(User *)concat_List((x), (y))
+#define remove_User(x,y)		(User *)remove_List((x), (y))
 #define rewind_User(x)			(User *)rewind_List((x))
 #define unwind_User(x)			(User *)unwind_List((x))
 #define listdestroy_User(x)		listdestroy_List((x), destroy_User)

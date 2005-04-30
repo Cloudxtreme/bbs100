@@ -27,7 +27,7 @@
 
 #define add_SymbolTable(x,y)		(SymbolTable *)add_List((x), (y))
 #define concat_SymbolTable(x,y)		(SymbolTable *)concat_List((x), (y))
-#define remove_SymbolTable(x,y)		remove_List((x), (y))
+#define remove_SymbolTable(x,y)		(SymbolTable *)remove_List((x), (y))
 #define listdestroy_SymbolTable(x)	listdestroy_List((x), destroy_SymbolTable)
 #define rewind_SymbolTable(x)		(SymbolTable *)rewind_List(x)
 #define unwind_SymbolTable(x)		(SymbolTable *)unwind_List(x)

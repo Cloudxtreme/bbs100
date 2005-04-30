@@ -54,7 +54,7 @@ CallStack *cs;
 		return;
 
 	cs->ip = state;
-	conn->callstack = add_CallStack(&conn->callstack, cs);
+	conn->callstack = push_CallStack(&conn->callstack, cs);
 }
 
 /*
@@ -103,7 +103,8 @@ void Ret(Conn *conn) {
 	if (conn == NULL)
 		return;
 
-	Pop(conn);
+	destroy_CallStack(pop_CallStack(&conn->callstack));
+
 	if (conn->callstack != NULL && conn->callstack->ip != NULL)
 		conn->callstack->ip(conn->data, INIT_STATE);
 }

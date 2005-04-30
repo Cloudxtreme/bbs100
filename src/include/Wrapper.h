@@ -25,9 +25,9 @@
 
 #include "List.h"
 
-#define add_Wrapper(x,y)		add_List((x), (y))
-#define concat_Wrapper(x,y)		concat_List((x), (y))
-#define remove_Wrapper(x,y)		remove_List((x), (y))
+#define add_Wrapper(x,y)		(Wrapper *)add_List((x), (y))
+#define concat_Wrapper(x,y)		(Wrapper *)concat_List((x), (y))
+#define remove_Wrapper(x,y)		(Wrapper *)remove_List((x), (y))
 #define rewind_Wrapper(x)		(Wrapper *)rewind_List((x))
 #define listdestroy_Wrapper(x)	listdestroy_List((x), destroy_Wrapper)
 

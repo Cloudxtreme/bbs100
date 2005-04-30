@@ -31,7 +31,7 @@
 #define NULL	0
 #endif
 
-void *add_List(void *v1, void *v2) {
+ListType *add_List(void *v1, void *v2) {
 ListType **root, *l;
 
 	if (v1 == NULL)
@@ -55,7 +55,34 @@ ListType **root, *l;
 		lp->next = l;
 		l->prev = lp;
 	}
-	return (void *)l;
+	return l;
+}
+
+ListType *prepend_List(void *v1, void *v2) {
+ListType **root, *l;
+
+	if (v1 == NULL)
+		return NULL;
+
+	root = (ListType **)v1;
+	l = (ListType *)v2;
+
+	if (l == NULL)
+		return (void *)*root;
+
+	l->prev = l->next = NULL;
+	if (*root == NULL)
+		*root = l;
+	else {
+		ListType *lp;
+
+/* Link in at the beginning of the list */
+
+		for(lp = *root; lp->prev != NULL; lp = lp->prev);
+		lp->prev = l;
+		l->next = lp;
+	}
+	return l;
 }
 
 /*
@@ -81,7 +108,7 @@ void (*destroy_func)(ListType *);
 	}
 }
 
-void *concat_List(void *v1, void *v2) {
+ListType *concat_List(void *v1, void *v2) {
 ListType **root, *l;
 
 	if (v1 == NULL)
@@ -105,17 +132,17 @@ ListType **root, *l;
 	return (void *)l;
 }
 
-void remove_List(void *v1, void *v2) {
+ListType *remove_List(void *v1, void *v2) {
 ListType **root, *l;
 
 	if (v1 == NULL || v2 == NULL)
-		return;
+		return NULL;
 
 	root = (ListType **)v1;
 	l = (ListType *)v2;
 
 	if (*root == NULL)
-		return;
+		return NULL;
 
 	if (l->prev == NULL)				/* it is the root node */
 		*root = l->next;
@@ -125,28 +152,33 @@ ListType **root, *l;
 	if (l->next != NULL)
 		l->next->prev = l->prev;
 	l->next = l->prev = NULL;
+	return l;
 }
 
-void pop_List(void *v1, void *v2) {
+/*
+	pops off the beginning of the list
+*/
+ListType *pop_List(void *v) {
 ListType **root, *l;
-void (*destroy_func)(ListType *);
 
-	if (v1 == NULL || v2 == NULL)
-		return;
+	if (v == NULL)
+		return NULL;
 
-	root = (ListType **)v1;
+	root = (ListType **)v;
 	if (*root == NULL)
-		return;
-
-	destroy_func = (void (*)(ListType *))v2;
+		return NULL;
 
 	l = *root;
-	*root = l->prev;
-	if (*root != NULL)
-		(*root)->next = NULL;
-	destroy_func(l);
-}
+	if (l != NULL)
+		while(l->prev != NULL)
+			l = l->prev;
 
+	*root = l->next;
+	if (*root != NULL)
+		(*root)->prev = NULL;
+	l->prev = l->next = NULL;
+	return l;
+}
 
 int list_Count(void *v) {
 ListType *l;
@@ -157,7 +189,7 @@ int c = 0;
 	return c;
 }
 
-void *rewind_List(void *v) {
+ListType *rewind_List(void *v) {
 ListType *root;
 
 	if (v == NULL)
@@ -170,7 +202,7 @@ ListType *root;
 	return root;		
 }
 
-void *unwind_List(void *v) {
+ListType *unwind_List(void *v) {
 ListType *root;
 
 	if (v == NULL)
@@ -186,7 +218,7 @@ ListType *root;
 /*
 	sort a list using qsort()
 */
-void *sort_List(void *v, int (*sort_func)(void *, void *)) {
+ListType *sort_List(void *v, int (*sort_func)(void *, void *)) {
 ListType *root, *p, **arr;
 int count, i;
 

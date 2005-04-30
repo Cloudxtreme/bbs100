@@ -27,7 +27,7 @@
 
 #define add_HashList(x,y)		(HashList *)add_List((x), (y))
 #define concat_HashList(x,y)	(HashList *)concat_List((x), (y))
-#define remove_HashList(x,y)	remove_List((x), (y))
+#define remove_HashList(x,y)	(HashList *)remove_List((x), (y))
 #define listdestroy_HashList(x)	listdestroy_List((x), destroy_HashList)
 #define rewind_HashList(x)		(HashList *)rewind_List(x)
 #define unwind_HashList(x)		(HashList *)unwind_List(x)

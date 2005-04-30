@@ -27,7 +27,7 @@
 
 #define add_PList(x,y)			(PList *)add_List((x), (y))
 #define concat_PList(x,y)		(PList *)concat_List((x), (y))
-#define remove_PList(x,y)		remove_List((x), (y))
+#define remove_PList(x,y)		(PList *)remove_List((x), (y))
 #define listdestroy_PList(x)	listdestroy_List((x), destroy_PList)
 #define rewind_PList(x)			(PList *)rewind_List(x)
 #define unwind_PList(x)			(PList *)unwind_List(x)

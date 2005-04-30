@@ -29,9 +29,9 @@
 #include "StringList.h"
 #include "sys_time.h"
 
-#define add_BufferedMsg(x,y)		add_List((x), (y))
-#define concat_BufferedMsg(x,y)		concat_List((x), (y))
-#define remove_BufferedMsg(x,y)		remove_List((x), (y))
+#define add_BufferedMsg(x,y)		(BufferedMsg *)add_List((x), (y))
+#define concat_BufferedMsg(x,y)		(BufferedMsg *)concat_List((x), (y))
+#define remove_BufferedMsg(x,y)		(BufferedMsg *)remove_List((x), (y))
 #define listdestroy_BufferedMsg(x)	listdestroy_List((x), destroy_BufferedMsg)
 #define rewind_BufferedMsg(x)		(BufferedMsg *)rewind_List(x)
 #define unwind_BufferedMsg(x)		(BufferedMsg *)unwind_List(x)

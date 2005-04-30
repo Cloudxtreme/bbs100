@@ -30,9 +30,9 @@
 #include "List.h"
 #include "sys_time.h"
 
-#define add_Joined(x,y)			add_List((x), (y))
-#define concat_Joined(x,y)		concat_List((x), (y))
-#define remove_Joined(x,y)		remove_List((x), (y))
+#define add_Joined(x,y)			(Joined *)add_List((x), (y))
+#define concat_Joined(x,y)		(Joined *)concat_List((x), (y))
+#define remove_Joined(x,y)		(Joined *)remove_List((x), (y))
 #define rewind_Joined(x)		(Joined *)rewind_List((x))
 #define unwind_Joined(x)		(Joined *)unwind_List((x))
 #define listdestroy_Joined(x)	listdestroy_List((x), destroy_Joined)

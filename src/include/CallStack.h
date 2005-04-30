@@ -25,18 +25,12 @@
 
 #include "List.h"
 
-#define add_CallStack(x,y)			add_List((x), (y))
-#define concat_CallStack(x,y)		concat_List((x), (y))
-#define remove_CallStack(x,y)		remove_List((x), (y))
-#define pop_CallStack(x)			pop_List((x), destroy_CallStack)
-#define rewind_CallStack(x)			(CallStack *)rewind_List((x))
-#define unwind_CallStack(x)			(CallStack *)unwind_List((x))
+#define push_CallStack(x,y)			(CallStack *)prepend_List((x), (y))
+#define pop_CallStack(x)			(CallStack *)pop_List(x)
 #define listdestroy_CallStack(x)	listdestroy_List((x), destroy_CallStack)
 
-#define Pop(x)						pop_CallStack(&(x)->callstack)
-
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
-#define POP(x)						Pop((x)->conn)
+#define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
 #define CALL(x,y)					Call((x)->conn,(void (*)(void *, char))(y))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
 #define MOV(x,y)					Move((x)->conn,(void (*)(void *, char))(y))

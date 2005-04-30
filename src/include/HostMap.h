@@ -9,7 +9,7 @@
 
 #define add_HostMap(x,y)		(HostMap *)add_List((x), (y))
 #define concat_HostMap(x,y)		(HostMap *)concat_List((x), (y))
-#define remove_HostMap(x,y)		remove_List((x), (y))
+#define remove_HostMap(x,y)		(HostMap *)remove_List((x), (y))
 #define listdestroy_HostMap(x)	listdestroy_List((x), destroy_HostMap)
 #define rewind_HostMap(x)		(HostMap *)rewind_List(x)
 #define unwind_HostMap(x)		(HostMap *)unwind_List(x)

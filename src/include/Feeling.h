@@ -27,7 +27,7 @@
 
 #define add_Feeling(x,y)		(Feeling *)add_List((x), (y))
 #define concat_Feeling(x,y)		(Feeling *)concat_List((x), (y))
-#define remove_Feeling(x,y)		remove_List((x), (y))
+#define remove_Feeling(x,y)		(Feeling *)remove_List((x), (y))
 #define listdestroy_Feeling(x)	listdestroy_List((x), destroy_Feeling)
 #define rewind_Feeling(x)		(Feeling *)rewind_List(x)
 #define unwind_Feeling(x)		(Feeling *)unwind_List(x)

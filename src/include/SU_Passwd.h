@@ -27,9 +27,9 @@
 #include "defines.h"
 #include "passwd.h"
 
-#define add_SU_Passwd(x,y)			add_List((x), (y))
-#define concat_SU_Passwd(x,y)		concat_List((x), (y))
-#define remove_SU_Passwd(x,y)		remove_List((x), (y))
+#define add_SU_Passwd(x,y)			(SU_Passwd *)add_List((x), (y))
+#define concat_SU_Passwd(x,y)		(SU_Passwd *)concat_List((x), (y))
+#define remove_SU_Passwd(x,y)		(SU_Passwd *)remove_List((x), (y))
 #define rewind_SU_Passwd(x,y)		(SU_Passwd *)rewind_List((x), (y))
 #define unwind_SU_Passwd(x,y)		(SU_Passwd *)unwind_List((x), (y))
 #define listdestroy_SU_Passwd(x)	listdestroy_List((x), destroy_SU_Passwd)

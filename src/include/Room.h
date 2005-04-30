@@ -32,9 +32,9 @@
 #include "Message.h"
 #include "PList.h"
 
-#define add_Room(x,y)			add_List((x), (y))
-#define concat_Room(x,y)		concat_List((x), (y))
-#define remove_Room(x,y)		remove_List((x), (y))
+#define add_Room(x,y)			(Room *)add_List((x), (y))
+#define concat_Room(x,y)		(Room *)concat_List((x), (y))
+#define remove_Room(x,y)		(Room *)remove_List((x), (y))
 #define rewind_Room(x)			(Room *)rewind_List(x)
 #define unwind_Room(x)			(Room *)unwind_List(x)
 #define sort_Room(x,y)			(Room *)sort_List((x), (y))

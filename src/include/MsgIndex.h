@@ -27,9 +27,9 @@
 
 #include "List.h"
 
-#define add_MsgIndex(x,y)			add_List((x), (y))
-#define concat_MsgIndex(x,y)		concat_List((x), (y))
-#define remove_MsgIndex(x,y)		remove_List((x), (y))
+#define add_MsgIndex(x,y)			(MsgIndex *)add_List((x), (y))
+#define concat_MsgIndex(x,y)		(MsgIndex *)concat_List((x), (y))
+#define remove_MsgIndex(x,y)		(MsgIndex *)remove_List((x), (y))
 #define rewind_MsgIndex(x)			(MsgIndex *)rewind_List(x)
 #define unwind_MsgIndex(x)			(MsgIndex *)unwind_List(x)
 #define sort_MsgIndex(x, y)			(MsgIndex *)sort_List((x), (y))

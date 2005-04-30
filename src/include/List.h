@@ -31,15 +31,16 @@ struct List_tag {
 	List(ListType);
 };
 
-void *add_List(void *, void *);
+ListType *add_List(void *, void *);
+ListType *prepend_List(void *, void *);
 void listdestroy_List(void *, void *);
-void *concat_List(void *, void *);
-void remove_List(void *, void *);
-void pop_List(void *, void *);
+ListType *concat_List(void *, void *);
+ListType *remove_List(void *, void *);
+ListType *pop_List(void *);
 int list_Count(void *);
-void *rewind_List(void *);
-void *unwind_List(void *);
-void *sort_List(void *, int (*)(void *, void *));
+ListType *rewind_List(void *);
+ListType *unwind_List(void *);
+ListType *sort_List(void *, int (*)(void *, void *));
 
 #endif	/* _LIST_H_WJ99 */
 

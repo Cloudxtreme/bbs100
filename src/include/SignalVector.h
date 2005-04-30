@@ -25,9 +25,9 @@
 
 #include "List.h"
 
-#define add_SignalVector(x,y)			add_List((x), (y))
-#define concat_SignalVector(x,y)		concat_List((x), (y))
-#define remove_SignalVector(x,y)		remove_List((x), (y))
+#define add_SignalVector(x,y)			(SignalVector *)add_List((x), (y))
+#define concat_SignalVector(x,y)		(SignalVector *)concat_List((x), (y))
+#define remove_SignalVector(x,y)		(SignalVector *)remove_List((x), (y))
 #define rewind_SignalVector(x,y)		(SignalVector *)rewind_List((x), (y))
 #define unwind_SignalVector(x,y)		(SignalVector *)unwind_List((x), (y))
 #define listdestroy_SignalVector(x)		listdestroy_SignalVector((x), destroy_SignalVector)
