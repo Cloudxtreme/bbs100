@@ -428,10 +428,10 @@ void state_display_motd(User *usr, char c) {
 }
 
 void state_go_online(User *usr, char c) {
-int num_users = 0, num_friends = 0, i, new_mail, l;
+int num_users = 0, num_friends = 0, i, new_mail;
 Joined *j;
 User *u;
-char num_buf[25], exclaim[5], line[PRINT_BUF];
+char num_buf[25], exclaim[5];
 
 	if (usr == NULL)
 		return;
@@ -477,10 +477,8 @@ char num_buf[25], exclaim[5], line[PRINT_BUF];
 	update_stats(usr);
 
 	Put(usr, "\n");
-	l = 0;
-	line[0] = 0;
 	if (usr->logins > 1)
-		l += sprintf(line, "<green>Welcome back, <yellow>%s<green>! ", usr->name);
+		Print(usr, "<green>Welcome back, <yellow>%s<green>! ", usr->name);
 	else {
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];
@@ -497,10 +495,7 @@ char num_buf[25], exclaim[5], line[PRINT_BUF];
 		sprintf(exclaim, "!!!");
 	else
 		exclaim[0] = 0;
-	l += sprintf(line+l, "This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
-	Put(usr, line);
-	l = 0;
-	line[0] = 0;
+	Print(usr, "This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
 
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
