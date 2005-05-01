@@ -30,6 +30,7 @@
 #define listdestroy_KVPair(x)	listdestroy_List((x), destroy_KVPair)
 #define rewind_KVPair(x)		(KVPair *)rewind_List(x)
 #define unwind_KVPair(x)		(KVPair *)unwind_List(x)
+#define sort_KVPair(x, y)		(KVPair *)sort_List((x), (y))
 
 typedef union {
 	int i;

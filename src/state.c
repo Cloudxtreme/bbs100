@@ -218,7 +218,7 @@ int i;
 			Return;
 
 		case 'w':
-			Put(usr, "<white>Who\n");
+			Put(usr, "<white>Who\n\n");
 			if (usr->flags & USR_SHORT_WHO)
 				who_list(usr, WHO_LIST_SHORT);
 			else
@@ -226,7 +226,7 @@ int i;
 			Return;
 
 		case 'W':
-			Put(usr, "<white>Who\n");
+			Put(usr, "<white>Who\n\n");
 			if (usr->flags & USR_SHORT_WHO)
 				who_list(usr, WHO_LIST_LONG);
 			else
