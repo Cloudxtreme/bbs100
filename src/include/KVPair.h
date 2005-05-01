@@ -32,6 +32,13 @@
 #define unwind_KVPair(x)		(KVPair *)unwind_List(x)
 #define sort_KVPair(x, y)		(KVPair *)sort_List((x), (y))
 
+#define KV_UNKNOWN	0
+#define KV_BOOL		1
+#define KV_INT		2
+#define KV_LONG		3
+#define KV_STRING	4
+#define KV_POINTER	5
+
 typedef union {
 	int i;
 	long l;
@@ -44,6 +51,7 @@ typedef struct KVPair_tag KVPair;
 struct KVPair_tag {
 	List(KVPair);
 
+	int type;					/* mostly for debugging purposes only */
 	char *key;
 	KVPair_value value;
 	void (*destroy)(void *);
@@ -52,15 +60,19 @@ struct KVPair_tag {
 KVPair *new_KVPair(void);
 void destroy_KVPair(KVPair *);
 
+void KVPair_setbool(KVPair *, char *, int);
 void KVPair_setint(KVPair *, char *, int);
 void KVPair_setlong(KVPair *, char *, long);
 void KVPair_setstring(KVPair *, char *, char *);
 void KVPair_setpointer(KVPair *, char *, void *, void (*)(void *));
 
+int KVPair_getbool(KVPair *);
 int KVPair_getint(KVPair *);
 long KVPair_getlong(KVPair *);
 char *KVPair_getstring(KVPair *);
 void *KVPair_getpointer(KVPair *);
+
+int print_KVPair(KVPair *, char *);
 
 #endif	/* KVPAIR_H_WJ105 */
 
