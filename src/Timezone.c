@@ -381,7 +381,7 @@ int i;
 		if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
 			tz->next_idx = tz->curr_idx;
 	}											/* else we have only 1 entry */
-	if (add_Hash(tz_hash, name, tz) == -1) {
+	if (add_Hash(tz_hash, name, tz, (void (*)(void *))destroy_Timezone) == -1) {
 		log_err("load_Timezone(): failed to add new Timezone to tz_hash");
 		destroy_Timezone(tz);
 		return NULL;

@@ -88,9 +88,6 @@ Lang *l;
 }
 
 void destroy_Lang(Lang *l) {
-int i;
-HashList *hl;
-
 	if (l == NULL)
 		return;
 
@@ -100,15 +97,6 @@ HashList *hl;
 	if (l->name != NULL) {
 		Free(l->name);
 		l->name = NULL;
-	}
-/*
-	free all data that is stored in the hash
-*/
-	for(i = 0; i < l->hash->size; i++) {
-		for(hl = l->hash->hash[i]; hl != NULL; hl = hl->next) {
-			Free((char *)hl->value);
-			hl->value = NULL;
-		}
 	}
 	destroy_Hash(l->hash);
 	l->hash = NULL;
@@ -283,7 +271,7 @@ int line_no, errors, continued, len, key;
 			continued = 0;
 			continue;
 		}
-		if (add_Hash(l->hash, keybuf, cstrdup(line_buf)) == -1) {
+		if (add_Hash(l->hash, keybuf, cstrdup(line_buf), Free) == -1) {
 			log_err("load_phrasebook(%s): failed to add a new phrase\n", filename);
 			errors++;
 			break;
@@ -355,7 +343,7 @@ Lang *l;
 		destroy_Lang(l);
 		return NULL;
 	}
-	if (add_Hash(languages, lang, l) == -1) {
+	if (add_Hash(languages, lang, l, (void (*)(void *))destroy_Lang) == -1) {
 		destroy_Lang(l);
 		return NULL;
 	}
@@ -446,7 +434,7 @@ static char textbuf[PRINT_BUF];
 	if ((translated = (char *)in_Hash(l->hash, keybuf)) == NULL) {
 		if (lang_debug) {
 			if (in_Hash(l->unknown, keybuf) == NULL) {
-				add_Hash(l->unknown, keybuf, cstrdup(textbuf));
+				add_Hash(l->unknown, keybuf, cstrdup(textbuf), Free);
 				log_unknown_translation(l->name, textbuf);
 			}
 		}
@@ -484,7 +472,7 @@ char filename[MAX_PATHLEN];
 
 void dump_Lang(Lang *l) {
 int i;
-HashList *hl;
+KVPair *hl;
 
 	log_debug("Lang {");
 	log_debug("  name = [%s]", l->name);
@@ -492,7 +480,7 @@ HashList *hl;
 
 	for(i = 0; i < l->hash->size; i++)
 		for(hl = l->hash->hash[i]; hl != NULL; hl = hl->next)
-			log_debug("    \"%s\" : \"%s\"", hl->key, (char *)hl->value);
+			log_debug("    \"%s\" : \"%s\"", hl->key, hl->value.s);
 
 	log_debug("  }");
 	log_debug("}");
@@ -500,7 +488,7 @@ HashList *hl;
 
 void dump_languages(void) {
 int i;
-HashList *hl;
+KVPair *hl;
 
 	log_debug("--- dump_languages():");
 
@@ -511,7 +499,7 @@ HashList *hl;
 	for(i = 0; i < languages->size; i++) {
 		for(hl = languages->hash[i]; hl != NULL; hl = hl->next) {
 			log_debug("--- dumping language %s", hl->key);
-			dump_Lang((Lang *)hl->value);
+			dump_Lang((Lang *)hl->value.v);
 		}
 	}
 	log_debug("--- end dump_languages()");

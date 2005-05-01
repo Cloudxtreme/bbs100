@@ -49,7 +49,7 @@ int add_OnlineUser(User *u) {
 	if (u == NULL || !u->name[0])
 		return -1;
 
-	return add_Hash(online_users, u->name, u);
+	return add_Hash(online_users, u->name, u, NULL);
 }
 
 void remove_OnlineUser(User *u) {

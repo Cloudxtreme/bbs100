@@ -2,11 +2,6 @@
 	Hash.c	WJ105
 
 	bbs100-style generic auto-sizing hash code
-
-	NOTES:
-	- To be able to use the Hash, give it a hashaddr function
-	- It does not know about how to destroy the data in the hash
-	  calling destroy_Hash() might easily leak memory ...
 */
 
 #include "config.h"
@@ -21,30 +16,13 @@
 #include <stdlib.h>
 
 
-HashList *new_HashList(char *key, void *value) {
-HashList *hl;
-
-	if (key == NULL || !*key || (hl = (HashList *)Malloc(sizeof(HashList), TYPE_HASHLIST)) == NULL)
-		return NULL;
-
-	strncpy(hl->key, key, MAX_HASH_KEY-1);
-	hl->key[MAX_HASH_KEY-1] = 0;
-	hl->value = value;
-	return hl;
-}
-
-void destroy_HashList(HashList *hl) {
-	Free(hl);
-}
-
-
 Hash *new_Hash(void) {
 Hash *h;
 
 	if ((h = (Hash *)Malloc(sizeof(Hash), TYPE_HASH)) == NULL)
 		return NULL;
 
-	if ((h->hash = (HashList **)Malloc(HASH_MIN_SIZE * sizeof(HashList *), TYPE_POINTER)) == NULL) {
+	if ((h->hash = (KVPair **)Malloc(HASH_MIN_SIZE * sizeof(KVPair *), TYPE_POINTER)) == NULL) {
 		Free(h);
 		return NULL;
 	}
@@ -59,7 +37,7 @@ void destroy_Hash(Hash *h) {
 			int i;
 
 			for(i = 0; i < h->size; i++)
-				listdestroy_HashList(h->hash[i]);
+				listdestroy_KVPair(h->hash[i]);
 
 			Free(h->hash);
 			h->hash = NULL;
@@ -70,7 +48,7 @@ void destroy_Hash(Hash *h) {
 }
 
 int resize_Hash(Hash *h, int newsize) {
-HashList **new_hash, *hl, *hl_next;
+KVPair **new_hash, *kv, *kv_next;
 int i, addr;
 
 	if (h == NULL || h->hashaddr == NULL)
@@ -82,19 +60,19 @@ int i, addr;
 	if (newsize == h->size)
 		return 0;
 
-	if ((new_hash = (HashList **)Malloc(newsize * sizeof(HashList **), TYPE_POINTER)) == NULL)
+	if ((new_hash = (KVPair **)Malloc(newsize * sizeof(KVPair **), TYPE_POINTER)) == NULL)
 		return -2;
 
 	for(i = 0; i < h->size; i++) {
-		for(hl = h->hash[i]; hl != NULL; hl = hl_next) {
-			hl_next = hl->next;
-			addr = h->hashaddr(hl->key);
+		for(kv = h->hash[i]; kv != NULL; kv = kv_next) {
+			kv_next = kv->next;
+			addr = h->hashaddr(kv->key);
 			if (addr < 0)
 				addr = -addr;
 			addr %= newsize;
 
-			hl->prev = hl->next = NULL;
-			add_HashList(&new_hash[addr], hl);
+			kv->prev = kv->next = NULL;
+			add_KVPair(&new_hash[addr], kv);
 		}
 	}
 	Free(h->hash);
@@ -103,20 +81,22 @@ int i, addr;
 	return 0;
 }
 
-int add_Hash(Hash *h, char *key, void *obj) {
+int add_Hash(Hash *h, char *key, void *obj, void (*destroy)(void *)) {
 int addr;
-HashList *hl;
+KVPair *kv;
 
 	if (h == NULL || h->hashaddr == NULL || h->size < HASH_MIN_SIZE
-		|| (hl = new_HashList(key, obj)) == NULL)
+		|| (kv = new_KVPair()) == NULL)
 		return -1;
+
+	KVPair_setpointer(kv, key, obj, destroy);
 
 	addr = h->hashaddr(key);
 	if (addr < 0)
 		addr = -addr;
 	addr %= h->size;
 
-	add_HashList(&h->hash[addr], hl);
+	add_KVPair(&h->hash[addr], kv);
 	h->num++;
 /*
 	a hash performs well if it has a percentage of free slots
@@ -128,25 +108,23 @@ HashList *hl;
 	return 0;
 }
 
-void *remove_Hash(Hash *h, char *key) {
+void remove_Hash(Hash *h, char *key) {
 int addr;
-HashList *hl;
+KVPair *kv;
 
 	if (h == NULL || h->hashaddr == NULL || h->size < HASH_MIN_SIZE || key == NULL || !*key)
-		return NULL;
+		return;
 
 	addr = h->hashaddr(key);
 	if (addr < 0)
 		addr = -addr;
 	addr %= h->size;
 
-	for(hl = h->hash[addr]; hl != NULL; hl = hl->next) {
-		if (!strcmp(hl->key, key)) {
-			void *obj;
-
-			obj = hl->value;
-			remove_HashList(&h->hash[addr], hl);
-			destroy_HashList(hl);
+	for(kv = h->hash[addr]; kv != NULL; kv = kv->next) {
+		if (!strcmp(kv->key, key)) {
+			kv->value.v = NULL;
+			remove_KVPair(&h->hash[addr], kv);
+			destroy_KVPair(kv);
 
 			h->num--;
 			if (h->num < 0)
@@ -156,15 +134,14 @@ HashList *hl;
 			if (h->size - h->num >= HASH_GROW_SIZE + HASH_GROW_SIZE / 2)
 				resize_Hash(h, h->size - HASH_GROW_SIZE);
 
-			return obj;
+			return;
 		}
 	}
-	return NULL;
 }
 
 void *in_Hash(Hash *h, char *key) {
 int addr;
-HashList *hl;
+KVPair *kv;
 
 	if (h == NULL || h->hashaddr == NULL || h->size < HASH_MIN_SIZE || key == NULL || !*key)
 		return NULL;
@@ -174,9 +151,9 @@ HashList *hl;
 		addr = -addr;
 	addr %= h->size;
 
-	for(hl = h->hash[addr]; hl != NULL; hl = hl->next) {
-		if (!strcmp(hl->key, key))
-			return hl->value;
+	for(kv = h->hash[addr]; kv != NULL; kv = kv->next) {
+		if (!strcmp(kv->key, key))
+			return kv->value.v;
 	}
 	return NULL;
 }

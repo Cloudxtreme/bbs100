@@ -1,3 +1,6 @@
+Changes as of May 1st 2005
+- Hash uses new type KVPair
+
 Changes as of April 30th 2005
 - pop() pops off the beginning of the list and returns popped item
 - remove() returns removed item

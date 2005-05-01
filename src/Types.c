@@ -30,6 +30,7 @@
 #include "Conn.h"
 #include "Telnet.h"
 #include "Linebuf.h"
+#include "KVPair.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -58,11 +59,11 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "DST_Trans",			sizeof(DST_Transition),		},
 	{ "TimeType",			sizeof(TimeType),			},
 	{ "Hash",				sizeof(Hash),				},
-	{ "HashList",			sizeof(HashList),			},
 	{ "Lang",				sizeof(Lang),				},
 	{ "Conn",				sizeof(Conn),				},
 	{ "Telnet",				sizeof(Telnet),				},
 	{ "Linebuf",			sizeof(Linebuf),			},
+	{ "KVPair",				sizeof(KVPair),				},
 	{ "(unknown)",			0,							},
 };
 

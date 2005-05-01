@@ -48,11 +48,11 @@
 #define TYPE_DST_TRANS		22
 #define TYPE_TIMETYPE		23
 #define TYPE_HASH			24
-#define TYPE_HASHLIST		25
-#define TYPE_LANG			26
-#define TYPE_CONN			27
-#define TYPE_TELNET			28
-#define TYPE_LINEBUF		29
+#define TYPE_LANG			25
+#define TYPE_CONN			26
+#define TYPE_TELNET			27
+#define TYPE_LINEBUF		28
+#define TYPE_KVPAIR			29
 #define NUM_TYPES			30
 
 typedef struct Typedef_tag Typedef;
