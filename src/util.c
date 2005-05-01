@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "util.h"
+#include "debug.h"
 #include "edit.h"
 #include "cstring.h"
 #include "mydirentry.h"
@@ -495,17 +496,15 @@ char colorbuf[20], buf[20];
 					else
 						p++;
 				}
+				breakpoint();
 				while(*cpos + n < usr->term_width-1)
 					Out(usr, buf, cpos);					/* recurse */
 
-				if (*cpos + n > usr->term_width-1) {		/* 'partial put' of the remainder */
+				if (*cpos + n >= usr->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
 					Out(usr, buf, cpos);
 				}
 			}
-			Writechar(usr, '\r');
-			Writechar(usr, '\n');
-/*			*cpos = 0;				don't do this for recursive hlines(!) (creates endless loops) */
 		}
 		return strlen(code)-1;
 	}

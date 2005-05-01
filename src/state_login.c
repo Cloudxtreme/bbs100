@@ -341,10 +341,14 @@ char buf[MAX_LINE*2];
 			notify_logout(usr);
 			if (logout_screen != NULL) {
 				StringList *sl;
+				int cpos;
 
 				Put(usr, "\n");
-				for(sl = logout_screen; sl != NULL; sl = sl->next)
-					Print(usr, "%s\n", sl->str);
+				for(sl = logout_screen; sl != NULL; sl = sl->next) {
+					cpos = 0;
+					Out(usr, sl->str, &cpos);
+					Out(usr, "\n", &cpos);
+				}
 			}
 			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->hostname);
 			close_connection(usr, "%s has logged out from %s", usr->name, usr->conn->hostname);
@@ -431,7 +435,7 @@ void state_go_online(User *usr, char c) {
 int num_users = 0, num_friends = 0, i, new_mail;
 Joined *j;
 User *u;
-char num_buf[25], exclaim[5];
+char num_buf[25];
 
 	if (usr == NULL)
 		return;
@@ -477,9 +481,9 @@ char num_buf[25], exclaim[5];
 	update_stats(usr);
 
 	Put(usr, "\n");
-	if (usr->logins > 1)
-		Print(usr, "<green>Welcome back, <yellow>%s<green>! ", usr->name);
-	else {
+	if (usr->logins <= 1) {
+		Put(usr, "This is your <yellow>1st<green> login\n");
+
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];
 
@@ -489,14 +493,18 @@ char num_buf[25], exclaim[5];
 			buf[MAX_LINE] = 0;
 			usr->doing = cstrdup(buf);
 		}
-	}
-/* yell out on a hundredth login */
-	if (!(usr->logins % 100))
-		sprintf(exclaim, "!!!");
-	else
-		exclaim[0] = 0;
-	Print(usr, "This is your <yellow>%s<green> login%s\n", print_numberth(usr, usr->logins, num_buf), exclaim);
+	} else {
+		char exclaim[4];
 
+/* yell out on a hundredth login */
+		if (!(usr->logins % 100))
+			strcpy(exclaim, "!!!");
+		else
+			exclaim[0] = 0;
+
+		Print(usr, "<green>Welcome back, <yellow>%s<green>! "
+			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr, usr->logins, num_buf), exclaim);
+	}
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
 	note that new users do not have a last_logout time

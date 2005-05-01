@@ -2691,10 +2691,7 @@ struct tm *tm;
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	if ((sl = new_StringList("")) == NULL) {
-		Perror(usr, "Out of memory");
-		return;
-	}
+	sl = NULL;
 	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
 		if (total == 1)
 			sl = add_String(&sl, "<green>You are the only one in <yellow>%s<white>>", usr->curr_room->name);

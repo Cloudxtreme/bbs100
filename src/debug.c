@@ -60,6 +60,10 @@ int i;
 		"TD\n");
 }
 
+void breakpoint(void) {
+	;
+}
+
 #endif	/* DEBUG */
 
 /* EOB */
