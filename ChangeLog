@@ -1,5 +1,6 @@
 Changes as of May 1st 2005
 - Hash uses new type KVPair
+- hostmap is a Hash
 
 Changes as of April 30th 2005
 - pop() pops off the beginning of the list and returns popped item

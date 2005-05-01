@@ -41,19 +41,18 @@
 #define TYPE_FILE			15
 #define TYPE_WRAPPER		16
 #define TYPE_CACHEDFILE		17
-#define TYPE_HOSTMAP		18
-#define TYPE_ATOMICFILE		19
-#define TYPE_SU_PASSWD		20
-#define TYPE_TIMEZONE		21
-#define TYPE_DST_TRANS		22
-#define TYPE_TIMETYPE		23
-#define TYPE_HASH			24
-#define TYPE_LANG			25
-#define TYPE_CONN			26
-#define TYPE_TELNET			27
-#define TYPE_LINEBUF		28
-#define TYPE_KVPAIR			29
-#define NUM_TYPES			30
+#define TYPE_ATOMICFILE		18
+#define TYPE_SU_PASSWD		19
+#define TYPE_TIMEZONE		20
+#define TYPE_DST_TRANS		21
+#define TYPE_TIMETYPE		22
+#define TYPE_HASH			23
+#define TYPE_LANG			24
+#define TYPE_CONN			25
+#define TYPE_TELNET			26
+#define TYPE_LINEBUF		27
+#define TYPE_KVPAIR			28
+#define NUM_TYPES			29
 
 typedef struct Typedef_tag Typedef;
 

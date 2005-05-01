@@ -2686,7 +2686,6 @@ PList *pl_cols[16];
 void who_list_header(User *usr, int total, int drawline) {
 StringList *sl;
 struct tm *tm;
-char buf[PRINT_BUF];
 
 	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
@@ -2711,16 +2710,9 @@ char buf[PRINT_BUF];
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				tm->tm_hour, tm->tm_min);
 	}
-	if (drawline) {
-		int l;
-
 /* draw a line across the full screen width */
-		buf[0] = (char)color_by_name("white");
-		for(l = 1; l < usr->term_width && l < (PRINT_BUF - 1); l++)
-			buf[l] = '-';
-		buf[l] = 0;
-		sl = add_StringList(&sl, new_StringList(buf));
-	}
+	if (drawline)
+		sl = add_StringList(&sl, new_StringList("<white><hline>-"));
 
 /* prepend header */
 

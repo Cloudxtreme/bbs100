@@ -23,7 +23,6 @@
 #include "MsgIndex.h"
 #include "BufferedMsg.h"
 #include "Feeling.h"
-#include "HostMap.h"
 #include "Timezone.h"
 #include "Hash.h"
 #include "Lang.h"
@@ -52,7 +51,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "File",				sizeof(File),				},
 	{ "Wrapper",			sizeof(Wrapper),			},
 	{ "CachedFile",			sizeof(CachedFile),			},
-	{ "HostMap",			sizeof(HostMap),			},
 	{ "AtomicFile",			sizeof(AtomicFile),			},
 	{ "SU_Passwd",			sizeof(SU_Passwd),			},
 	{ "Timezone",			sizeof(Timezone),			},
