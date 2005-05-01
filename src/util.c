@@ -496,7 +496,6 @@ char colorbuf[20], buf[20];
 					else
 						p++;
 				}
-				breakpoint();
 				while(*cpos + n < usr->term_width-1)
 					Out(usr, buf, cpos);					/* recurse */
 
