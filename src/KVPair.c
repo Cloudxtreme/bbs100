@@ -80,6 +80,21 @@ void KVPair_setint(KVPair *kv, char *key, int value) {
 	kv->destroy = NULL;
 }
 
+void KVPair_setoctal(KVPair *kv, char *key, int value) {
+	if (kv == NULL)
+		return;
+
+	kv->type = KV_OCTAL;
+
+	if (key == NULL || !*key)
+		kv->key = NULL;
+	else
+		kv->key = cstrdup(key);
+
+	kv->value.o = value;
+	kv->destroy = NULL;
+}
+
 void KVPair_setlong(KVPair *kv, char *key, long value) {
 	if (kv == NULL)
 		return;
@@ -143,6 +158,13 @@ int KVPair_getint(KVPair *kv) {
 	return kv->value.i;
 }
 
+int KVPair_getoctal(KVPair *kv) {
+	if (kv == NULL)
+		return 0;
+
+	return kv->value.o;
+}
+
 long KVPair_getlong(KVPair *kv) {
 	if (kv == NULL)
 		return 0;
@@ -178,11 +200,15 @@ int print_KVPair(KVPair *kv, char *buf) {
 			break;
 
 		case KV_BOOL:
-			strcpy(buf, (kv->value.i == 0) ? "no" : "yes");
+			strcpy(buf, (kv->value.bool == 0) ? "no" : "yes");
 			break;
 
 		case KV_INT:
 			sprintf(buf, "%d", kv->value.i);
+			break;
+
+		case KV_OCTAL:
+			sprintf(buf, "0%02o", kv->value.o);
 			break;
 
 		case KV_LONG:

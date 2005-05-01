@@ -35,12 +35,13 @@
 #define KV_UNKNOWN	0
 #define KV_BOOL		1
 #define KV_INT		2
-#define KV_LONG		3
-#define KV_STRING	4
-#define KV_POINTER	5
+#define KV_OCTAL	3
+#define KV_LONG		4
+#define KV_STRING	5
+#define KV_POINTER	6
 
 typedef union {
-	int i;
+	int i, o, bool;
 	long l;
 	char *s;
 	void *v;
@@ -62,12 +63,14 @@ void destroy_KVPair(KVPair *);
 
 void KVPair_setbool(KVPair *, char *, int);
 void KVPair_setint(KVPair *, char *, int);
+void KVPair_setoctal(KVPair *, char *, int);
 void KVPair_setlong(KVPair *, char *, long);
 void KVPair_setstring(KVPair *, char *, char *);
 void KVPair_setpointer(KVPair *, char *, void *, void (*)(void *));
 
 int KVPair_getbool(KVPair *);
 int KVPair_getint(KVPair *);
+int KVPair_getoctal(KVPair *);
 long KVPair_getlong(KVPair *);
 char *KVPair_getstring(KVPair *);
 void *KVPair_getpointer(KVPair *);
