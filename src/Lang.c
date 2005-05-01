@@ -265,7 +265,7 @@ int line_no, errors, continued, len, key;
 			sprintf(keybuf, "%x", key);
 
 			if (in_Hash(l->hash, keybuf) != NULL)
-				log_warn("load_phrasebook(%s): duplicate hash key in language %s", filename, lang);
+				log_warn("load_phrasebook(%s): duplicate hash key in language %s; line %s", filename, lang, line_buf);
 
 			line_buf[0] = 0;
 			continued = 0;

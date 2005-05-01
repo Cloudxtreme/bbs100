@@ -25,86 +25,85 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-SU_Passwd *su_passwd = NULL;
+
+KVPair *su_passwd = NULL;
 
 
-SU_Passwd *new_SU_Passwd(void) {
-SU_Passwd *su;
-
-	if ((su = (SU_Passwd *)Malloc(sizeof(SU_Passwd), TYPE_SU_PASSWD)) == NULL)
-		return NULL;
-
-	return su;
-}
-
-void destroy_SU_Passwd(SU_Passwd *su) {
-	Free(su);
-}
-
-
-SU_Passwd *load_SU_Passwd(char *filename) {
-SU_Passwd *su = NULL, *new_su;
+int load_SU_Passwd(char *filename) {
+KVPair *kv;
 AtomicFile *f;
-char buf[MAX_CRYPTED+MAX_NAME+10], *p;
+int line_no, errors;
+char buf[PRINT_BUF], *p;
+
+	listdestroy_KVPair(su_passwd);
+	su_passwd = NULL;
 
 	if ((f = openfile(filename, "r")) == NULL)
-		return NULL;
+		return -1;
 
-	while(fgets(buf, MAX_CRYPTED+MAX_NAME+10, f->f) != NULL) {
+	line_no = errors = 0;
+	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
+		line_no++;
 		cstrip_line(buf);
 		if (!*buf)
 			continue;
 
-		if ((p = cstrchr(buf, ':')) == NULL)
+		if ((p = cstrchr(buf, ':')) == NULL) {
+			log_err("load_SU_Passwd(%s): error in line %d", filename, line_no);
+			errors++;
 			continue;
-
+		}
 		*p = 0;
 		p++;
-		if (!*p || !*buf)
+		if (!*p || !*buf) {
+			log_err("load_SU_Passwd(%s): error in line %d", filename, line_no);
+			errors++;
 			continue;
-
-		if ((new_su = new_SU_Passwd()) == NULL)
+		}
+		if ((kv = new_KVPair()) == NULL) {
+			errors++;
 			break;
-
-		strncpy(new_su->name, buf, MAX_NAME);
-		new_su->name[MAX_NAME] = 0;
-
-		strncpy(new_su->passwd, p, MAX_CRYPTED);
-		new_su->passwd[MAX_CRYPTED] = 0;
-
-		add_SU_Passwd(&su, new_su);
+		}
+		KVPair_setstring(kv, buf, p);
+		add_KVPair(&su_passwd, kv);
 	}
 	closefile(f);
-	return su;
+
+	if (errors) {
+		listdestroy_KVPair(su_passwd);
+		su_passwd = NULL;
+	}
+	return errors;
 }
 
-int save_SU_Passwd(SU_Passwd *su, char *filename) {
+int save_SU_Passwd(char *filename) {
+KVPair *su;
 AtomicFile *f;
 
 	if ((f = openfile(filename, "w")) == NULL)
 		return -1;
 
-	while(su != NULL) {
-		fprintf(f->f, "%s:%s\n", su->name, su->passwd);
-		su = su->next;
-	}
+	for(su = su_passwd; su != NULL; su = su->next)
+		fprintf(f->f, "%s:%s\n", su->key, su->value.s);
+
 	closefile(f);
 	return 0;
 }
 
 char *get_su_passwd(char *name) {
-SU_Passwd *su;
+KVPair *su;
 
 	if (name == NULL || !*name)
 		return NULL;
 
 	for(su = su_passwd; su != NULL; su = su->next) {
-		if (!strcmp(su->name, name))
-			return su->passwd;
+		if (!strcmp(su->key, name))
+			return su->value.s;
 	}
 	return NULL;
 }

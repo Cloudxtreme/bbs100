@@ -38,6 +38,7 @@
 #include "state_roomconfig.h"
 #include "state_friendlist.h"
 #include "inet.h"
+#include "passwd.h"
 #include "Room.h"
 #include "Stats.h"
 #include "access.h"
@@ -1398,14 +1399,14 @@ int r;
 				Print(usr, "<red>There are no %ss on this BBS <white>(!)\n", PARAM_NAME_SYSOP);
 			else {
 				if (su_passwd->next == NULL)
-					Print(usr, "<yellow>%s is<white>: <yellow>%s\n", PARAM_NAME_SYSOP, su_passwd->name);
+					Print(usr, "<yellow>%s is<white>: <yellow>%s\n", PARAM_NAME_SYSOP, su_passwd->key);
 				else {
-					SU_Passwd *su;
+					KVPair *su;
 
 					Print(usr, "<yellow>%ss are<white>: ", PARAM_NAME_SYSOP);
 					for(su = su_passwd; su != NULL && su->next != NULL; su = su->next)
-						Print(usr, "<yellow>%s<white>, ", su->name);
-					Print(usr, "<yellow>%s\n", su->name);
+						Print(usr, "<yellow>%s<white>, ", su->key);
+					Print(usr, "<yellow>%s\n", su->key);
 				}
 			}
 			RET(usr);

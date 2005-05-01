@@ -14,7 +14,6 @@
 #include "SignalVector.h"
 #include "CachedFile.h"
 #include "AtomicFile.h"
-#include "SU_Passwd.h"
 #include "Wrapper.h"
 #include "User.h"
 #include "Room.h"
@@ -50,7 +49,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Wrapper",			sizeof(Wrapper),			},
 	{ "CachedFile",			sizeof(CachedFile),			},
 	{ "AtomicFile",			sizeof(AtomicFile),			},
-	{ "SU_Passwd",			sizeof(SU_Passwd),			},
 	{ "Timezone",			sizeof(Timezone),			},
 	{ "DST_Trans",			sizeof(DST_Transition),		},
 	{ "TimeType",			sizeof(TimeType),			},

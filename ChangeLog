@@ -3,6 +3,7 @@ Changes as of May 1st 2005
 - hostmap uses new type KVPair
 - param uses new type KVPair
 - feelings use new type KVPair
+- SU_Passwd use new type KVPair
 
 Changes as of April 30th 2005
 - pop() pops off the beginning of the list and returns popped item

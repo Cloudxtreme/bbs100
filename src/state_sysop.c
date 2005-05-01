@@ -602,7 +602,7 @@ int r;
 	if (r == EDIT_RETURN) {
 		User *u;
 		char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
-		SU_Passwd *su;
+		KVPair *su;
 
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
@@ -610,7 +610,7 @@ int r;
 			Return;
 		}
 		for(su = su_passwd; su != NULL; su = su->next) {
-			if (!strcmp(su->name, usr->edit_buf)) {
+			if (!strcmp(su->key, usr->edit_buf)) {
 				Print(usr, "<red>You can't nuke someone who has %s access!\n", PARAM_NAME_SYSOP);
 				RET(usr);
 				Return;
@@ -1382,11 +1382,10 @@ int r;
 			usr->edit_pos = 0;
 		} else {
 			if (!strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
-				char crypted[MAX_CRYPTED];
-				SU_Passwd *su;
+				char crypted[MAX_CRYPTED], *p;
+				KVPair *su;
 
 				crypt_phrase(usr->edit_buf, crypted);
-				crypted[MAX_CRYPTED_PASSWD-1] = 0;
 
 				if (verify_phrase(usr->edit_buf, crypted)) {
 					Perror(usr, "bug in password encryption -- please choose an other password");
@@ -1394,10 +1393,16 @@ int r;
 					Return;
 				}
 				for(su = su_passwd; su != NULL; su = su->next) {
-					if (!strcmp(su->name, usr->name)) {
-						strcpy(su->passwd, crypted);
+					if (!strcmp(su->key, usr->name)) {
+						if ((p = cstrdup(crypted)) == NULL) {
+							Perror(usr, "Out of memory, password NOT changed");
+							RET(usr);
+							Return;
+						}
+						Free(su->value.s);
+						su->value.s = p;
 
-						if (save_SU_Passwd(su_passwd, PARAM_SU_PASSWD_FILE)) {
+						if (save_SU_Passwd(PARAM_SU_PASSWD_FILE)) {
 							Perror(usr, "failed to save su_passwd_file");
 						} else {
 							Print(usr, "<red>%s mode password changed\n", PARAM_NAME_SYSOP);

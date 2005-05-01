@@ -23,34 +23,13 @@
 #ifndef SU_PASSWD_H_WJ99
 #define SU_PASSWD_H_WJ99 1
 
-#include "List.h"
-#include "defines.h"
-#include "passwd.h"
+#include "KVPair.h"
 
-#define add_SU_Passwd(x,y)			(SU_Passwd *)add_List((x), (y))
-#define concat_SU_Passwd(x,y)		(SU_Passwd *)concat_List((x), (y))
-#define remove_SU_Passwd(x,y)		(SU_Passwd *)remove_List((x), (y))
-#define rewind_SU_Passwd(x,y)		(SU_Passwd *)rewind_List((x), (y))
-#define unwind_SU_Passwd(x,y)		(SU_Passwd *)unwind_List((x), (y))
-#define listdestroy_SU_Passwd(x)	listdestroy_List((x), destroy_SU_Passwd)
-
-typedef struct SU_Passwd_tag SU_Passwd;
-
-struct SU_Passwd_tag {
-	List(SU_Passwd);
-
-	char name[MAX_NAME];
-	char passwd[MAX_CRYPTED];
-};
-
-SU_Passwd *new_SU_Passwd(void);
-void destroy_SU_Passwd(SU_Passwd *);
-
-SU_Passwd *load_SU_Passwd(char *);
-int save_SU_Passwd(SU_Passwd *, char *);
+int load_SU_Passwd(char *);
+int save_SU_Passwd(char *);
 char *get_su_passwd(char *);
 
-extern SU_Passwd *su_passwd;
+extern KVPair *su_passwd;
 
 #endif	/* SU_PASSWD_H_WJ99 */
 

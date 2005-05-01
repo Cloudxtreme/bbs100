@@ -27,6 +27,7 @@
 #include "defines.h"
 #include "main.h"
 #include "inet.h"
+#include "passwd.h"
 #include "screens.h"
 #include "Stats.h"
 #include "Wrapper.h"
@@ -305,7 +306,7 @@ char buf[256];
 	printf("%s\n", ((banished = load_StringList(PARAM_BANISHED_FILE)) == NULL) ? "failed" : "ok");
 
 	printf("loading su_passwd_file %s ... ", PARAM_SU_PASSWD_FILE);
-	printf("%s\n", ((su_passwd = load_SU_Passwd(PARAM_SU_PASSWD_FILE)) == NULL) ? "failed" : "ok");
+	printf("%s\n", (load_SU_Passwd(PARAM_SU_PASSWD_FILE) == 0) ? "ok" : "failed");
 
 	printf("loading symbol table %s ... ", PARAM_SYMTAB_FILE);
 	printf("%s\n", (load_SymbolTable(PARAM_SYMTAB_FILE) != 0) ? "failed" : "ok");
