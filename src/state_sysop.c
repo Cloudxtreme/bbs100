@@ -2977,7 +2977,7 @@ char *new_val;
 		case 'r':
 		case 'R':
 			Put(usr, "Rotate\n");
-			if (!strcmp(PARAM_LOGROTATE, "none"))
+			if (!strcmp(PARAM_LOGROTATE, "never"))
 				new_val = "daily";
 			else
 				if (!strcmp(PARAM_LOGROTATE, "daily"))
@@ -2989,7 +2989,7 @@ char *new_val;
 						if (!strcmp(PARAM_LOGROTATE, "monthly"))
 							new_val = "yearly";
 						else
-							new_val = "none";
+							new_val = "never";
 
 			Free(PARAM_LOGROTATE);
 			PARAM_LOGROTATE = cstrdup(new_val);

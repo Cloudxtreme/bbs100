@@ -40,6 +40,9 @@
 #define KV_STRING	5
 #define KV_POINTER	6
 
+#define KV_TRUE		1
+#define KV_FALSE	0
+
 typedef union {
 	int i, o, bool;
 	long l;

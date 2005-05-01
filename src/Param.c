@@ -26,173 +26,158 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"
-#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-Param param[] = {
-	{ PARAM_STRING,	"bbs_name",			{ NULL },	{ "bbs100" },					},
-	{ PARAM_STRING,	"port_number",		{ NULL },	{ (char *)DEFAULT_PORT_1234 },	},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"data_port",		{ NULL },	{ (char *)DEFAULT_DATA_PORT },	},
 
-	{ PARAM_STRING, "basedir",			{ NULL },	{ "." },						},
-	{ PARAM_STRING,	"bindir",			{ NULL },	{ "bin/" },						},
-	{ PARAM_STRING,	"confdir",			{ NULL },	{ "etc/" },						},
-	{ PARAM_STRING, "feelingsdir",		{ NULL },	{ "etc/feelings/" },			},
-	{ PARAM_STRING, "zoneinfodir",		{ NULL },	{ "etc/zoneinfo/" },			},
-	{ PARAM_STRING, "languagedir",		{ NULL },	{ "etc/language/" },			},
-	{ PARAM_STRING,	"userdir",			{ NULL },	{ "users/" }, 					},
-	{ PARAM_STRING,	"roomdir",			{ NULL },	{ "rooms/" },					},
-	{ PARAM_STRING,	"trashdir",			{ NULL },	{ "trash/" },					},
-	{ PARAM_OCTAL | PARAM_SEPARATOR,
-					"umask",			{ NULL },	{ (char *)DEFAULT_UMASK },			},
-
-	{ PARAM_STRING, "program_main",		{ NULL },	{ "bin/main" },					},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"program_resolver",	{ NULL },	{ "bin/resolver" },				},
-
-	{ PARAM_STRING, "gpl_screen",		{ NULL },	{ "etc/GPL" },					},
-	{ PARAM_STRING, "mods_screen",		{ NULL },	{ "etc/local_mods" },			},
-	{ PARAM_STRING,	"login_screen",		{ NULL },	{ "etc/login" },				},
-	{ PARAM_STRING,	"logout_screen",	{ NULL },	{ "etc/logout" },				},
-	{ PARAM_STRING,	"nologin_screen",	{ NULL },	{ "etc/nologin" },				},
-	{ PARAM_STRING,	"motd_screen",		{ NULL },	{ "etc/motd" },					},
-	{ PARAM_STRING,	"reboot_screen",	{ NULL },	{ "etc/reboot" },				},
-	{ PARAM_STRING, "shutdown_screen",	{ NULL },	{ "etc/shutdown" },				},
-	{ PARAM_STRING, "crash_screen",		{ NULL },	{ "etc/crash" },				},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"boss_screen",		{ NULL },	{ "etc/boss" },					},
-
-	{ PARAM_STRING,	"first_login",		{ NULL },	{ "etc/first_login" },			},
-	{ PARAM_STRING,	"help_std",			{ NULL },	{ "etc/help.std" },				},
-	{ PARAM_STRING,	"help_config",		{ NULL },	{ "etc/help.config" },			},
-	{ PARAM_STRING,	"help_roomconfig",	{ NULL },	{ "etc/help.roomconfig" },		},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"help_sysop",		{ NULL },	{ "etc/help.sysop" },			},
-
-	{ PARAM_STRING, "hostmap_file",		{ NULL },	{ "etc/hostmap" },				},
-	{ PARAM_STRING, "hosts_access_file",{ NULL },	{ "etc/hosts_access" },			},
-	{ PARAM_STRING,	"banished_file",	{ NULL },	{ "etc/banished" },				},
-	{ PARAM_STRING,	"stat_file",		{ NULL },	{ "etc/stats" },				},
-	{ PARAM_STRING, "categories_file",	{ NULL },	{ "etc/categories" },			},
-	{ PARAM_STRING,	"su_passwd_file",	{ NULL },	{ "etc/su_passwd" },			},
-	{ PARAM_STRING,	"pid_file",			{ NULL },	{ "etc/pid" },					},
-	{ PARAM_STRING,	"symtab_file",		{ NULL },	{ "etc/symtab" },				},
-	{ PARAM_STRING, "default_timezone",	{ NULL },	{ "Europe/Amsterdam" },			},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"default_language",	{ NULL },	{ "bbs100" },					},
-
-	{ PARAM_STRING, "syslog",			{ NULL },	{ "log/bbslog" },				},
-	{ PARAM_STRING, "authlog",			{ NULL },	{ "log/authlog" },				},
-	{ PARAM_STRING, "logrotate",		{ NULL },	{ "daily" },					},
-	{ PARAM_STRING, "archivedir",		{ NULL },	{ "log/archive/" },				},
-	{ PARAM_STRING, "oncrash",			{ NULL },	{ "dumpcore" },					},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"crashdir",			{ NULL },	{ "log/crash/" },				},
-
-	{ PARAM_INT,	"max_cached",		{ NULL },	{ (char *)DEFAULT_MAX_CACHED },		},
-	{ PARAM_INT,	"max_messages",		{ NULL },	{ (char *)DEFAULT_MAX_MESSAGES },	},
-	{ PARAM_INT,	"max_mail_msgs",	{ NULL },	{ (char *)DEFAULT_MAX_MAIL_MSGS },	},
-	{ PARAM_INT,	"max_msg_lines",	{ NULL },	{ (char *)DEFAULT_MAX_MSG_LINES },	},
-	{ PARAM_INT,	"max_xmsg_lines",	{ NULL },	{ (char *)DEFAULT_MAX_XMSG_LINES },	},
-	{ PARAM_INT,	"max_history",		{ NULL },	{ (char *)DEFAULT_MAX_HISTORY },	},
-	{ PARAM_INT,	"max_chat_history",	{ NULL },	{ (char *)DEFAULT_MAX_CHAT_HISTORY },	},
-	{ PARAM_INT,	"max_friend",		{ NULL },	{ (char *)DEFAULT_MAX_FRIEND },		},
-	{ PARAM_INT,	"max_enemy",		{ NULL },	{ (char *)DEFAULT_MAX_ENEMY },		},
-	{ PARAM_INT,	"idle_timeout",		{ NULL },	{ (char *)DEFAULT_IDLE_TIMEOUT },	},
-	{ PARAM_INT,	"lock_timeout",		{ NULL },	{ (char *)DEFAULT_LOCK_TIMEOUT },	},
-	{ PARAM_INT,	"periodic_saving",	{ NULL },	{ (char *)DEFAULT_SAVE_TIMEOUT },	},
-	{ PARAM_INT | PARAM_SEPARATOR,
-					"cache_expire",		{ NULL },	{ (char *)DEFAULT_CACHE_TIMEOUT },	},
-
-	{ PARAM_STRING,	"name_sysop",		{ NULL },	{ "Sysop" },						},
-	{ PARAM_STRING,	"name_room_aide",	{ NULL },	{ "Room Aide" },					},
-	{ PARAM_STRING,	"name_helper",		{ NULL },	{ "Helping Hand" },					},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"name_guest",		{ NULL },	{ "Guest" },						},
-
-	{ PARAM_STRING,	"notify_login",		{ NULL },	{ "is formed from some <yellow>golden<magenta> stardust" },	},
-	{ PARAM_STRING,	"notify_logout",	{ NULL },	{ "explodes into <yellow>golden<magenta> stardust" },			},
-	{ PARAM_STRING, "notify_linkdead",	{ NULL },	{ "freezes up and crumbles to dust" },			},
-	{ PARAM_STRING,	"notify_idle",		{ NULL },	{ "has been logged off due to inactivity" },	},
-	{ PARAM_STRING,	"notify_locked",	{ NULL },	{ "is away from the terminal for a while" },	},
-	{ PARAM_STRING,	"notify_unlocked",	{ NULL },	{ "has returned to the terminal" },				},
-	{ PARAM_STRING, "notify_enter_chat",{ NULL },	{ "enters" },									},
-	{ PARAM_STRING | PARAM_SEPARATOR,
-					"notify_leave_chat",{ NULL },	{ "leaves" },									},
-
-	{ PARAM_BOOL,	"have_xmsgs",		{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_emotes",		{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_feelings",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_questions",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_quick_x",		{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_talkedto",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_hold_msgs",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_followup",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_x_reply",		{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_calendar",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_worldclock",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_chatrooms",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_homeroom",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_mailroom",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_language",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_category",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_cycle_rooms",	{ NULL },	{ (char *)PARAM_TRUE }, },
-	{ PARAM_BOOL,	"have_wrapper_all",	{ NULL },	{ (char *)PARAM_TRUE },	},
-	{ PARAM_BOOL,	"have_disabled_msg",{ NULL },	{ (char *)PARAM_TRUE },	},
-};
+KVPair **param = NULL;
 
 
 int init_Param(void) {
-int i, num;
+int i;
 
-	if (param == NULL)
+	if ((param = (KVPair **)Malloc(NUM_PARAM * sizeof(KVPair *), TYPE_POINTER)) == NULL)
 		return -1;
 
-	num = sizeof(param)/sizeof(Param);
+	for(i = 0; i < NUM_PARAM; i++)
+		if ((param[i] = new_KVPair()) == NULL)
+			return -1;
 
-	for(i = 0; i < num; i++) {
-		switch(param[i].type & PARAM_MASK) {
-			case PARAM_STRING:
-				Free(param[i].val.s);
-				param[i].val.s = cstrdup(param[i].default_val.s);
-				break;
+	KVPair_setstring(KVPARAM_BBS_NAME,		"bbs_name",		"bbs100");
+	KVPair_setstring(KVPARAM_PORT_NUMBER,	"port_number",	DEFAULT_PORT_1234);
+	KVPair_setstring(KVPARAM_DATA_PORT,		"data_port",	DEFAULT_DATA_PORT);
 
-			case PARAM_INT:
-				param[i].val.d = param[i].default_val.d;
-				break;
+	KVPair_setstring(KVPARAM_SEP1, "", "");
 
-			case PARAM_OCTAL:
-				param[i].val.o = param[i].default_val.o;
-				break;
+	KVPair_setstring(KVPARAM_BASEDIR,			"basedir",			".");
+	KVPair_setstring(KVPARAM_BINDIR,			"bindir",			"bin/");
+	KVPair_setstring(KVPARAM_CONFDIR,			"confdir",			"etc/");
+	KVPair_setstring(KVPARAM_FEELINGSDIR,		"feelingsdir",		"etc/feelings/");
+	KVPair_setstring(KVPARAM_ZONEINFODIR,		"zoneinfodir",		"etc/zoneinfo/");
+	KVPair_setstring(KVPARAM_LANGUAGEDIR,		"languagedir",		"etc/language/");
+	KVPair_setstring(KVPARAM_USERDIR,			"userdir",			"users/");
+	KVPair_setstring(KVPARAM_ROOMDIR,			"roomdir",			"rooms/");
+	KVPair_setstring(KVPARAM_TRASHDIR,			"trashdir",			"trash/");
+	KVPair_setoctal(KVPARAM_UMASK,				"umask",			DEFAULT_UMASK);
 
-			case PARAM_BOOL:
-				param[i].val.bool = param[i].default_val.bool;
-				break;
+	KVPair_setstring(KVPARAM_SEP2, "", "");
 
-			default:
-				fprintf(stderr, "init_Param: unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
-				return -1;
-		}
-	}
+	KVPair_setstring(KVPARAM_PROGRAM_MAIN,		"program_main",		"bin/main");
+	KVPair_setstring(KVPARAM_PROGRAM_RESOLVER,	"program_resolver",	"bin/resolver");
+
+	KVPair_setstring(KVPARAM_SEP3, "", "");
+
+	KVPair_setstring(KVPARAM_GPL_SCREEN,		"gpl_screen",		"etc/GPL");
+	KVPair_setstring(KVPARAM_MODS_SCREEN,		"mods_screen",		"etc/local_mods");
+	KVPair_setstring(KVPARAM_LOGIN_SCREEN,		"login_screen",		"etc/login");
+	KVPair_setstring(KVPARAM_LOGOUT_SCREEN,		"logout_screen",	"etc/logout");
+	KVPair_setstring(KVPARAM_NOLOGIN_SCREEN,	"nologin_screen",	"etc/nologin");
+	KVPair_setstring(KVPARAM_MOTD_SCREEN,		"motd_screen",		"etc/motd");
+	KVPair_setstring(KVPARAM_REBOOT_SCREEN,		"reboot_screen",	"etc/reboot");
+	KVPair_setstring(KVPARAM_SHUTDOWN_SCREEN,	"shutdown_screen",	"etc/shutdown");
+	KVPair_setstring(KVPARAM_CRASH_SCREEN,		"crash_screen",		"etc/crash");
+	KVPair_setstring(KVPARAM_BOSS_SCREEN,		"boss_screen",		"etc/boss");
+
+	KVPair_setstring(KVPARAM_SEP4, "", "");
+
+	KVPair_setstring(KVPARAM_FIRST_LOGIN,		"first_login",		"etc/first_login");
+	KVPair_setstring(KVPARAM_HELP_STD,			"help_std",			"etc/help.std");
+	KVPair_setstring(KVPARAM_HELP_CONFIG,		"help_config",		"etc/help.config");
+	KVPair_setstring(KVPARAM_HELP_ROOMCONFIG,	"help_roomconfig",	"etc/help.roomconfig");
+	KVPair_setstring(KVPARAM_HELP_SYSOP,		"help_sysop",		"etc/help.sysop");
+
+	KVPair_setstring(KVPARAM_SEP5, "", "");
+
+	KVPair_setstring(KVPARAM_HOSTMAP_FILE,		"hostmap_file",		"etc/hostmap");
+	KVPair_setstring(KVPARAM_HOSTS_ACCESS_FILE,	"hosts_access_file","etc/hosts_access");
+	KVPair_setstring(KVPARAM_BANISHED_FILE,		"banished_file",	"etc/banished");
+	KVPair_setstring(KVPARAM_STAT_FILE,			"stat_file",		"etc/stats");
+	KVPair_setstring(KVPARAM_CATEGORIES_FILE,	"categories_file",	"etc/categories");
+	KVPair_setstring(KVPARAM_SU_PASSWD_FILE,	"su_passwd_file",	"etc/su_passwd");
+	KVPair_setstring(KVPARAM_PID_FILE,			"pid_file",			"etc/pid");
+	KVPair_setstring(KVPARAM_SYMTAB_FILE,		"symtab_file",		"etc/symtab");
+	KVPair_setstring(KVPARAM_DEFAULT_TIMEZONE,	"default_timezone",	"Europe/Amsterdam");
+	KVPair_setstring(KVPARAM_DEFAULT_LANGUAGE,	"default_language",	"bbs100");
+
+	KVPair_setstring(KVPARAM_SEP6, "", "");
+
+	KVPair_setstring(KVPARAM_SYSLOG,			"syslog",			"log/bbslog");
+	KVPair_setstring(KVPARAM_AUTHLOG,			"authlog",			"log/authlog");
+	KVPair_setstring(KVPARAM_LOGROTATE,			"logrotate",		"daily");
+	KVPair_setstring(KVPARAM_ARCHIVEDIR,		"archivedir",		"log/archive/");
+	KVPair_setstring(KVPARAM_ONCRASH,			"oncrash",			"dumpcore");
+	KVPair_setstring(KVPARAM_CRASHDIR,			"crashdir",			"log/crash/");
+
+	KVPair_setstring(KVPARAM_SEP7, "", "");
+
+	KVPair_setint(KVPARAM_MAX_CACHED,			"max_cached",		DEFAULT_MAX_CACHED);
+	KVPair_setint(KVPARAM_MAX_MESSAGES,			"max_messages",		DEFAULT_MAX_MESSAGES);
+	KVPair_setint(KVPARAM_MAX_MAIL_MSGS,		"max_mail_msgs",	DEFAULT_MAX_MAIL_MSGS);
+	KVPair_setint(KVPARAM_MAX_MSG_LINES,		"max_msg_lines",	DEFAULT_MAX_MSG_LINES);
+	KVPair_setint(KVPARAM_MAX_XMSG_LINES,		"max_xmsg_lines",	DEFAULT_MAX_XMSG_LINES);
+	KVPair_setint(KVPARAM_MAX_HISTORY,			"max_history",		DEFAULT_MAX_HISTORY);
+	KVPair_setint(KVPARAM_MAX_CHAT_HISTORY,		"max_chat_history",	DEFAULT_MAX_CHAT_HISTORY);
+	KVPair_setint(KVPARAM_MAX_FRIEND,			"max_friend",		DEFAULT_MAX_FRIEND);
+	KVPair_setint(KVPARAM_MAX_ENEMY,			"max_enemy",		DEFAULT_MAX_ENEMY);
+	KVPair_setint(KVPARAM_IDLE_TIMEOUT,			"idle_timeout",		DEFAULT_IDLE_TIMEOUT);
+	KVPair_setint(KVPARAM_LOCK_TIMEOUT,			"lock_timeout",		DEFAULT_LOCK_TIMEOUT);
+	KVPair_setint(KVPARAM_SAVE_TIMEOUT,			"periodic_saving",	DEFAULT_SAVE_TIMEOUT);
+	KVPair_setint(KVPARAM_CACHE_TIMEOUT,		"cache_expire",		DEFAULT_CACHE_TIMEOUT);
+
+	KVPair_setstring(KVPARAM_SEP8, "", "");
+
+	KVPair_setstring(KVPARAM_NAME_SYSOP,		"name_sysop",		"Sysop");
+	KVPair_setstring(KVPARAM_NAME_ROOMAIDE,		"name_room_aide",	"Room Aide");
+	KVPair_setstring(KVPARAM_NAME_HELPER,		"name_helper",		"Helping Hand");
+	KVPair_setstring(KVPARAM_NAME_GUEST,		"name_guest",		"Guest");
+
+	KVPair_setstring(KVPARAM_SEP9, "", "");
+
+	KVPair_setstring(KVPARAM_NOTIFY_LOGIN,		"notify_login",		"is formed from some <yellow>golden<magenta> stardust");
+	KVPair_setstring(KVPARAM_NOTIFY_LOGOUT,		"notify_logout",	"explodes into <yellow>golden<magenta> stardust");
+	KVPair_setstring(KVPARAM_NOTIFY_LINKDEAD,	"notify_linkdead",	"freezes up and crumbles to dust");
+	KVPair_setstring(KVPARAM_NOTIFY_IDLE,		"notify_idle",		"has been logged off due to inactivity");
+	KVPair_setstring(KVPARAM_NOTIFY_LOCKED,		"notify_locked",	"is away from the terminal for a while");
+	KVPair_setstring(KVPARAM_NOTIFY_UNLOCKED,	"notify_unlocked",	"has returned to the terminal");
+	KVPair_setstring(KVPARAM_NOTIFY_ENTER_CHAT,	"notify_enter_chat","enters");
+	KVPair_setstring(KVPARAM_NOTIFY_LEAVE_CHAT,	"notify_leave_chat","leaves");
+
+	KVPair_setstring(KVPARAM_SEP10, "", "");
+
+	KVPair_setbool(KVPARAM_HAVE_XMSGS,			"have_xmsgs",		PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_EMOTES,			"have_emotes",		PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_FEELINGS,		"have_feelings",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_QUESTIONS,		"have_questions",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_QUICK_X,		"have_quick_x",		PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_TALKEDTO,		"have_talkedto",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_HOLD,			"have_hold_msgs",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_FOLLOWUP,		"have_followup",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_X_REPLY,		"have_x_reply",		PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_CALENDAR,		"have_calendar",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_WORLDCLOCK,		"have_worldclock",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_CHATROOMS,		"have_chatrooms",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_HOMEROOM,		"have_homeroom",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_MAILROOM,		"have_mailroom",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_LANGUAGE,		"have_language",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_CATEGORY,		"have_category",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_CYCLE_ROOMS,	"have_cycle_rooms",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_WRAPPER_ALL,	"have_wrapper_all",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_DISABLED_MSG,	"have_disabled_msg",PARAM_TRUE);
+
 	return 0;
 }
-
 
 int load_Param(char *filename) {
 AtomicFile *f;
 char buf[PRINT_BUF], *p;
-int i, num, line_no, errors;
+int i, line_no, errors;
 
 	if (param == NULL)
 		return -1;
 
 	if ((f = openfile(filename, "r")) == NULL)
 		return 1;
-
-	num = sizeof(param)/sizeof(Param);
 
 	line_no = errors = 0;
 	while(fgets(buf, PRINT_BUF, f->f) != NULL) {
@@ -209,64 +194,66 @@ int i, num, line_no, errors;
 			if (!*p)
 				continue;
 
-			for(i = 0; i < num; i++) {
-				if (!cstricmp(buf, param[i].var)) {
-					switch(param[i].type & PARAM_MASK) {
-						case PARAM_STRING:
-							Free(param[i].val.s);
-							param[i].val.s = cstrdup(p);
+			for(i = 0; i < NUM_PARAM; i++) {
+				if (param[i]->key == NULL || !param[i]->key[0])
+					continue;
+
+				if (!cstricmp(buf, param[i]->key)) {
+					switch(param[i]->type) {
+						case KV_STRING:
+							Free(param[i]->value.s);
+							param[i]->value.s = cstrdup(p);
 							break;
 
-						case PARAM_INT:
+						case KV_INT:
 							if (p[0] == '-') {
-								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i].var);
+								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
 							if (strspn(p, "0123456789") != strlen(p)) {
-								fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i].var);
+								fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
-							param[i].val.d = (int)strtoul(p, NULL, 10);
+							param[i]->value.i = (int)strtoul(p, NULL, 10);
 							break;
 
-						case PARAM_OCTAL:
+						case KV_OCTAL:
 							if (p[0] == '-') {
-								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i].var);
+								fprintf(stderr, "%s:%d: %s cannot have a negative value\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
 							if (strspn(p, "01234567") != strlen(p)) {
-								fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i].var);
+								fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
-							param[i].val.o = (int)strtoul(p, NULL, 8);
+							param[i]->value.o = (int)strtoul(p, NULL, 8);
 							break;
 
-						case PARAM_BOOL:
+						case KV_BOOL:
 							if (!cstricmp(p, "yes") || !cstricmp(p, "on") || !cstricmp(p, "true") || !strcmp(p, "1"))
-								param[i].val.bool = PARAM_TRUE;
+								param[i]->value.bool = KV_TRUE;
 							else
 								if (!cstricmp(p, "no") || !cstricmp(p, "off") || !cstricmp(p, "false") || !strcmp(p, "0"))
-									param[i].val.bool = PARAM_FALSE;
+									param[i]->value.bool = KV_FALSE;
 								else {
-									fprintf(stderr, "%s:%d: unknown value '%s' for param %s\n", filename, line_no, p, param[i].var);
+									fprintf(stderr, "%s:%d: unknown value '%s' for param %s\n", filename, line_no, p, param[i]->key);
 									errors++;
-									param[i].val.bool = param[i].default_val.bool;
 								}
 							break;
 
 						default:
 							closefile(f);
-							fprintf(stderr, "%s:%d BUG! unknown type '%d' for param[%d] (%s)\n", filename, line_no, param[i].type, i, param[i].var);
+							fprintf(stderr, "%s:%d BUG! wrong type '%d' for param[%d] (%s)\n", filename, line_no, param[i]->type, i, param[i]->key);
 							errors++;
 					}
 					break;
 				}
 			}
-			if (i >= num) {
+			if (i >= NUM_PARAM) {
 				fprintf(stderr, "%s:%d: unknown keyword '%s'\n", filename, line_no, buf);
 				errors++;
 			}
@@ -278,7 +265,8 @@ int i, num, line_no, errors;
 
 int save_Param(char *filename) {
 AtomicFile *f;
-int i, num;
+char buf[PRINT_BUF*3];
+int i;
 
 	if ((f = openfile(filename, "w")) == NULL)
 		return -1;
@@ -288,30 +276,11 @@ int i, num;
 		"#\n"
 		"\n", PARAM_BBS_NAME, filename);
 
-	num = sizeof(param)/sizeof(Param);
-
-	for(i = 0; i < num; i++) {
-		switch(param[i].type & PARAM_MASK) {
-			case PARAM_STRING:
-				fprintf(f->f, "%-22s %s\n", param[i].var, param[i].val.s);
-				break;
-
-			case PARAM_INT:
-				fprintf(f->f, "%-22s %d\n", param[i].var, param[i].val.d);
-				break;
-
-			case PARAM_OCTAL:
-				fprintf(f->f, "%-22s 0%02o\n", param[i].var, param[i].val.o);
-				break;
-
-			case PARAM_BOOL:
-				fprintf(f->f, "%-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "no" : "yes");
-				break;
-
-			default:
-				log_err("save_Param(): BUG! unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
-		}
-		if (param[i].type & PARAM_SEPARATOR)
+	for(i = 0; i < NUM_PARAM; i++) {
+		if (param[i]->key != NULL && param[i]->key[0]) {
+			print_KVPair(param[i], buf);
+			fprintf(f->f, "%-22s %s\n", param[i]->key, buf);
+		} else
 			fprintf(f->f, "\n");
 	}
 	fprintf(f->f, "\n# EOB\n");
@@ -356,31 +325,15 @@ void check_Param(void) {
 	used at startup for a pretty boot screen
 */
 void print_Param(void) {
-int i, num;
+int i;
+char buf[PRINT_BUF*3];
 
-	num = sizeof(param)/sizeof(Param);
-
-	for(i = 0; i < num; i++) {
-		switch(param[i].type & PARAM_MASK) {
-			case PARAM_STRING:
-				printf(" %-22s %s\n", param[i].var, param[i].val.s);
-				break;
-
-			case PARAM_INT:
-				printf(" %-22s %d\n", param[i].var, param[i].val.d);
-				break;
-
-			case PARAM_OCTAL:
-				printf(" %-22s 0%02o\n", param[i].var, param[i].val.o);
-				break;
-
-			case PARAM_BOOL:
-				printf(" %-22s %s\n", param[i].var, (param[i].val.bool == PARAM_FALSE) ? "no" : "yes");
-				break;
-
-			default:
-				fprintf(stderr, "print_Param(): BUG! unknown type '%d' for param[%d] (%s)\n", param[i].type, i, param[i].var);
-		}
+	for(i = 0; i < NUM_PARAM; i++) {
+		if (param[i]->key != NULL && param[i]->key[0]) {
+			print_KVPair(param[i], buf);
+			printf("%-22s %s\n", param[i]->key, buf);
+		} else
+			printf("\n");
 	}
 	printf("\n");
 }

@@ -33,6 +33,7 @@
 #include "util.h"
 #include "Timer.h"
 #include "Lang.h"
+#include "Memory.h"
 #include "locale_system.h"
 #include "cstring.h"
 
@@ -60,7 +61,7 @@ struct tm *tm;
 	t = rtc;
 	tm = gmtime(&t);
 
-	if (!cstricmp(PARAM_LOGROTATE, "none"))
+	if (!cstricmp(PARAM_LOGROTATE, "never"))
 		return;
 
 	if (!cstricmp(PARAM_LOGROTATE, "daily")
@@ -121,7 +122,11 @@ int fd;
 		dup2(fd, fileno(stderr));
 		close(fd);
 	}
-	if (!cstricmp(PARAM_LOGROTATE, "none"))
+	if (!cstricmp(PARAM_LOGROTATE, "none")) {		/* old; backwards compatibility */
+		Free(PARAM_LOGROTATE);
+		PARAM_LOGROTATE = cstrdup("never");
+	}
+	if (!cstricmp(PARAM_LOGROTATE, "never"))
 		return 0;
 
 	return logrotate_reset_timer();
