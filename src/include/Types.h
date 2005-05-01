@@ -36,23 +36,22 @@
 #define TYPE_JOINED			10
 #define TYPE_MESSAGE		11
 #define TYPE_MSGINDEX		12
-#define TYPE_FEELING		13
-#define TYPE_BUFFEREDMSG	14
-#define TYPE_FILE			15
-#define TYPE_WRAPPER		16
-#define TYPE_CACHEDFILE		17
-#define TYPE_ATOMICFILE		18
-#define TYPE_SU_PASSWD		19
-#define TYPE_TIMEZONE		20
-#define TYPE_DST_TRANS		21
-#define TYPE_TIMETYPE		22
-#define TYPE_HASH			23
-#define TYPE_LANG			24
-#define TYPE_CONN			25
-#define TYPE_TELNET			26
-#define TYPE_LINEBUF		27
-#define TYPE_KVPAIR			28
-#define NUM_TYPES			29
+#define TYPE_BUFFEREDMSG	13
+#define TYPE_FILE			14
+#define TYPE_WRAPPER		15
+#define TYPE_CACHEDFILE		16
+#define TYPE_ATOMICFILE		17
+#define TYPE_SU_PASSWD		18
+#define TYPE_TIMEZONE		19
+#define TYPE_DST_TRANS		20
+#define TYPE_TIMETYPE		21
+#define TYPE_HASH			22
+#define TYPE_LANG			23
+#define TYPE_CONN			24
+#define TYPE_TELNET			25
+#define TYPE_LINEBUF		26
+#define TYPE_KVPAIR			27
+#define NUM_TYPES			28
 
 typedef struct Typedef_tag Typedef;
 

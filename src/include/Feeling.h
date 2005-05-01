@@ -23,31 +23,13 @@
 #ifndef FEELING_H_WJ100
 #define FEELING_H_WJ100 1
 
+#include "KVPair.h"
 #include "StringList.h"
 
-#define add_Feeling(x,y)		(Feeling *)add_List((x), (y))
-#define concat_Feeling(x,y)		(Feeling *)concat_List((x), (y))
-#define remove_Feeling(x,y)		(Feeling *)remove_List((x), (y))
-#define listdestroy_Feeling(x)	listdestroy_List((x), destroy_Feeling)
-#define rewind_Feeling(x)		(Feeling *)rewind_List(x)
-#define unwind_Feeling(x)		(Feeling *)unwind_List(x)
-#define sort_Feeling(x,y)		(Feeling *)sort_List((x), (y))
-
-typedef struct Feeling_tag Feeling;
-
-struct Feeling_tag {
-	List(Feeling);
-
-	char *name;
-	StringList *str;
-};
-
-extern Feeling *feelings;
+extern KVPair *feelings;
 extern StringList *feelings_screen;
 
-Feeling *new_Feeling(void);
-void destroy_Feeling(Feeling *);
-Feeling *load_Feeling(char *);
+KVPair *load_Feeling(char *);
 int init_Feelings(void);
 int feeling_sort_func(void *, void *);
 void make_feelings_screen(int);

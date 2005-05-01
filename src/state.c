@@ -1918,7 +1918,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		BufferedMsg *msg;
-		Feeling *f;
+		KVPair *f;
 		int num;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
@@ -1958,7 +1958,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->msg = copy_StringList(f->str)) == NULL) {
+		if ((msg->msg = copy_StringList((StringList *)KVPair_getpointer(f))) == NULL) {
 			destroy_BufferedMsg(msg);
 			Perror(usr, "Out of memory");
 			RET(usr);

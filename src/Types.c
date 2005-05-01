@@ -22,7 +22,6 @@
 #include "Message.h"
 #include "MsgIndex.h"
 #include "BufferedMsg.h"
-#include "Feeling.h"
 #include "Timezone.h"
 #include "Hash.h"
 #include "Lang.h"
@@ -46,7 +45,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Joined",				sizeof(Joined),				},
 	{ "Message",			sizeof(Message),			},
 	{ "MsgIndex",			sizeof(MsgIndex),			},
-	{ "Feeling",			sizeof(Feeling),			},
 	{ "BufferedMsg",		sizeof(BufferedMsg),		},
 	{ "File",				sizeof(File),				},
 	{ "Wrapper",			sizeof(Wrapper),			},
