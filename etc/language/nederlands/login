@@ -9,8 +9,8 @@ Geef je naam:
 Enter password:
 Geef password:
 
-Welcome back, <yellow>%s<green>!
-Welkom terug, <yellow>%s<green>!
+Welcome back, <yellow>%s<green>! This is your <yellow>%s<green> login
+Welkom terug, <yellow>%s<green>! Dit is je <yellow>%s<green> login
 
 Logout
 Uitloggen
@@ -81,12 +81,6 @@ Verkeerd wachtwoord!
 You have unread messages held
 Er staan nog ongelezen berichten in de wacht
 
-%s<green> is busy sending you a message
-%s<green> is bezig om je een bericht te sturen
-
-%s<green> is busy sending you a message in follow-up mode
-%s<green> is bezig om je een bericht te sturen in opvolgingsmodus
-
 %s<green> is busy mailing you a message
 %s<green> is bezig om je een mail bericht te sturen
 
@@ -98,9 +92,6 @@ Heb je een ANSI terminal, <hotkey>Ja of <hotkey>Nee? <white>(<yellow>J<white>/<y
 
 is new to
 is nieuw op
-
-This is your <yellow>%s<green> login
-Dit is je <yellow>%s<green> login
 
 Last login was on <cyan>%s
 Vorige login was op <cyan>%s
