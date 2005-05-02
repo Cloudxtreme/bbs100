@@ -117,11 +117,11 @@ int len, bytes_written, n, old_idx;
 			if (old_idx == c->output_idx) {		/* nothing was flushed */
 				log_warn("write_Conn(): write() blocked, buffer overrun; %d bytes discarded", len - bytes_written);
 				return;
-			} else
-				continue;						/* flush succeeded */
+			}
+			continue;							/* flush succeeded */
 		}
-		if (len < n)							/* everything fits in the buffer */
-			n = len;
+		if (len - bytes_written < n)			/* everything fits in the buffer */
+			n = len - bytes_written;
 
 		memcpy(c->outputbuf + c->output_idx, str, n);		/* add to output buffer */
 		c->output_idx += n;

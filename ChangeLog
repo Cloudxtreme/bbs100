@@ -1,5 +1,5 @@
 Changes as of May 2nd 2005
-- tests for return value of write(), better use of output buffer
+- real output buffer minimizes flushes (big speed improvement)
 
 Changes as of May 1st 2005
 - Hash uses new type KVPair

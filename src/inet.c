@@ -314,8 +314,21 @@ int err, highest_fd = -1, wait_for_input, nap;
 	connected and input ready
 */
 			if (c->state & CONN_ESTABLISHED) {
+				if (c->output_idx > 0) {			/* got data to write */
+					FD_SET(c->sock, &wfds);
+					if (highest_fd <= c->sock)
+						highest_fd = c->sock + 1;
+					wait_for_input = 0;
+				}
 				if (c->input_head < c->input_tail) {
 					c->conn_type->process(c, c->inputbuf[c->input_head++]);
+
+					if (c->output_idx > 0) {			/* got data to write */
+						FD_SET(c->sock, &wfds);
+						if (highest_fd <= c->sock)
+							highest_fd = c->sock + 1;
+						wait_for_input = 0;
+					}
 					if (c->input_head < c->input_tail) {
 						wait_for_input = 0;
 						continue;
@@ -398,8 +411,10 @@ int err, highest_fd = -1, wait_for_input, nap;
 					if (FD_ISSET(c->sock, &wfds)) {
 						if (c->state & CONN_CONNECTING)
 							c->conn_type->complete_connect(c);
-						else
+						else {
+							flush_Conn(c);
 							c->conn_type->writable(c);
+						}
 						err--;
 					}
 					if (err <= 0) {

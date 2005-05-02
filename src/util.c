@@ -201,7 +201,7 @@ char buf[20], c;
 		if (*str)
 			str++;
 	}
-	Flush(usr);
+/*	Flush(usr);		the buffering code and mainloop() will flush for us */
 }
 
 /*
