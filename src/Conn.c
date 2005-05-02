@@ -23,11 +23,13 @@
 #include "config.h"
 #include "Conn.h"
 #include "Memory.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -83,42 +85,105 @@ void dummy_Conn_process(Conn *c, char k) {
 	;
 }
 
-
+/*
+	write to a connection using an output buffer
+*/
 void write_Conn(Conn *c, char *str) {
-int l;
+int len, bytes_written, n, old_idx;
 
-	if (c == NULL || str == NULL)
+	if (c == NULL || c->sock < 0 || str == NULL || !*str)
 		return;
 
-	l = strlen(str);
+	len = strlen(str);
+	bytes_written = 0;
 
-	if ((c->output_idx+l) >= (MAX_OUTPUTBUF-1))
-		flush_Conn(c);
+	while(bytes_written < len) {
 
-	strncpy(c->outputbuf + c->output_idx, str, l);
-	c->output_idx += l;
-	c->outputbuf[c->output_idx] = 0;
+/* n is how many bytes still fit in the buffer */
+
+		n = MAX_OUTPUTBUF-1 - c->output_idx;
+		if (n < 0) {
+			log_err("write_Conn(): BUG ! n < 0");
+			return;
+		}
+		if (!n) {
+			old_idx = c->output_idx;
+
+			flush_Conn(c);
+
+			if (c->sock < 0)					/* connection lost */
+				return;
+
+			if (old_idx == c->output_idx) {		/* nothing was flushed */
+				log_warn("write_Conn(): write() blocked, buffer overrun; %d bytes discarded", len - bytes_written);
+				return;
+			} else
+				continue;						/* flush succeeded */
+		}
+		if (len < n)							/* everything fits in the buffer */
+			n = len;
+
+		memcpy(c->outputbuf + c->output_idx, str, n);		/* add to output buffer */
+		c->output_idx += n;
+		c->outputbuf[c->output_idx] = 0;
+		bytes_written += n;
+		str = str + n;
+	}
 }
 
+/*
+	optimized form of write_Conn() for a single character
+*/
 void putc_Conn(Conn *conn, char c) {
-	if (conn == NULL)
+	if (conn == NULL || conn->sock < 0)
 		return;
 
-	if (conn->output_idx >= (MAX_OUTPUTBUF-1))
+	if (conn->output_idx >= MAX_OUTPUTBUF - 1) {
 		flush_Conn(conn);
 
+		if (conn->sock < 0)
+			return;
+
+		if (conn->output_idx >= MAX_OUTPUTBUF - 1) {
+			log_warn("putc_Conn(): write() blocked, buffer overrun; 1 byte discarded");
+			return;
+		}
+	}
 	conn->outputbuf[conn->output_idx++] = c;
 	conn->outputbuf[conn->output_idx] = 0;
 }
 
 void flush_Conn(Conn *conn) {
+int err;
+
 	if (conn == NULL)
 		return;
 
-	if (conn->sock > 0 && conn->output_idx > 0) {
-		write(conn->sock, conn->outputbuf, conn->output_idx);
-		conn->outputbuf[0] = 0;
-		conn->output_idx = 0;
+	while(conn->sock > 0 && conn->output_idx > 0) {
+		err = write(conn->sock, conn->outputbuf, conn->output_idx);
+
+		if (!err) {
+			log_err("flush_Conn(): write() of %d bytes returned zero", conn->output_idx);
+			break;
+		}
+		if (err == -1) {
+			if (errno == EAGAIN)		/* better luck next time */
+				break;
+
+			close(conn->sock);
+			conn->sock = -1;
+			conn->conn_type->linkdead(conn);	/* some other error */
+			break;
+		} else {
+			if (err == conn->output_idx) {		/* all data written */
+				conn->outputbuf[0] = 0;
+				conn->output_idx = 0;
+			} else {							/* partially written */
+				memmove(conn->outputbuf, conn->outputbuf + err, conn->output_idx - err);
+				conn->output_idx -= err;
+				conn->outputbuf[conn->output_idx] = 0;
+			}
+		}
 	}
 }
 

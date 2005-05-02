@@ -334,9 +334,9 @@ int err, highest_fd = -1, wait_for_input, nap;
 					c->input_tail = 0;
 
 				if (!err) {					/* EOF, connection closed */
-					c->conn_type->linkdead(c);
 					close(c->sock);
 					c->sock = -1;
+					c->conn_type->linkdead(c);
 					continue;
 				}
 #ifdef EWOULDBLOCK
@@ -358,9 +358,9 @@ int err, highest_fd = -1, wait_for_input, nap;
 					log_warn("mainloop(): read(): %s, closing connection", strerror(errno));
 
 				if (c->sock >= 0) {
-					c->conn_type->linkdead(c);
 					close(c->sock);
 					c->sock = -1;
+					c->conn_type->linkdead(c);
 				}
 				continue;
 			}
