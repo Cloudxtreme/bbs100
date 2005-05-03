@@ -43,17 +43,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-/*
-#ifndef TELCMDS
-#define TELCMDS
-#endif
-#ifndef TELOPTS
-#define TELOPTS
-#endif
-*/
-
 #include <arpa/telnet.h>
+
+#ifndef TELOPT_NAWS
+#define TELOPT_NAWS 31			/* negotiate about window size */
+#endif
+
+#ifndef TELOPT_NEW_ENVIRON
+#define TELOPT_NEW_ENVIRON 39	/* set new environment variable */
+#endif
+
 #include <netdb.h>
 #include <sys/socket.h>
 #include <signal.h>
@@ -75,15 +74,6 @@
 
 #ifdef HAVE_SYS_FILIO_H
 #include <sys/filio.h>
-#endif
-
-
-#ifndef TELOPT_NAWS
-#define TELOPT_NAWS 31			/* negotiate about window size */
-#endif
-
-#ifndef TELOPT_NEW_ENVIRON
-#define TELOPT_NEW_ENVIRON 39	/* set new environment variable */
 #endif
 
 
@@ -159,7 +149,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	strcpy(new_conn->hostname, new_conn->ipnum);
 
 	if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
-		write_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
+		put_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");
 		log_auth("connection from %s closed by wrapper", new_conn->ipnum);
 		destroy_Conn(new_conn);
 		Return;
@@ -198,7 +188,7 @@ User *usr;
 		return;
 
 	this_user = usr;
-	c = telnet_negotiations(usr->telnet, usr->conn->sock, (unsigned char)c, ConnUser_window_event);
+	c = telnet_negotiations(usr->telnet, usr->conn, (unsigned char)c, ConnUser_window_event);
 	this_user = NULL;
 	if (c == (char)-1)
 		return;
@@ -249,13 +239,16 @@ User *usr;
 	window size changed
 	(I'm not talking about TCP window size here)
 */
-void ConnUser_window_event(Telnet *t) {
-	if (t == NULL || this_user == NULL || this_user->telnet != t)
+void ConnUser_window_event(Conn *conn, Telnet *t) {
+User *usr;
+
+	if (conn == NULL || t == NULL || conn->data == NULL || ((User *)conn->data)->telnet != t)
 		return;
 
-	if (!(this_user->flags & USR_FORCE_TERM)) {
-		this_user->term_width = t->term_width;
-		this_user->term_height = t->term_height;
+	usr = (User *)conn->data;
+	if (!(usr->flags & USR_FORCE_TERM)) {
+		usr->term_width = t->term_width;
+		usr->term_height = t->term_height;
 	}
 }
 

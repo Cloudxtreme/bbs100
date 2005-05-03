@@ -20,6 +20,8 @@
 #ifndef TELNET_H_WJ105
 #define TELNET_H_WJ105	1
 
+#include "Conn.h"
+
 #define MAX_SUB_BUF			128
 
 #define TERM_WIDTH			80
@@ -46,7 +48,7 @@ typedef struct {
 
 Telnet *new_Telnet(void);
 void destroy_Telnet(Telnet *);
-int telnet_negotiations(Telnet *, int, unsigned char, void (*)(Telnet *));
+int telnet_negotiations(Telnet *, Conn *, unsigned char, void (*)(Conn *, Telnet *));
 
 #endif	/* TELNET_H_WJ105 */
 

@@ -143,7 +143,7 @@ int i;
 
 void Write(User *usr, char *str) {
 	if (usr != NULL)
-		write_Conn(usr->conn, str);
+		put_Conn(usr->conn, str);
 }
 
 void Writechar(User *usr, char c) {

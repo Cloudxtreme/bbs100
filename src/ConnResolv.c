@@ -199,7 +199,7 @@ void dns_gethostname(char *ipnum) {
 	if (ipnum == NULL || !*ipnum || conn_resolver == NULL)
 		return;
 
-	write_Conn(conn_resolver, ipnum);
+	put_Conn(conn_resolver, ipnum);
 	flush_Conn(conn_resolver);
 }
 

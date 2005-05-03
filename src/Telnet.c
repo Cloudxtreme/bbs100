@@ -53,12 +53,7 @@ void destroy_Telnet(Telnet *t) {
 	Free(t);
 }
 
-/*
-	this is a funny construction with the window_event handler, but
-	I want to keep the telnet code separated from the rest as much as
-	possible
-*/
-int telnet_negotiations(Telnet *t, int sock, unsigned char c, void (*window_event)(Telnet *)) {
+int telnet_negotiations(Telnet *t, Conn *conn, unsigned char c, void (*window_event)(Conn *, Telnet *)) {
 char buf[20];
 
 	if (t == NULL)
@@ -95,8 +90,7 @@ char buf[20];
 					Return 0;			/* return 0, although the BBS probably won't like it much ... */
 
 				case AYT:
-					if (sock > 0)
-						write(sock, "\n[YeS]\n", 8);
+					put_Conn(conn, "\n[YeS]\n");
 					t->state = TS_DATA;
 					Return -1;
 
@@ -143,14 +137,12 @@ char buf[20];
 
 				case TELOPT_NEW_ENVIRON:		/* NEW-ENVIRON SEND */
 					sprintf(buf, "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
-					if (sock > 0)
-						write(sock, buf, 6);
+					write_Conn(conn, buf, 6);
 					break;
 
 				default:
 					sprintf(buf, "%c%c%c", IAC, DONT, c);
-					if (sock > 0)
-						write(sock, buf, 3);
+					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;
 			Return -1;
@@ -165,8 +157,7 @@ char buf[20];
 
 				default:
 					sprintf(buf, "%c%c%c", IAC, WONT, c);
-					if (sock > 0)
-						write(sock, buf, 3);
+					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;
 			Return -1;
@@ -202,7 +193,7 @@ char buf[20];
 				t->state = TS_IAC;			/* expect SE */
 
 				if (window_event != NULL)
-					window_event(t);
+					window_event(conn, t);
 			}
 			Return -1;
 

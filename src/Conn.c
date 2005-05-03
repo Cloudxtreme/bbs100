@@ -88,15 +88,16 @@ void dummy_Conn_process(Conn *c, char k) {
 /*
 	write to a connection using an output buffer
 */
-void write_Conn(Conn *c, char *str) {
-int len, bytes_written, n, old_idx;
+int write_Conn(Conn *c, char *str, int len) {
+int bytes_written, n, old_idx;
 
-	if (c == NULL || c->sock < 0 || str == NULL || !*str)
-		return;
+	if (c == NULL || c->sock < 0 || str == NULL || !*str || len < 0)
+		return -1;
 
-	len = strlen(str);
+	if (!len)
+		return 0;
+
 	bytes_written = 0;
-
 	while(bytes_written < len) {
 
 /* n is how many bytes still fit in the buffer */
@@ -104,19 +105,17 @@ int len, bytes_written, n, old_idx;
 		n = MAX_OUTPUTBUF-1 - c->output_idx;
 		if (n < 0) {
 			log_err("write_Conn(): BUG ! n < 0");
-			return;
+			return bytes_written;
 		}
 		if (!n) {
 			old_idx = c->output_idx;
 
-			flush_Conn(c);
-
-			if (c->sock < 0)					/* connection lost */
-				return;
+			if (flush_Conn(c) < 0)
+				return -1;
 
 			if (old_idx == c->output_idx) {		/* nothing was flushed */
 				log_warn("write_Conn(): write() blocked, buffer overrun; %d bytes discarded", len - bytes_written);
-				return;
+				return bytes_written;
 			}
 			continue;							/* flush succeeded */
 		}
@@ -129,62 +128,69 @@ int len, bytes_written, n, old_idx;
 		bytes_written += n;
 		str = str + n;
 	}
+	return bytes_written;
 }
 
 /*
 	optimized form of write_Conn() for a single character
 */
-void putc_Conn(Conn *conn, char c) {
+int putc_Conn(Conn *conn, char c) {
 	if (conn == NULL || conn->sock < 0)
-		return;
+		return -1;
 
 	if (conn->output_idx >= MAX_OUTPUTBUF - 1) {
-		flush_Conn(conn);
-
-		if (conn->sock < 0)
-			return;
+		if (flush_Conn(conn) < 0)
+			return -1;
 
 		if (conn->output_idx >= MAX_OUTPUTBUF - 1) {
 			log_warn("putc_Conn(): write() blocked, buffer overrun; 1 byte discarded");
-			return;
+			return 0;
 		}
 	}
 	conn->outputbuf[conn->output_idx++] = c;
 	conn->outputbuf[conn->output_idx] = 0;
+	return 1;
 }
 
-void flush_Conn(Conn *conn) {
+int put_Conn(Conn *conn, char *str) {
+	if (str == NULL)
+		return -1;
+
+	return write_Conn(conn, str, strlen(str));
+}
+
+int flush_Conn(Conn *conn) {
 int err;
 
-	if (conn == NULL)
-		return;
+	if (conn == NULL || conn->sock < 0)
+		return -1;
 
-	while(conn->sock > 0 && conn->output_idx > 0) {
+	while(conn->output_idx > 0) {
 		err = write(conn->sock, conn->outputbuf, conn->output_idx);
 
 		if (!err) {
 			log_err("flush_Conn(): write() of %d bytes returned zero", conn->output_idx);
-			break;
+			return 0;
 		}
 		if (err == -1) {
 			if (errno == EAGAIN)		/* better luck next time */
-				break;
+				return 0;
 
 			close(conn->sock);
 			conn->sock = -1;
 			conn->conn_type->linkdead(conn);	/* some other error */
-			break;
-		} else {
-			if (err == conn->output_idx) {		/* all data written */
-				conn->outputbuf[0] = 0;
-				conn->output_idx = 0;
-			} else {							/* partially written */
-				memmove(conn->outputbuf, conn->outputbuf + err, conn->output_idx - err);
-				conn->output_idx -= err;
-				conn->outputbuf[conn->output_idx] = 0;
-			}
+			return -1;
+		}
+		if (err == conn->output_idx) {			/* all data written */
+			conn->outputbuf[0] = 0;
+			conn->output_idx = 0;
+		} else {								/* partially written */
+			memmove(conn->outputbuf, conn->outputbuf + err, conn->output_idx - err);
+			conn->output_idx -= err;
+			conn->outputbuf[conn->output_idx] = 0;
 		}
 	}
+	return 0;
 }
 
 /* EOB */

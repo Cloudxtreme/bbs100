@@ -86,9 +86,10 @@ void destroy_Conn(Conn *);
 void dummy_Conn_handler(Conn *);
 void dummy_Conn_process(Conn *, char);
 
-void write_Conn(Conn *, char *);
-void putc_Conn(Conn *, char);
-void flush_Conn(Conn *);
+int write_Conn(Conn *, char *, int);
+int putc_Conn(Conn *, char);
+int put_Conn(Conn *, char *);
+int flush_Conn(Conn *);
 
 #endif	/* CONN_H_WJ105 */
 

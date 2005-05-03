@@ -35,6 +35,6 @@ void ConnUser_process(Conn *, char);
 void ConnUser_linkdead(Conn *);
 void ConnUser_destroy(Conn *);
 
-void ConnUser_window_event(Telnet *);
+void ConnUser_window_event(Conn *, Telnet *);
 
 /* EOB */
