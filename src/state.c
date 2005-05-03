@@ -55,6 +55,7 @@
 #include "Worldclock.h"
 #include "Category.h"
 #include "Memory.h"
+#include "DataCmd.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3264,8 +3265,14 @@ int r;
 			RET(usr);
 			Return;
 		}
-		Print(usr, "%s: command not found\n", usr->edit_buf);
-		Put(usr, "type 'exit' to return\n\n$ ");
+		if (usr->cmd_chain == NULL)
+			usr->cmd_chain = new_PList(default_cmds);
+
+		if (exec_cmd(usr, usr->edit_buf) < 0)
+			Put(usr, "type 'exit' to return\n\n$ ");
+		else
+			Put(usr, "$ ");
+
 		edit_line(usr, EDIT_INIT);
 		Return;
 	}
