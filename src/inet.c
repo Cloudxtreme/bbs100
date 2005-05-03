@@ -323,7 +323,8 @@ int err, highest_fd = -1, wait_for_input, nap;
 				if (c->input_head < c->input_tail) {
 					c->conn_type->process(c, c->inputbuf[c->input_head++]);
 
-					if (c->output_idx > 0) {			/* got data to write */
+/* maybe we produced output (maybe not) */
+					if (c->output_idx > 0) {
 						FD_SET(c->sock, &wfds);
 						if (highest_fd <= c->sock)
 							highest_fd = c->sock + 1;
@@ -404,8 +405,10 @@ int err, highest_fd = -1, wait_for_input, nap;
 					if (FD_ISSET(c->sock, &rfds)) {
 						if (c->state & CONN_LISTEN)
 							c->conn_type->accept(c);
-						else
+						else {
+							log_debug("mainloop(): readable");
 							c->conn_type->readable(c);
+						}
 						err--;
 					}
 					if (FD_ISSET(c->sock, &wfds)) {

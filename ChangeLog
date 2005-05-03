@@ -1,3 +1,6 @@
+Changes as of May 3rd 2005
+- new StringIO type
+
 Changes as of May 2nd 2005
 - real output buffer minimizes flushes (big speed improvement)
 

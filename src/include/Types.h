@@ -50,7 +50,8 @@
 #define TYPE_TELNET			24
 #define TYPE_LINEBUF		25
 #define TYPE_KVPAIR			26
-#define NUM_TYPES			27
+#define TYPE_STRINGIO		27
+#define NUM_TYPES			28
 
 typedef struct Typedef_tag Typedef;
 
