@@ -19,7 +19,6 @@
 #include "Room.h"
 #include "Joined.h"
 #include "Message.h"
-#include "MsgIndex.h"
 #include "BufferedMsg.h"
 #include "Timezone.h"
 #include "Hash.h"
@@ -33,6 +32,8 @@
 
 Typedef Types_table[NUM_TYPES+1] = {
 	{ "char",				sizeof(char),				},
+	{ "int",				sizeof(int),				},
+	{ "long",				sizeof(long),				},
 	{ "<pointer>",			sizeof(void *),				},
 	{ "StringList",			sizeof(StringList),			},
 	{ "PList",				sizeof(PList),				},
@@ -44,7 +45,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Room",				sizeof(Room),				},
 	{ "Joined",				sizeof(Joined),				},
 	{ "Message",			sizeof(Message),			},
-	{ "MsgIndex",			sizeof(MsgIndex),			},
 	{ "BufferedMsg",		sizeof(BufferedMsg),		},
 	{ "File",				sizeof(File),				},
 	{ "Wrapper",			sizeof(Wrapper),			},

@@ -379,7 +379,7 @@ StringList *sl;
 				Print(usr, "<green>Sending mail to <yellow>%s\n", sl->str);
 
 				if (u != NULL) {
-					newMsg(u->mail, usr->new_message);
+					newMsg(u->mail, usr->new_message->number, u);
 					if (PARAM_HAVE_MAILROOM)
 						Tell(u, "<beep><cyan>You have new mail\n");
 				}
@@ -399,7 +399,7 @@ StringList *sl;
 				if (save_Message(usr->new_message, filename))
 					err++;
 				else
-					newMsg(usr->mail, usr->new_message);
+					newMsg(usr->mail, usr->new_message->number, usr);
 			}
 			if (err) {
 				Perror(usr, "Error sending mail");
@@ -429,9 +429,8 @@ StringList *sl;
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename)) {
-			newMsg(usr->curr_room, usr->new_message);
+			newMsg(usr->curr_room, usr->new_message->number, usr);
 			room_beep(usr, usr->curr_room);
-			expire_msg(usr->curr_room);			/* expire old messages */
 		} else {
 			err++;
 			Perror(usr, "Error saving message");
@@ -620,7 +619,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		unsigned long num;
-		MsgIndex *idx;
+		int idx;
 
 		num = strtoul(usr->edit_buf, NULL, 10);
 		if (num <= 0) {
@@ -628,16 +627,20 @@ int r;
 			RET(usr);
 			Return;
 		}
-		for(idx = usr->curr_room->msgs; idx != NULL; idx = idx->next) {
-			if (idx->number == num)
-				break;
+		if (usr->curr_room->msgs == NULL)
+			idx = usr->curr_room->msg_idx;
+		else {
+			for(idx = 0; idx < usr->curr_room->msg_idx; idx++) {
+				if (usr->curr_room->msgs[idx] == num)
+					break;
 
-			if (idx->number > num) {	/* we're not getting there anymore */
-				idx = NULL;
-				break;
+				if (usr->curr_room->msgs[idx] > num) {	/* we're not getting there anymore */
+					idx = usr->curr_room->msg_idx;
+					break;
+				}
 			}
 		}
-		if (idx == NULL) {
+		if (idx >= usr->curr_room->msg_idx) {
 			Put(usr, "<red>No such message\n");
 			RET(usr);
 			Return;
@@ -673,21 +676,18 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (usr->curr_msg == NULL) {
-			if (usr->curr_room->msgs == NULL) {
+		if (usr->curr_msg < 0) {
+			usr->curr_msg = usr->curr_room->msg_idx - 1;
+			if (usr->curr_msg < 0) {
 				Put(usr, "<red>No messages\n");
 				RET(usr);
 				Return;
 			}
-			usr->curr_msg = unwind_MsgIndex(usr->curr_room->msgs);
 		}
-		while(i > 1) {
-			if (usr->curr_msg->prev != NULL)
-				usr->curr_msg = usr->curr_msg->prev;
-			else
-				break;
-			i--;
-		}
+		usr->curr_msg -= i;
+		if (usr->curr_msg < 0)
+			usr->curr_msg = 0;
+
 		readMsg(usr);			/* readMsg() RET()s for us :P */
 	}
 	Return;
@@ -718,21 +718,18 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (usr->curr_msg == NULL) {
-			if (usr->curr_room->msgs == NULL) {
+		if (usr->curr_msg < 0) {
+			usr->curr_msg = usr->curr_room->msg_idx - 1;
+			if (usr->curr_msg < 0) {
 				Put(usr, "<red>No messages\n");
 				RET(usr);
 				Return;
 			}
-			usr->curr_msg = rewind_MsgIndex(usr->curr_room->msgs);
 		}
-		while(i > 0) {
-			if (usr->curr_msg->next != NULL)
-				usr->curr_msg = usr->curr_msg->next;
-			else
-				break;
-			i--;
-		}
+		usr->curr_msg += i;
+		if (usr->curr_msg >= usr->curr_room->msg_idx)
+			usr->curr_msg = usr->curr_room->msg_idx - 1;
+
 		readMsg(usr);			/* readMsg() RET()s for us :P */
 	}
 	Return;
@@ -741,16 +738,17 @@ int r;
 /* --- */
 
 
-void readMsg(User *usr) {
+void old_readMsg(User *usr) {
 char filename[MAX_PATHLEN], date_buf[MAX_LINE];
 Joined *j;
+unsigned long msg_number;
 
 	if (usr == NULL)
 		return;
 
 	Enter(readMsg);
 
-	if (usr->curr_msg == NULL) {
+	if (usr->curr_msg < 0 || usr->curr_msg >= usr->curr_room->msg_idx || usr->curr_room->msgs == NULL) {
 		Perror(usr, "The message you were attempting to read has all of a sudden vaporized");
 		RET(usr);
 		Return;
@@ -760,19 +758,20 @@ Joined *j;
 		RET(usr);
 		Return;
 	}
-	if (usr->curr_msg->number > j->last_read)
-		j->last_read = usr->curr_msg->number;
+	msg_number = usr->curr_room->msgs[usr->curr_msg];
+	if (msg_number > j->last_read)
+		j->last_read = msg_number;
 
 /* construct filename */
 	if (usr->curr_room == usr->mail)
-		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->curr_msg->number);
+		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, msg_number);
 	else
-		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->curr_msg->number);
+		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, msg_number);
 	path_strip(filename);
 
 /* load the message */
 	destroy_Message(usr->message);
-	if ((usr->message = load_Message(filename, usr->curr_msg)) == NULL) {
+	if ((usr->message = load_Message(filename, msg_number)) == NULL) {
 		Perror(usr, "The message vaporizes as you attempt to read it");
 		RET(usr);
 		Return;
@@ -856,6 +855,131 @@ Joined *j;
 	}
 	POP(usr);
 	read_more(usr);
+
+	Return;
+}
+
+void readMsg(User *usr) {
+char filename[MAX_PATHLEN], date_buf[MAX_LINE];
+Joined *j;
+unsigned long msg_number;
+
+	if (usr == NULL)
+		return;
+
+	Enter(readMsg);
+
+	if (usr->curr_msg < 0 || usr->curr_msg >= usr->curr_room->msg_idx || usr->curr_room->msgs == NULL) {
+		Perror(usr, "The message you were attempting to read has all of a sudden vaporized");
+		RET(usr);
+		Return;
+	}
+	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) == NULL) {
+		Perror(usr, "Suddenly you haven't joined this room ?");
+		RET(usr);
+		Return;
+	}
+	msg_number = usr->curr_room->msgs[usr->curr_msg];
+	if (msg_number > j->last_read)
+		j->last_read = msg_number;
+
+/* construct filename */
+	if (usr->curr_room == usr->mail)
+		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, msg_number);
+	else
+		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, msg_number);
+	path_strip(filename);
+
+/* load the message */
+	destroy_Message(usr->message);
+	if ((usr->message = load_Message(filename, msg_number)) == NULL) {
+		Perror(usr, "The message vaporizes as you attempt to read it");
+		RET(usr);
+		Return;
+	}
+	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
+		Perror(usr, "Out of memory");
+		RET(usr);
+		Return;
+	} else
+		free_StringIO(usr->text);
+
+	msg_header(usr);
+
+	if (usr->message->deleted != (time_t)0UL) {
+		put_StringIO(usr->text, "\n");
+
+		if (usr->message->flags & MSG_DELETED_BY_ANON)
+			print_StringIO(usr->text, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]\n",
+				print_date(usr, usr->message->deleted, date_buf), usr->message->anon);
+		else {
+			char deleted_by[MAX_LINE];
+
+			deleted_by[0] = 0;
+			if (usr->message->flags & MSG_DELETED_BY_SYSOP)
+				strcpy(deleted_by, PARAM_NAME_SYSOP);
+			else
+				if (usr->message->flags & MSG_DELETED_BY_ROOMAIDE)
+					strcpy(deleted_by, PARAM_NAME_ROOMAIDE);
+
+			if (*deleted_by)
+				strcat(deleted_by, ": ");
+			strcat(deleted_by, usr->message->deleted_by);
+
+			print_StringIO(usr->text, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
+				print_date(usr, usr->message->deleted, date_buf), deleted_by);
+		}
+	} else {
+		StringList *sl;
+
+		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
+			if (usr->message->subject[0]) {
+				if (usr->message->flags & MSG_FORWARDED)
+					print_StringIO(usr->text, "<cyan>Subject: <white>Fwd: <yellow>%s\n", usr->message->subject);
+				else
+					if (usr->message->flags & MSG_REPLY)
+						print_StringIO(usr->text, "<cyan>Subject: <white>Re: <yellow>%s\n", usr->message->subject);
+					else
+						print_StringIO(usr->text, "<cyan>Subject: <yellow>%s\n", usr->message->subject);
+			} else {
+/*
+	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
+	which is actually correct, because the reply_number would be different to each
+	recipient of the Mail> message
+*/
+				if (usr->message->flags & MSG_REPLY && usr->message->reply_number)
+					print_StringIO(usr->text, "<cyan>Subject: <white>Re: <yellow><message #%lu>\n", usr->message->reply_number);
+			}
+		} else {
+			if ((usr->message->flags & MSG_FORWARDED) && usr->message->subject[0])
+				print_StringIO(usr->text, "<white>Fwd: <yellow>%s\n", usr->message->subject);
+			else {
+				if (usr->message->flags & MSG_REPLY) {			/* room without subject lines */
+					if (usr->message->subject[0])
+						print_StringIO(usr->text, "<white>Re: <yellow>%s\n", usr->message->subject);
+					else
+						if (usr->message->reply_number)
+							print_StringIO(usr->text, "<white>Re: <yellow><message #%lu>\n", usr->message->reply_number);
+				}
+			}
+		}
+		put_StringIO(usr->text, "<green>");
+		if (usr->message->msg != NULL) {
+			for(sl = usr->message->msg; sl != NULL; sl = sl->next) {
+				if (sl->str != NULL) {
+					put_StringIO(usr->text, sl->str);
+					put_StringIO(usr->text, "\n");
+				}
+			}
+		}
+		usr->read++;						/* update stats */
+		if (usr->read > stats.read) {
+			stats.read = usr->read;
+			strcpy(stats.most_read, usr->name);
+		}
+	}
+	POP(usr);
+	read_text(usr);
 
 	Return;
 }
@@ -2358,71 +2482,12 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 	Return;
 }
 
-
-/*
-	Note: this routine does not work for the Mail> room
-	      (use expire_mail())
-*/
-void expire_msg(Room *r) {
-User *u;
-MsgIndex *m;
-char buf[MAX_PATHLEN];
-
-	if (r == NULL || r->msgs == NULL || list_Count(r->msgs) <= PARAM_MAX_MESSAGES)
-		return;
-
-	Enter(expire_msg);
-
-	for(u = AllUsers; u != NULL; u = u->next)
-		if (u->curr_msg == r->msgs)
-			u->curr_msg = NULL;			/* hmm... I wonder if strange things could happen here */
-
-	sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs->number);
-	path_strip(buf);
-	unlink_file(buf);
-
-	m = r->msgs;
-	remove_MsgIndex(&r->msgs, m);
-	destroy_MsgIndex(m);
-
-	Return;
-}
-
-void expire_mail(User *usr) {
-MsgIndex *m;
-char buf[MAX_PATHLEN];
-int i;
-
-	if (usr == NULL || usr->mail == NULL || usr->mail->msgs == NULL
-		|| (i = list_Count(usr->mail->msgs)) <= PARAM_MAX_MAIL_MSGS)
-		return;
-
-	Enter(expire_mail);
-
-	while(i > PARAM_MAX_MAIL_MSGS) {
-		i--;
-		m = usr->mail->msgs;
-		if (m == NULL)
-			break;
-
-		sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, m->number);
-		path_strip(buf);
-		unlink_file(buf);
-
-		remove_MsgIndex(&usr->mail->msgs, m);
-		destroy_MsgIndex(m);
-	}
-	Return;
-}
-
-
 /*
 	find the next unread room
 	this is an unseemingly costly operation
 */
 Room *next_unread_room(User *usr) {
 Room *r, *r2, *next_joined = NULL;
-MsgIndex *m;
 Joined *j;
 
 	if (usr == NULL)
@@ -2455,8 +2520,7 @@ Joined *j;
 				j->generation = usr->mail->generation;
 			add_Joined(&usr->rooms, j);
 		}
-		m = unwind_MsgIndex(usr->mail->msgs);
-		if (m != NULL && m->number > j->last_read)
+		if (usr->mail->msgs != NULL && usr->mail->msg_idx > 0 && usr->mail->msgs[usr->mail->msg_idx-1] > j->last_read)
 			return usr->mail;
 	}
 /*
@@ -2503,15 +2567,13 @@ Joined *j;
 */
 Room *unread_room(User *usr, Room *r) {
 Joined *j;
-MsgIndex *m;
 
 	Enter(unread_room);
 
 	if ((j = joined_room(usr, r)) == NULL) {
 		Return NULL;
 	}
-	m = unwind_MsgIndex(r->msgs);
-	if (m != NULL && m->number > j->last_read) {
+	if (r->msgs != NULL && r->msg_idx > 0 && r->msgs[r->msg_idx-1] > j->last_read) {
 		Return r;
 	}
 	Return NULL;
@@ -2682,6 +2744,278 @@ User *u;
 		if (u->flags & USR_ROOMBEEP)
 			Put(u, "<beep>");
 	}
+	Return;
+}
+
+void read_text(User *usr) {
+	Enter(read_text);
+
+	rewind_StringIO(usr->text);
+	usr->read_lines = 0;
+	usr->total_lines = 1;
+
+	CALL(usr, STATE_MORE_TEXT);
+
+	Return;
+}
+
+void state_more_text(User *usr, char c) {
+int l, cpos;
+StringList *sl;
+char buf[128];
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_more_text);
+
+	Put(usr, "<cr>                                      <cr><green>");
+	switch(c) {
+		case INIT_STATE:
+			if (usr->text == NULL) {
+				RET(usr);
+				Return;
+			}
+			rewind_StringIO(usr->text);
+
+			cpos = 0;
+			while(read_StringIO(usr->text, buf, 127) > 0)
+				Out(usr, buf, &cpos);
+
+			usr->runtime_flags |= RTF_BUSY;
+			break;
+
+		case 'b':
+		case 'B':
+			for(l = 0; l < (usr->term_height * 2); l++) {
+				if (usr->textp->prev != NULL) {
+					usr->textp = usr->textp->prev;
+					if (usr->read_lines)
+						usr->read_lines--;
+				} else {
+					if (l <= usr->term_height)
+						l = -1;			/* user that's keeping 'b' pressed */
+					break;
+				}
+			}
+			if (l == -1) {				/* so bail out of the --More-- prompt */
+				usr->textp = NULL;
+				break;
+			}
+
+		case ' ':
+		case 'n':
+		case 'N':
+			for(l = 0; l < usr->term_height && usr->textp != NULL; l++) {
+				cpos = 0;
+				Out(usr, usr->textp->str, &cpos);
+				Out(usr, "\n", &cpos);
+
+				usr->read_lines++;
+				usr->textp = usr->textp->next;
+			}
+			break;
+
+		case KEY_RETURN:
+		case '+':
+		case '=':
+			if (usr->textp->str != NULL) {
+				cpos = 0;
+				Out(usr, usr->textp->str, &cpos);
+				Out(usr, "\n", &cpos);
+			}
+			usr->textp = usr->textp->next;
+			usr->read_lines++;
+			break;
+
+		case KEY_BS:
+		case '-':
+		case '_':
+			for(l = 0; l < (usr->term_height+1); l++) {
+				if (usr->textp->prev != NULL) {
+					usr->textp = usr->textp->prev;
+					if (usr->read_lines)
+						usr->read_lines--;
+				} else
+					break;
+			}
+			for(l = 0; l < usr->term_height; l++) {
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
+					break;
+				usr->read_lines++;
+				usr->textp = usr->textp->next;
+			}
+			break;
+
+		case 'g':						/* goto beginning */
+			usr->textp = usr->more_text;
+			usr->read_lines = 0;
+
+			for(l = 0; l < usr->term_height; l++) {
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
+					break;
+				usr->read_lines++;
+				usr->textp = usr->textp->next;
+			}
+			break;
+
+		case 'G':						/* goto end ; display last page */
+			if (usr->textp == NULL)
+				break;
+
+/* goto the end */
+			for(sl = usr->textp; sl != NULL && sl->next != NULL; sl = sl->next)
+				usr->read_lines++;
+
+/* go one screen back */
+			l = 0;
+			while(sl != NULL && sl->prev != NULL && l < usr->term_height) {
+				sl = sl->prev;
+				l++;
+			}
+			usr->textp = sl;
+			usr->read_lines -= l;
+
+/* display it */
+			for(l = 0; l < usr->term_height; l++) {
+				if (usr->textp != NULL) {
+					cpos = 0;
+					Out(usr, usr->textp->str, &cpos);
+					Out(usr, "\n", &cpos);
+				} else
+					break;
+				usr->read_lines++;
+				usr->textp = usr->textp->next;
+			}
+			break;
+
+		case '/':						/* find */
+			if (usr->textp == NULL)
+				break;
+
+			CALL(usr, STATE_MORE_FIND_PROMPT);
+			Return;
+
+		case '?':						/* find backwards */
+			if (usr->textp == NULL)
+				break;
+
+			CALL(usr, STATE_MORE_FINDBACK_PROMPT);
+			Return;
+
+		case 'q':
+		case 'Q':
+		case 's':
+		case 'S':
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_ESC:
+			usr->textp = NULL;
+			break;
+
+		default:
+			Put(usr, "<green>Press <white><<yellow>space<white>><green> for next page, <white><<yellow>b<white>><green> for previous page, <white><<yellow>enter<white>><green> for next line\n");
+	}
+	if (usr->textp != NULL)
+		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
+			100 * usr->read_lines / usr->total_lines);
+	else {
+/*
+	Don't destroy in order to be able to reply to a message
+
+		destroy_Message(usr->message);
+		usr->message = NULL;
+*/
+		free_StringIO(usr->text);
+		usr->read_lines = usr->total_lines = 0;
+		RET(usr);
+	}
+	Return;
+}
+
+void msg_header(User *usr) {
+char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
+
+	if (usr == NULL)
+		return;
+
+	Enter(msg_header);
+
+	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	} else
+		free_StringIO(usr->text);
+
+	if (usr->message == NULL) {
+		Perror(usr, "I have a problem with this");
+		Return;
+	}
+/* print message header */
+
+	if (usr->message->anon[0])
+		sprintf(from, "<cyan>- %s -", usr->message->anon);
+	else
+		if (usr->message->flags & MSG_FROM_SYSOP)
+			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, usr->message->from);
+		else
+			if (usr->message->flags & MSG_FROM_ROOMAIDE)
+				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, usr->message->from);
+			else
+				sprintf(from, "<yellow>%s", usr->message->from);
+
+	if (usr->message->to != NULL) {
+		StringList *sl;
+		int l, dl, max_dl;			/* l = strlen, dl = display length */
+
+		max_dl = usr->term_width-1;
+		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
+			max_dl = MAX_LINE*3-1;
+
+		if (!strcmp(usr->message->from, usr->name)) {
+			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime, date_buf));
+			dl = color_strlen(buf);
+
+			for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
+				if ((dl + strlen(sl->str)+2) < max_dl)
+					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
+				else {
+					usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
+				}
+				dl = color_strlen(buf);
+			}
+			print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
+		} else {
+			if (usr->message->to != NULL && usr->message->to->next == NULL && !strcmp(usr->message->to->str, usr->name))
+				print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->message->mtime, date_buf), from);
+			else {
+				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime, date_buf), from);
+				dl = color_strlen(buf);
+
+				for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
+					if ((dl + strlen(sl->str)+2) < MAX_LINE)
+						l += sprintf(buf+strlen(buf), "<yellow>%s<green>, ", sl->str);
+					else {
+						put_StringIO(usr->text, buf);
+						put_StringIO(usr->text, "\n");
+						l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
+					}
+					dl = color_strlen(buf);
+				}
+				print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
+			}
+		}
+	} else
+		print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->message->mtime, date_buf), from);
 	Return;
 }
 

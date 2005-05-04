@@ -75,6 +75,8 @@ User *usr;
 	usr->term_height = TERM_HEIGHT;
 	default_colors(usr);
 
+	usr->curr_msg = -1;
+
 	return usr;
 }
 
@@ -137,6 +139,8 @@ int i;
 	listdestroy_Timer(usr->timerq);
 	destroy_Telnet(usr->telnet);
 	listdestroy_PList(usr->cmd_chain);
+
+	destroy_StringIO(usr->text);
 
 	Free(usr);
 }
@@ -463,7 +467,6 @@ int term_width, term_height;
 		if ((flags & LOAD_USER_ROOMS) && !strcmp(buf, "rooms")) {
 			Joined *j;
 			Room *r;
-			MsgIndex *m;
 			char zapped;
 			unsigned int number, roominfo_read;
 			unsigned long generation, last_read;
@@ -484,12 +487,11 @@ int term_width, term_height;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			m = unwind_MsgIndex(r->msgs);
-			if (m == NULL)
+			if (r->msgs == NULL || r->msg_idx <= 0)
 				last_read = 0UL;
 			else
-				if (last_read > m->number)
-					last_read = m->number;
+				if (last_read > r->msgs[r->msg_idx-1])
+					last_read = r->msgs[r->msg_idx-1];
 
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
@@ -747,7 +749,6 @@ int i;
 	if (flags & LOAD_USER_ROOMS) {
 		Joined *j;
 		Room *r;
-		MsgIndex *m;
 		char zapped;
 		unsigned int number, roominfo_read;
 		unsigned long generation, last_read;
@@ -781,12 +782,11 @@ int i;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			m = unwind_MsgIndex(r->msgs);
-			if (m == NULL) {
+			if (r->msgs == NULL || r->msg_idx <= 0)
 				last_read = 0UL;
-			} else
-				if (last_read > m->number)
-					last_read = m->number;
+			else
+				if (last_read > r->msgs[r->msg_idx-1])
+					last_read = r->msgs[r->msg_idx-1];
 
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;

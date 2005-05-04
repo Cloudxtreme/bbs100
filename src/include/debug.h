@@ -63,13 +63,13 @@ extern unsigned long debug_stack[DEBUG_STACK_SIZE];
 extern int debug_stackp;
 
 void dump_debug_stack(void);
-void breakpoint(void);
+void debug_breakpoint(void);
 
 #else	/* NO DEBUG */
 
 #define TD
 #define TDC
-#define breakpoint
+#define debug_breakpoint
 #define Enter(x)
 #define Return	return
 

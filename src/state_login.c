@@ -462,15 +462,11 @@ char num_buf[25];
 	fix last_read field if too large (fix screwed up mail rooms)
 */
 	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL) {
-		MsgIndex *m;
-
-		m = unwind_MsgIndex(usr->mail->msgs);
-
-		if (m == NULL)
+		if (usr->mail->msgs == NULL || usr->mail->msg_idx <= 0)
 			j->last_read = 0UL;
 		else
-			if (j->last_read > m->number)
-				j->last_read = m->number;
+			if (j->last_read > usr->mail->msgs[usr->mail->msg_idx-1])
+				j->last_read = usr->mail->msgs[usr->mail->msg_idx-1];
 	}
 	usr->runtime_flags &= ~RTF_BUSY;
 	usr->edit_buf[0] = 0;
@@ -608,13 +604,13 @@ char num_buf[25];
 */
 	new_mail = 0;
 	if (usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
-		&& newMsgs(usr->mail, j->last_read) != NULL) {
+		&& newMsgs(usr->mail, j->last_read) >= 0) {
 		if (PARAM_HAVE_MAILROOM) {
 			new_mail = 1;
 			Put(usr, "\n<beep><cyan>You have new mail\n");
 		}
 	}
-	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) != NULL)
+	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) >= 0)
 		goto_room(usr, Lobby_room);
 	else {
 		if (PARAM_HAVE_MAILROOM && new_mail)

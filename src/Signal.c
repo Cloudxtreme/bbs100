@@ -36,12 +36,12 @@
 #include "timeout.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/stat.h>
 
 #ifdef HAVE_SYS_SIGNAL_H
 #include <sys/signal.h>
@@ -418,39 +418,32 @@ char signame_buf[MAX_LINE];
 */
 void sig_mail(int sig) {
 User *u;
-char buf[MAX_PATHLEN];
-struct stat statbuf;
-int new_mail = 0;
-unsigned long num;
+unsigned long old_mail, new_mail;
+
+	if (!PARAM_HAVE_MAILROOM)
+		return;
 
 	Enter(sig_mail);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u->name[0] && u->mail != NULL) {
-			if (u->mail->msgs == NULL)
-				num = 0UL;
-			else {
-				u->mail->msgs = unwind_MsgIndex(u->mail->msgs);
-				num = u->mail->msgs->number;
-			}
-			for(;;) {
-				num++;
-				sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, u->name[0], u->name, num);
-				path_strip(buf);
+		if (u->mail == NULL)
+			continue;
 
-				if (!stat(buf, &statbuf)) {
-					new_mail = 1;
-					u->mail->msgs = add_MsgIndex(&u->mail->msgs, new_MsgIndex(num));
-				} else
-					break;
-			}
-			u->mail->msgs = rewind_MsgIndex(u->mail->msgs);
+		old_mail = 0UL;	
+		if (u->mail->msgs != NULL && u->mail->msg_idx > 0)
+			old_mail = u->mail->msgs[u->mail->msg_idx-1];
 
-			if (PARAM_HAVE_MAILROOM && new_mail) {
-				Tell(u, "<beep><cyan>You have new mail\n");
-				new_mail = 0;
-			}
-		}
+		Free(u->mail->msgs);
+		u->mail->msgs = NULL;
+
+		room_readmaildir(u->mail, u->name);
+
+		new_mail = 0UL;	
+		if (u->mail->msgs != NULL && u->mail->msg_idx > 0)
+			new_mail = u->mail->msgs[u->mail->msg_idx-1];
+
+		if (old_mail != new_mail)
+			Tell(u, "<beep><cyan>You have new mail\n");
 	}
 	Return;
 }

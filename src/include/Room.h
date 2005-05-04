@@ -28,7 +28,6 @@
 #include "defines.h"
 #include "List.h"
 #include "StringList.h"
-#include "MsgIndex.h"
 #include "Message.h"
 #include "PList.h"
 
@@ -72,9 +71,8 @@ struct Room_tag {
 	List(Room);
 
 	char *name, *category;
-	unsigned int number, flags, roominfo_changed;
-	unsigned long generation;
-	MsgIndex *msgs;
+	unsigned int number, flags, roominfo_changed, msg_idx;
+	unsigned long generation, *msgs;
 	StringList *info, *room_aides, *kicked, *invited, *chat_history;
 
 	PList *inside;		/* list of pointers to online users (chat room only) */
@@ -98,8 +96,8 @@ int save_Room(Room *);
 int save_Room_version0(File *, Room *);
 int save_Room_version1(File *, Room *);
 
-void newMsg(Room *, Message *);
-MsgIndex *newMsgs(Room *, unsigned long);
+void newMsg(Room *, unsigned long, User *);
+int newMsgs(Room *, unsigned long);
 
 void room_readdir(Room *);
 void room_readmaildir(Room *, char *);

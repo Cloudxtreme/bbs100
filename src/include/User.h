@@ -36,6 +36,7 @@
 #include "Lang.h"
 #include "Conn.h"
 #include "Telnet.h"
+#include "StringIO.h"
 #include "sys_time.h"
 
 #include <sys/types.h>
@@ -129,7 +130,8 @@ struct User_tag {
 
 	Conn *conn;
 
-	int edit_pos, read_lines, total_lines, crashed, term_width, term_height;
+	int edit_pos, curr_msg, read_lines, total_lines, crashed;
+	int term_width, term_height;
 
 	char edit_buf[MAX_LINE];
 
@@ -160,13 +162,13 @@ struct User_tag {
 
 	Message *message, *new_message;
 	Room *mail, *curr_room;
-	MsgIndex *curr_msg;
 	BufferedMsg *history, *history_p, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
 	Telnet *telnet;
 	Lang *lang;
+	StringIO *text;
 	PList *cmd_chain;
 };
 

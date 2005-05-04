@@ -27,7 +27,6 @@
 
 #include "defines.h"
 #include "StringList.h"
-#include "MsgIndex.h"
 #include "sys_time.h"
 #include "CachedFile.h"
 
@@ -53,7 +52,7 @@ typedef struct {
 Message *new_Message(void);
 void destroy_Message(Message *);
 
-Message *load_Message(char *, MsgIndex *);
+Message *load_Message(char *, unsigned long);
 int save_Message(Message *, char *);
 
 int load_Message_version0(File *, Message *);

@@ -109,17 +109,21 @@ char *p;
 int read_StringIO(StringIO *s, char *buf, int len) {
 int bytes_read;
 
-	if (s == NULL || buf == NULL)
+	if (s == NULL || buf == NULL || len < 0)
 		return -1;
 
-	if (s->buf == NULL)
+	if (s->buf == NULL || len == 0)
 		return 0;
 
+	len--;
 	bytes_read = s->len - s->pos;
 	if (bytes_read > len)
 		bytes_read = len;
 
-	memcpy(buf, s->buf, bytes_read);
+	if (bytes_read > 0)
+		memcpy(buf, s->buf + s->pos, bytes_read);
+
+	buf[bytes_read] = 0;
 	s->pos += bytes_read;
 	return bytes_read;
 }
@@ -135,7 +139,7 @@ int bytes_written, fit, n;
 
 	bytes_written = 0;
 	while(bytes_written < len) {
-		fit = s->size - s->pos;
+		fit = s->size - 1 - s->pos;
 		if (fit <= 0) {
 			if (grow_StringIO(s) < 0)
 				return bytes_written;
@@ -147,8 +151,10 @@ int bytes_written, fit, n;
 
 		memcpy(s->buf + s->pos, str + bytes_written, n);
 		s->pos += n;
-		if (s->pos > s->len)
+		if (s->pos > s->len) {
 			s->len = s->pos;
+			s->buf[s->len] = 0;
+		}
 		bytes_written += n;
 	}
 	return bytes_written;
@@ -246,10 +252,10 @@ int put_StringIO(StringIO *s, char *str) {
 	if (s == NULL || str == NULL || !*str)
 		return 0;
 
-	return write_StringIO(s, str, strlen(str)+1);
+	return write_StringIO(s, str, strlen(str));
 }
 
-int printf_StringIO(StringIO *s, char *fmt, ...) {
+int print_StringIO(StringIO *s, char *fmt, ...) {
 char buf[PRINT_BUF];
 va_list args;
 int l;

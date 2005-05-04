@@ -49,7 +49,7 @@ int load_StringIO(StringIO *, char *);
 int save_StringIO(StringIO *, char *);
 
 int put_StringIO(StringIO *, char *);
-int printf_StringIO(StringIO *, char *, ...);
+int print_StringIO(StringIO *, char *, ...);
 
 void free_StringIO(StringIO *);
 

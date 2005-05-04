@@ -90,6 +90,13 @@ Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
 
+
+#define STATE_MORE_TEXT		state_more_text
+
+void read_text(User *);
+void msg_header(User *);
+void state_more_text(User *, char);
+
 #endif	/* STATE_MSG_H_WJ99 */
 
 /* EOB */

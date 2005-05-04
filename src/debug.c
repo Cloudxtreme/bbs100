@@ -60,7 +60,7 @@ int i;
 		"TD\n");
 }
 
-void breakpoint(void) {
+void debug_breakpoint(void) {
 	;
 }
 

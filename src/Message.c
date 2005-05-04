@@ -56,8 +56,7 @@ void destroy_Message(Message *m) {
 	Free(m);
 }
 
-
-Message *load_Message(char *filename, MsgIndex *idx) {
+Message *load_Message(char *filename, unsigned long number) {
 Message *m;
 File *f;
 int (*load_func)(File *, Message *) = NULL;
@@ -71,7 +70,7 @@ int version;
 		Fclose(f);
 		return NULL;
 	}
-	if (idx == NULL) {
+	if (!number) {
 		char *p;
 
 		if ((p = cstrrchr(filename, '/')) == NULL)		/* get msg number from filename */
@@ -79,7 +78,7 @@ int version;
 
 		m->number = strtoul(p, NULL, 10);
 	} else
-		m->number = idx->number;
+		m->number = number;
 
 /* get file format version */
 	version = fileformat_version(f);

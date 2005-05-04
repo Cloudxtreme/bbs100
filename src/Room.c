@@ -61,14 +61,13 @@ void destroy_Room(Room *r) {
 	Free(r->name);
 	Free(r->category);
 
-	listdestroy_MsgIndex(r->msgs);
 	listdestroy_StringList(r->info);
 	listdestroy_StringList(r->room_aides);
 	listdestroy_StringList(r->kicked);
 	listdestroy_StringList(r->invited);
 	listdestroy_StringList(r->chat_history);
 	listdestroy_PList(r->inside);
-
+	Free(r->msgs);
 	Free(r);
 }
 
@@ -380,33 +379,62 @@ int save_Room_version0(File *f, Room *r) {
 	return 0;
 }
 
-
 /*
 	this assumes msgs are sorted by number
 	returns first new message in the room (usr->curr_msg should be set to this)
 */
-MsgIndex *newMsgs(Room *r, unsigned long num) {
-MsgIndex *m;
+int newMsgs(Room *r, unsigned long num) {
+int i;
+
+	if (r == NULL || r->msg_idx <= 0)
+		return -1;
+
+	if (num >= r->msgs[r->msg_idx-1])
+		return -1;
+
+/*
+	the search is backwards so that it is optimized for speed
+*/
+	for(i = r->msg_idx - 1; i >= 0; i--) {
+		if (r->msgs[i] <= num) {
+			i++;
+			return i;
+		}
+	}
+	return 0;
+}
+
+void newMsg(Room *r, unsigned long number, User *usr) {
+char filename[MAX_PATHLEN];
+int max;
 
 	if (r == NULL)
-		return NULL;
-
-	m = unwind_MsgIndex(r->msgs);
-	if (m != NULL && m->number > num) {
-		while(m->prev != NULL && m->prev->number > num)
-			m = m->prev;
-		return m;
-	}
-	return NULL;
-}
-
-void newMsg(Room *r, Message *m) {
-	if (r == NULL || m == NULL)
 		return;
 
-	add_MsgIndex(&r->msgs, new_MsgIndex(m->number));
-}
+	max = (r->number == MAIL_ROOM) ? PARAM_MAX_MAIL_MSGS : PARAM_MAX_MESSAGES;
 
+	if (r->msgs == NULL && (r->msgs = (unsigned long *)Malloc(sizeof(unsigned long) * max, TYPE_LONG)) == NULL)
+		return;
+
+	if (r->number == MAIL_ROOM) {
+		if (usr == NULL)
+			filename[0] = 0;
+		else
+			sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, r->msgs[0]);
+	} else
+		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
+
+	if (r->msg_idx >= max) {
+		if (filename[0]) {
+			path_strip(filename);
+			if (unlink(filename) == -1)
+				log_err("newMsg(): failed to delete file %s", filename);
+		}
+		memmove(r->msgs, &r->msgs[1], (max - 1) * sizeof(unsigned long));
+		r->msg_idx = max - 1;
+	}
+	r->msgs[r->msg_idx++] = number;
+}
 
 void room_readdir(Room *r) {
 char dirname[MAX_PATHLEN];
@@ -439,8 +467,7 @@ unsigned long num;
 	if (r == NULL || dirname == NULL)
 		return;
 
-	listdestroy_MsgIndex(r->msgs);
-	r->msgs = NULL;
+	r->msg_idx = 0;
 	bufp = dirname+strlen(dirname);
 
 	if ((dirp = opendir(dirname)) == NULL)
@@ -450,24 +477,20 @@ unsigned long num;
 		if (direntp->d_name[0] >= '0' && direntp->d_name[0] <= '9') {
 			strcpy(bufp, direntp->d_name);
 			num = strtoul(bufp, NULL, 10);
-			r->msgs = add_MsgIndex(&r->msgs, new_MsgIndex(num));
+
+			newMsg(r, num, NULL);
 		}
 	}
 	closedir(dirp);
 
-	r->msgs = rewind_MsgIndex(r->msgs);
-	r->msgs = sort_MsgIndex(r->msgs, msgs_sort_func);
+	qsort(r->msgs, r->msg_idx, sizeof(unsigned long), (int (*)(const void *, const void *))msgs_sort_func);
 }
 
 unsigned long room_top(Room *r) {
-MsgIndex *m;
-
-	if (r == NULL)
+	if (r == NULL || r->msgs == NULL || r->msg_idx <= 0)
 		return 0UL;
 
-	if ((m = unwind_MsgIndex(r->msgs)) == NULL)
-		return 0UL;
-	return m->number;
+	return r->msgs[r->msg_idx-1];
 }
 
 Room *find_Room(User *usr, char *name) {
@@ -827,22 +850,20 @@ Room *r1, *r2;
 }
 
 int msgs_sort_func(void *v1, void *v2) {
-MsgIndex *m1, *m2;
+unsigned long number1, number2;
 
 	if (v1 == NULL || v2 == NULL)
 		return 0;
 
-	m1 = *(MsgIndex **)v1;
-	m2 = *(MsgIndex **)v2;
+	number1 = *(unsigned long *)v1;
+	number2 = *(unsigned long *)v2;
 
-	if (m1 == NULL || m2 == NULL)
-		return 0;
-
-	if (m1->number < m2->number)
+	if (number1 < number2)
 		return -1;
 
-	if (m1->number > m2->number)
+	if (number1 > number2)
 		return 1;
+
 	return 0;
 }
 

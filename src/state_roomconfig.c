@@ -918,7 +918,7 @@ void state_remove_all_posts(User *usr, char c) {
 
 void remove_all_posts(Room *room) {
 char buf[MAX_PATHLEN];
-MsgIndex *idx, *idx_next;
+int idx;
 User *u;
 
 	if (room == NULL)
@@ -926,19 +926,16 @@ User *u;
 
 	Enter(remove_all_posts);
 
-	for(idx = room->msgs; idx != NULL; idx = idx_next) {
-		idx_next = idx->next;
-
-		sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, room->number, idx->number);
+	for(idx = 0; idx < room->msg_idx; idx++) {
+		sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, room->number, room->msgs[idx]);
 		path_strip(buf);
 		unlink_file(buf);
 
 		for(u = AllUsers; u != NULL; u = u->next)
-			if (u->curr_msg == idx)
-				u->curr_msg = NULL;
-
-		destroy_MsgIndex(idx);
+			if (u->curr_room == room && u->curr_msg == idx)
+				u->curr_msg = -1;
 	}
+	Free(room->msgs);
 	room->msgs = NULL;
 	Return;
 }
@@ -1000,7 +997,7 @@ void (*func)(User *, char *, ...);
 			}
 			u->curr_room = Lobby_room;
 			usr->runtime_flags &= ~RTF_ROOMAIDE;
-			u->curr_msg = NULL;
+			u->curr_msg = -1;
 		}
 	}
 /* move room to trash/ directory */

@@ -109,8 +109,7 @@ void state_dummy(User *usr, char c) {
 
 
 void state_room_prompt(User *usr, char c) {
-MsgIndex *idx;
-int i;
+int i, idx;
 
 	if (usr == NULL)
 		return;
@@ -684,7 +683,7 @@ int i;
 			Return;
 
 		case 's':
-			if (usr->curr_msg != NULL) {
+			if (usr->curr_msg >= 0) {
 				Put(usr, "<white>Stop\n");
 				stop_reading(usr);
 			}
@@ -700,20 +699,18 @@ int i;
 	contributed by Mutation of MatrixBBS
 */
 		case 'a':
-			if (usr->curr_room->msgs == NULL) {
+			if (usr->curr_room->msgs == NULL || usr->curr_room->msg_idx <= 0) {
 				Put(usr, "<white>Again\n"
 					"<red>No messages\n");
 				break;
 			}
-			if (usr->curr_msg == NULL)
+			if (usr->curr_msg < 0)
 				break;
 
-			if (usr->curr_msg != NULL) {
-				Put(usr, "<white>Again\n");
-				PUSH(usr, STATE_ROOM_PROMPT);
-				readMsg(usr);
-				Return;
-			}
+			Put(usr, "<white>Again\n");
+			PUSH(usr, STATE_ROOM_PROMPT);
+			readMsg(usr);
+			Return;
 			break;
 
 /*
@@ -721,12 +718,12 @@ int i;
 	contributed by Mutation of MatrixBBS
 */
 		case '(':
-			if (usr->curr_room->msgs == NULL) {
+			if (usr->curr_room->msgs == NULL || usr->curr_room->msg_idx <= 0) {
 				Put(usr, "<white>Read Parent\n"
 					"<red>No messages\n");
 				break;
 			}
-			if (usr->curr_msg == NULL)
+			if (usr->curr_msg < 0)
 				break;
 
 			if (!(usr->message->flags & MSG_REPLY)) {
@@ -734,16 +731,16 @@ int i;
 					"<red>This is not a reply\n");
 				break;
 			}
-			for(idx = usr->curr_room->msgs; idx != NULL; idx = idx->next) {
-				if (idx->number == usr->message->reply_number)
-					break;  
+			for(idx = 0; idx < usr->curr_room->msg_idx; idx++) {
+				if (usr->curr_room->msgs[idx] == usr->message->reply_number)
+					break;
 
-				if (idx->number > usr->message->reply_number) {		/* we're not getting there anymore */
-					idx = NULL;
+				if (usr->curr_room->msgs[idx] > usr->message->reply_number) {		/* we're not getting there anymore */
+					idx = usr->curr_room->msg_idx;
 					break;
 				}
 			}
-			if (idx == NULL) {
+			if (idx >= usr->curr_room->msg_idx) {
 				Put(usr, "<red>Parent message doesn't exist anymore\n");
 				break;
 			}
@@ -756,17 +753,17 @@ int i;
 			break;
 
 		case 'b':
-			if (usr->curr_room->msgs == NULL) {
+			if (usr->curr_room->msgs == NULL || usr->curr_room->msg_idx <= 0) {
 				Put(usr, "<white>Back\n"
 					"<red>No messages\n");
 				break;
 			}
-			if (usr->curr_msg == NULL)
-				usr->curr_msg = unwind_MsgIndex(usr->curr_room->msgs);
+			if (usr->curr_msg < 0)
+				usr->curr_msg = usr->curr_room->msg_idx - 1;
 			else
-				usr->curr_msg = usr->curr_msg->prev;
+				usr->curr_msg--;
 
-			if (usr->curr_msg != NULL) {
+			if (usr->curr_msg >= 0) {
 				Put(usr, "<white>Back\n");
 				PUSH(usr, STATE_ROOM_PROMPT);
 				readMsg(usr);
@@ -790,6 +787,7 @@ int i;
 			break;
 
 		case ' ':
+			debug_breakpoint();
 			listdestroy_StringList(usr->more_text);
 			usr->more_text = NULL;
 			destroy_Message(usr->message);
@@ -798,14 +796,14 @@ int i;
 			if (usr->curr_room->flags & ROOM_CHATROOM)
 				break;
 
-			if (usr->curr_msg == NULL) {
+			if (usr->curr_msg < 0) {
 				Joined *j;
 
 				if ((j = in_Joined(usr->rooms, usr->curr_room->number)) == NULL) {
 					Perror(usr, "All of a sudden you haven't joined the current room ?");
 					break;
 				}
-				if ((usr->curr_msg = newMsgs(usr->curr_room, j->last_read)) != NULL) {
+				if ((usr->curr_msg = newMsgs(usr->curr_room, j->last_read)) >= 0) {
 					Put(usr, "<white>Read New\n");
 					PUSH(usr, STATE_ROOM_PROMPT);
 					readMsg(usr);
@@ -821,14 +819,16 @@ int i;
 					}
 				}
 			} else {
-				usr->curr_msg = usr->curr_msg->next;
-				if (usr->curr_msg != NULL) {
+				usr->curr_msg++;
+				if (usr->curr_msg < usr->curr_room->msg_idx) {
 					Put(usr, "<white>Read Next\n");
 					PUSH(usr, STATE_ROOM_PROMPT);
 					readMsg(usr);
 					Return;
-				} else
+				} else {
+					usr->curr_msg = -1;
 					break;
+				}
 			}
 			Put(usr, "<red>No new messages");
 			break;
@@ -1095,20 +1095,18 @@ void PrintPrompt(User *usr) {
 
 /* print a long prompt with msg number when reading messages */
 
-			if (usr->curr_msg != NULL) {
+			if (usr->curr_msg >= 0) {
 				int remaining = -1;
-				MsgIndex *p;
 				char num_buf[25];
 
-				for(p = usr->curr_msg; p != NULL; p = p->next)
-					remaining++;
+				remaining = usr->curr_room->msg_idx - 1 - usr->curr_msg;
 
 				if (usr->flags & USR_ROOMNUMBERS)
 					Print(usr, "\n<white>[%u <yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						usr->curr_room->number, roomname, print_number(usr, usr->curr_msg->number, num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						usr->curr_room->number, roomname, print_number(usr, usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
 					Print(usr, "\n<white>[<yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						roomname, print_number(usr, usr->curr_msg->number, num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						roomname, print_number(usr, usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 			} else {
 				destroy_Message(usr->message);
 				usr->message = NULL;
@@ -2728,9 +2726,8 @@ struct tm *tm;
 
 void print_known_room(User *usr, Room *r) {
 Joined *j;
-MsgIndex *idx;
 char status[2], buf[MAX_LINE*2], buf2[MAX_LINE*3];
-int read_it = 1;
+int read_it = 1, idx;
 
 	if (usr == NULL || r == NULL)
 		return;
@@ -2777,13 +2774,13 @@ int read_it = 1;
 	}
 	if (read_it) {
 		if (j != NULL) {
-			idx = unwind_MsgIndex(r->msgs);
-			if (idx != NULL && idx->number > j->last_read) {
+			idx = r->msg_idx-1;
+			if (idx > 0 && r->msgs != NULL && r->msgs[idx] > j->last_read) {
 				status[0] = (char)color_by_name("cyan");
 				status[1] = '*';
 			}
 		} else {
-			if (r->msgs != NULL) {			/* there are messages in this room */
+			if (r->msgs != NULL && r->msg_idx > 0) {	/* there are messages in this room */
 				status[0] = (char)color_by_name("cyan");
 				status[1] = '*';
 			}
@@ -3467,11 +3464,13 @@ Joined *j;
 
 	Enter(stop_reading);
 
-	usr->curr_msg = unwind_MsgIndex(usr->curr_room->msgs);
-	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
-		j->last_read = usr->curr_msg->number;
-
-	usr->curr_msg = NULL;
+	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL) {
+		if (usr->curr_room->msgs != NULL && usr->curr_room->msg_idx > 0)
+			j->last_read = usr->curr_room->msgs[usr->curr_room->msg_idx - 1];
+		else
+			j->last_read = 0UL;
+	}
+	usr->curr_msg = -1;
 	Return;
 }
 
@@ -3483,15 +3482,12 @@ Joined *j;
 
 	Enter(goto_room);
 
-	if (usr->curr_room == usr->mail)
-		expire_mail(usr);						/* expire old mail messages */
-
 	leave_room(usr);
 
 	if (r == NULL) {							/* possible if connection is being closed */
 		Return;
 	}
-	usr->curr_msg = NULL;
+	usr->curr_msg = -1;
 
 	listdestroy_StringList(usr->more_text);
 	usr->more_text = NULL;
