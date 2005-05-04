@@ -90,6 +90,7 @@ int write_Conn(Conn *, char *, int);
 int putc_Conn(Conn *, char);
 int put_Conn(Conn *, char *);
 int flush_Conn(Conn *);
+int input_Conn(Conn *);
 
 #endif	/* CONN_H_WJ105 */
 

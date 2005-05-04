@@ -1,3 +1,7 @@
+Changes as of May 4th 2005
+- mainloop() only uses read() when select() tells him to
+  (another speed improvement)
+
 Changes as of May 3rd 2005
 - new StringIO type
 

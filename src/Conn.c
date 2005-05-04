@@ -173,9 +173,16 @@ int err;
 			return 0;
 		}
 		if (err == -1) {
-			if (errno == EAGAIN)		/* better luck next time */
+			if (errno == EINTR)					/* better luck next time */
 				return 0;
 
+#ifdef EWOULDBLOCK
+			if (errno == EWOULDBLOCK)
+				return 0;
+#else
+			if (errno == EAGAIN)
+				return 0;
+#endif
 			close(conn->sock);
 			conn->sock = -1;
 			conn->conn_type->linkdead(conn);	/* some other error */
@@ -191,6 +198,52 @@ int err;
 		}
 	}
 	return 0;
+}
+
+/*
+	inverse of flush(); buffer input
+*/
+int input_Conn(Conn *conn) {
+int err;
+
+	if (conn == NULL || conn->sock < 0)
+		return -1;
+
+	if (conn->input_head < conn->input_tail)		/* already got input ready */
+		return conn->input_tail - conn->input_head;
+
+	conn->input_head = conn->input_tail = 0;
+
+	err = read(conn->sock, conn->inputbuf, MAX_INPUTBUF);
+	if (!err) {							/* EOF, connection closed */
+		close(conn->sock);
+		conn->sock = -1;
+		conn->conn_type->linkdead(conn);
+		return -1;
+	}
+	if (err < 0) {
+		if (errno == EINTR)				/* better luck next time */
+			return 0;
+
+#ifdef EWOULDBLOCK
+		if (errno == EWOULDBLOCK)
+			return 0;
+#else
+		if (errno == EAGAIN)
+			return 0;
+#endif
+		if (errno != EBADF)
+			log_warn("input_Conn(): read(): %s, closing connection", strerror(errno));
+
+		if (conn->sock >= 0) {
+			close(conn->sock);
+			conn->sock = -1;
+			conn->conn_type->linkdead(conn);
+		}
+		return -1;
+	}
+	conn->input_tail = err;
+	return conn->input_tail;
 }
 
 /* EOB */

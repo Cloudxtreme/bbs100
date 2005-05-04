@@ -249,7 +249,7 @@ void mainloop(void) {
 struct timeval timeout;
 fd_set rfds, wfds;
 Conn *c, *c_next;
-int err, highest_fd = -1, wait_for_input, nap;
+int err, highest_fd = -1, wait_for_input, nap, isset;
 
 	Enter(mainloop);
 
@@ -311,7 +311,7 @@ int err, highest_fd = -1, wait_for_input, nap;
 				continue;
 			}
 /*
-	connected and input ready
+	connected
 */
 			if (c->state & CONN_ESTABLISHED) {
 				if (c->output_idx > 0) {			/* got data to write */
@@ -324,59 +324,26 @@ int err, highest_fd = -1, wait_for_input, nap;
 					c->conn_type->process(c, c->inputbuf[c->input_head++]);
 
 /* maybe we produced output (maybe not) */
-					if (c->output_idx > 0) {
+					if (c->sock > 0 && c->output_idx > 0) {
 						FD_SET(c->sock, &wfds);
 						if (highest_fd <= c->sock)
 							highest_fd = c->sock + 1;
 						wait_for_input = 0;
 					}
-					if (c->input_head < c->input_tail) {
+					if (c->input_head < c->input_tail) {	/* got more input ready */
 						wait_for_input = 0;
 						continue;
 					}
 				}
 /*
-	no input ready, try to read()
+	no input ready, mark for request to read()
 */
-				c->input_head = 0;
-				if ((err = read(c->sock, c->inputbuf, MAX_INPUTBUF)) > 0) {
-					c->input_tail = err;
-					c->inputbuf[c->input_tail] = 0;
-					wait_for_input = 0;
-					continue;
-				} else
-					c->input_tail = 0;
-
-				if (!err) {					/* EOF, connection closed */
-					close(c->sock);
-					c->sock = -1;
-					c->conn_type->linkdead(c);
-					continue;
-				}
-#ifdef EWOULDBLOCK
-				if (errno == EWOULDBLOCK) {
-#else
-				if (errno == EAGAIN) {
-#endif
+				if (c->sock > 0) {
 					FD_SET(c->sock, &rfds);
 					if (highest_fd <= c->sock)
 						highest_fd = c->sock + 1;
 					continue;
 				}
-				if (errno == EINTR)		/* interrupted, try again next time */
-					continue;
-/*
-	something bad happened, and I don't know what
-*/
-				if (errno != EBADF)
-					log_warn("mainloop(): read(): %s, closing connection", strerror(errno));
-
-				if (c->sock >= 0) {
-					close(c->sock);
-					c->sock = -1;
-					c->conn_type->linkdead(c);
-				}
-				continue;
 			}
 		}
 /*
@@ -401,29 +368,27 @@ int err, highest_fd = -1, wait_for_input, nap;
 			for(c = AllConns; c != NULL; c = c_next) {
 				c_next = c->next;
 
-				if (c->sock > 0) {
-					if (FD_ISSET(c->sock, &rfds)) {
-						if (c->state & CONN_LISTEN)
-							c->conn_type->accept(c);
-						else {
-							log_debug("mainloop(): readable");
-							c->conn_type->readable(c);
-						}
-						err--;
-					}
-					if (FD_ISSET(c->sock, &wfds)) {
-						if (c->state & CONN_CONNECTING)
-							c->conn_type->complete_connect(c);
-						else {
-							flush_Conn(c);
-							c->conn_type->writable(c);
-						}
-						err--;
-					}
-					if (err <= 0) {
-						err = 0;
-						break;
-					}
+				isset = 0;
+				if (c->sock > 0 && FD_ISSET(c->sock, &rfds)) {
+					if (c->state & CONN_LISTEN)
+						c->conn_type->accept(c);
+					else
+						input_Conn(c);
+					isset++;
+				}
+				if (c->sock > 0 && FD_ISSET(c->sock, &wfds)) {
+					if (c->state & CONN_CONNECTING)
+						c->conn_type->complete_connect(c);
+					else
+						flush_Conn(c);
+					isset++;
+				}
+				if (isset)
+					err--;
+
+				if (err <= 0) {
+					err = 0;
+					break;
 				}
 			}
 		}
