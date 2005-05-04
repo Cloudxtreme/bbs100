@@ -1,0 +1,719 @@
+#
+#	nederlands
+#
+
+Goto <yellow>%s
+Ga naar <yellow>%s
+
+Profile
+Profiel
+
+Enter name<yellow>:
+Geef naam<yellow>:
+
+--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)
+--<yellow>Meer<white>-- (<cyan>regel %d<white>/<cyan>%d %d<white>%%)
+
+Enter name <white>[<yellow>%s<white>]:
+Geef naam <white>[<yellow>%s<white>]:
+
+eXpress Message
+Uitdrukkelijk Bericht
+
+Enter recipient <white>[<yellow>%s<white>]:
+Geef ontvanger <white>[<yellow>%s<white>]:
+
+%s received by <yellow>%s
+%s ontvangen door <yellow>%s
+
+Who
+Wie
+
+Ping
+Ping
+
+%s<green> is not busy
+%s<green> is niet bezig
+
+%s<green> is busy
+%s<green> is bezig
+
+%s<green> is busy sending you a message
+%s<green> is bezig om je een bericht te sturen
+
+%s<green> is busy sending you a message in follow-up mode
+%s<green> is bezig om je een bericht te sturen in opvolgingsmodus
+
+Nothing entered, so no message was sent
+Niets ingetypt, dus geen bericht verzonden
+
+%s message
+%s bericht
+
+Subject:
+Onderwerp:
+
+Enter %smessage, press <white><<yellow>return<white>><green> twice or press <white><<yellow>Ctrl-C<white>><green> to end
+Tik %sbericht, druk tweemaal op <white><<yellow>return<white>><green> of <white><<yellow>Ctrl-C<white>><green> om te stoppen
+
+%s<green>, from %s
+%s<green>, van %s
+
+<hotkey>A<green>bort, <hotkey>Save, <hotkey>Continue<white>:
+<hotkey>Afbreken, <hotkey>Opslaan, <hotkey>Doorgaan<white>:
+
+Continue
+Doorgaan
+
+Abort --
+Afbreken
+
+Are you sure? <white>(<cyan>y<white>/<cyan>N<white>):
+Weet je het zeker? <white>(<cyan>j<white>/<cyan>N<white>):
+
+Save
+Opslaan
+
+Read New
+Lees Nieuwe
+
+[<yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c
+[<yellow>%s<white>]<green> nr %s (%d te gaan) <white>%c
+
+Back
+Terug
+
+Enter message number<yellow>:
+Geef bericht nummer<yellow>:
+
+No such message
+Bestaat niet
+
+Stop
+Stop
+
+Help
+Hulp
+
+Config menu
+Configuratie menu
+
+Address                      <hotkey>Terminal settings	\
+Profile <hotkey>Info                 Customize <hotkey>Who list	\
+<hotkey>Doing                        <hotkey>Options	\
+<hotkey>Reminder
+Adres                        Scherm ins<hotkey>tellingen	\
+Profiel                      Aanpassen Aan<hotkey>wezigenlijst	\
+Wat <hotkey>doe je           <hotkey>Opties	\
+He<hotkey>rinnering
+
+Quicklist
+Snellijst
+
+Anon<hotkey>ymous alias              Time <hotkey>Zone	\
+<hotkey>Friends and <hotkey>Enemies	\
+<hotkey>Password                     <hotkey>Help
+Anoniem alias                        Tijd<hotkey>zone	\
+Vriendjes en Vijanden	\
+Wachtwoord                           <hotkey>Hulp
+
+[<yellow>Config<white>] %c
+[<yellow>Configuratie<white>] %c
+
+Address
+Adres
+
+R<magenta>eal name: <yellow>%s
+E<magenta>chte naam: <yellow>%s
+
+A<magenta>ddress  : <yellow>%s	\
+           %s  %s	\
+           %s, %s
+A<magenta>dres    : <yellow>%s	\
+           %s  %s	\
+           %s, %s
+
+P<magenta>hone    : <yellow>%s
+T<magenta>elefoon : <yellow>%s
+
+<hotkey>E<magenta>-mail   : <yellow>%s	\
+<hotkey>W<magenta>WW      : <yellow>%s
+<hotkey>E<magenta>-mail   : <yellow>%s	\
+<hotkey>W<magenta>WW      : <yellow>%s
+
+[<yellow>Config<white>] <yellow>Address<white>%c
+[<yellow>Configuratie<white>] <yellow>Adres<white>%c
+
+Real name
+Echte naam
+
+Enter your real name<yellow>:
+Geef je echte naam<yellow>:
+
+Enter your street and number<yellow>:
+Geef je adres<yellow>:
+
+Enter your ZIP or postal code<yellow>:
+Geef postcode<yellow>:
+
+Enter the city you live in<yellow>:
+Geef je woonplaats<yellow>:
+
+Enter the state you are from<yellow>:
+Geef de provincie<yellow>:
+
+Enter your country<yellow>:
+In het land<yellow>:
+
+Phone number
+Telefoonnummer
+
+Enter your phone number<yellow>:
+Geef je telefoonnummer<yellow>:
+
+Profile info
+Profiel
+
+Are you sure you wish to change this? <white>(<cyan>Y<white>/<cyan>n<white>):
+Weet je zeker dat je dit wilt veranderen? <white>(<cyan>J<white>/<cyan>n<white>):
+
+Doing
+Doe iets
+
+You are currently doing<white>:<cyan> %s
+Momenteel ben je dit aan het doen<white>:<cyan> %s
+
+Enter new Doing<yellow>:
+Wat ga je Doen<yellow>:
+
+Not changed
+Niet veranderd
+
+Reminder
+Ter herinnering
+
+Enter new reminder<yellow>:
+Geef een nieuw herinneringsbericht in<yellow>:
+
+Default anonymous alias
+Standaard anoniem alias
+
+Your current default anonymous alias is: <cyan>%s
+Je huidige anonieme alias is: <cyan>%s
+
+Enter new alias<yellow>:
+Geef het nieuwe alias<yellow>:
+
+Friends
+Vriendjes
+
+A<green>dd friend, <hotkey>Remove friend, switch to <hotkey>Enemy list<white>:
+Vriendje Toevoegen, Verwijderen, ga naar de lijst van Vijanden<white>:
+
+Add friend
+Vriendje toevoegen
+
+Remove friend
+Vriendje verwijderen
+
+Enemies
+Vijanden
+
+A<green>dd enemy, <hotkey>Remove enemy, switch to <hotkey>Friendlist<white>:
+Vijand toevoegen, verwijderen, ga naar de lijst van Vriendjes<white>:
+
+Add enemy
+Vijand toevoegen
+
+Remove enemy
+Vijand verwijderen
+
+Your enemy list already is empty
+Je vijandenlijst is al leeg
+
+Exit
+Exit
+
+Password
+Wachtwoord
+
+Enter old password<yellow>:
+Geef het oude wachtwoord<yellow>:
+
+Enter new password<yellow>:
+Geef het nieuwe wachtwoord<yellow>:
+
+Enter it again (for verification)<yellow>:
+Nog eens (ter controle)<yellow>:
+
+Passwords didn't match <white>;<red> password NOT changed
+Wachtwoorden verschillen <white>;<red> wachtwoord NIET veranderd
+
+Terminal settings
+Scherminstellingen
+
+Terminal emulation                   <white>%s<magenta>	\
+Make use of bold/bright <hotkey>attribute    <white>%-3s
+Scherm                               <white>%s<magenta>	\
+Gebruik vet of helder <hotkey>attribuut      <white>%-3s
+
+Force screen width and height        <white>%s<magenta>	\
+<hotkey>Screen dimensions                    <white>%dx%d
+Zet scherm breedte en hoogte         <white>%s<magenta>	\
+<hotkey>Scherm dimensies                     <white>%dx%d
+
+Customize colors<magenta>	\
+<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>	\
+<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]
+
+Stel kleuren in<magenta>	\
+<hotkey>Wit        <white>[%c%-7s<white>]<magenta>         <hotkey>Lichtblauw <white>[%c%-7s<white>]<magenta>	\
+<hotkey>Geel       <white>[%c%-7s<white>]<magenta>         <hotkey>Blauw      <white>[%c%-7s<white>]
+
+Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>	\
+<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>
+Rood       <white>[%c%-7s<white>]<magenta>         <hotkey>Paars      <white>[%c%-7s<white>]<magenta>	\
+<hotkey>Groen      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>
+
+<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         <hotkey>Defaults for all colors
+<magenta>Achterground  <white>[%c%-7s<white>]<magenta>         Standaardwaarden voor alle kleuren
+
+[<yellow>Config<white>] <yellow>Terminal<white>%c
+[<yellow>Configuratie<white>] <yellow>Scherminstellingen<white>%c
+
+Terminal emulation
+Scherm
+
+Attribute bold/bright
+Vet/Helder attribuut
+
+%s screen width and height
+%s schermbreedte en -hoogte
+
+Screen dimensions
+Scherm dimensies
+
+Enter screen width <white>[<yellow>%d<white>]:
+Geef schermbreedte <white>[<yellow>%d<white>]:
+
+Enter screen height <white>[<yellow>%d<white>]:
+Enter schermhoogte <white>[<yellow>%d<white>]:
+
+Customize %s
+Aanpassen %s
+
+Colors are<yellow>: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite <black>Blac<hotkey>k <hotkey>D<green>efault
+Kleuren<yellow> <hotkey>R<red>ood <hotkey>G<green>roen G<yellow>eel <hotkey>B<blue>lauw P<magenta>aars <hotkey>C<cyan>yaan <hotkey>W<white>it <black>Zwart <green>Standaar<hotkey>d
+
+Change the color for %c%s<cyan> to<white>:
+Verander de kleur voor %c%s<cyan> naar<white>:
+
+Customize background
+Aanpassen achtergrondkleur
+
+Change the background color to<white>:
+Verander de achtergrondkleur naar<white>:
+
+Defaults
+Standaardwaarden
+
+Who list
+Aanwezigen
+
+Default who list <hotkey>format      <white>%s<magenta>	\
+Sort <hotkey>by<yellow>...                   <white>%s<magenta>	\
+Sort <hotkey>order                   <white>%s
+Standaard <hotkey>formaat      <white>%s<magenta>	\
+Sorteer op<yellow>...                   <white>%s<magenta>	\
+Sorteervolgorde                   <white>%s
+
+When in a <hotkey>chat room<yellow>...       <white>%s
+In een <hotkey>chat kamer<yellow>...       <white>%s
+
+Show online <hotkey>enemies          <white>%s
+Toon aanwezige vijanden            <white>%s
+
+[<yellow>Config<white>] <yellow>Who<white>%c
+[<yellow>Configuratie<white>] <yellow>Aanwezigen<white>%c
+
+Format
+Formaat
+
+Sort by
+Sorteer op
+
+Sort order
+Sorteervolgorde
+
+In a chat room...
+In een chat kamer...
+
+%s enemies
+%s vijanden
+
+Options
+Opties
+
+Beep on message arrival              <white>%s<magenta>	\
+<hotkey>Message reception is ...             <white>%s<magenta>	\
+<hotkey>Follow up mode (auto reply)          <white>%s<magenta>	\
+<hotkey>Hold message mode when busy          <white>%s
+Biep als een bericht wordt ontvangen <white>%s<magenta>	\
+<hotkey>Het ontvangen van berichten staat ...<white>%s<magenta>	\
+<hotkey>Opvolgingsmodus (automatisch antwoorden)  <white>%s<magenta>	\
+<hotkey>Zet berichten in de wacht als je bezig bent <white>%s
+
+Rooms beep on new postings           <white>%s<magenta>	\
+Show room <hotkey>number in prompt           <white>%s
+Kamers biepen bij nieuwe berichten   <white>%s<magenta>	\
+Kamer<hotkey>nummer in de prompt             <white>%s
+
+Hide <hotkey>address info from non-friends   <white>%s<magenta>	\
+Hide <hotkey>profile info from enemies       <white>%s<magenta>
+Verberg <hotkey>adres voor onbekenden        <white>%s<magenta>	\
+Verberg <hotkey>profiel voor vijanden        <white>%s<magenta>
+
+Hackers m<hotkey>0de                         <white>%s
+Hackers m<hotkey>0dus                        <white>%s
+
+[<yellow>Config<white>] <yellow>Options<white>%c
+[<yellow>Configuratie<white>] <yellow>Opties<white>%c
+
+Beep
+Biep
+
+%s message reception
+%s het ontvangen van berichten
+
+%s follow up mode
+%s opvolgingsmodus
+
+Hold message mode when busy
+Zet berichten in de wacht wanneer je bezig bent
+
+Beep on new postings
+Biep op nieuwe berichten
+
+Show room number
+Toon kamernummer
+
+Hide address information
+Verberg adres
+
+Hide profile information
+Verberg profiel
+
+Hackers mode
+Hackers modus
+
+Enter number<yellow>:
+Geef nummer<yellow>:
+
+Room info
+Kamer informatie
+
+Known rooms
+Bekende kamers
+
+Auto-enabling %s functions
+%s functies aan
+
+Room Config menu
+Kamerconfiguratie menu
+
+E<magenta>dit room info              <hotkey>Help
+Wijzig kamerinformatie        <hotkey>Hulp
+
+Cate<hotkey>gory                    <white>[%s]
+Cate<hotkey>gorie                   <white>[%s]
+
+Kickout/unkick              Show <hotkey>kicked
+Sluiten buiten/niet meer    Toon buitengesloten figuren
+
+Change room <hotkey>name
+Verander <hotkey>naam van de kamer
+
+Flags	\
+<hotkey>1 <magenta>Room has subject lines    <white>%s	\
+<hotkey>2 <magenta>Allow anonymous berichten <white>%s
+Eigenschappen	\
+<hotkey>1 <magenta>Onderwerpregels    <white>%s	\
+<hotkey>2 <magenta>Sta anonieme berichten toe     <white>%s
+
+[<yellow>%s<white>]<yellow> Room Config<white>>
+[<yellow>%s<white>]<yellow> Kamerconfiguratie<white>>
+
+Edit room info
+Wijzig kamerinformatie
+
+The room info currently is empty
+Er is momenteel geen informatie
+
+-- Press any key to continue --
+-- Druk op een toets om door te gaan --
+
+Category
+Categorie
+
+0<green> (none)
+0<green> (geen)
+
+Choose category<yellow>:
+Kies categorie<yellow>:
+
+Cate<hotkey>gory
+Cate<hotkey>gorie
+
+Show kicked
+Toon buitengesloten
+
+No one has been kicked out
+Er is niemand buitengesloten
+
+Kickout
+Sluit buiten
+
+You are not allowed to kick out your co-%s
+Je mag je co-%s niet buitensluiten
+
+%s<green> has been kicked out
+%s<green> is buitengesloten
+
+%s<green> was kicked, but not anymore
+%s<green> was buitengesloten, maar nu niet meer
+
+Change room name
+Wijzig naam van de kamer
+
+Enter new room name<yellow>:
+Geef nieuwe naam<yellow>:
+
+1 (subjects)
+1 (onderwerpen)
+
+2 (anonymous)
+2 (anoniem)
+
+%s mode
+%s modus
+
+*** <white>NOTE: You are now in <yellow>%s<white> mode <red>***
+*** <white>LET OP: Je zit nu in <yellow>%s<white> modus <red>***
+
+Assign/unassign %s
+Wijs %s toe/af
+
+Reset <hotkey>creation date (all users unjoin)
+Reset de <hotkey>creatiedatum (alle gebruikers vergeten de kamer)
+
+Ctrl-<hotkey>R<magenta>emove all posts	\
+<white>Ctrl-<hotkey>D<magenta>elete room
+Verwijder alle berichten	\
+Verwijder de kamer
+
+3 <magenta>Room is invite-only       <white>%s	\
+<hotkey>4 <magenta>Room is read-only         <white>%s
+3 <magenta>Kamer is op uitnodiging   <white>%s	\
+<hotkey>4 <magenta>Kamer is alleen-lezen     <white>%s
+
+5 <magenta>Room is not zappable      <white>%s	\
+<hotkey>6 <magenta>Room is hidden            <white>%s
+5 <magenta>Kamer kan niet vergeten worden <white>%s	\
+<hotkey>6 <magenta>Kamer is verborgen        <white>%s
+
+7 <magenta>Room is a chat room       <white>%s
+7 <magenta>Kamer is een chat kamer   <white>%s
+
+3 (invite-only)
+3 (op uitnodiging)
+
+Invite/uninvite             Show <hotkey>invited
+Nodig uit/niet meer         Toon genodigden
+
+4 (read-only)
+4 (alleen-lezen)
+
+5 (not zappable)
+5 (niet vergeetbaar)
+
+6 (hidden)
+6 (verborgen)
+
+7 (chat)
+7 (chat)
+
+%ss are<white>:
+%ss zijn<white>:
+
+Reset creation date
+Reset creatiedatum
+
+Remove all posts
+Verwijder alle berichten
+
+Warning<white>:<yellow> After removing all posts<white>,<yellow> you should also reset the creation date of	\
+the room<white>.<yellow> This makes everyone unjoin <white>(<yellow>bad for invite<white>-<yellow>only rooms<white>)
+Waarschuwing<white>:<yellow> Na het verwijderen van alle berichten moet je ook de creatiedatum resetten van	\
+de kamer<white>.<yellow> Hierdoor vergeet iedereen de kamer <white>(<yellow>werkt slecht voor uitnodigingen<white>)
+
+Are you sure you wish to remove all posts? <white>(<cyan>y<white>/<cyan>N<white>):
+Weet je zeker dat je alle berichten wilt verwijderen? <white>(<cyan>j<white>/<cyan>N<white>):
+
+Delete room
+Verwijder kamer
+
+Read Next
+Lees volgende
+
+Exiting %s mode
+Uit %s modus
+
+Time
+Tijd
+
+Current time is<yellow> %s %s
+De tijd is nu<yellow> %s %s
+
+Feelings
+Gevoelens
+
+Enter recipient<yellow>:
+Geef ontvanger<yellow>:
+
+Feeling<yellow>:
+Gevoel<yellow>:
+
+Talking to yourself, are you?
+Zit je tegen jezelf te praten?
+
+You are keeping yourself busy pinging yourself
+Je houd je bezig door jezelf te pingen
+
+Emote
+Emotie
+
+Hold messages
+Zet berichten in de wacht
+
+Messages will be held until you press <white><<yellow>Ctrl<white>-<yellow>B<white>> <magenta>again
+Bericht staan in de wacht tot je weer op <white><<yellow>Ctrl<white>-<yellow>B<white>> <magenta>drukt
+
+Messages will <yellow>no longer<magenta> be held
+Berichten staan <yellow>niet<magenta> meer in de wacht
+
+%s<green> has put messages on hold for a while
+%s<green> heeft berichten even in de wacht gezet
+
+Question
+Vraag
+
+Toggle helper status
+Zet helper status om
+
+You now are available to help others
+Je bent nu beschikbaar om anderen te helpen
+
+You are no longer available to help others
+Je bent niet langer beschikbaar om anderen te helpen
+
+Toggle follow-up mode	\
+<magenta>Follow up mode is now <yellow>%s
+Zet opvolgingsmodus om	\
+<magenta>Opvolgingsmodus staat nu <yellow>%s
+
+Toggle message reception
+Zet het ontvangen van berichten om
+
+Message reception is now turned <yellow>%s
+Het ontvangen van berichten staat nu <yellow>%s
+
+Zap
+Vergeet
+
+This room cannot be Zapped
+Deze kamer kan niet vergeten worden
+
+Zap all rooms
+Vergeet alle kamers
+
+Jump
+Spring
+
+... but you are %s here!
+... maar je bent hier %s!
+
+%s<green> is no longer %s of this room
+%s<green> is hier geen %s meer
+
+Are you sure? <white>(<cyan>Y<white>/<cyan>n<white>):
+Weet je het zeker? <white>(<cyan>J<white>/<cyan>n<white>):
+
+Time Zone
+Tijdszone
+
+Display time as          <white>%s<magenta>	\
+<hotkey>Select time zone         <white>%s (%s)
+Toon tijd als            <white>%s<magenta>	\
+<hotkey>Kies tijdszone           <white>%s (%s)
+
+[<yellow>Config<white>] <yellow>Time Zone<white>%c
+[<yellow>Configuratie<white>] <yellow>Tijdszone<white>%c
+
+Display time
+Toon tijd
+
+Select time zone
+Kies tijdszone
+
+Time zone regions
+Tijdszones
+
+What part of the world are you in?
+In welk werelddeel zit je?
+
+Cities, countries, regions, and zones in category <yellow>%s:
+Steden, landen, gebieden, en zones in categorie <yellow>%s:
+
+Enter city, country, or region near you<yellow>:
+Geef stad, land of regio in de buurt<yellow>:
+
+Read last
+Lees vorige
+
+Enter number of messages to read back<yellow>:
+Geef aantal berichten om terug te lezen<yellow>:
+
+Skip forward
+Sla over
+
+Enter number of messages to skip<yellow>:
+Geef aantal berichten om over te slaan<yellow>:
+
+Toggle beeping	\
+<magenta>Messages will %s beep on arrival
+Zet biepen om	\
+<magenta>Berichten zullen %s biepen als ze aan komen
+
+All known rooms
+Alle bekende kamers
+
+Message history
+Berichten historie
+
+%s<hotkey>Stop<white>:
+%s<hotkey>Stop<white>:
+
+Next
+Volgende
+
+Reply
+Beantwoord
+
+Replying to%s
+Beantwoord %s
+
+Can't go further back
+Kan niet verder terug
+
+Talked to list
+Gepraat met
