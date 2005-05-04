@@ -45,8 +45,6 @@
 
 
 ConnType ConnResolv = {
-	dummy_Conn_handler,
-	dummy_Conn_handler,
 	ConnResolv_process,
 	ConnResolv_accept,
 	dummy_Conn_handler,

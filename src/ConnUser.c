@@ -78,8 +78,6 @@
 
 
 ConnType ConnUser = {
-	dummy_Conn_handler,
-	dummy_Conn_handler,
 	ConnUser_process,
 	ConnUser_accept,
 	dummy_Conn_handler,

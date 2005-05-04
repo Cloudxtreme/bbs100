@@ -38,8 +38,6 @@ Conn *AllConns = NULL;
 
 
 ConnType ConnType_default = {
-	dummy_Conn_handler,
-	dummy_Conn_handler,
 	dummy_Conn_process,
 	dummy_Conn_handler,
 	dummy_Conn_handler,

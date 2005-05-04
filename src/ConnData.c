@@ -53,8 +53,6 @@
 
 
 ConnType ConnData = {
-	dummy_Conn_handler,
-	dummy_Conn_handler,
 	ConnData_process,
 	ConnData_accept,
 	dummy_Conn_handler,

@@ -53,8 +53,6 @@ typedef struct Conn_tag Conn;
 	and these are the member functions
 */
 typedef struct {
-	void (*readable)(Conn *);
-	void (*writable)(Conn *);
 	void (*process)(Conn *, char);
 	void (*accept)(Conn *);
 	void (*complete_connect)(Conn *);
