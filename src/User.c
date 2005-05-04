@@ -163,7 +163,7 @@ void Flush(User *usr) {
 void Print(User *usr, char *fmt, ...) {
 va_list args;
 char buf[PRINT_BUF];
-int cpos = 0;
+int cpos = 0, lines = 0;
 
 	if (usr == NULL || fmt == NULL || !*fmt)
 		return;
@@ -175,7 +175,7 @@ int cpos = 0;
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	Out(usr, buf, &cpos);
+	Out(usr, buf, &cpos, &lines, -1);
 }
 
 void Tell(User *usr, char *fmt, ...) {
@@ -206,9 +206,9 @@ char buf[PRINT_BUF];
 		}
 		add_BufferedMsg(&usr->held_msgs, m);
 	} else {
-		int cpos = 0;
+		int cpos = 0, lines = 0;
 
-		Out(usr, buf, &cpos);
+		Out(usr, buf, &cpos, &lines, -1);
 	}
 }
 

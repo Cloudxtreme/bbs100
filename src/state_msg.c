@@ -963,7 +963,7 @@ unsigned long msg_number;
 				}
 			}
 		}
-		put_StringIO(usr->text, "<green>");
+		put_StringIO(usr->text, "<green>\n");
 		if (usr->message->msg != NULL) {
 			for(sl = usr->message->msg; sl != NULL; sl = sl->next) {
 				if (sl->str != NULL) {
@@ -983,7 +983,6 @@ unsigned long msg_number;
 
 	Return;
 }
-
 
 void state_del_msg_prompt(User *usr, char c) {
 int r;
@@ -1823,7 +1822,7 @@ void read_more(User *usr) {
 }
 
 void state_more_prompt(User *usr, char c) {
-int l, cpos;
+int l, cpos, lines;
 StringList *sl;
 
 	if (usr == NULL)
@@ -1839,10 +1838,11 @@ StringList *sl;
 				Return;
 			}
 			l = 0;
+			lines = 0;
 			for(sl = usr->textp; l < usr->term_height-1 && sl != NULL;) {
 				cpos = 0;
-				Out(usr, sl->str, &cpos);
-				Out(usr, "\n", &cpos);
+				Out(usr, sl->str, &cpos, &lines, usr->term_height-1);
+				Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 
 				sl = sl->next;
 				usr->read_lines++;
@@ -1873,10 +1873,11 @@ StringList *sl;
 		case ' ':
 		case 'n':
 		case 'N':
-			for(l = 0; l < usr->term_height && usr->textp != NULL; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1 && usr->textp != NULL; l++) {
 				cpos = 0;
-				Out(usr, usr->textp->str, &cpos);
-				Out(usr, "\n", &cpos);
+				Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+				Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -1886,10 +1887,11 @@ StringList *sl;
 		case KEY_RETURN:
 		case '+':
 		case '=':
+			lines = 0;
 			if (usr->textp->str != NULL) {
 				cpos = 0;
-				Out(usr, usr->textp->str, &cpos);
-				Out(usr, "\n", &cpos);
+				Out(usr, usr->textp->str, &cpos, &lines, 1);
+				Out(usr, "\n", &cpos, &lines, 1);
 			}
 			usr->textp = usr->textp->next;
 			usr->read_lines++;
@@ -1906,11 +1908,12 @@ StringList *sl;
 				} else
 					break;
 			}
-			for(l = 0; l < usr->term_height; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
+					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -1922,11 +1925,12 @@ StringList *sl;
 			usr->textp = usr->more_text;
 			usr->read_lines = 0;
 
-			for(l = 0; l < usr->term_height; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
+					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -1952,11 +1956,12 @@ StringList *sl;
 			usr->read_lines -= l;
 
 /* display it */
-			for(l = 0; l < usr->term_height; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
+					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -2760,9 +2765,8 @@ void read_text(User *usr) {
 }
 
 void state_more_text(User *usr, char c) {
-int l, cpos;
+int l, cpos, lines;
 StringList *sl;
-char buf[128];
 
 	if (usr == NULL)
 		return;
@@ -2776,11 +2780,9 @@ char buf[128];
 				RET(usr);
 				Return;
 			}
-			rewind_StringIO(usr->text);
-
-			cpos = 0;
-			while(read_StringIO(usr->text, buf, 127) > 0)
-				Out(usr, buf, &cpos);
+			cpos = lines = 0;
+			usr->text->pos = Out(usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
+			usr->read_lines = lines;
 
 			usr->runtime_flags |= RTF_BUSY;
 			break;
@@ -2806,26 +2808,17 @@ char buf[128];
 		case ' ':
 		case 'n':
 		case 'N':
-			for(l = 0; l < usr->term_height && usr->textp != NULL; l++) {
-				cpos = 0;
-				Out(usr, usr->textp->str, &cpos);
-				Out(usr, "\n", &cpos);
-
-				usr->read_lines++;
-				usr->textp = usr->textp->next;
-			}
+			cpos = lines = 0;
+			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos, &cpos, &lines, usr->term_height-1);
+			usr->read_lines += lines;
 			break;
 
 		case KEY_RETURN:
 		case '+':
 		case '=':
-			if (usr->textp->str != NULL) {
-				cpos = 0;
-				Out(usr, usr->textp->str, &cpos);
-				Out(usr, "\n", &cpos);
-			}
-			usr->textp = usr->textp->next;
-			usr->read_lines++;
+			cpos = lines = 0;
+			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos, &cpos, &lines, 1);
+			usr->read_lines += lines;
 			break;
 
 		case KEY_BS:
@@ -2839,11 +2832,12 @@ char buf[128];
 				} else
 					break;
 			}
-			for(l = 0; l < usr->term_height; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
+					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -2852,19 +2846,9 @@ char buf[128];
 			break;
 
 		case 'g':						/* goto beginning */
-			usr->textp = usr->more_text;
-			usr->read_lines = 0;
-
-			for(l = 0; l < usr->term_height; l++) {
-				if (usr->textp != NULL) {
-					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
-				} else
-					break;
-				usr->read_lines++;
-				usr->textp = usr->textp->next;
-			}
+			cpos = lines = 0;
+			usr->text->pos = Out(usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
+			usr->read_lines = lines;
 			break;
 
 		case 'G':						/* goto end ; display last page */
@@ -2885,11 +2869,12 @@ char buf[128];
 			usr->read_lines -= l;
 
 /* display it */
-			for(l = 0; l < usr->term_height; l++) {
+			lines = 0;
+			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos);
-					Out(usr, "\n", &cpos);
+					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -2918,13 +2903,13 @@ char buf[128];
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_ESC:
-			usr->textp = NULL;
+			usr->text->pos = usr->text->len;
 			break;
 
 		default:
 			Put(usr, "<green>Press <white><<yellow>space<white>><green> for next page, <white><<yellow>b<white>><green> for previous page, <white><<yellow>enter<white>><green> for next line\n");
 	}
-	if (usr->textp != NULL)
+	if (usr->text->pos < usr->text->len)
 		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
 			100 * usr->read_lines / usr->total_lines);
 	else {

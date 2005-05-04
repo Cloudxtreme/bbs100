@@ -67,22 +67,30 @@ static char last_helping_hand[MAX_NAME] = "";
 	Put() translates all texts on the fly
 */
 void Put(User *usr, char *str) {
-int cpos = 0;
+int cpos = 0, lines = 0;
 
-	Out(usr, translate(usr->lang, str), &cpos);
+	Out(usr, translate(usr->lang, str), &cpos, &lines, -1);
 }
 
 /*
-	Out() puts texts without translating them
-	it takes the cursor position into account for <hline> and <center> tags
+	- puts texts without translating them
+	- it takes the cursor position into account for <hline> and <center> tags
+	- when max_lines > -1, can display a limited number of lines
+	  (for --More-- prompt reading)
 */
-void Out(User *usr, char *str, int *cpos) {
+int Out(User *usr, char *str, int *cpos, int *lines, int max_lines) {
 char buf[20], c;
+int pos, n;
 
-	if (usr == NULL || str == NULL || cpos == NULL)
-		return;
+	if (usr == NULL || str == NULL || cpos == NULL || lines == NULL)
+		return 0;
 
+	if (max_lines > -1 && *lines >= max_lines)
+		return 0;
+
+	pos = 0;
 	while(*str) {
+		pos++;
 		c = *str;
 		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
 			c = hackerz_mode(c);
@@ -98,6 +106,10 @@ char buf[20], c;
 				Writechar(usr, '\r');
 				Writechar(usr, '\n');
 				*cpos = 0;
+
+				(*lines)++;
+				if (max_lines > -1 && *lines >= max_lines)
+					return pos;
 				break;
 
 			case KEY_CTRL('X'):
@@ -168,7 +180,9 @@ char buf[20], c;
 /* long codes are specified as '<yellow>', '<beep>', etc. */
 
 			case '<':
-				str += long_color_code(usr, str, cpos);
+				n = long_color_code(usr, str, cpos, lines, max_lines);
+				str += n;
+				pos += n;
 				break;
 /*
 	word-wrapping for long strings
@@ -179,17 +193,22 @@ char buf[20], c;
 			case ';':
 			case ',':
 			case '-':
-			case '[':
-			case '{':
+			case '!':
+			case '?':
 				if (*cpos + word_len(str+1) >= usr->term_width) {
 					if (*str != ' ')
 						Writechar(usr, *str);
 
+					if (str[1] == ' ') {
+						str++;
+						pos++;
+					}
 					Writechar(usr, '\r');
 					Writechar(usr, '\n');
 					*cpos = 0;
-					while(str[1] == ' ')
-						str++;
+					(*lines)++;
+					if (max_lines > -1 && *lines >= max_lines)
+						return pos;
 					break;
 				}
 /* fall through to default */
@@ -202,6 +221,7 @@ char buf[20], c;
 			str++;
 	}
 /*	Flush(usr);		the buffering code and mainloop() will flush for us */
+	return pos;
 }
 
 /*
@@ -361,7 +381,7 @@ int colors, i;
 	cpos is the cursor position, which is used in <hline> and <center> tags
 	for <hline>, the function recurses with Out()
 */
-int long_color_code(User *usr, char *code, int *cpos) {
+int long_color_code(User *usr, char *code, int *cpos, int *lines, int max_lines) {
 int i, c, colors;
 char colorbuf[20], buf[20];
 
@@ -497,11 +517,11 @@ char colorbuf[20], buf[20];
 						p++;
 				}
 				while(*cpos + n < usr->term_width-1)
-					Out(usr, buf, cpos);					/* recurse */
+					Out(usr, buf, cpos, lines, max_lines);	/* recurse */
 
 				if (*cpos + n >= usr->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
-					Out(usr, buf, cpos);
+					Out(usr, buf, cpos, lines, max_lines);
 				}
 			}
 		}
