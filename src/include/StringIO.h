@@ -39,6 +39,9 @@ typedef struct {
 StringIO *new_StringIO(void);
 void destroy_StringIO(StringIO *);
 
+int grow_StringIO(StringIO *);
+int trunc_StringIO(StringIO *, int);
+int shift_StringIO(StringIO *);
 int read_StringIO(StringIO *, char *, int);
 int write_StringIO(StringIO *, char *, int);
 int tell_StringIO(StringIO *);

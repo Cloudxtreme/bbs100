@@ -106,6 +106,21 @@ char *p;
 	return 0;
 }
 
+int shift_StringIO(StringIO *s) {
+	if (s == NULL)
+		return -1;
+
+	if (s->buf == NULL || s->pos <= 0)
+		return 0;
+
+	if (s->len > 0)
+		memmove(s->buf, s->buf + s->pos, s->len);
+	s->len -= s->pos;
+	s->pos = 0;
+
+	return 0;
+}
+
 int read_StringIO(StringIO *s, char *buf, int len) {
 int bytes_read;
 
