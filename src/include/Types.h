@@ -49,10 +49,9 @@
 #define TYPE_LANG			23
 #define TYPE_CONN			24
 #define TYPE_TELNET			25
-#define TYPE_LINEBUF		26
-#define TYPE_KVPAIR			27
-#define TYPE_STRINGIO		28
-#define NUM_TYPES			29
+#define TYPE_KVPAIR			26
+#define TYPE_STRINGIO		27
+#define NUM_TYPES			28
 
 typedef struct Typedef_tag Typedef;
 

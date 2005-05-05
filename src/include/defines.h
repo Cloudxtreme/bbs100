@@ -36,8 +36,6 @@
 #define MAX_CRYPTED_PASSWD  140
 
 #define MAX_PATHLEN			1024		/* MAXPATH variable */
-#define MAX_OUTPUTBUF		512			/* per-user output buffer */
-#define MAX_INPUTBUF		128			/* per-user input buffer */
 #define PRINT_BUF			512
 
 #define ONE_SECOND			1

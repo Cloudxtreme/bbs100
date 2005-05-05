@@ -240,7 +240,6 @@ int sock, optval;
 	return sock;
 }
 
-
 /*
 	The Main Loop
 	this is the connection engine
@@ -250,6 +249,7 @@ struct timeval timeout;
 fd_set rfds, wfds;
 Conn *c, *c_next;
 int err, highest_fd = -1, wait_for_input, nap, isset;
+char input_char[2];
 
 	Enter(mainloop);
 
@@ -314,23 +314,27 @@ int err, highest_fd = -1, wait_for_input, nap, isset;
 	connected
 */
 			if (c->state & CONN_ESTABLISHED) {
-				if (c->output_idx > 0) {			/* got data to write */
+				if (c->output->len > 0) {			/* got data to write */
 					FD_SET(c->sock, &wfds);
 					if (highest_fd <= c->sock)
 						highest_fd = c->sock + 1;
 					wait_for_input = 0;
 				}
-				if (c->input_head < c->input_tail) {
-					c->conn_type->process(c, c->inputbuf[c->input_head++]);
+				debug_breakpoint();
+				if (c->input->pos < c->input->len) {
+					if ((err = read_StringIO(c->input, input_char, 1)) == 1)
+						c->conn_type->process(c, input_char[0]);
+					else
+						log_err("mainloop(): failed to read from input buffer");
 
 /* maybe we produced output (maybe not) */
-					if (c->sock > 0 && c->output_idx > 0) {
+					if (c->sock > 0 && c->output->len > 0) {
 						FD_SET(c->sock, &wfds);
 						if (highest_fd <= c->sock)
 							highest_fd = c->sock + 1;
 						wait_for_input = 0;
 					}
-					if (c->input_head < c->input_tail) {	/* got more input ready */
+					if (c->input->pos < c->input->len) {	/* got more input ready */
 						wait_for_input = 0;
 						continue;
 					}
@@ -339,6 +343,8 @@ int err, highest_fd = -1, wait_for_input, nap, isset;
 	no input ready, mark for request to read()
 */
 				if (c->sock > 0) {
+					shift_StringIO(c->input);
+
 					FD_SET(c->sock, &rfds);
 					if (highest_fd <= c->sock)
 						highest_fd = c->sock + 1;

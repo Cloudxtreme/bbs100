@@ -25,6 +25,7 @@
 
 #include "defines.h"
 #include "CallStack.h"
+#include "StringIO.h"
 #include "List.h"
 
 #define add_Conn(x,y)		(Conn *)add_List((x), (y))
@@ -66,11 +67,12 @@ struct Conn_tag {
 
 	ConnType *conn_type;
 
-	int sock, state, input_head, input_tail, output_idx;
+	int sock, state;
 	unsigned long loop_counter;
 
-	char inputbuf[MAX_INPUTBUF], outputbuf[MAX_OUTPUTBUF];
 	char ipnum[MAX_LINE], hostname[MAX_LINE];
+
+	StringIO *input, *output;
 
 	void *data;					/* connection specific data */
 	CallStack *callstack;

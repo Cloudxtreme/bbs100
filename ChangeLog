@@ -1,5 +1,6 @@
 Changes as of May 5th 2005
 - MsgIndex list is gone; it is now an array of message numbers
+- I/O buffers now done via StringIO
 
 Changes as of May 4th 2005
 - mainloop() only uses read() when select() tells him to

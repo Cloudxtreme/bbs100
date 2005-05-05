@@ -25,7 +25,6 @@
 #include "Lang.h"
 #include "Conn.h"
 #include "Telnet.h"
-#include "Linebuf.h"
 #include "KVPair.h"
 #include "StringIO.h"
 #include "Types.h"
@@ -57,7 +56,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Lang",				sizeof(Lang),				},
 	{ "Conn",				sizeof(Conn),				},
 	{ "Telnet",				sizeof(Telnet),				},
-	{ "Linebuf",			sizeof(Linebuf),			},
 	{ "KVPair",				sizeof(KVPair),				},
 	{ "StringIO",			sizeof(StringIO),			},
 	{ "(unknown)",			0,							},

@@ -113,14 +113,19 @@ int shift_StringIO(StringIO *s) {
 	if (s->buf == NULL || s->pos <= 0)
 		return 0;
 
-	if (s->len > 0)
+	if (s->len > 0) {
 		memmove(s->buf, s->buf + s->pos, s->len);
-	s->len -= s->pos;
+		s->len -= s->pos;
+	}
 	s->pos = 0;
 
 	return 0;
 }
 
+/*
+	warning: buf must be large enough; smallest buf is 2 bytes in size
+	because it always ends with a 0-byte
+*/
 int read_StringIO(StringIO *s, char *buf, int len) {
 int bytes_read;
 
@@ -130,7 +135,9 @@ int bytes_read;
 	if (s->buf == NULL || len == 0)
 		return 0;
 
-	len--;
+	if (len > 1)
+		len--;
+
 	bytes_read = s->len - s->pos;
 	if (bytes_read > len)
 		bytes_read = len;
@@ -139,6 +146,7 @@ int bytes_read;
 		memcpy(buf, s->buf + s->pos, bytes_read);
 
 	buf[bytes_read] = 0;
+
 	s->pos += bytes_read;
 	return bytes_read;
 }

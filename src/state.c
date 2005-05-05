@@ -787,7 +787,6 @@ int i, idx;
 			break;
 
 		case ' ':
-			debug_breakpoint();
 			listdestroy_StringList(usr->more_text);
 			usr->more_text = NULL;
 			destroy_Message(usr->message);

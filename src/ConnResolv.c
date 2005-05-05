@@ -22,13 +22,13 @@
 
 #include "config.h"
 #include "ConnResolv.h"
+#include "StringIO.h"
 #include "Process.h"
 #include "Param.h"
 #include "cstring.h"
 #include "log.h"
 #include "inet.h"
 #include "util.h"
-#include "Linebuf.h"
 #include "edit.h"
 
 #include <stdio.h>
@@ -121,31 +121,33 @@ Conn *conn;
 	got answer back from asynchronous resolver process
 */
 void ConnResolv_process(Conn *conn, char k) {
-Linebuf *lb;
+StringIO *s;
 char *p;
 
 	if (conn == NULL)
 		return;
 
-	lb = (Linebuf *)conn->data;
-	if (input_Linebuf(lb, k) != EDIT_RETURN)
-		return;
+	s = (StringIO *)conn->data;
 
-	if ((p = cstrchr(lb->buf, ' ')) != NULL) {
+	if (k != KEY_RETURN) {
+		if (write_StringIO(s, &k, 1) != 1)
+			log_err("ConnResolv_process(): input lost");
+		return;
+	}
+	if ((p = cstrchr(s->buf, ' ')) != NULL) {
 		*p = 0;
 		p++;
 		if (!*p)
 			return;
 	}
-	if (p != NULL && strcmp(lb->buf, p)) {
+	if (p != NULL && strcmp(s->buf, p)) {
 		Conn *c;
 
 		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->ipnum, lb->buf))
+			if (!strcmp(c->ipnum, s->buf))
 				strcpy(c->hostname, p);			/* fill in IP name */
 	}
-	conn->input_head = conn->input_tail = 0;
-	reset_Linebuf((Linebuf *)lb);
+	rewind_StringIO(s);
 }
 
 void ConnResolv_accept(Conn *conn) {
@@ -177,16 +179,18 @@ char optval;
 	optval = 1;
 	ioctl(conn_resolver->sock, FIONBIO, &optval);		/* set non-blocking */
 
-	conn_resolver->data = new_Linebuf();
-
-	add_Conn(&AllConns, conn_resolver);
+	if ((conn_resolver->data = new_StringIO()) == NULL) {
+		log_err("ConnResolv_accept(): name resolving disabled");
+		destroy_Conn(conn_resolver);
+	} else
+		add_Conn(&AllConns, conn_resolver);
 }
 
 void ConnResolv_destroy(Conn *c) {
 	if (c == NULL)
 		return;
 
-	destroy_Linebuf((Linebuf *)c->data);
+	destroy_StringIO((StringIO *)c->data);
 	c->data = NULL;
 }
 
