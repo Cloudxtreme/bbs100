@@ -1841,8 +1841,8 @@ StringList *sl;
 			lines = 0;
 			for(sl = usr->textp; l < usr->term_height-1 && sl != NULL;) {
 				cpos = 0;
-				Out(usr, sl->str, &cpos, &lines, usr->term_height-1);
-				Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+				Out(usr->conn->output, usr, sl->str, &cpos, &lines, usr->term_height-1);
+				Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 
 				sl = sl->next;
 				usr->read_lines++;
@@ -1876,8 +1876,8 @@ StringList *sl;
 			lines = 0;
 			for(l = 0; l < usr->term_height-1 && usr->textp != NULL; l++) {
 				cpos = 0;
-				Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-				Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+				Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+				Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 
 				usr->read_lines++;
 				usr->textp = usr->textp->next;
@@ -1890,8 +1890,8 @@ StringList *sl;
 			lines = 0;
 			if (usr->textp->str != NULL) {
 				cpos = 0;
-				Out(usr, usr->textp->str, &cpos, &lines, 1);
-				Out(usr, "\n", &cpos, &lines, 1);
+				Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, 1);
+				Out(usr->conn->output, usr, "\n", &cpos, &lines, 1);
 			}
 			usr->textp = usr->textp->next;
 			usr->read_lines++;
@@ -1912,8 +1912,8 @@ StringList *sl;
 			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -1929,8 +1929,8 @@ StringList *sl;
 			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -1960,8 +1960,8 @@ StringList *sl;
 			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -2781,7 +2781,7 @@ StringList *sl;
 				Return;
 			}
 			cpos = lines = 0;
-			usr->text->pos = Out(usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
+			usr->text->pos = Out(usr->conn->output, usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
 			usr->read_lines = lines;
 
 			usr->runtime_flags |= RTF_BUSY;
@@ -2809,7 +2809,7 @@ StringList *sl;
 		case 'n':
 		case 'N':
 			cpos = lines = 0;
-			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos, &cpos, &lines, usr->term_height-1);
+			usr->text->pos += Out(usr->conn->output, usr, usr->text->buf + usr->text->pos, &cpos, &lines, usr->term_height-1);
 			usr->read_lines += lines;
 			break;
 
@@ -2817,7 +2817,7 @@ StringList *sl;
 		case '+':
 		case '=':
 			cpos = lines = 0;
-			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos, &cpos, &lines, 1);
+			usr->text->pos += Out(usr->conn->output, usr, usr->text->buf + usr->text->pos, &cpos, &lines, 1);
 			usr->read_lines += lines;
 			break;
 
@@ -2836,8 +2836,8 @@ StringList *sl;
 			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;
@@ -2847,7 +2847,7 @@ StringList *sl;
 
 		case 'g':						/* goto beginning */
 			cpos = lines = 0;
-			usr->text->pos = Out(usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
+			usr->text->pos = Out(usr->conn->output, usr, usr->text->buf, &cpos, &lines, usr->term_height-1);
 			usr->read_lines = lines;
 			break;
 
@@ -2873,8 +2873,8 @@ StringList *sl;
 			for(l = 0; l < usr->term_height-1; l++) {
 				if (usr->textp != NULL) {
 					cpos = 0;
-					Out(usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
-					Out(usr, "\n", &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, usr->textp->str, &cpos, &lines, usr->term_height-1);
+					Out(usr->conn->output, usr, "\n", &cpos, &lines, usr->term_height-1);
 				} else
 					break;
 				usr->read_lines++;

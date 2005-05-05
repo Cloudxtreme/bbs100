@@ -69,7 +69,7 @@ static char last_helping_hand[MAX_NAME] = "";
 void Put(User *usr, char *str) {
 int cpos = 0, lines = 0;
 
-	Out(usr, translate(usr->lang, str), &cpos, &lines, -1);
+	Out(usr->conn->output, usr, translate(usr->lang, str), &cpos, &lines, -1);
 }
 
 /*
@@ -78,11 +78,11 @@ int cpos = 0, lines = 0;
 	- when max_lines > -1, can display a limited number of lines
 	  (for --More-- prompt reading)
 */
-int Out(User *usr, char *str, int *cpos, int *lines, int max_lines) {
+int Out(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
 char buf[20], c;
 int pos, n;
 
-	if (usr == NULL || str == NULL || cpos == NULL || lines == NULL)
+	if (dev == NULL || usr == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
 
 	if (max_lines > -1 && *lines >= max_lines)
@@ -97,14 +97,13 @@ int pos, n;
 
 		switch(c) {
 			case '\b':
-				Writechar(usr, '\b');
+				write_StringIO(dev, "\b", 1);
 				if (*cpos)
 					(*cpos)--;
 				break;
 
 			case '\n':
-				Writechar(usr, '\r');
-				Writechar(usr, '\n');
+				write_StringIO(dev, "\r\n", 2);
 				*cpos = 0;
 
 				(*lines)++;
@@ -113,13 +112,13 @@ int pos, n;
 				break;
 
 			case KEY_CTRL('X'):
-				Writechar(usr, '\r');
+				write_StringIO(dev, "\r", 1);
 				*cpos = 0;
 				break;
 
 			case KEY_CTRL('A'):
 				if (usr->flags & USR_BEEP)
-					Writechar(usr, KEY_BEEP);
+					print_StringIO(dev, "%c", KEY_BEEP);
 				break;
 
 			case KEY_CTRL('Z'):
@@ -137,7 +136,7 @@ int pos, n;
 						sprintf(buf, "\x1b[1;%dm", usr->color);
 					else
 						sprintf(buf, "\x1b[%dm", usr->color);
-					Write(usr, buf);
+					put_StringIO(dev, buf);
 				}
 				break;
 
@@ -156,31 +155,31 @@ int pos, n;
 					sprintf(buf, "<%c>", *str);
 					*cpos += 3;
 				}
-				Write(usr, buf);
+				put_StringIO(dev, buf);
 				break;
 
 			case KEY_CTRL('N'):
 				if (usr->flags & USR_ANSI) {
 					sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
-					Write(usr, buf);
+					put_StringIO(dev, buf);
 				} else
 					if (usr->flags & USR_BOLD)
-						Write(usr, "\x1b[0m");
+						put_StringIO(dev, "\x1b[0m");
 
 				if (usr->flags & USR_BOLD)
-					Write(usr, "\x1b[1m");
+					put_StringIO(dev, "\x1b[1m");
 				break;
 
 			case KEY_CTRL('D'):
 				if (usr->flags & (USR_ANSI | USR_BOLD))
-					Write(usr, "\x1b[0m");
+					put_StringIO(dev, "\x1b[0m");
 				usr->color = 0;
 				break;
 
 /* long codes are specified as '<yellow>', '<beep>', etc. */
 
 			case '<':
-				n = long_color_code(usr, str, cpos, lines, max_lines);
+				n = long_color_code(dev, usr, str, cpos, lines, max_lines);
 				str += n;
 				pos += n;
 				break;
@@ -197,14 +196,13 @@ int pos, n;
 			case '?':
 				if (*cpos + word_len(str+1) >= usr->term_width) {
 					if (*str != ' ')
-						Writechar(usr, *str);
+						write_StringIO(dev, str, 1);
 
 					if (str[1] == ' ') {
 						str++;
 						pos++;
 					}
-					Writechar(usr, '\r');
-					Writechar(usr, '\n');
+					write_StringIO(dev, "\r\n", 2);
 					*cpos = 0;
 					(*lines)++;
 					if (max_lines > -1 && *lines >= max_lines)
@@ -214,7 +212,7 @@ int pos, n;
 /* fall through to default */
 
 			default:
-				Writechar(usr, c);
+				write_StringIO(dev, &c, 1);
 				(*cpos)++;
 		}
 		if (*str)
@@ -381,11 +379,11 @@ int colors, i;
 	cpos is the cursor position, which is used in <hline> and <center> tags
 	for <hline>, the function recurses with Out()
 */
-int long_color_code(User *usr, char *code, int *cpos, int *lines, int max_lines) {
+int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines) {
 int i, c, colors;
 char colorbuf[20], buf[20];
 
-	if (code == NULL || !*code || usr == NULL || cpos == NULL)
+	if (dev == NULL || usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
 		return 0;
 
 	colors = sizeof(color_table)/sizeof(ColorTable);
@@ -406,7 +404,7 @@ char colorbuf[20], buf[20];
 				sprintf(buf, "\x1b[1;%dm", usr->color);
 			else
 				sprintf(buf, "\x1b[%dm", usr->color);
-			Write(usr, buf);
+			put_StringIO(dev, buf);
 			return strlen(colorbuf)-1;
 		}
 	}
@@ -422,7 +420,7 @@ char colorbuf[20], buf[20];
 			sprintf(buf, "\x1b[1;%dm", usr->color);
 		else
 			sprintf(buf, "\x1b[%dm", usr->color);
-		Write(usr, buf);
+		put_StringIO(dev, buf);
 		return 6;
 	}
 */
@@ -442,44 +440,44 @@ char colorbuf[20], buf[20];
 			sprintf(buf, "<%c>", c);
 			*cpos += 3;
 		}
-		Write(usr, buf);
+		put_StringIO(dev, buf);
 		return 8;
 	}
 	if (!cstrnicmp(code, "<beep>", 6)) {
 		if (usr->flags & USR_BEEP)
-			Writechar(usr, KEY_BEEP);
+			print_StringIO(dev, "%c", KEY_BEEP);
 		return 5;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {
 		if (usr->flags & USR_ANSI) {
 			sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
-			Write(usr, buf);
+			put_StringIO(dev, buf);
 		} else
 			if (usr->flags & USR_BOLD)
-				Write(usr, "\x1b[0m");
+				put_StringIO(dev, "\x1b[0m");
 
 		if (usr->flags & USR_BOLD)
-			Write(usr, "\x1b[1m");
+			put_StringIO(dev, "\x1b[1m");
 		return 7;
 	}
 	if (!cstrnicmp(code, "<default>", 9)) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))
-			Write(usr, "\x1b[0m");
+			put_StringIO(dev, "\x1b[0m");
 		usr->color = 0;
 		return 8;
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
-		Writechar(usr, '<');
+		write_StringIO(dev, "<", 1);
 		(*cpos)++;
 		return 3;
 	}
 	if (!cstrnicmp(code, "<gt>", 4)) {
-		Writechar(usr, '>');
+		write_StringIO(dev, ">", 1);
 		(*cpos)++;
 		return 3;
 	}
 	if (!cstrnicmp(code, "<cr>", 4)) {
-		Writechar(usr, '\r');
+		write_StringIO(dev, "\r", 1);
 		*cpos = 0;
 		return 3;
 	}
@@ -517,11 +515,11 @@ char colorbuf[20], buf[20];
 						p++;
 				}
 				while(*cpos + n < usr->term_width-1)
-					Out(usr, buf, cpos, lines, max_lines);	/* recurse */
+					Out(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
 
 				if (*cpos + n >= usr->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
-					Out(usr, buf, cpos, lines, max_lines);
+					Out(dev, usr, buf, cpos, lines, max_lines);
 				}
 			}
 		}
@@ -531,13 +529,13 @@ char colorbuf[20], buf[20];
 		code += 8;
 		i = (usr->term_width-1)/2 - color_strlen(code)/2 - *cpos;
 		while(i > 0) {
-			Writechar(usr, ' ');
+			write_StringIO(dev, " ", 1);
 			(*cpos)++;
 			i--;
 		}
 		return 7;
 	}
-	Writechar(usr, '<');
+	write_StringIO(dev, "<", 1);
 	return 0;
 }
 

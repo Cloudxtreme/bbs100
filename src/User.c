@@ -175,7 +175,7 @@ int cpos = 0, lines = 0;
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	Out(usr, buf, &cpos, &lines, -1);
+	Out(usr->conn->output, usr, buf, &cpos, &lines, -1);
 }
 
 void Tell(User *usr, char *fmt, ...) {
@@ -208,7 +208,7 @@ char buf[PRINT_BUF];
 	} else {
 		int cpos = 0, lines = 0;
 
-		Out(usr, buf, &cpos, &lines, -1);
+		Out(usr->conn->output, usr, buf, &cpos, &lines, -1);
 	}
 }
 
