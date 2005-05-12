@@ -1,3 +1,6 @@
+Changes as of May 12th 2005
+- patchlist so that you can see what patches are installed
+
 Changes as of May 5th 2005
 - MsgIndex list is gone; it is now an array of message numbers
 - I/O buffers now done via StringIO

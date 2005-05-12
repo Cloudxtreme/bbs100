@@ -39,6 +39,7 @@
 #include "state_friendlist.h"
 #include "inet.h"
 #include "passwd.h"
+#include "patchlist.h"
 #include "Room.h"
 #include "Stats.h"
 #include "access.h"
@@ -1128,6 +1129,9 @@ char version_buf[256];
 
 	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
 		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf));
+
+	if (*patchlist)
+		Print(usr, "<green>Patches: <white>%s\n", patchlist);
 }
 
 void enter_recipients(User *usr, void (*state_func)(User *, char)) {
