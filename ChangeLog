@@ -1,5 +1,6 @@
 Changes as of May 13th 2005
 - no_cr patch applied; <cr> code no longer exists
+- render to Display context
 
 Changes as of May 12th 2005
 - patchlist so that you can see what patches are installed

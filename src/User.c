@@ -66,13 +66,15 @@ User *usr;
 	if ((usr = (User *)Malloc(sizeof(User), TYPE_USER)) == NULL)
 		return NULL;
 
+	if ((usr->display = new_Display()) == NULL) {
+		destroy_User(usr);
+		return NULL;
+	}
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
 /* set sane defaults */
 	usr->flags = USR_HIDE_ADDRESS|USR_HIDE_INFO;
-	usr->term_width = TERM_WIDTH;
-	usr->term_height = TERM_HEIGHT;
 	default_colors(usr);
 
 	usr->curr_msg = -1;
@@ -141,6 +143,7 @@ int i;
 	listdestroy_PList(usr->cmd_chain);
 
 	destroy_StringIO(usr->text);
+	destroy_Display(usr->display);
 
 	Free(usr);
 }
@@ -160,10 +163,16 @@ void Flush(User *usr) {
 		flush_Conn(usr->conn);
 }
 
+/*
+	Put() translates all texts on the fly
+*/
+void Put(User *usr, char *str) {
+	Out(usr, translate(usr->lang, str));
+}
+
 void Print(User *usr, char *fmt, ...) {
 va_list args;
 char buf[PRINT_BUF];
-int cpos = 0, lines = 0;
 
 	if (usr == NULL || fmt == NULL || !*fmt)
 		return;
@@ -175,7 +184,7 @@ int cpos = 0, lines = 0;
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	Out(usr->conn->output, usr, buf, &cpos, &lines, -1);
+	Out(usr, buf);
 }
 
 void Tell(User *usr, char *fmt, ...) {
@@ -205,11 +214,8 @@ char buf[PRINT_BUF];
 			return;
 		}
 		add_BufferedMsg(&usr->held_msgs, m);
-	} else {
-		int cpos = 0, lines = 0;
-
-		Out(usr->conn->output, usr, buf, &cpos, &lines, -1);
-	}
+	} else
+		Out(usr, buf);
 }
 
 
@@ -547,8 +553,8 @@ int term_width, term_height;
 		if (term_height > MAX_TERM)
 			term_height = MAX_TERM;
 
-		usr->term_width = term_width;
-		usr->term_height = term_height;
+		usr->display->term_width = term_width;
+		usr->display->term_height = term_height;
 	}
 	return 0;
 }
@@ -1006,8 +1012,8 @@ StringList *sl;
 	Fprintf(f, "posted=%lu", usr->posted);
 	Fprintf(f, "read=%lu", usr->read);
 
-	Fprintf(f, "term_width=%d", usr->term_width);
-	Fprintf(f, "term_height=%d", usr->term_height);
+	Fprintf(f, "term_width=%d", usr->display->term_width);
+	Fprintf(f, "term_height=%d", usr->display->term_height);
 
 	Fprintf(f, "colors=%d %d %d %d %d %d %d %d %d",
 		usr->colors[BACKGROUND],

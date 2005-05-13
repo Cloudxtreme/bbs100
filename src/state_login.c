@@ -341,14 +341,11 @@ char buf[MAX_LINE*2];
 			notify_logout(usr);
 			if (logout_screen != NULL) {
 				StringList *sl;
-				int cpos, lines;
 
-				lines = 0;
 				Put(usr, "\n");
 				for(sl = logout_screen; sl != NULL; sl = sl->next) {
-					cpos = 0;
-					Out(usr->conn->output, usr, sl->str, &cpos, &lines, -1);
-					Out(usr->conn->output, usr, "\n", &cpos, &lines, -1);
+					Out(usr, sl->str);
+					Out(usr, "\n");
 				}
 			}
 			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->hostname);

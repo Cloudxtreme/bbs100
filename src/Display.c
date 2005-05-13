@@ -16,38 +16,57 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/*
+	Display.c	WJ105
+*/
 
-#ifndef TELNET_H_WJ105
-#define TELNET_H_WJ105	1
+#include "Display.h"
+#include "Memory.h"
+#include "defines.h"
 
-#include "Conn.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#define MAX_SUB_BUF			128
 
-#define MAX_TERM			500
+Display *new_Display(void) {
+Display *d;
 
-/* telnet states */
-#define TS_DATA				0
-#define TS_IAC				1
-#define TS_ARG				2
-#define TS_WILL				3
-#define TS_DO				4
-#define TS_NAWS				5
-#define TS_NEW_ENVIRON		6
-#define TS_NEW_ENVIRON_IS	7
-#define TS_NEW_ENVIRON_VAR	8
-#define TS_NEW_ENVIRON_VAL	9
+	if ((d = (Display *)Malloc(sizeof(Display), TYPE_DISPLAY)) == NULL)
+		return NULL;
 
-typedef struct {
-	int state, in_sub;
-	int term_width, term_height;
-	char in_sub_buf[MAX_SUB_BUF];
-} Telnet;
+	if ((d->buf = new_StringIO()) == NULL) {
+		destroy_Display(d);
+		return NULL;
+	}
+	d->term_width = TERM_WIDTH;
+	d->term_height = TERM_HEIGHT;
+	return d;
+}
 
-Telnet *new_Telnet(void);
-void destroy_Telnet(Telnet *);
-int telnet_negotiations(Telnet *, Conn *, unsigned char, void (*)(Conn *, Telnet *));
+void destroy_Display(Display *d) {
+	if (d == NULL)
+		return;
 
-#endif	/* TELNET_H_WJ105 */
+	destroy_StringIO(d->buf);
+	d->buf = NULL;
+
+	Free(d);
+}
+
+void enable_more_prompt(Display *d) {
+	if (d == NULL)
+		return;
+
+	free_StringIO(d->buf);
+	d->more_prompt = 1;
+}
+
+void disable_more_prompt(Display *d) {
+	if (d == NULL)
+		return;
+
+	free_StringIO(d->buf);
+	d->more_prompt = 0;
+}
 
 /* EOB */

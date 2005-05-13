@@ -679,7 +679,7 @@ void state_config_terminal(User *usr, char c) {
 				"<hotkey>Screen dimensions                    <white>%dx%d<magenta>\n",
 
 				(usr->flags & USR_FORCE_TERM) ? "Yes" : "No",
-				usr->term_width, usr->term_height
+				usr->display->term_width, usr->display->term_height
 			);
 			if (usr->flags & USR_ANSI) {
 				Print(usr, "\n"
@@ -742,8 +742,8 @@ void state_config_terminal(User *usr, char c) {
 			Print(usr, "%s screen width and height\n", (usr->flags & USR_FORCE_TERM) ? "Force" : "Don't force");
 
 			if (!(usr->flags & USR_FORCE_TERM) && usr->telnet != NULL) {
-				usr->term_width = usr->telnet->term_width;
-				usr->term_height = usr->telnet->term_height;
+				usr->display->term_width = usr->telnet->term_width;
+				usr->display->term_height = usr->telnet->term_height;
 			}
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
@@ -863,9 +863,9 @@ void state_config_width(User *usr, char c) {
 		return;
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter screen width <white>[<yellow>%d<white>]: ", usr->term_width);
+		Print(usr, "<green>Enter screen width <white>[<yellow>%d<white>]: ", usr->display->term_width);
 
-	config_dimensions(usr, c, &usr->term_width, STATE_CONFIG_HEIGHT);
+	config_dimensions(usr, c, &usr->display->term_width, STATE_CONFIG_HEIGHT);
 }
 
 void state_config_height(User *usr, char c) {
@@ -873,9 +873,9 @@ void state_config_height(User *usr, char c) {
 		return;
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter screen height <white>[<yellow>%d<white>]: ", usr->term_height);
+		Print(usr, "<green>Enter screen height <white>[<yellow>%d<white>]: ", usr->display->term_height);
 
-	config_dimensions(usr, c, &usr->term_height, NULL);
+	config_dimensions(usr, c, &usr->display->term_height, NULL);
 }
 
 void config_dimensions(User *usr, char c, int *var, void (*next_state)(User *, char)) {
@@ -1469,7 +1469,7 @@ char filename[MAX_PATHLEN];
 	Put(usr, "\n<magenta>Time zone regions\n\n");
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->display->term_width);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_more(usr);
 	Return;
@@ -1600,7 +1600,7 @@ char filename[MAX_PATHLEN];
 	Fclose(f);
 
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->term_width);
+	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->display->term_width);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_more(usr);

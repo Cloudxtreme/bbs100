@@ -64,25 +64,26 @@ static char last_helping_hand[MAX_NAME] = "";
 
 
 /*
-	Put() translates all texts on the fly
-*/
-void Put(User *usr, char *str) {
-int cpos = 0, lines = 0;
-
-	Out(usr->conn->output, usr, translate(usr->lang, str), &cpos, &lines, -1);
-}
-
-/*
 	- puts texts without translating them
 	- it takes the cursor position into account for <hline> and <center> tags
 	- when max_lines > -1, can display a limited number of lines
 	  (for --More-- prompt reading)
 */
-int Out(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
+int Out(User *usr, char *str) {
+	if (usr == NULL || str == NULL || !*str)
+		return 0;
+
+	if (usr->display == NULL && (usr->display = new_Display()) == NULL)
+		return 0;
+
+	return Out_text(usr->conn->output, usr, str, &usr->display->cpos, &usr->display->line, -1);
+}
+
+int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
 char buf[20], c;
 int pos, n;
 
-	if (dev == NULL || usr == NULL || str == NULL || cpos == NULL || lines == NULL)
+	if (dev == NULL || usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
 
 	if (max_lines > -1 && *lines >= max_lines)
@@ -194,7 +195,7 @@ int pos, n;
 			case '-':
 			case '!':
 			case '?':
-				if (*cpos + word_len(str+1) >= usr->term_width) {
+				if (*cpos + word_len(str+1) >= usr->display->term_width) {
 					if (*str != ' ')
 						write_StringIO(dev, str, 1);
 
@@ -496,7 +497,7 @@ char colorbuf[20], buf[20];
 				char buf[PRINT_BUF], *p;
 				int m;
 
-				m = ((usr->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->term_width-1);
+				m = ((usr->display->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->display->term_width-1);
 				strncpy(buf, base, m);
 				buf[m-1] = 0;
 /*
@@ -509,12 +510,12 @@ char colorbuf[20], buf[20];
 					else
 						p++;
 				}
-				while(*cpos + n < usr->term_width-1)
-					Out(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
+				while(*cpos + n < usr->display->term_width-1)
+					Out_text(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
 
-				if (*cpos + n >= usr->term_width-1) {		/* 'partial put' of the remainder */
+				if (*cpos + n >= usr->display->term_width-1) {		/* 'partial put' of the remainder */
 					buf[color_index(buf, m - *cpos)] = 0;
-					Out(dev, usr, buf, cpos, lines, max_lines);
+					Out_text(dev, usr, buf, cpos, lines, max_lines);
 				}
 			}
 		}
@@ -522,7 +523,7 @@ char colorbuf[20], buf[20];
 	}
 	if (!cstrnicmp(code, "<center>", 8)) {
 		code += 8;
-		i = (usr->term_width-1)/2 - color_strlen(code)/2 - *cpos;
+		i = (usr->display->term_width-1)/2 - color_strlen(code)/2 - *cpos;
 		while(i > 0) {
 			write_StringIO(dev, " ", 1);
 			(*cpos)++;

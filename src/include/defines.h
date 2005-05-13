@@ -46,6 +46,9 @@
 
 #define SOME_TIME			(10 * SECS_IN_MIN)
 
+#define TERM_WIDTH			80
+#define TERM_HEIGHT			24
+
 #endif	/* DEFINES_H_WJ99 */
 
 /* EOB */

@@ -19,6 +19,7 @@
 
 #include "Telnet.h"
 #include "Memory.h"
+#include "defines.h"
 #include "edit.h"
 #include "debug.h"
 #include "cstring.h"

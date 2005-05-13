@@ -27,6 +27,7 @@
 #include "Telnet.h"
 #include "KVPair.h"
 #include "StringIO.h"
+#include "Display.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES+1] = {
@@ -58,6 +59,7 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "Telnet",				sizeof(Telnet),				},
 	{ "KVPair",				sizeof(KVPair),				},
 	{ "StringIO",			sizeof(StringIO),			},
+	{ "Display",			sizeof(Display),			},
 	{ "(unknown)",			0,							},
 };
 

@@ -1907,7 +1907,7 @@ int r;
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
-		make_feelings_screen(usr->term_width);
+		make_feelings_screen(usr->display->term_width);
 		for(sl = feelings_screen; sl != NULL; sl = sl->next)
 			Print(usr, "%s\n", sl->str);
 		Put(usr, "\n<green>Feeling<yellow>: ");
@@ -2550,7 +2550,7 @@ User *u;
 		mins = t / SECS_IN_MIN;
 
 /* 36 is the length of the string with the stats that's to be added at the end, plus margin */
-		width = (usr->term_width > (PRINT_BUF-36)) ? (PRINT_BUF-36) : usr->term_width;
+		width = (usr->display->term_width > (PRINT_BUF-36)) ? (PRINT_BUF-36) : usr->display->term_width;
 
 		if (u->doing == NULL || !u->doing[0])
 			sprintf(buf, "%c%s<cyan>", col, u->name);
@@ -2592,7 +2592,7 @@ PList *pl_cols[16];
 
 	total = list_Count(pl);
 
-	cols = usr->term_width / (MAX_NAME+2);
+	cols = usr->display->term_width / (MAX_NAME+2);
 	if (cols < 1)
 		cols = 1;
 	else

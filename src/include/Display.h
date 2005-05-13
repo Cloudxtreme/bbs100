@@ -16,38 +16,28 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/*
+	Display.h	WJ105
+*/
 
-#ifndef TELNET_H_WJ105
-#define TELNET_H_WJ105	1
+#ifndef DISPLAY_H_WJ105
+#define DISPLAY_H_WJ105	1
 
-#include "Conn.h"
-
-#define MAX_SUB_BUF			128
-
-#define MAX_TERM			500
-
-/* telnet states */
-#define TS_DATA				0
-#define TS_IAC				1
-#define TS_ARG				2
-#define TS_WILL				3
-#define TS_DO				4
-#define TS_NAWS				5
-#define TS_NEW_ENVIRON		6
-#define TS_NEW_ENVIRON_IS	7
-#define TS_NEW_ENVIRON_VAR	8
-#define TS_NEW_ENVIRON_VAL	9
+#include "StringIO.h"
 
 typedef struct {
-	int state, in_sub;
+	StringIO *buf;
 	int term_width, term_height;
-	char in_sub_buf[MAX_SUB_BUF];
-} Telnet;
+	int cpos, line, more_prompt;
+} Display;
 
-Telnet *new_Telnet(void);
-void destroy_Telnet(Telnet *);
-int telnet_negotiations(Telnet *, Conn *, unsigned char, void (*)(Conn *, Telnet *));
 
-#endif	/* TELNET_H_WJ105 */
+Display *new_Display(void);
+void destroy_Display(Display *);
+
+void enable_more_prompt(Display *);
+void disable_more_prompt(Display *);
+
+#endif	/* DISPLAY_H_WJ105 */
 
 /* EOB */

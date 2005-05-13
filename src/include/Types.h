@@ -51,7 +51,8 @@
 #define TYPE_TELNET			25
 #define TYPE_KVPAIR			26
 #define TYPE_STRINGIO		27
-#define NUM_TYPES			28
+#define TYPE_DISPLAY		28
+#define NUM_TYPES			29
 
 typedef struct Typedef_tag Typedef;
 

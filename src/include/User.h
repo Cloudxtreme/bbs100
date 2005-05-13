@@ -37,6 +37,7 @@
 #include "Conn.h"
 #include "Telnet.h"
 #include "StringIO.h"
+#include "Display.h"
 #include "sys_time.h"
 
 #include <sys/types.h>
@@ -131,8 +132,6 @@ struct User_tag {
 	Conn *conn;
 
 	int edit_pos, curr_msg, read_lines, total_lines, crashed;
-	int term_width, term_height;
-
 	char edit_buf[MAX_LINE];
 
 	char name[MAX_NAME];
@@ -169,6 +168,7 @@ struct User_tag {
 	Telnet *telnet;
 	Lang *lang;
 	StringIO *text;
+	Display *display;
 	PList *cmd_chain;
 };
 
@@ -186,6 +186,7 @@ int save_User_version1(File *, User *);
 void Write(User *, char *);
 void Writechar(User *, char);
 void Flush(User *);
+void Put(User *, char *);
 void Print(User *, char *, ...);
 void Tell(User *, char *, ...);
 void notify_friends(User *, char *);

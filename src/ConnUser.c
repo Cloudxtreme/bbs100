@@ -245,8 +245,8 @@ User *usr;
 
 	usr = (User *)conn->data;
 	if (!(usr->flags & USR_FORCE_TERM)) {
-		usr->term_width = t->term_width;
-		usr->term_height = t->term_height;
+		usr->display->term_width = t->term_width;
+		usr->display->term_height = t->term_height;
 	}
 }
 
