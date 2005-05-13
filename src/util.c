@@ -476,11 +476,6 @@ char colorbuf[20], buf[20];
 		(*cpos)++;
 		return 3;
 	}
-	if (!cstrnicmp(code, "<cr>", 4)) {
-		write_StringIO(dev, "\r", 1);
-		*cpos = 0;
-		return 3;
-	}
 
 /*
 	there are two special codes for use in help files and stuff...
@@ -690,9 +685,6 @@ char colorbuf[20];
 		return 4;
 
 	if (!cstrnicmp(code, "<gt>", 4))
-		return 4;
-
-	if (!cstrnicmp(code, "<cr>", 4))
 		return 4;
 
 	return 1;

@@ -1503,7 +1503,7 @@ void state_malloc_status(User *usr, char c) {
 		Put(usr, "\n"
 			"<white>[Press a key]");
 	} else {
-		Put(usr, "<cr>              <cr>");
+		Print(usr, "%c              %c", KEY_CTRL('X'), KEY_CTRL('X'));
 		RET(usr);
 	}
 	Return;

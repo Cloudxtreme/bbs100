@@ -796,16 +796,16 @@ int wrapable = 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_XMSG_LINES) {
 		if (c == KEY_CTRL('C')) {
-			Put(usr, "<cr>                                                          <cr>");
+			Print(usr, "%c                                                          %c", KEY_CTRL('X'), KEY_CTRL('X'));
 			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_BREAK;
 		}
 		if (c == KEY_CTRL('X')) {
-			Put(usr, "<cr>                                                          <cr>");
+			Print(usr, "%c                                                          %c", KEY_CTRL('X'), KEY_CTRL('X'));
 			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_RETURN;
 		}
-		Put(usr, "<cr><red>Too many lines, press <white><<yellow>Ctrl-C<white>><red> to abort, <white><<yellow>Ctrl-X<white>><red> to send");
+		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>><red> to abort, <white><<yellow>Ctrl-X<white>><red> to send", KEY_CTRL('X'));
 		return 0;
 	}
 	if (usr->runtime_flags & RTF_COLOR_EDITING) {
@@ -958,10 +958,10 @@ int wrapable = 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_MSG_LINES) {
 		if (c == KEY_CTRL('C')) {
-			Put(usr, "<cr>                                 \n");
+			Print(usr, "%c                                 \n", KEY_CTRL('X'));
 			return EDIT_BREAK;
 		}
-		Put(usr, "<cr><red>Too many lines, press <white><<yellow>Ctrl-C<white>>");
+		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>>", KEY_CTRL('X'));
 		return 0;
 	}
 	if (usr->runtime_flags & RTF_COLOR_EDITING) {
