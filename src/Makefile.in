@@ -68,14 +68,14 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	Timezone.o Worldclock.o Lang.o locale_system.o locales.o \
 	locale_nl.o Category.o crc32.o state_data.o DataCmd.o \
 	Conn.o ConnUser.o ConnResolv.o ConnData.o Telnet.o \
-	KVPair.o StringIO.o	Display.o patchlist.o \
+	KVPair.o StringIO.o	Display.o patchlist.o source_sum.o \
 	main.o
 
-MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o
+MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o src_sum.o md5.o
 
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
-TARGETS = bbs100_convert ccat mkpasswd resolver main
+TARGETS = bbs100_convert ccat mkpasswd resolver src_sum main
 SCRIPTS = expire_accounts.sh bbs
 
 all: .depend $(TARGETS)
@@ -92,7 +92,7 @@ neat:
 
 clean:
 	@echo '  CLEAN'
-	$(Q)$(RM_F) core ../core $(TARGETS) $(OBJS) $(MORE_OBJS) *~ symtab
+	$(Q)$(RM_F) core ../core $(TARGETS) $(OBJS) $(MORE_OBJS) build_sums.o *~ symtab build_sums.c
 
 mrproper: clean
 	@echo '  MRPROPER'
@@ -108,9 +108,9 @@ cleanlog:
 	$(Q)$(RM_F) $(prefix)/log/*/*
 
 
-main: $(OBJS)
+main: $(OBJS) build_sums.o
 	@echo '  BUILD     main'
-	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+	$(Q)$(CC) $(OBJS) build_sums.o -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
 
 mkpasswd: mkpasswd.o passwd.o copyright.o
 	@echo '  BUILD     mkpasswd'
@@ -127,6 +127,14 @@ ccat: ccat.o copyright.o
 bbs100_convert: bbs100_convert.o copyright.o
 	@echo '  BUILD     bbs100_convert'
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) bbs100_convert.o copyright.o -o bbs100_convert $(LFLAGS)
+
+src_sum: src_sum.o copyright.o md5.o
+	@echo '  BUILD     src_sum'
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) src_sum.o copyright.o md5.o -o src_sum $(LFLAGS)
+
+build_sums.c: $(OBJS) src_sum
+	@echo '  SUM'
+	$(Q)./src_sum >/dev/null
 
 
 install: $(TARGETS) $(SCRIPTS)
