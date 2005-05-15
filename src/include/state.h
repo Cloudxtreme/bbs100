@@ -117,6 +117,7 @@ void chatroom_tell(Room *, char *);
 void chatroom_msg(Room *, char *);
 
 void print_calendar(User *);
+void source_checksums(User *);
 
 #endif	/* STATE_H_WJ99 */
 

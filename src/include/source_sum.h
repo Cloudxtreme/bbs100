@@ -23,9 +23,11 @@
 #ifndef SOURCE_SUM_H_WJ105
 #define SOURCE_SUM_H_WJ105	1
 
+#define MD5_DIGITS	16
+
 typedef struct {
 	const char *filename;
-	unsigned char sum[16];
+	unsigned char sum[MD5_DIGITS];
 } SourceSum;
 
 extern SourceSum orig_sums[];

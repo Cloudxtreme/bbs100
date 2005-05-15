@@ -57,6 +57,7 @@
 #include "Category.h"
 #include "Memory.h"
 #include "DataCmd.h"
+#include "source_sum.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -218,6 +219,15 @@ int i, idx;
 			}
 			read_more(usr);
 			Return;
+
+		case '{':
+			Put(usr, "<white>Credits -- NYI\n");
+			Return;
+			
+		case '}':
+			Put(usr, "<white>Source checksums\n");
+			source_checksums(usr);
+			break;
 
 		case 'w':
 			Put(usr, "<white>Who\n\n");
@@ -3864,6 +3874,38 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 		line[0] = 0;
 		l = 0;
 	}
+	Return;
+}
+
+void source_checksums(User *usr) {
+int i, j, found, printed;
+
+	if (usr == NULL)
+		return;
+
+	Enter(source_checksums);
+
+	i = printed = 0;
+	while (orig_sums[i].filename != NULL) {
+		j = found = 0;
+		while (build_sums[j].filename != NULL) {
+			if (!strcmp(orig_sums[i].filename, build_sums[j].filename)) {
+				found = 1;
+				if (memcmp(orig_sums[i].sum, build_sums[j].sum, MD5_DIGITS)) {
+					if (!printed) {
+						printed++;
+						Put(usr, "<yellow>There are changes in the following components<white>:\n<green>  ");
+					}
+					Print(usr, "%s ", build_sums[j].filename);
+				}
+				break;
+			}
+			j++;
+		}
+		i++;
+	}
+	if (printed)
+		Put(usr, "\n");
 	Return;
 }
 

@@ -103,6 +103,7 @@ int rm_rf_trashdir(char *);
 int mkdir_p(char *);
 char *path_strip(char *);
 long fread_int32(FILE *);
+char *print_md5_digest(unsigned char sum[], char *);
 
 extern ColorTable color_table[];
 

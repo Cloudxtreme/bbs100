@@ -36,6 +36,7 @@
 #include "Lang.h"
 #include "locale_system.h"
 #include "mkdir.h"
+#include "source_sum.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1293,6 +1294,18 @@ int c, i;
 		l |= (c & 255);
 	}
 	return l;
+}
+
+char *print_md5_digest(unsigned char sum[MD5_DIGITS], char *digest) {
+int i;
+
+	if (digest == NULL)
+		return NULL;
+
+	for(i = 0; i < MD5_DIGITS; i++)
+		sprintf(digest+i*2, "%02x", sum[i] & 0xff);
+
+	return digest;
 }
 
 /* EOB */

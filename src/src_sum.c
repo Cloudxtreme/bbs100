@@ -26,6 +26,7 @@
 #include "md5.h"
 #include "mydirentry.h"
 #include "copyright.h"
+#include "source_sum.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +37,7 @@
 #include <fcntl.h>
 
 
-int sum_file(char *filename, unsigned char digest[16]) {
+int sum_file(char *filename, unsigned char digest[MD5_DIGITS]) {
 int fd, err;
 char buf[512];
 md5_context ctx;
@@ -55,28 +56,35 @@ md5_context ctx;
 	return 0;
 }
 
-void print_md5_digest(char *filename, unsigned char digest[16]) {
+void print_md5_digest(char *filename, unsigned char digest[MD5_DIGITS]) {
 int i;
 
-	for(i = 0; i < 16; i++)
+	for(i = 0; i < MD5_DIGITS; i++)
 		printf("%02x", digest[i] & 0xff);
 	printf("  %s\n", filename);
 }
 
-void fprint_source_entry(FILE *f, char *filename, unsigned char digest[16]) {
+void fprint_source_entry(FILE *f, char *filename, unsigned char digest[MD5_DIGITS]) {
 int i;
+char *p;
+
+	if ((p = strrchr(filename, '.')) != NULL)
+		*p = 0;
 
 	fprintf(f, "\t{ \"%s\",\t{ ", filename);
 	for(i = 0; i < 15; i++)
 		fprintf(f, "0x%02x,", digest[i] & 0xff);
 	fprintf(f, "0x%02x }, },\n", digest[15]);
+
+	if (p != NULL)
+		*p = '.';
 }
 
 int source_sum(void) {
 FILE *f;
 DIR *dirp;
 struct dirent *direntp;
-unsigned char digest[16];
+unsigned char digest[MD5_DIGITS];
 int l;
 
 	if ((dirp = opendir(".")) == NULL) {
@@ -111,6 +119,9 @@ int l;
 		}
 	}
 	closedir(dirp);
+
+	memset(digest, 0, MD5_DIGITS);
+	print_md5_digest("NULL", digest);
 
 	fprintf(f, "};\n"
 		"\n"
