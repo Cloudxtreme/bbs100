@@ -27,6 +27,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Locale *all_locales[3] = { &system_locale, &nl_locale, NULL };
+/*
+	this is coded without size so you can patch an additional locale
+	in between
+*/
+Locale *all_locales[] = {
+	&system_locale,
+	&nl_locale,
+	NULL
+};
 
 /* EOB */
