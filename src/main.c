@@ -253,6 +253,7 @@ char buf[256];
 	gen_crc32_table();
 
 	init_Param();
+	path_strip(param_file);
 	printf("loading param file %s ... ", param_file);
 	if (load_Param(param_file)) {
 		printf("failed\n");

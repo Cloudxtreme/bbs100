@@ -83,6 +83,7 @@ int color_strlen(char *);
 int color_index(char *, int);
 int Ansi_Color(User *, int);
 void default_colors(User *);
+void wipe_line(User *);
 int yesno(User *, char, char);
 int user_exists(char *);
 int next_helping_hand(User *);

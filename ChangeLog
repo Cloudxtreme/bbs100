@@ -1,3 +1,6 @@
+Changes as of May 15th 2005
+- wipe_line() wipes the current output line
+
 Changes as of May 13th 2005
 - no_cr patch applied; <cr> code no longer exists
 - render to Display context

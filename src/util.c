@@ -813,6 +813,21 @@ void default_colors(User *usr) {
 	usr->colors[HOTKEY] = YELLOW;
 }
 
+void wipe_line(User *usr) {
+int i;
+
+	if (usr == NULL)
+		return;
+
+	Writechar(usr, '\r');
+
+	for(i = 0; i < usr->display->cpos; i++)
+		Writechar(usr, ' ');
+
+	Writechar(usr, '\r');
+	usr->display->cpos = 0;
+}
+
 int yesno(User *usr, char c, char def) {
 	if (usr == NULL)
 		return YESNO_UNDEF;

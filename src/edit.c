@@ -796,12 +796,12 @@ int wrapable = 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_XMSG_LINES) {
 		if (c == KEY_CTRL('C')) {
-			Print(usr, "%c                                                          %c", KEY_CTRL('X'), KEY_CTRL('X'));
+			wipe_line(usr);
 			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_BREAK;
 		}
 		if (c == KEY_CTRL('X')) {
-			Print(usr, "%c                                                          %c", KEY_CTRL('X'), KEY_CTRL('X'));
+			wipe_line(usr);
 			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_RETURN;
 		}
@@ -958,7 +958,8 @@ int wrapable = 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_MSG_LINES) {
 		if (c == KEY_CTRL('C')) {
-			Print(usr, "%c                                 \n", KEY_CTRL('X'));
+			wipe_line(usr);
+			Put(usr, "\n");
 			return EDIT_BREAK;
 		}
 		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>>", KEY_CTRL('X'));

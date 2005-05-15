@@ -1497,13 +1497,13 @@ void state_malloc_status(User *usr, char c) {
 				line[l] = 0;
 			}
 		}
-		if (!(i & 1))
+		if (i & 1)
 			Put(usr, "\n");
 
 		Put(usr, "\n"
 			"<white>[Press a key]");
 	} else {
-		Print(usr, "%c              %c", KEY_CTRL('X'), KEY_CTRL('X'));
+		wipe_line(usr);
 		RET(usr);
 	}
 	Return;
@@ -1538,9 +1538,9 @@ void state_parameters_menu(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "\n");
 			if (usr->runtime_flags & RTF_PARAM_EDITED) {
-				if (save_Param(param_file)) {
+				if (save_Param(param_file))
 					Perror(usr, "failed to save param file");
-				}
+
 				usr->runtime_flags &= ~RTF_PARAM_EDITED;
 			}
 			RET(usr);
@@ -1594,9 +1594,11 @@ void state_parameters_menu(User *usr, char c) {
 
 			usr->runtime_flags &= ~RTF_PARAM_EDITED;
 
-			if (load_Param(param_file)) {
+			path_strip(param_file);
+
+			if (load_Param(param_file))
 				Perror(usr, "Failed to load param file");
-			} else {
+			else {
 				Print(usr, "loading %s ... Ok\n", param_file);
 				CURRENT_STATE(usr);
 			}

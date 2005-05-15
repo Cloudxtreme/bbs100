@@ -1830,7 +1830,9 @@ StringList *sl;
 
 	Enter(state_more_prompt);
 
-	Print(usr, "%c                                      %c<green>", KEY_CTRL('X'), KEY_CTRL('X'));
+	wipe_line(usr);
+	Put(usr, "<green>");
+
 	switch(c) {
 		case INIT_STATE:
 			if (usr->more_text == NULL) {
@@ -2026,7 +2028,7 @@ int r, l;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		Print(usr, "%c                             %c", KEY_CTRL('X'), KEY_CTRL('X'));
+		wipe_line(usr);
 		if (!usr->edit_buf[0]) {
 			l = 0;
 			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->display->term_height; sl = sl->prev)
@@ -2082,7 +2084,7 @@ int r, l;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		Print(usr, "%c                             %c", KEY_CTRL('X'), KEY_CTRL('X'));
+		wipe_line(usr);
 		if (!usr->edit_buf[0]) {
 			l = 0;
 			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->display->term_height; sl = sl->prev)
@@ -2341,7 +2343,7 @@ void state_press_any_key(User *usr, char c) {
 		usr->runtime_flags |= RTF_BUSY;
 		Put(usr, "<red>-- Press any key to continue --");
 	} else {
-		Print(usr, "%c                               %c", KEY_CTRL('X'), KEY_CTRL('X'));
+		wipe_line(usr);
 		RET(usr);
 	}
 	Return;
@@ -2761,7 +2763,9 @@ StringList *sl;
 
 	Enter(state_more_text);
 
-	Print(usr, "%c                                      %c<green>", KEY_CTRL('X'), KEY_CTRL('X'));
+	wipe_line(usr);
+	Put(usr, "<green>");
+
 	switch(c) {
 		case INIT_STATE:
 			if (usr->text == NULL) {
