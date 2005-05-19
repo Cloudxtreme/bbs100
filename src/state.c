@@ -1096,10 +1096,10 @@ void PrintPrompt(User *usr) {
 			else
 				Put(usr, "\n<white>> ");
 		} else {
-			char roomname[MAX_LINE], name_buf[MAX_NAME+3];
+			char roomname[MAX_LINE];
 
 			if (usr->curr_room == usr->mail)
-				sprintf(roomname, "%s Mail", name_with_s(usr, usr->name, name_buf));
+				possession(usr, usr->name, "Mail", roomname);
 			else
 				strcpy(roomname, usr->curr_room->name);
 
@@ -1376,9 +1376,9 @@ void loop_ping(User *usr, char c) {
 		}
 /*
 		if (in_StringList(u->friends, usr->name) != NULL)
-			Print(usr, "You are on <yellow>%s<green> friend list\n", name_with_s(usr, u->name, name_buf));
+			Print(usr, "You are on %s\n", possession(usr, u->name, "friend list", name_buf));
 		if (in_StringList(u->enemies, usr->name) != NULL)
-			Print(usr, "<red>You are on <yellow>%s<red> enemy list\n", name_with_s(usr, u->name, name_buf));
+			Print(usr, "<red>You are on %s\n", possession(usr, u->name, "enemy list", name_buf));
 */
 	}
 	Return;
@@ -1575,9 +1575,12 @@ int r;
 		if (u->flags & USR_X_DISABLED)
 			usr->more_text = add_String(&usr->more_text, "<red>%s has message reception turned off", u->name);
 
-		if (in_StringList(u->friends, usr->name) != NULL)
-			usr->more_text = add_String(&usr->more_text, "<green>You are on <yellow>%s<green> friend list", name_with_s(usr, u->name, total_buf));
+		if (in_StringList(u->friends, usr->name) != NULL) {
+			char namebuf[MAX_NAME+20];
 
+			sprintf(namebuf, "<yellow>%s<green>", u->name);
+			usr->more_text = add_String(&usr->more_text, "<green>You are on %s", possession(usr, namebuf, "friend list", total_buf));
+		}
 		visible = 1;
 		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
 			&& (u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)
@@ -3583,7 +3586,7 @@ PList *p;
 }
 
 void enter_chatroom(User *usr) {
-char buf[3 * MAX_LINE], name_buf[MAX_NAME+3], *str;
+char buf[3 * MAX_LINE], *str;
 StringList *sl;
 
 	if (usr == NULL)
@@ -3592,7 +3595,7 @@ StringList *sl;
 	Enter(enter_chatroom);
 
 	if (usr->curr_room->number == HOME_ROOM) {
-		sprintf(buf, "%s Home", name_with_s(usr, usr->name, name_buf));
+		possession(usr, usr->name, "Home", buf);
 
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);

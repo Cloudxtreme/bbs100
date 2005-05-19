@@ -38,7 +38,7 @@ struct Locale_tag {
 	char *(*print_total_time)(Locale *, unsigned long, char *);
 	char *(*print_number)(Locale *, unsigned long, char *);
 	char *(*print_numberth)(Locale *, unsigned long, char *);
-	char *(*name_with_s)(Locale *, char *, char *);
+	char *(*possession)(Locale *, char *, char *, char *);
 };
 
 /*

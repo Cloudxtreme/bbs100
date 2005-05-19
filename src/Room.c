@@ -82,7 +82,7 @@ char filename[MAX_PATHLEN];
 
 Room *load_Mail(char *username) {
 Room *r;
-char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
+char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	if (username == NULL || !*username || !user_exists(username))
 		return NULL;
@@ -99,7 +99,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = MAIL_ROOM;
-	sprintf(roomname, "%s Mail", name_with_s(NULL, username, name_buf));
+	possession(NULL, username, "Mail", roomname);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -116,7 +116,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
 
 Room *load_Home(char *username) {
 Room *r;
-char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
+char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	if (username == NULL || !*username || !user_exists(username))
 		return NULL;
@@ -133,7 +133,7 @@ char filename[MAX_PATHLEN], name_buf[MAX_NAME+3], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = HOME_ROOM;
-	sprintf(roomname, "%s Home", name_with_s(NULL, username, name_buf));
+	possession(NULL, username, "Home", roomname);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -665,12 +665,12 @@ Room *r;
 
 Room *find_Home(char *username) {
 Room *r;
-char buf[MAX_LINE], name_buf[MAX_NAME+3];
+char buf[MAX_LINE];
 
 	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
 
-	sprintf(buf, "%s Home", name_with_s(NULL, username, name_buf));
+	possession(NULL, username, "Home", buf);
 
 	for(r = HomeRooms; r != NULL; r = r->next)
 		if (!strcmp(r->name, buf))

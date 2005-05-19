@@ -1121,14 +1121,14 @@ char *print_numberth(User *usr, unsigned long ul, char *buf) {
 /*
 	Note: buf must be large enough (MAX_LINE bytes in size)
 */
-char *name_with_s(User *usr, char *name, char *buf) {
+char *possession(User *usr, char *name, char *obj, char *buf) {
 	if (buf == NULL)
 		return NULL;
 
 	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->name_with_s(usr->lang->locale, name, buf);
+		return usr->lang->locale->possession(usr->lang->locale, name, obj, buf);
 
-	return lc_system->name_with_s(lc_system, name, buf);
+	return lc_system->possession(lc_system, name, obj, buf);
 }
 
 unsigned long get_mail_top(char *username) {

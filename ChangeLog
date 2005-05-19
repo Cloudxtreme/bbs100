@@ -1,3 +1,7 @@
+Changes as of May 22nd 2005
+- name_with_s() is now possession() which works better for most
+  languages
+
 Changes as of May 15th 2005
 - wipe_line() wipes the current output line
 - checksumming of source code

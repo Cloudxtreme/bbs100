@@ -139,7 +139,7 @@ Locale nl_locale = {
 	nl_print_total_time,
 	lc_print_number_dots,
 	nl_print_numberth,
-	lc_name_with_s
+	lc_possession			/* same as for English (system language) */
 };
 
 /* EOB */

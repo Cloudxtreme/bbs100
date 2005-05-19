@@ -241,7 +241,7 @@ char add[3];
 /*
 	Note: buf must be large enough (MAX_LINE bytes in size)
 */
-char *lc_name_with_s(Locale *lc, char *name, char *buf) {
+char *lc_possession(Locale *lc, char *name, char *obj, char *buf) {
 int i, j;
 
 	if (buf == NULL)
@@ -257,7 +257,9 @@ int i, j;
 	if (buf[j] != 'z' && buf[j] != 'Z' &&
 		buf[j] != 's' && buf[j] != 'S')
 		buf[++i] = 's';
+	buf[++i] = ' ';
 	buf[++i] = 0;
+	strcat(buf, obj);
 	return buf;
 }
 
@@ -274,7 +276,7 @@ Locale system_locale = {
 	lc_print_total_time,
 	lc_print_number_commas,
 	lc_print_numberth,
-	lc_name_with_s
+	lc_possession
 };
 
 Locale *lc_system = &system_locale;
