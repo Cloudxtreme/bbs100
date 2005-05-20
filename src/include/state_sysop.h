@@ -82,6 +82,7 @@
 #define STATE_PARAM_SHUTDOWN_SCREEN		state_param_shutdown_screen
 #define STATE_PARAM_CRASH_SCREEN		state_param_crash_screen
 #define STATE_PARAM_FIRST_LOGIN			state_param_first_login
+#define STATE_PARAM_CREDITS_SCREEN		state_param_credits_screen
 #define STATE_PARAM_HELP_STD			state_param_help_std
 #define STATE_PARAM_HELP_CONFIG			state_param_help_config
 #define STATE_PARAM_HELP_ROOMCONFIG		state_param_help_roomconfig
@@ -188,6 +189,7 @@ void state_param_reboot_screen(User *, char);
 void state_param_shutdown_screen(User *, char);
 void state_param_crash_screen(User *, char);
 void state_param_first_login(User *, char);
+void state_param_credits_screen(User *, char);
 void state_param_help_std(User *, char);
 void state_param_help_config(User *, char);
 void state_param_help_roomconfig(User *, char);

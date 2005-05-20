@@ -70,6 +70,7 @@ int i;
 
 	KVPair_setstring(KVPARAM_GPL_SCREEN,		"gpl_screen",		"etc/GPL");
 	KVPair_setstring(KVPARAM_MODS_SCREEN,		"mods_screen",		"etc/local_mods");
+	KVPair_setstring(KVPARAM_CREDITS_SCREEN,	"credits_screen",	"etc/credits");
 	KVPair_setstring(KVPARAM_LOGIN_SCREEN,		"login_screen",		"etc/login");
 	KVPair_setstring(KVPARAM_LOGOUT_SCREEN,		"logout_screen",	"etc/logout");
 	KVPair_setstring(KVPARAM_NOLOGIN_SCREEN,	"nologin_screen",	"etc/nologin");

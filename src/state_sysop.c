@@ -1910,9 +1910,10 @@ void state_config_files_menu(User *usr, char c) {
 			Print(usr, "<hotkey>1st login        <white>%-22s<magenta>  <hotkey>K Crash          <white>%s<magenta>\n",
 				PARAM_FIRST_LOGIN, PARAM_CRASH_SCREEN);
 
-			Print(usr, "\n"
+			Print(usr, "Cred<hotkey>its          <white>%-22s<magenta>\n"
+				"\n"
 				"Standard <hotkey>help    <white>%-22s<magenta>  Room config h<hotkey>elp <white>%s<magenta>\n",
-				PARAM_HELP_STD, PARAM_HELP_ROOMCONFIG);
+				PARAM_CREDITS_SCREEN, PARAM_HELP_STD, PARAM_HELP_ROOMCONFIG);
 			Print(usr, "<hotkey>Config menu help <white>%-22s<magenta>  <hotkey>Sysop menu help  <white>%s<magenta>\n",
 				PARAM_HELP_CONFIG, PARAM_HELP_SYSOP);
 
@@ -1989,6 +1990,12 @@ void state_config_files_menu(User *usr, char c) {
 		case '1':
 			Put(usr, "First login screen\n");
 			CALL(usr, STATE_PARAM_FIRST_LOGIN);
+			Return;
+
+		case 'i':
+		case 'I':
+			Put(usr, "Credits screen\n");
+			CALL(usr, STATE_PARAM_CREDITS_SCREEN);
 			Return;
 
 		case 'h':
@@ -2128,6 +2135,12 @@ void state_param_first_login(User *usr, char c) {
 	Return;
 }
 
+void state_param_credits_screen(User *usr, char c) {
+	Enter(state_param_first_login);
+	change_string_param(usr, c, &PARAM_CREDITS_SCREEN, "<green>Enter credits screen<yellow>: ");
+	Return;
+}
+
 void state_param_help_std(User *usr, char c) {
 	Enter(state_param_help_std);
 	change_string_param(usr, c, &PARAM_HELP_STD, "<green>Enter standard help file<yellow>: ");
@@ -2218,13 +2231,13 @@ StringList *sl;
 			usr->runtime_flags |= RTF_BUSY;
 
 			Put(usr, "<magenta>\n"
-				"<hotkey>1 Reload login screen             <hotkey>6 Reload standard help\n"
-				"<hotkey>2 Reload logout screen            <hotkey>7 Reload config menu help\n"
-				"<hotkey>3 Reload motd screen              <hotkey>8 Reload room config menu help\n"
+				"<hotkey>1 Reload login screen             <hotkey>6 Reload first login screen\n"
+				"<hotkey>2 Reload logout screen            <hotkey>7 Reload standard help\n"
+				"<hotkey>3 Reload motd screen              <hotkey>8 Reload config menu help\n"
 			);
 			Put(usr,
-				"<hotkey>4 Reload crash screen             <hotkey>9 Reload sysop menu help\n"
-				"<hotkey>5 Reload first login screen\n"
+				"<hotkey>4 Reload credits screen           <hotkey>9 Reload room config menu help\n"
+				"<hotkey>5 Reload crash screen             <hotkey>0 Reload sysop menu help\n"
 				"\n"
 				"<hotkey>g Reload GPL                      <hotkey>l Reload local mods\n"
 				"<hotkey>h Reload hostmap                  <hotkey>f Reload feelings\n"
@@ -2266,31 +2279,35 @@ StringList *sl;
 		case '3':
 			Put(usr, "Reload motd\n");
 			RELOAD_FILE(PARAM_MOTD_SCREEN, motd_screen);
+
+		case '4':
+			Put(usr, "Reload credits screen\n");
+			UNCACHE_FILE(PARAM_CREDITS_SCREEN);
 /*
 	the crash screen is not cached
 	(just in case the cache becomes corrupted as well)
 */
-		case '4':
+		case '5':
 			Put(usr, "Reload crash screen\n");
 			RELOAD_FILE(PARAM_CRASH_SCREEN, crash_screen);
 
-		case '5':
+		case '6':
 			Put(usr, "Reload first login screen\n");
 			UNCACHE_FILE(PARAM_FIRST_LOGIN);
 
-		case '6':
+		case '7':
 			Put(usr, "Reload standard help\n");
 			UNCACHE_FILE(PARAM_HELP_STD);
 
-		case '7':
+		case '8':
 			Put(usr, "Reload config menu help\n");
 			UNCACHE_FILE(PARAM_HELP_CONFIG);
 
-		case '8':
+		case '9':
 			Put(usr, "Reload room config menu help\n");
 			UNCACHE_FILE(PARAM_HELP_ROOMCONFIG);
 
-		case '9':
+		case '0':
 			Put(usr, "Reload sysop menu help\n");
 			UNCACHE_FILE(PARAM_HELP_SYSOP);
 

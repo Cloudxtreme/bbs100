@@ -221,7 +221,13 @@ int i, idx;
 			Return;
 
 		case '{':
-			Put(usr, "<white>Credits -- NYI\n");
+			Put(usr, "<white>Credits\n");
+			listdestroy_StringList(usr->more_text);
+			if ((usr->more_text = load_screen(PARAM_CREDITS_SCREEN)) == NULL) {
+				Put(usr, "<red>The credits file is missing\n");		/* or out of memory! */
+				break;
+			}
+			read_more(usr);
 			Return;
 			
 		case '}':

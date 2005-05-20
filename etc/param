@@ -22,6 +22,7 @@ program_resolver        bin/resolver
 
 gpl_screen              etc/GPL
 mods_screen             etc/local_mods
+credits_screen          etc/credits
 login_screen            etc/login
 logout_screen           etc/logout
 nologin_screen          etc/nologin

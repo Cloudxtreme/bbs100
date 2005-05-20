@@ -1,4 +1,7 @@
-Changes as of May 22nd 2005
+Changes as of May 20th 2005
+- '{' displays credits
+
+Changes as of May 19th 2005
 - name_with_s() is now possession() which works better for most
   languages
 
