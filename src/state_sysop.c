@@ -312,6 +312,10 @@ int r;
 		Joined *j;
 		char buf[MAX_PATHLEN], *p;
 
+		if (!usr->edit_buf[0]) {
+			RET(usr);
+			Return;
+		}
 		if (usr->edit_buf[0] >= '0' && usr->edit_buf[0] <= '9') {
 			Put(usr, "<red>Room names cannot start with a digit\n");
 			RET(usr);
