@@ -64,12 +64,6 @@ ColorTable color_table[] = {
 static char last_helping_hand[MAX_NAME] = "";
 
 
-/*
-	- puts texts without translating them
-	- it takes the cursor position into account for <hline> and <center> tags
-	- when max_lines > -1, can display a limited number of lines
-	  (for --More-- prompt reading)
-*/
 int Out(User *usr, char *str) {
 	if (usr == NULL || str == NULL || !*str)
 		return 0;
@@ -80,6 +74,12 @@ int Out(User *usr, char *str) {
 	return Out_text(usr->conn->output, usr, str, &usr->display->cpos, &usr->display->line, -1);
 }
 
+/*
+	- puts texts without translating them
+	- it takes the cursor position into account for <hline> and <center> tags
+	- when max_lines > -1, can display a limited number of lines
+	  (for --More-- prompt reading)
+*/
 int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
 char buf[20], c;
 int pos, n;
