@@ -108,7 +108,7 @@ int l;
 		"SourceSum build_sums[] = {\n"
 	);
 	while((direntp = readdir(dirp)) != NULL) {
-		if (!strcmp(direntp->d_name, "build_sums.c"))
+		if (!strcmp(direntp->d_name, "build_sums.c") || !strcmp(direntp->d_name, "source_sum.c"))
 			continue;
 
 		l = strlen(direntp->d_name);

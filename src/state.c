@@ -3911,10 +3911,16 @@ int i, j, found, printed;
 			}
 			j++;
 		}
+		if (!found) {
+			Print(usr, "<red>missing:<yellow>%s <green>", orig_sums[i].filename);
+			printed++;
+		}
 		i++;
 	}
 	if (printed)
 		Put(usr, "\n");
+	else
+		Put(usr, "<green>This looks like an unmodified <yellow>bbs100\n");
 	Return;
 }
 
