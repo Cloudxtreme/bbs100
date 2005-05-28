@@ -168,6 +168,7 @@ struct User_tag {
 	Telnet *telnet;
 	Lang *lang;
 	StringIO *text;
+	PList *scroll, *scrollp;
 	Display *display;
 	PList *cmd_chain;
 };

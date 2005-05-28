@@ -79,12 +79,14 @@ int Out(User *usr, char *str) {
 	- it takes the cursor position into account for <hline> and <center> tags
 	- when max_lines > -1, can display a limited number of lines
 	  (for --More-- prompt reading)
+	- returns position in the string where it stopped
+	- if dev is NULL, it produces no output, but does run the function
 */
 int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
 char buf[20], c;
 int pos, n;
 
-	if (dev == NULL || usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
+	if (usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
 
 	if (max_lines > -1 && *lines >= max_lines)
@@ -380,12 +382,14 @@ int colors, i;
 
 	cpos is the cursor position, which is used in <hline> and <center> tags
 	for <hline>, the function recurses with Out()
+
+	if dev is NULL, it produces no output
 */
 int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines) {
 int i, c, colors;
-char colorbuf[20], buf[20];
+char colorbuf[20], buf[PRINT_BUF], *p;
 
-	if (dev == NULL || usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
+	if (usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
 		return 0;
 
 	colors = sizeof(color_table)/sizeof(ColorTable);
@@ -487,44 +491,56 @@ char colorbuf[20], buf[20];
 	it fills the line to the width of the terminal
 */
 	if (!cstrnicmp(code, "<hline>", 7)) {
-		char *base;
+		int l;
 
-		base = code + 7;
-		if (*base) {
-			int n;
+		code += 7;
+		if (!*code)
+			return 6;
 
-			n = color_strlen(base);
-			if (n > 0) {
-				char buf[PRINT_BUF], *p;
-				int m;
-
-				m = ((usr->display->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->display->term_width-1);
-				strncpy(buf, base, m);
-				buf[m-1] = 0;
+		c = ((usr->display->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->display->term_width-1);
+		strncpy(buf, code, c);
+		buf[c-1] = 0;
 /*
 	it stinks, but you have to remove all chars that can reset the cursor pos
 */
-				p = buf;
-				while(*p) {
-					if (*p == KEY_CTRL('X') || *p == '\r' || *p == '\n' || *p == '\b')
-						memmove(p, p+1, strlen(p+1)+1);
-					else
-						p++;
+		p = buf;
+		while(*p) {
+			if (*p == KEY_CTRL('X') || *p == '\b')
+				memmove(p, p+1, strlen(p+1)+1);
+			else {
+				if (*p == '\n') {		/* don't go over newlines */
+					*p = 0;
+					break;
 				}
-				while(*cpos + n < usr->display->term_width-1)
-					Out_text(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
-
-				if (*cpos + n >= usr->display->term_width-1) {		/* 'partial put' of the remainder */
-					buf[color_index(buf, m - *cpos)] = 0;
-					Out_text(dev, usr, buf, cpos, lines, max_lines);
-				}
+				p++;
 			}
 		}
-		return strlen(code)-1;
+		l = strlen(buf);
+		i = color_strlen(buf);
+
+		while(*cpos + i < usr->display->term_width-1)
+			Out_text(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
+
+		if (*cpos + i >= usr->display->term_width-1) {			/* 'partial put' of the remainder */
+			buf[color_index(buf, c - *cpos)] = 0;
+			Out_text(dev, usr, buf, cpos, lines, max_lines);
+		}
+		return 6+l;
 	}
 	if (!cstrnicmp(code, "<center>", 8)) {
 		code += 8;
-		i = (usr->display->term_width-1)/2 - color_strlen(code)/2 - *cpos;
+		if (!*code)
+			return 7;
+
+		c = strlen(code);
+		c = (c > PRINT_BUF) ? PRINT_BUF : c;
+		strncpy(buf, code, c - 1);
+		buf[c-1] = 0;
+
+		if ((p = cstrchr(buf, '\n')) != NULL)		/* don't go over newlines */
+			*p = 0;
+
+		i = (usr->display->term_width-1)/2 - color_strlen(buf)/2 - *cpos;
 		while(i > 0) {
 			write_StringIO(dev, " ", 1);
 			(*cpos)++;

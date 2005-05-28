@@ -97,6 +97,12 @@ void read_text(User *);
 void msg_header(User *);
 void state_more_text(User *, char);
 
+void read_scroll(User *);
+void state_scroll_text(User *, char);
+
+#define STATE_SCROLL_TEXT	state_scroll_text
+
+
 #endif	/* STATE_MSG_H_WJ99 */
 
 /* EOB */

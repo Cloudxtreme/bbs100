@@ -143,6 +143,7 @@ int i;
 	listdestroy_PList(usr->cmd_chain);
 
 	destroy_StringIO(usr->text);
+	listdestroy_PList(usr->scroll);
 	destroy_Display(usr->display);
 
 	Free(usr);

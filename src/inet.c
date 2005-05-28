@@ -320,7 +320,6 @@ char input_char[2];
 						highest_fd = c->sock + 1;
 					wait_for_input = 0;
 				}
-				debug_breakpoint();
 				if (c->input->pos < c->input->len) {
 					if ((err = read_StringIO(c->input, input_char, 1)) == 1)
 						c->conn_type->process(c, input_char[0]);

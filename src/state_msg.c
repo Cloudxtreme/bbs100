@@ -979,8 +979,7 @@ unsigned long msg_number;
 		}
 	}
 	POP(usr);
-	read_text(usr);
-
+	read_scroll(usr);
 	Return;
 }
 
@@ -2983,6 +2982,187 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 		}
 	} else
 		print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->message->mtime, date_buf), from);
+	Return;
+}
+
+void read_scroll(User *usr) {
+int pos, len;
+
+	Enter(read_scroll);
+
+	pos = 0;
+	seek_StringIO(usr->text, 0, STRINGIO_END);
+	len = tell_StringIO(usr->text);
+
+	listdestroy_PList(usr->scroll);
+	usr->scroll = usr->scrollp = new_PList(usr->text->buf);
+	if (usr->scroll == NULL) {
+		Perror(usr, "Out of memory");
+		RET(usr);
+		Return;
+	}
+	while(pos < len) {
+		usr->display->cpos = 0;
+		usr->display->line = 0;
+		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1);
+		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
+	}
+	usr->scroll = rewind_PList(usr->scroll);
+	usr->read_lines = 0;
+	usr->total_lines = list_Count(usr->scroll);
+
+	CALL(usr, STATE_SCROLL_TEXT);
+	Return;
+}
+
+/*
+	helper function for state_scroll_text()
+*/
+static void display_page(User *usr) {
+int l;
+
+	l = 0;
+	for(; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
+		usr->display->cpos = usr->display->line = 0;
+		Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
+		usr->read_lines++;
+		l++;
+	}
+}
+
+void state_scroll_text(User *usr, char c) {
+int l;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_scroll_text);
+
+	wipe_line(usr);
+	Put(usr, "<green>");
+
+	switch(c) {
+		case INIT_STATE:
+			if (usr->scroll == NULL) {
+				RET(usr);
+				Return;
+			}
+			usr->scrollp = usr->scroll;
+			usr->read_lines = 0;
+			display_page(usr);
+			usr->runtime_flags |= RTF_BUSY;
+			break;
+
+		case 'b':
+		case 'B':
+			for(l = 0; l < usr->display->term_height * 2; l++) {
+				if (usr->scrollp->prev != NULL) {
+					usr->scrollp = usr->scrollp->prev;
+					if (usr->read_lines)
+						usr->read_lines--;
+				} else {
+					if (l <= usr->display->term_height)
+						usr->scrollp = NULL;	/* user that's keeping 'b' pressed */
+					break;
+				}
+			}
+
+		case ' ':
+		case 'n':
+		case 'N':
+			display_page(usr);
+			break;
+
+		case KEY_RETURN:
+		case '+':
+		case '=':
+			usr->display->cpos = usr->display->line = 0;
+			Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
+			usr->scrollp = usr->scrollp->next;
+			break;
+
+		case KEY_BS:
+		case '-':
+		case '_':
+			for(l = 0; l < (usr->display->term_height+1); l++) {
+				if (usr->scrollp->prev != NULL) {
+					usr->scrollp = usr->scrollp->prev;
+					if (usr->read_lines > 0)
+						usr->read_lines--;
+				} else
+					break;
+			}
+			display_page(usr);
+			break;
+
+		case 'g':						/* goto beginning */
+			usr->scrollp = usr->scroll;
+			usr->read_lines = 0;
+			display_page(usr);
+			break;
+
+		case 'G':						/* goto end ; display last page */
+			if (usr->scrollp == NULL)
+				break;
+
+/* goto the end */
+			for(; usr->scrollp != NULL && usr->scrollp->next != NULL; usr->scrollp = usr->scrollp->next)
+				usr->read_lines++;
+
+/* go one screen back */
+			l = 0;
+			while(usr->scrollp != NULL && usr->scrollp->prev != NULL && l < usr->display->term_height) {
+				usr->scrollp = usr->scrollp->prev;
+				l++;
+			}
+			usr->read_lines -= l;
+
+			display_page(usr);
+			break;
+
+		case '/':						/* find */
+			if (usr->scrollp == NULL)
+				break;
+
+/*			CALL(usr, STATE_SCROLL_FIND_PROMPT);	*/
+			Return;
+
+		case '?':						/* find backwards */
+			if (usr->scrollp == NULL)
+				break;
+
+/*			CALL(usr, STATE_SCROLL_FINDBACK_PROMPT);	*/
+			Return;
+
+		case 'q':
+		case 'Q':
+		case 's':
+		case 'S':
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_ESC:
+			usr->scrollp = NULL;
+			break;
+
+		default:
+			Put(usr, "<green>Press <white><<yellow>space<white>><green> for next page, <white><<yellow>b<white>><green> for previous page, <white><<yellow>enter<white>><green> for next line\n");
+	}
+	if (usr->scrollp != NULL)
+		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
+			100 * usr->read_lines / usr->total_lines);
+	else {
+/*
+	Don't destroy in order to be able to reply to a message
+
+		destroy_Message(usr->message);
+		usr->message = NULL;
+*/
+		listdestroy_PList(usr->scroll);
+		usr->scroll = usr->scrollp = NULL;
+		free_StringIO(usr->text);
+		usr->read_lines = usr->total_lines = 0;
+		RET(usr);
+	}
 	Return;
 }
 
