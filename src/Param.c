@@ -165,6 +165,7 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_CYCLE_ROOMS,	"have_cycle_rooms",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_WRAPPER_ALL,	"have_wrapper_all",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_MEMCACHE,		"have_memcache",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_FILECACHE,		"have_filecache",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_DISABLED_MSG,	"have_disabled_msg",PARAM_TRUE);
 
 	return 0;

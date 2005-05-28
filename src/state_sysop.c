@@ -2787,11 +2787,17 @@ void state_param_notify_leave_chat(User *usr, char c) {
 }
 
 
-#define TOGGLE_FEATURE(x, y)	(x) ^= PARAM_TRUE;	\
-	Print(usr, "<white>%s %s\n", ((x) == PARAM_FALSE) ? "Disabling" : "Enabling", (y));		\
-	usr->runtime_flags |= RTF_PARAM_EDITED;			\
-	CURRENT_STATE(usr);								\
-	Return
+#define TOGGLE_FEAT(x, y)	do {	\
+		(x) ^= PARAM_TRUE;			\
+		Print(usr, "<white>%s %s\n", ((x) == PARAM_FALSE) ? "Disabling" : "Enabling", (y));		\
+		usr->runtime_flags |= RTF_PARAM_EDITED;		\
+		CURRENT_STATE(usr);			\
+	} while(0)
+
+#define TOGGLE_FEATURE(x, y)	do {	\
+		TOGGLE_FEAT((x), (y));			\
+		Return;							\
+	} while(0)
 
 void state_features_menu(User *usr, char c) {
 	if (usr == NULL)
@@ -2840,12 +2846,13 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"C<hotkey>ycle unread rooms    <white>%-3s<magenta>        Wrapper a<hotkey>pply to All  <white>%s<magenta>\n"
-				"Cache memory o<hotkey>bjects  <white>%-3s<magenta>\n"
+				"O<hotkey>bject cache          <white>%-3s<magenta>        F<hotkey>ile cache            <white>%s<magenta>\n"
 				"<hotkey>Display warnings      <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CYCLE_ROOMS == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_MEMCACHE == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_FILECACHE == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			break;
@@ -2933,15 +2940,24 @@ void state_features_menu(User *usr, char c) {
 
 		case 'y':
 		case 'Y':
-			TOGGLE_FEATURE(PARAM_HAVE_CYCLE_ROOMS, "cycle unread rooms");
+			TOGGLE_FEATURE(PARAM_HAVE_CYCLE_ROOMS, "Cycle unread rooms");
 
 		case 'p':
 		case 'P':
-			TOGGLE_FEATURE(PARAM_HAVE_WRAPPER_ALL, "wrapper apply to All");
+			TOGGLE_FEATURE(PARAM_HAVE_WRAPPER_ALL, "Wrapper apply to All");
 
 		case 'b':
 		case 'B':
-			TOGGLE_FEATURE(PARAM_HAVE_MEMCACHE, "cache memory objects");
+			TOGGLE_FEATURE(PARAM_HAVE_MEMCACHE, "Object cache");
+
+		case 'i':
+		case 'I':
+			TOGGLE_FEAT(PARAM_HAVE_FILECACHE, "File cache");
+			if (PARAM_HAVE_FILECACHE == PARAM_FALSE)
+				deinit_FileCache();
+			else
+				init_FileCache();
+			Return;
 
 		case 'd':
 		case 'D':

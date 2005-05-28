@@ -52,7 +52,7 @@ Timer *expire_timer = NULL;
 
 
 int init_FileCache(void) {
-	if (!PARAM_MAX_CACHED)			/* apparently, this site wants no cache at all */
+	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE)
 		return 0;
 
 	if ((file_cache = (CachedFile **)Malloc(PARAM_MAX_CACHED * sizeof(CachedFile *), TYPE_POINTER)) == NULL)
@@ -87,7 +87,7 @@ void deinit_FileCache(void) {
 }
 
 CachedFile *new_CachedFile(void) {
-	if (!PARAM_MAX_CACHED)		/* we don't want a cache */
+	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE)
 		return NULL;
 
 	return (CachedFile *)Malloc(sizeof(CachedFile), TYPE_CACHEDFILE);
@@ -387,7 +387,7 @@ void add_Cache(File *f) {
 int addr;
 CachedFile *cf;
 
-	if (!PARAM_MAX_CACHED
+	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE
 		|| f == NULL || f->filename == NULL || file_cache == NULL
 		|| (addr = filecache_hash_addr(f->filename)) == -1
 		|| (cf = new_CachedFile()) == NULL)
@@ -458,7 +458,7 @@ int resize_Cache(void) {
 CachedFile **new_fc, *cf, *cf_next;
 int old_size, i, addr, n;
 
-	if (!PARAM_MAX_CACHED) {				/* resized to 0 */
+	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE) {		/* resized to 0 */
 		deinit_FileCache();
 		return 0;
 	}

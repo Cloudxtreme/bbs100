@@ -5,6 +5,8 @@ Changes as of May 28th 2005
   enabling backwards compatibility for future versions
 - PARAM_HAVE_MEMCACHE controls whether you want Malloc() to use a freelist
   or not
+- PARAM_HAVE_FILECACHE controls whether you want files to be cached
+  note that PARAM_MAX_CACHED also can be 0 to disable caching
 
 Changes as of May 20th 2005
 - '{' displays credits
