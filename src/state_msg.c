@@ -979,7 +979,7 @@ unsigned long msg_number;
 		}
 	}
 	POP(usr);
-	read_scroll(usr);
+	read_text(usr);
 	Return;
 }
 
@@ -2741,172 +2741,6 @@ User *u;
 	Return;
 }
 
-void read_text(User *usr) {
-	Enter(read_text);
-
-	rewind_StringIO(usr->text);
-	usr->read_lines = 0;
-	usr->total_lines = 1;
-
-	CALL(usr, STATE_MORE_TEXT);
-
-	Return;
-}
-
-void state_more_text(User *usr, char c) {
-int l;
-StringList *sl;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_more_text);
-
-	wipe_line(usr);
-	Put(usr, "<green>");
-
-	switch(c) {
-		case INIT_STATE:
-			if (usr->text == NULL) {
-				RET(usr);
-				Return;
-			}
-			usr->text->pos = Out(usr, usr->text->buf);
-			usr->read_lines = 0;
-
-			usr->runtime_flags |= RTF_BUSY;
-			break;
-
-		case 'b':
-		case 'B':
-			for(l = 0; l < (usr->display->term_height * 2); l++) {
-				if (usr->textp->prev != NULL) {
-					usr->textp = usr->textp->prev;
-					if (usr->read_lines)
-						usr->read_lines--;
-				} else {
-					if (l <= usr->display->term_height)
-						l = -1;			/* user that's keeping 'b' pressed */
-					break;
-				}
-			}
-			if (l == -1) {				/* so bail out of the --More-- prompt */
-				usr->textp = NULL;
-				break;
-			}
-
-		case ' ':
-		case 'n':
-		case 'N':
-			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos);
-			break;
-
-		case KEY_RETURN:
-		case '+':
-		case '=':
-			usr->text->pos += Out(usr, usr->text->buf + usr->text->pos);
-			break;
-
-		case KEY_BS:
-		case '-':
-		case '_':
-			for(l = 0; l < (usr->display->term_height+1); l++) {
-				if (usr->textp->prev != NULL) {
-					usr->textp = usr->textp->prev;
-					if (usr->read_lines)
-						usr->read_lines--;
-				} else
-					break;
-			}
-			for(l = 0; l < usr->display->term_height-1; l++) {
-				if (usr->textp != NULL) {
-					Out(usr, usr->textp->str);
-					Out(usr, "\n");
-				} else
-					break;
-				usr->read_lines++;
-				usr->textp = usr->textp->next;
-			}
-			break;
-
-		case 'g':						/* goto beginning */
-			usr->text->pos = Out(usr, usr->text->buf);
-			usr->read_lines = 0;
-			break;
-
-		case 'G':						/* goto end ; display last page */
-			if (usr->textp == NULL)
-				break;
-
-/* goto the end */
-			for(sl = usr->textp; sl != NULL && sl->next != NULL; sl = sl->next)
-				usr->read_lines++;
-
-/* go one screen back */
-			l = 0;
-			while(sl != NULL && sl->prev != NULL && l < usr->display->term_height) {
-				sl = sl->prev;
-				l++;
-			}
-			usr->textp = sl;
-			usr->read_lines -= l;
-
-/* display it */
-			for(l = 0; l < usr->display->term_height-1; l++) {
-				if (usr->textp != NULL) {
-					Out(usr, usr->textp->str);
-					Out(usr, "\n");
-				} else
-					break;
-				usr->read_lines++;
-				usr->textp = usr->textp->next;
-			}
-			break;
-
-		case '/':						/* find */
-			if (usr->textp == NULL)
-				break;
-
-			CALL(usr, STATE_MORE_FIND_PROMPT);
-			Return;
-
-		case '?':						/* find backwards */
-			if (usr->textp == NULL)
-				break;
-
-			CALL(usr, STATE_MORE_FINDBACK_PROMPT);
-			Return;
-
-		case 'q':
-		case 'Q':
-		case 's':
-		case 'S':
-		case KEY_CTRL('C'):
-		case KEY_CTRL('D'):
-		case KEY_ESC:
-			usr->text->pos = usr->text->len;
-			break;
-
-		default:
-			Put(usr, "<green>Press <white><<yellow>space<white>><green> for next page, <white><<yellow>b<white>><green> for previous page, <white><<yellow>enter<white>><green> for next line\n");
-	}
-	if (usr->text->pos < usr->text->len)
-		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
-			100 * usr->read_lines / usr->total_lines);
-	else {
-/*
-	Don't destroy in order to be able to reply to a message
-
-		destroy_Message(usr->message);
-		usr->message = NULL;
-*/
-		free_StringIO(usr->text);
-		usr->read_lines = usr->total_lines = 0;
-		RET(usr);
-	}
-	Return;
-}
-
 void msg_header(User *usr) {
 char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
@@ -2985,10 +2819,10 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 	Return;
 }
 
-void read_scroll(User *usr) {
+void read_text(User *usr) {
 int pos, len;
 
-	Enter(read_scroll);
+	Enter(read_text);
 
 	pos = 0;
 	seek_StringIO(usr->text, 0, STRINGIO_END);

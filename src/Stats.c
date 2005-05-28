@@ -456,7 +456,7 @@ int updated = 0;
 }
 
 void print_stats(User *usr) {
-char buf[PRINT_BUF], copyright_buf[2*MAX_LINE], date_buf[MAX_LINE], *p;
+char copyright_buf[2*MAX_LINE], date_buf[MAX_LINE];
 int l, w;
 unsigned long num;
 
@@ -467,58 +467,43 @@ unsigned long num;
 
 	update_stats(usr);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	} else
+		free_StringIO(usr->text);
 
-	sprintf(buf, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
+	print_StringIO(usr->text, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
 		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf));
-	cstrip_line(buf);
-	debug_breakpoint();
 
-/* kludge for newlines :P */
-	if ((p = cstrchr(buf, '\n')) != NULL) {
-		*p = 0;
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-		p++;
-		memmove(buf, p, strlen(p)+1);
-	}
-	usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-
-	usr->more_text = add_String(&usr->more_text,
-		"<green>The system was last booted on <cyan>%s", print_date(usr, stats.uptime, date_buf));
-	usr->more_text = add_String(&usr->more_text,
-		"<green>Uptime is <yellow>%s", print_total_time(usr, rtc - stats.uptime, date_buf));
-	usr->more_text = add_String(&usr->more_text,
-		"<yellow>%s<green> successful login%s made since boot time",
+	print_StringIO(usr->text, "<green>The system was last booted on <cyan>%s\n", print_date(usr, stats.uptime, date_buf));
+	print_StringIO(usr->text, "<green>Uptime is <yellow>%s\n", print_total_time(usr, rtc - stats.uptime, date_buf));
+	print_StringIO(usr->text, "<yellow>%s<green> successful login%s made since boot time\n",
 		print_number(usr, stats.num_logins, date_buf), (stats.num_logins == 1UL) ? "" : "s");
 
 	if (reboot_timer != NULL)
-		usr->more_text = add_StringList(&usr->more_text, new_StringList("<red>The system is rebooting"));
+		put_StringIO(usr->text, "<red>The system is rebooting\n");
 	if (shutdown_timer != NULL)
-		usr->more_text = add_StringList(&usr->more_text, new_StringList("<red>The system is shutting down"));
+		put_StringIO(usr->text, "<red>The system is shutting down\n");
 
 	if (usr->runtime_flags & RTF_SYSOP) {
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
+		put_StringIO(usr->text, "\n");
 
-		l =  sprintf(buf,   "<green>Cache size: <yellow>%s", print_number(usr, cache_size, date_buf));
-		l += sprintf(buf+l, "<white>/<yellow>%s<green>   ", print_number(usr, num_cached, date_buf));
-		l += sprintf(buf+l, "hits: <yellow>%s<green>   ", print_number(usr, stats.cache_hit, date_buf));
-		l += sprintf(buf+l, "misses: <yellow>%s<green>   ", print_number(usr, stats.cache_miss, date_buf));
+		print_StringIO(usr->text, "<green>Cache size: <yellow>%s", print_number(usr, cache_size, date_buf));
+		print_StringIO(usr->text, "<white>/<yellow>%s<green>   ", print_number(usr, num_cached, date_buf));
+		print_StringIO(usr->text, "hits: <yellow>%s<green>   ", print_number(usr, stats.cache_hit, date_buf));
+		print_StringIO(usr->text, "misses: <yellow>%s<green>   ", print_number(usr, stats.cache_miss, date_buf));
 		if ((stats.cache_hit + stats.cache_miss) > 0)
-			sprintf(buf+l, "rate: <yellow>%lu<white>%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
+			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
 		else
-			sprintf(buf+l, "rate: <yellow>%lu<white>%%", 0UL);
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 0UL);
 
-		usr->more_text = add_String(&usr->more_text, "<green>Total memory in use: <yellow>%s <green>bytes", print_number(usr, memory_total, date_buf));
+		print_StringIO(usr->text, "\n<green>Total memory in use: <yellow>%s <green>bytes\n", print_number(usr, memory_total, date_buf));
 	}
-	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
-	usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>User statistics"));
+	print_StringIO(usr->text, "\n<yellow>User statistics\n");
 
-	usr->more_text = add_String(&usr->more_text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
-	usr->more_text = add_String(&usr->more_text, "<green>Oldest user is <white>%s<green>,", stats.oldest);
-	usr->more_text = add_String(&usr->more_text, "online for <yellow>%s", print_total_time(usr, stats.oldest_age, date_buf));
-	usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
+	print_StringIO(usr->text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s\n", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
+	print_StringIO(usr->text, "<green>Oldest user is <white>%s<green>, online for <yellow>%s\n", stats.oldest, print_total_time(usr, stats.oldest_age, date_buf));
 
 /*
 	determine width of next block of text
@@ -542,60 +527,52 @@ unsigned long num;
 	if ((l = strlen(stats.most_read)) > w)
 		w = l;
 
-	usr->more_text = add_String(&usr->more_text, "<green>Most logins are by                     <white>%-*s<green> : <yellow>%s", w, stats.most_logins, print_number(usr, stats.logins, date_buf));
+	print_StringIO(usr->text, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(usr, stats.logins, date_buf));
 	if (PARAM_HAVE_XMSGS) {
-		usr->more_text = add_String(&usr->more_text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s", w, stats.most_xsent, print_number(usr, stats.xsent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s", w, stats.most_xrecv, print_number(usr, stats.xrecv, date_buf));
+		print_StringIO(usr->text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(usr, stats.xsent, date_buf));
+		print_StringIO(usr->text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(usr, stats.xrecv, date_buf));
 	}
 	if (PARAM_HAVE_EMOTES) {
-		usr->more_text = add_String(&usr->more_text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s", w, stats.most_esent, print_number(usr, stats.esent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s", w, stats.most_erecv, print_number(usr, stats.erecv, date_buf));
+		print_StringIO(usr->text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(usr, stats.esent, date_buf));
+		print_StringIO(usr->text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(usr, stats.erecv, date_buf));
 	}
 	if (PARAM_HAVE_FEELINGS) {
-		usr->more_text = add_String(&usr->more_text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s", w, stats.most_fsent, print_number(usr, stats.fsent, date_buf));
-		usr->more_text = add_String(&usr->more_text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s", w, stats.most_frecv, print_number(usr, stats.frecv, date_buf));
+		print_StringIO(usr->text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(usr, stats.fsent, date_buf));
+		print_StringIO(usr->text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(usr, stats.frecv, date_buf));
 	}
-	usr->more_text = add_String(&usr->more_text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s", w, stats.most_posted, print_number(usr, stats.posted, date_buf));
-	usr->more_text = add_String(&usr->more_text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s", w, stats.most_read, print_number(usr, stats.read, date_buf));
+	print_StringIO(usr->text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(usr, stats.posted, date_buf));
+	print_StringIO(usr->text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(usr, stats.read, date_buf));
 
 	if (!is_guest(usr->name)) {
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
-		usr->more_text = add_StringList(&usr->more_text, new_StringList("<yellow>Your statistics"));
+		put_StringIO(usr->text, "\n<yellow>Your statistics\n");
 
 		if (PARAM_HAVE_XMSGS) {
-			l  = sprintf(buf, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr, usr->xsent, date_buf));
-			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr, usr->xrecv, date_buf));
-			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+			print_StringIO(usr->text, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr, usr->xsent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->xrecv, date_buf));
 		}
 		if (PARAM_HAVE_EMOTES) {
-			l = sprintf(buf, "<green>Emotes sent          : <yellow>%-15s", print_number(usr, usr->esent, date_buf));
-			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr, usr->erecv, date_buf));
-			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+			print_StringIO(usr->text, "<green>Emotes sent          : <yellow>%-15s", print_number(usr, usr->esent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->erecv, date_buf));
 		}
 		if (PARAM_HAVE_FEELINGS) {
-			l = sprintf(buf, "<green>Feelings sent        : <yellow>%-15s", print_number(usr, usr->fsent, date_buf));
-			sprintf(buf+l, "<green> received: <yellow>%s", print_number(usr, usr->frecv, date_buf));
-			usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+			print_StringIO(usr->text, "<green>Feelings sent        : <yellow>%-15s", print_number(usr, usr->fsent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->frecv, date_buf));
 		}
-		l = sprintf(buf, "<green>Messages posted      : <yellow>%-15s", print_number(usr, usr->posted, date_buf));
-		sprintf(buf+l, "<green> read    : <yellow>%s", print_number(usr, usr->read, date_buf));
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+		print_StringIO(usr->text, "<green>Messages posted      : <yellow>%-15s", print_number(usr, usr->posted, date_buf));
+		print_StringIO(usr->text, "<green> read    : <yellow>%s\n", print_number(usr, usr->read, date_buf));
 
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
-
-		usr->more_text = add_String(&usr->more_text, "<green>Account created on <cyan>%s<green>", print_date(usr, usr->birth, date_buf));
-		l = sprintf(buf, "You have logged on <yellow>%s<green> times, ", print_number(usr, usr->logins, date_buf));
+		print_StringIO(usr->text, "\n<green>Account created on <cyan>%s<green>\n", print_date(usr, usr->birth, date_buf));
+		print_StringIO(usr->text, "You have logged on <yellow>%s<green> times, ", print_number(usr, usr->logins, date_buf));
 
 		num = (unsigned long)((rtc - usr->birth) / (unsigned long)(30 * SECS_IN_DAY));
 		if (num == 0UL)
 			num = 1UL;
 		num = usr->logins / num;
 
-		sprintf(buf+l, "an average of <yellow>%s<green> time%s per month", print_number(usr, num, date_buf), (num == 1UL) ? "" : "s");
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-		usr->more_text = add_String(&usr->more_text, "Your total online time is <yellow>%s", print_total_time(usr, usr->total_time, date_buf));
+		print_StringIO(usr->text, "an average of <yellow>%s<green> time%s per month\n", print_number(usr, num, date_buf), (num == 1UL) ? "" : "s");
+		print_StringIO(usr->text, "Your total online time is <yellow>%s\n", print_total_time(usr, usr->total_time, date_buf));
 	}
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 
