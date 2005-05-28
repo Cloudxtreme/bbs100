@@ -8,6 +8,7 @@ Changes as of May 28th 2005
 - PARAM_HAVE_FILECACHE controls whether you want files to be cached
   note that PARAM_MAX_CACHED also can be 0 to disable caching
 - option: always show hotkeys in uppercase
+- only relevant DST_Transitions are loaded; this saves memory
 
 Changes as of May 20th 2005
 - '{' displays credits
