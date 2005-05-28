@@ -27,8 +27,7 @@
 #ifndef _CSTRING_H_WJ97
 #define _CSTRING_H_WJ97 1
 
-#include <config.h>
-
+#include "config.h"
 #include "defines.h"
 #include "memset.h"
 

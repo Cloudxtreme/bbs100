@@ -2840,10 +2840,12 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"C<hotkey>ycle unread rooms    <white>%-3s<magenta>        Wrapper a<hotkey>pply to All  <white>%s<magenta>\n"
+				"Cache memory o<hotkey>bjects  <white>%-3s<magenta>\n"
 				"<hotkey>Display warnings      <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CYCLE_ROOMS == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_MEMCACHE == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			break;
@@ -2933,13 +2935,17 @@ void state_features_menu(User *usr, char c) {
 		case 'Y':
 			TOGGLE_FEATURE(PARAM_HAVE_CYCLE_ROOMS, "cycle unread rooms");
 
-		case 'd':
-		case 'D':
-			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
-
 		case 'p':
 		case 'P':
 			TOGGLE_FEATURE(PARAM_HAVE_WRAPPER_ALL, "wrapper apply to All");
+
+		case 'b':
+		case 'B':
+			TOGGLE_FEATURE(PARAM_HAVE_MEMCACHE, "cache memory objects");
+
+		case 'd':
+		case 'D':
+			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
 	Return;

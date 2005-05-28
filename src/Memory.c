@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "Memory.h"
+#include "Param.h"
 #include "memset.h"
 #include "log.h"
 
@@ -50,8 +51,8 @@ int init_Memory(void) {
 /*
 	get something from the freelist
 */
-static char *get_freelist(int memtype) {
-char *mem;
+static void *get_freelist(int memtype) {
+void *mem;
 int n;
 
 	for(n = 0; n < NUM_FREELIST; n++) {
@@ -67,8 +68,11 @@ int n;
 /*
 	put something on the freelist
 */
-static int put_freelist(char *mem, int memtype) {
+static int put_freelist(void *mem, int memtype) {
 int n;
+
+	if (param != NULL && PARAM_HAVE_MEMCACHE == PARAM_FALSE)
+		return -1;
 
 	for(n = 0; n < NUM_FREELIST; n++) {
 		if (free_list[memtype].free[n] == NULL) {
@@ -89,7 +93,7 @@ int n;
 	Malloc() first checks the free_list for quick allocation
 */
 void *Malloc(unsigned long size, int memtype) {
-char *mem;
+void *mem;
 
 	if (size <= 0)
 		return NULL;
@@ -140,7 +144,7 @@ unsigned long *mem, size;
 	}
 	mem[1] &= 0xff;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
-		if (mem[0] == 1UL && !put_freelist((char *)mem, mem[1]))
+		if (mem[0] == 1UL && !put_freelist(mem, ((int *)mem)[1]))
 			return;
 
 		size = mem[0] * Types_table[mem[1]].size;

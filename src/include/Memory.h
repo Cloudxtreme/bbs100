@@ -28,7 +28,7 @@
 #define NUM_FREELIST	5
 
 typedef struct {
-	char *free[NUM_FREELIST];
+	void *free[NUM_FREELIST];
 } MemFreeList;
 
 extern unsigned long memory_total;

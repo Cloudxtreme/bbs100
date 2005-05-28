@@ -101,6 +101,7 @@ have_language           yes
 have_category           yes
 have_cycle_rooms        yes
 have_wrapper_all        yes
+have_memcache           yes
 have_disabled_msg       yes
 
 # EOB

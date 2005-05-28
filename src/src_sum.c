@@ -27,6 +27,7 @@
 #include "mydirentry.h"
 #include "copyright.h"
 #include "source_sum.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>
