@@ -371,6 +371,10 @@ int i;
 */
 	tz->curr_idx = tz->next_idx = 0;
 	if (tzh_timecnt > 1) {
+		int n;
+		unsigned long in_two_years;
+		DST_Transition *trans;
+
 		tz->next_idx = 1;
 
 /* rtc is 'now' */
@@ -380,6 +384,29 @@ int i;
 		}
 		if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
 			tz->next_idx = tz->curr_idx;
+/*
+	at this moment, all DST transitions are resident in memory
+	the zoneinfo files have a habit of storing every single transition
+	since the last ice age, so I'm going to free up some memory
+	I'm only interested in the transitions for the next 2 years to come
+	(anyone running bbs100 with an uptime of more than 2 years will
+	have the chance to see the clock fail ;)
+*/
+		n = tz->curr_idx;
+		in_two_years = rtc + 2 * 52 * SECS_IN_WEEK;
+		while(n < tzh_timecnt && tz->transitions[n].when <= in_two_years)
+			n++;
+
+		n = n - tz->curr_idx + 1;
+		if ((trans = (DST_Transition *)Malloc(n * sizeof(DST_Transition), TYPE_DST_TRANS)) != NULL) {
+			memcpy(trans, &tz->transitions[tz->curr_idx], n * sizeof(DST_Transition));
+			Free(tz->transitions);
+			tz->transitions = trans;
+			tz->num_trans = n;
+			tz->curr_idx = 0;
+			n--;
+			tz->next_idx -= n;
+		}
 	}											/* else we have only 1 entry */
 	if (add_Hash(tz_hash, name, tz, (void (*)(void *))destroy_Timezone) == -1) {
 		log_err("load_Timezone(): failed to add new Timezone to tz_hash");
