@@ -76,7 +76,8 @@
 #define USR_HIDE_ADDRESS		0x10000		/* hide address info from non-friends */
 #define USR_HIDE_INFO			0x20000		/* hide profile info from enemies */
 #define USR_FORCE_TERM			0x40000		/* force terminal width and height */
-#define USR_ALL					0x7ffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_UPPERCASE_HOTKEYS	0x80000		/* hotkeys always displayed in uppercase */
+#define USR_ALL					0xfffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */

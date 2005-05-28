@@ -7,6 +7,7 @@ Changes as of May 28th 2005
   or not
 - PARAM_HAVE_FILECACHE controls whether you want files to be cached
   note that PARAM_MAX_CACHED also can be 0 to disable caching
+- option: always show hotkeys in uppercase
 
 Changes as of May 20th 2005
 - '{' displays credits

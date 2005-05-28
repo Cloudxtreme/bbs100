@@ -1168,6 +1168,14 @@ void state_config_who_sysop(User *usr, char c) {
 }
 
 
+#define CONFIG_OPTION(x, y)		do {				\
+		Print(usr, "%s\n", (y));					\
+		usr->flags ^= (x);							\
+		usr->runtime_flags |= RTF_CONFIG_EDITED;	\
+		CURRENT_STATE(usr);							\
+		Return;										\
+	} while(0)
+
 void state_config_options(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -1191,16 +1199,18 @@ void state_config_options(User *usr, char c) {
 			);
 			Print(usr, "\n"
 				"<hotkey>Rooms beep on new postings           <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
+				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n",
 
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No"
 			);
 			Print(usr, "\n"
 				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
 				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
 				"\n"
-				"Hackers m<hotkey>0de                         <white>%s<magenta>\n",
+				"Hackerz m<hotkey>0de                         <white>%s<magenta>\n",
 
 				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No",
 				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No",
@@ -1219,11 +1229,7 @@ void state_config_options(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			Put(usr, "Beep\n");
-			usr->flags ^= USR_BEEP;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_BEEP, "Beep");
 
 		case 'm':
 		case 'M':
@@ -1243,50 +1249,30 @@ void state_config_options(User *usr, char c) {
 
 		case 'h':
 		case 'H':
-			Put(usr, "Hold message mode when busy\n");
-			usr->flags ^= USR_HOLD_BUSY;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_HOLD_BUSY, "Hold message mode when busy");
 
 		case 'r':
 		case 'R':
-			Put(usr, "Beep on new postings\n");
-			usr->flags ^= USR_ROOMBEEP;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_ROOMBEEP, "Beep on new postings");
 
 		case 'n':
 		case 'N':
-			Put(usr, "Show room number\n");
-			usr->flags ^= USR_ROOMNUMBERS;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_ROOMNUMBERS, "Show room number");
+
+		case 'u':
+		case 'U':
+			CONFIG_OPTION(USR_UPPERCASE_HOTKEYS, "Uppercase hotkeys");
 
 		case 'a':
 		case 'A':
-			Put(usr, "Hide address information\n");
-			usr->flags ^= USR_HIDE_ADDRESS;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_HIDE_ADDRESS, "Hide address information");
 
 		case 'p':
 		case 'P':
-			Put(usr, "Hide profile information\n");
-			usr->flags ^= USR_HIDE_INFO;
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_HIDE_INFO, "Hide profile information");
 
 		case '0':
-			usr->flags ^= USR_HACKERZ;
-			Put(usr, "Hackers mode\n");
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_HACKERZ, "Hackerz mode");
 	}
 	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Options<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;

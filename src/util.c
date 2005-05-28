@@ -149,14 +149,19 @@ int pos, n;
 				if (!*str)
 					break;
 
+				if (usr->flags & USR_UPPERCASE_HOTKEYS)
+					c = ctoupper(*str);
+				else
+					c = *str;
+
 				if (usr->flags & USR_ANSI) {
 					if (usr->flags & USR_BOLD)
-						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
+						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
 					else
-						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, *str, usr->color);
+						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
 					(*cpos)++;
 				} else {
-					sprintf(buf, "<%c>", *str);
+					sprintf(buf, "<%c>", c);
 					*cpos += 3;
 				}
 				put_StringIO(dev, buf);
@@ -434,6 +439,9 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		c = code[8];
 		if (!c)
 			return 7;
+
+		if (usr->flags & USR_UPPERCASE_HOTKEYS)
+			c = ctoupper(c);
 
 		if (usr->flags & USR_ANSI) {
 			if (usr->flags & USR_BOLD)
