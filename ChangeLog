@@ -1,6 +1,7 @@
 Changes as of May 28th 2005
 - --More-- prompt reads StringIO text and knows about terminal width
 - fixes in hline and center code (for the thousandth time)
+- load_xxx_version1() FF1_LOAD_UNKNOWN now ignores unknown keywords
 
 Changes as of May 20th 2005
 - '{' displays credits

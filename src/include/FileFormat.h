@@ -124,10 +124,7 @@
 		continue;														\
 	}
 
-#define FF1_LOAD_UNKNOWN	do {	\
-		log_err("%s(): unknown keyword '%s'", __FUNCTION__, buf);	\
-		FF1_ERROR;	\
-	} while(0)
+#define FF1_LOAD_UNKNOWN	log_warn("%s(): unknown keyword '%s', ignored", __FUNCTION__, buf)
 
 
 /*
