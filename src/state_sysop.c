@@ -2235,16 +2235,16 @@ StringList *sl;
 			usr->runtime_flags |= RTF_BUSY;
 
 			Put(usr, "<magenta>\n"
-				"<hotkey>1 Reload login screen             <hotkey>6 Reload first login screen\n"
-				"<hotkey>2 Reload logout screen            <hotkey>7 Reload standard help\n"
-				"<hotkey>3 Reload motd screen              <hotkey>8 Reload config menu help\n"
+				"Reload log<hotkey>in screen             Reload <hotkey>1st login screen\n"
+				"Reload log<hotkey>out screen            Reload <hotkey>user help\n"
+				"Reload <hotkey>motd screen              Reload <hotkey>config menu help\n"
 			);
 			Put(usr,
-				"<hotkey>4 Reload credits screen           <hotkey>9 Reload room config menu help\n"
-				"<hotkey>5 Reload crash screen             <hotkey>0 Reload sysop menu help\n"
+				"Reload cr<hotkey>edits screen           Reload <hotkey>room config menu help\n"
+				"Reload cr<hotkey>ash screen             Reload <hotkey>sysop menu help\n"
 				"\n"
-				"<hotkey>g Reload GPL                      <hotkey>l Reload local mods\n"
-				"<hotkey>h Reload hostmap                  <hotkey>f Reload feelings\n"
+				"Reload <hotkey>GPL                      Reload <hotkey>local mods\n"
+				"Reload <hotkey>hostmap                  Reload <hotkey>feelings\n"
 			);
 			break;
 
@@ -2272,46 +2272,55 @@ StringList *sl;
 	CURRENT_STATE(usr);												\
 	Return
 
-		case '1':
+		case 'i':
+		case 'I':
 			Put(usr, "Reload login screen\n");
 			RELOAD_FILE(PARAM_LOGIN_SCREEN, login_screen);
 
-		case '2':
+		case 'o':
+		case 'O':
 			Put(usr, "Reload logout screen\n");
 			RELOAD_FILE(PARAM_LOGOUT_SCREEN, logout_screen);
 
-		case '3':
+		case 'm':
+		case 'M':
 			Put(usr, "Reload motd\n");
 			RELOAD_FILE(PARAM_MOTD_SCREEN, motd_screen);
 
-		case '4':
+		case 'e':
+		case 'E':
 			Put(usr, "Reload credits screen\n");
 			UNCACHE_FILE(PARAM_CREDITS_SCREEN);
 /*
 	the crash screen is not cached
 	(just in case the cache becomes corrupted as well)
 */
-		case '5':
+		case 'a':
+		case 'A':
 			Put(usr, "Reload crash screen\n");
 			RELOAD_FILE(PARAM_CRASH_SCREEN, crash_screen);
 
-		case '6':
-			Put(usr, "Reload first login screen\n");
+		case '1':
+			Put(usr, "Reload 1st login screen\n");
 			UNCACHE_FILE(PARAM_FIRST_LOGIN);
 
-		case '7':
-			Put(usr, "Reload standard help\n");
+		case 'u':
+		case 'U':
+			Put(usr, "Reload user help\n");
 			UNCACHE_FILE(PARAM_HELP_STD);
 
-		case '8':
+		case 'c':
+		case 'C':
 			Put(usr, "Reload config menu help\n");
 			UNCACHE_FILE(PARAM_HELP_CONFIG);
 
-		case '9':
+		case 'r':
+		case 'R':
 			Put(usr, "Reload room config menu help\n");
 			UNCACHE_FILE(PARAM_HELP_ROOMCONFIG);
 
-		case '0':
+		case 's':
+		case 'S':
 			Put(usr, "Reload sysop menu help\n");
 			UNCACHE_FILE(PARAM_HELP_SYSOP);
 
@@ -2329,9 +2338,9 @@ StringList *sl;
 		case 'f':
 		case 'F':
 			Put(usr, "Reload feelings\n");
-			if (init_Feelings()) {
+			if (init_Feelings())
 				Perror(usr, "Failed to load Feelings");
-			} else
+			else
 				Print(usr, "loading feelings from %s ... Ok\n", PARAM_FEELINGSDIR);
 
 			CURRENT_STATE(usr);
@@ -2340,9 +2349,9 @@ StringList *sl;
 		case 'h':
 		case 'H':
 			Put(usr, "Reload hostmap\n");
-			if (load_HostMap(PARAM_HOSTMAP_FILE)) {
+			if (load_HostMap(PARAM_HOSTMAP_FILE))
 				Perror(usr, "Failed to load hostmap");
-			} else
+			else
 				Print(usr, "loading %s ... Ok\n", PARAM_HOSTMAP_FILE);
 
 			CURRENT_STATE(usr);
