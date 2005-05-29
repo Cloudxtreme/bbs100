@@ -1,3 +1,6 @@
+Changes as of May 29th 2005
+- Feelings are now cached files rather than always resident
+
 Changes as of May 28th 2005
 - --More-- prompt reads StringIO text and knows about terminal width
 - fixes in hline and center code (for the thousandth time)

@@ -1941,6 +1941,8 @@ int r;
 	if (r == EDIT_RETURN) {
 		BufferedMsg *msg;
 		KVPair *f;
+		File *file;
+		char *filename;
 		int num;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
@@ -1980,12 +1982,27 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->msg = copy_StringList((StringList *)KVPair_getpointer(f))) == NULL) {
+		if ((filename = (char *)KVPair_getpointer(f)) == NULL) {
+			destroy_BufferedMsg(msg);
+			Perror(usr, "This feeling has vanished");
+			RET(usr);
+			Return;
+		}
+		if ((file = Fopen(filename)) == NULL) {
+			destroy_BufferedMsg(msg);
+			Perror(usr, "The feeling has passed");
+			RET(usr);
+			Return;
+		}
+		if ((msg->msg = Fgetlist(file)) == NULL) {
+			Fclose(file);
 			destroy_BufferedMsg(msg);
 			Perror(usr, "Out of memory");
 			RET(usr);
 			Return;
 		}
+		Fclose(file);
+
 		strcpy(msg->from, usr->name);
 		msg->mtime = rtc;
 

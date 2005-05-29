@@ -41,27 +41,23 @@ KVPair *feelings = NULL;
 StringList *feelings_screen = NULL;
 
 
-static void destroy_Feeling(void *v) {
-	listdestroy_StringList(v);
-}
-
+/*
+	this does not really 'load' the Feeling; it only sets the filename
+	so we know where to find the Feeling file
+*/
 KVPair *load_Feeling(char *filename) {
 KVPair *kv;
-StringList *sl;
 char *p;
 
 	if ((kv = new_KVPair()) == NULL)
 		return NULL;
 
-	if ((sl = load_StringList(filename)) == NULL) {
-		destroy_KVPair(kv);
-		return NULL;
-	}
-	if ((p = cstrrchr(filename, '/')) != NULL) {
+	if ((p = cstrrchr(filename, '/')) != NULL)
 		p++;
-		KVPair_setpointer(kv, p, sl, destroy_Feeling);
-	} else
-		KVPair_setpointer(kv, filename, sl, destroy_Feeling);
+	else
+		p = filename;
+
+	KVPair_setpointer(kv, p, cstrdup(filename), Free);
 
 	while((p = cstrchr(kv->key, '_')) != NULL)
 		*p = ' ';
