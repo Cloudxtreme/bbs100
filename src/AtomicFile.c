@@ -19,9 +19,11 @@
 /*
 	AtomicFile.c	WJ102
 
-	Note: In the memory stats in the bbs you will usually see there is 1 atomic
-	file allocated. This happens because the atomic file is put on the freelist
-	of allocated objects. The number does not represent the number of open files.
+	Note: In the memory stats in the bbs you will usually see there is 1
+	atomic file allocated. This happens because the atomic file is put on
+	the freelist of allocated objects. The number does not represent the
+	number of open files. If you turn off object caching, the number of
+	atomic files in the memory stats should always be zero.
 */
 
 #include "config.h"
