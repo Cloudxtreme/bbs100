@@ -24,7 +24,6 @@
 #include "debug.h"
 #include "Feeling.h"
 #include "PList.h"
-#include "StringList.h"
 #include "mydirentry.h"
 #include "Param.h"
 #include "cstring.h"
@@ -38,7 +37,7 @@
 
 
 KVPair *feelings = NULL;
-StringList *feelings_screen = NULL;
+StringIO *feelings_screen = NULL;
 
 
 /*
@@ -117,14 +116,15 @@ KVPair *kv1, *kv2;
 /* make screen */
 void make_feelings_screen(int width) {
 KVPair *f, *f_cols[16];
-StringList *sl;
 int len, max_len = 0, i, j, rows, cols, buflen, total;
 char buf[PRINT_BUF], fmt[128];
 
 	Enter(make_feelings_screen);
 
-	listdestroy_StringList(feelings_screen);
-	feelings_screen = NULL;
+	if (feelings_screen == NULL && (feelings_screen = new_StringIO()) == NULL) {
+		Return;
+	}
+	free_StringIO(feelings_screen);
 
 	if (width < 10)
 		width = 10;
@@ -176,17 +176,15 @@ char buf[PRINT_BUF], fmt[128];
 			if (f_cols[i] == NULL || f_cols[i]->key == NULL || !f_cols[i]->key[0])
 				continue;
 
-			sprintf(buf+buflen, fmt, j+i*rows+1, f_cols[i]->key);
-			buflen = strlen(buf);
-
+			buflen += sprintf(buf+buflen, fmt, j+i*rows+1, f_cols[i]->key);
 			f_cols[i] = f_cols[i]->next;
 		}
-		if ((sl = new_StringList(buf)) == NULL)
-			break;
+		buf[buflen++] = '\n';
+		buf[buflen] = 0;
 
-		feelings_screen = add_StringList(&feelings_screen, sl);
+		write_StringIO(feelings_screen, buf, buflen);
 	}
-	feelings_screen = rewind_StringList(feelings_screen);
+	write_StringIO(feelings_screen, "", 1);		/* append zero byte (string delimiter) */
 	Return;
 }
 

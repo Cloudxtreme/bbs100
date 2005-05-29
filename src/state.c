@@ -1915,7 +1915,6 @@ int r;
 }
 
 void state_choose_feeling(User *usr, char c) {
-StringList *sl;
 int r;
 
 	if (usr == NULL)
@@ -1927,8 +1926,12 @@ int r;
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
 		make_feelings_screen(usr->display->term_width);
-		for(sl = feelings_screen; sl != NULL; sl = sl->next)
-			Print(usr, "%s\n", sl->str);
+		if (feelings_screen == NULL || feelings_screen->buf == NULL || !feelings_screen->len) {
+			Perror(usr, "The feelings are temporarily unavailable");
+			RET(usr);
+			Return;
+		}
+		Out(usr, feelings_screen->buf);
 		Put(usr, "\n<green>Feeling<yellow>: ");
 	}
 	r = edit_number(usr, c);

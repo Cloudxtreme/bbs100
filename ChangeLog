@@ -1,5 +1,6 @@
 Changes as of May 29th 2005
 - Feelings are now cached files rather than always resident
+- feelings_screen is StringIO
 
 Changes as of May 28th 2005
 - --More-- prompt reads StringIO text and knows about terminal width

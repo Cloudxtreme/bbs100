@@ -24,10 +24,10 @@
 #define FEELING_H_WJ100 1
 
 #include "KVPair.h"
-#include "StringList.h"
+#include "StringIO.h"
 
 extern KVPair *feelings;
-extern StringList *feelings_screen;
+extern StringIO *feelings_screen;
 
 KVPair *load_Feeling(char *);
 int init_Feelings(void);
