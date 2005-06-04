@@ -2913,6 +2913,7 @@ int l;
 			usr->display->cpos = usr->display->line = 0;
 			Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
 			usr->scrollp = usr->scrollp->next;
+			usr->read_lines++;
 			break;
 
 		case KEY_BS:
