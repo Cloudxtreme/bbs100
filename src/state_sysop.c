@@ -1491,9 +1491,7 @@ void state_malloc_status(User *usr, char c) {
 			l += sprintf(line+l, "<green>%-*s <yellow>:<white> %12s ", len, Types_table[i].type, print_number(usr, mem_stats[i], num_buf));
 
 			if (i & 1) {
-				line[l++] = '\n';
-				line[l] = 0;
-				Put(usr, line);
+				Print(usr, "%s\n", line);
 				l = 0;
 				line[0] = 0;
 			} else {

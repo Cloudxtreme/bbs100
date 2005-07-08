@@ -147,8 +147,10 @@ File *f;
 	if ((f = copy_from_cache(filename)) != NULL)
 		return f;
 
-	if ((f = new_File()) == NULL
-		|| (f->data = f->datap = load_StringList(filename)) == NULL
+	if ((f = new_File()) == NULL)
+		return NULL;
+
+	if ((f->data = f->datap = load_StringList(filename)) == NULL
 		|| (f->filename = cstrdup(filename)) == NULL) {
 		destroy_File(f);
 		return NULL;
@@ -161,12 +163,10 @@ void Fclose(File *f) {
 	if (f == NULL)
 		return;
 
-	if (!(f->flags & FILE_DIRTY) || f->filename == NULL || !f->filename[0]) {
-		destroy_File(f);
-		return;
+	if ((f->flags & FILE_DIRTY) && f->filename != NULL && f->filename[0]) {
+		save_StringList(f->data, f->filename);		/* sync to disk */
+		copy_to_cache(f);
 	}
-	save_StringList(f->data, f->filename);		/* sync to disk */
-	copy_to_cache(f);
 	destroy_File(f);
 }
 
@@ -175,9 +175,13 @@ File *copy_from_cache(char *filename) {
 File *f = NULL;
 CachedFile *cf;
 
-	if ((cf = in_Cache(filename)) == NULL
-		|| (f = new_File()) == NULL
-		|| (f->filename = cstrdup(cf->f->filename)) == NULL
+	if ((cf = in_Cache(filename)) == NULL)
+		return NULL;
+
+	if ((f = new_File()) == NULL)
+		return NULL;
+
+	if ((f->filename = cstrdup(filename)) == NULL
 		|| (f->data = f->datap = copy_StringList(cf->f->data)) == NULL) {
 		destroy_File(f);
 		return NULL;

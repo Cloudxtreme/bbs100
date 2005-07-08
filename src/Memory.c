@@ -76,8 +76,8 @@ int n;
 
 	for(n = 0; n < NUM_FREELIST; n++) {
 		if (free_list[memtype].free[n] == NULL) {
-			memset(mem, 0, Types_table[memtype].size + 2*sizeof(unsigned long));	/* zero it out */
 			free_list[memtype].free[n] = mem;
+			memset(mem, 0, Types_table[memtype].size + 2*sizeof(unsigned long));	/* zero it out */
 			return 0;
 		}
 	}
@@ -144,7 +144,7 @@ unsigned long *mem, size;
 	}
 	mem[1] &= 0xff;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
-		if (mem[0] == 1UL && !put_freelist(mem, ((int *)mem)[1]))
+		if (mem[0] == 1UL && !put_freelist(mem, (int)mem[1]))
 			return;
 
 		size = mem[0] * Types_table[mem[1]].size;

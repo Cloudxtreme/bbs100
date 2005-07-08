@@ -220,6 +220,7 @@ int i, idx;
 			Return;
 
 		case '{':
+			debug_breakpoint();
 			Put(usr, "<white>Credits\n");
 
 			if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
@@ -1079,6 +1080,18 @@ void PrintPrompt(User *usr) {
 
 	Enter(PrintPrompt);
 
+/*
+	do housekeeping: free up memory that we're not going to use anyway
+*/
+	free_StringIO(usr->text);
+	listdestroy_StringList(usr->more_text);
+	usr->more_text = usr->textp = NULL;
+	listdestroy_PList(usr->scroll);
+	usr->scroll = usr->scrollp = NULL;
+
+/*
+	these message were held while you were busy ...
+*/
 	if (!(usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) && usr->held_msgs != NULL) {
 		if (usr->flags & USR_HOLD_BUSY) {
 			CALL(usr, STATE_HELD_HISTORY_PROMPT);
