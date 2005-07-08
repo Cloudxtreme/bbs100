@@ -26,7 +26,55 @@
 #include <config.h>
 #include "SignalVector.h"
 
+#include <signal.h>
 #include <setjmp.h>
+
+/*
+	the following is for brain-dead OSes and broken development environments
+	e.g. Cygwin for Windows
+	The code will compile, but you will miss some functionality, because
+	the OS doesn't really support the defined signals
+*/
+#ifndef SIGINT
+#define SIGINT	2
+#endif
+
+#ifndef SIGKILL
+#define SIGKILL	9
+#endif
+
+#ifndef SIGTERM
+#define SIGTERM	15
+#endif
+
+/*
+	actually, SIGCHLD and SIGCONT can have other values on different implementations
+	so defining them yourself is not a very solid solution
+*/
+#ifndef SIGCHLD
+#define SIGCHLD	17
+#endif
+
+#ifndef SIGCLD
+#define SIGCLD	SIGCHLD
+#endif
+
+#ifndef SIGCONT
+#define SIGCONT	18
+#endif
+
+#ifndef SIG_DFL
+#define SIG_DFL	((RETSIGTYPE (*)(int))0)		/* default action */
+#endif
+
+#ifndef SIG_IGN
+#define SIG_IGN	((RETSIGTYPE (*)(int))1)		/* ignore action */
+#endif
+
+#ifndef SIG_ERR
+#define SIG_ERR	((RETSIGTYPE (*)(int))-1)		/* error return */
+#endif
+
 
 typedef struct {
 	int sig;

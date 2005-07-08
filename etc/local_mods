@@ -1,2 +1,8 @@
-This site has no reported local modifications and claims to be running an
-unmodified version of <yellow>bbs100<green>.
+
+M. J. Bethlehem (dmouse@hartelgroep.nl), 20040613
+-------------------------------------------------
+
+A header file called 'Win32.h' was added and included into the source 
+code which allows bbs100 to be compiled and run in a Windows NT 
+compatible environment.
+
