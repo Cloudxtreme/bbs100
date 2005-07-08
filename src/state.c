@@ -221,12 +221,17 @@ int i, idx;
 
 		case '{':
 			Put(usr, "<white>Credits\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_CREDITS_SCREEN)) == NULL) {
+
+			if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
+				Perror(usr, "Out of memory");
+				Return;
+			}
+			free_StringIO(usr->text);
+			if (load_StringIO(usr->text, PARAM_CREDITS_SCREEN) < 0) {
 				Put(usr, "<red>The credits file is missing\n");		/* or out of memory! */
 				break;
 			}
-			read_more(usr);
+			read_text(usr);
 			Return;
 			
 		case '}':

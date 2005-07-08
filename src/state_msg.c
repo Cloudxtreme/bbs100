@@ -1872,7 +1872,7 @@ StringList *sl;
 		case ' ':
 		case 'n':
 		case 'N':
-			for(l = 0; l < usr->display->term_height-1 && usr->textp != NULL; l++) {
+			for(l = 0; l < usr->display->term_height && usr->textp != NULL; l++) {
 				Out(usr, usr->textp->str);
 				Out(usr, "\n");
 
@@ -1895,7 +1895,7 @@ StringList *sl;
 		case KEY_BS:
 		case '-':
 		case '_':
-			for(l = 0; l < (usr->display->term_height+1); l++) {
+			for(l = 0; l <= usr->display->term_height; l++) {
 				if (usr->textp->prev != NULL) {
 					usr->textp = usr->textp->prev;
 					if (usr->read_lines)
@@ -1903,7 +1903,7 @@ StringList *sl;
 				} else
 					break;
 			}
-			for(l = 0; l < usr->display->term_height-1; l++) {
+			for(l = 0; l < usr->display->term_height; l++) {
 				if (usr->textp != NULL) {
 					Out(usr, usr->textp->str);
 					Out(usr, "\n");
@@ -1918,7 +1918,7 @@ StringList *sl;
 			usr->textp = usr->more_text;
 			usr->read_lines = 0;
 
-			for(l = 0; l < usr->display->term_height-1; l++) {
+			for(l = 0; l < usr->display->term_height; l++) {
 				if (usr->textp != NULL) {
 					Out(usr, usr->textp->str);
 					Out(usr, "\n");
@@ -1947,7 +1947,7 @@ StringList *sl;
 			usr->read_lines -= l;
 
 /* display it */
-			for(l = 0; l < usr->display->term_height-1; l++) {
+			for(l = 0; l < usr->display->term_height; l++) {
 				if (usr->textp != NULL) {
 					Out(usr, usr->textp->str);
 					Out(usr, "\n");
@@ -2851,12 +2851,12 @@ int pos, len;
 
 /*
 	helper function for state_scroll_text()
+	start is 0 for a full page, 1 for a page minus 1 line, etc.
 */
-static void display_page(User *usr) {
+static void display_page(User *usr, int start) {
 int l;
 
-	l = 0;
-	for(; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
+	for(l = start; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
 		usr->display->cpos = usr->display->line = 0;
 		Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
 		usr->read_lines++;
@@ -2883,13 +2883,13 @@ int l;
 			}
 			usr->scrollp = usr->scroll;
 			usr->read_lines = 0;
-			display_page(usr);
+			display_page(usr, 1);
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
 		case 'b':
 		case 'B':
-			for(l = 0; l < usr->display->term_height * 2; l++) {
+			for(l = 1; l < usr->display->term_height * 2; l++) {
 				if (usr->scrollp->prev != NULL) {
 					usr->scrollp = usr->scrollp->prev;
 					if (usr->read_lines)
@@ -2900,11 +2900,13 @@ int l;
 					break;
 				}
 			}
+			display_page(usr, 0);
+			break;
 
 		case ' ':
 		case 'n':
 		case 'N':
-			display_page(usr);
+			display_page(usr, 1);
 			break;
 
 		case KEY_RETURN:
@@ -2927,13 +2929,13 @@ int l;
 				} else
 					break;
 			}
-			display_page(usr);
+			display_page(usr, 0);
 			break;
 
 		case 'g':						/* goto beginning */
 			usr->scrollp = usr->scroll;
 			usr->read_lines = 0;
-			display_page(usr);
+			display_page(usr, 0);
 			break;
 
 		case 'G':						/* goto end ; display last page */
@@ -2952,7 +2954,7 @@ int l;
 			}
 			usr->read_lines -= l;
 
-			display_page(usr);
+			display_page(usr, 0);
 			break;
 
 		case '/':						/* find */
