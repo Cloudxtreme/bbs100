@@ -199,3 +199,6 @@ Credits for bug fixes et al after public release
 - Lord Lerkista reported a bug in restartable timers
   fixed in 2.2
 
+- Mz Boobala requested that the room aide flag always be reset when entering
+  a room. I guess it's more logical that way
+  changed in 2.2

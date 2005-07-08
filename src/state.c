@@ -3605,10 +3605,18 @@ void enter_room(User *usr, Room *r) {
 		return;
 
 	usr->curr_room = r;
-/* if not RA here, reset the flag */
+
+/* if not RA here, reset the flag
+
 	if ((usr->runtime_flags & RTF_ROOMAIDE)
 		&& in_StringList(usr->curr_room->room_aides, usr->name) == NULL)
 		usr->runtime_flags &= ~RTF_ROOMAIDE;
+*/
+/*
+	always reset the RA flag
+	if you don't like this, uncomment the code above
+*/
+	usr->runtime_flags &= ~RTF_ROOMAIDE;
 
 	if (r->flags & ROOM_CHATROOM)
 		enter_chatroom(usr);
