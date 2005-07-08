@@ -75,6 +75,7 @@ void state_profile_user(User *, char);
 void state_su_prompt(User *, char);
 void state_lock_password(User *, char);
 void state_boss(User *, char);
+int cmd_line(User *, char *);
 
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);

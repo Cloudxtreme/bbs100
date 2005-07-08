@@ -106,6 +106,11 @@ int l;
 		"\n"
 		"#include \"source_sum.h\"\n"
 		"\n"
+		"#ifndef NULL\n"
+		"#define NULL (void *)0L\n"
+		"#endif\n"
+		"\n"
+		"\n"
 		"SourceSum build_sums[] = {\n"
 	);
 	while((direntp = readdir(dirp)) != NULL) {
@@ -124,7 +129,8 @@ int l;
 	memset(digest, 0, MD5_DIGITS);
 	print_md5_digest("NULL", digest);
 
-	fprintf(f, "};\n"
+	fprintf(f, "\t{ NULL,\t{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }, },\n"
+		"};\n"
 		"\n"
 		"/* EOB */\n"
 	);

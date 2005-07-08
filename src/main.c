@@ -53,7 +53,6 @@
 #include "Category.h"
 #include "ConnUser.h"
 #include "ConnResolv.h"
-#include "ConnData.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -346,9 +345,6 @@ char buf[256];
 		printf("fatal: failed to initialize connection code\n");
 		exit_program(SHUTDOWN);
 	}
-	if (init_ConnData())
-		printf("warning: failed to initalize data port\n");
-
 	if (debugger) {
 		printf("running under debugger, signal handling disabled\n");
 		printf("running under debugger, not going to background\n");

@@ -171,7 +171,6 @@ struct User_tag {
 	StringIO *text;
 	PList *scroll, *scrollp;
 	Display *display;
-	PList *cmd_chain;
 };
 
 User *new_User(void);

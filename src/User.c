@@ -140,7 +140,6 @@ int i;
 	usr->idle_timer = NULL;
 	listdestroy_Timer(usr->timerq);
 	destroy_Telnet(usr->telnet);
-	listdestroy_PList(usr->cmd_chain);
 
 	destroy_StringIO(usr->text);
 	listdestroy_PList(usr->scroll);

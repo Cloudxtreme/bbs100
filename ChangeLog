@@ -1,3 +1,6 @@
+Changes as of July 8th 2005
+- removed data port for now
+
 Changes as of May 29th 2005
 - Feelings are now cached files rather than always resident
 - feelings_screen is StringIO

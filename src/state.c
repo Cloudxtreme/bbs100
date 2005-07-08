@@ -56,7 +56,6 @@
 #include "Worldclock.h"
 #include "Category.h"
 #include "Memory.h"
-#include "DataCmd.h"
 #include "source_sum.h"
 
 #include <stdio.h>
@@ -3261,30 +3260,12 @@ int r;
 		r = EDIT_RETURN;
 	}
 	if (r == EDIT_RETURN) {
-		char buf[MAX_LINE];
-
 		if (!usr->edit_buf[0]) {
 			Put(usr, "$ ");
 			edit_line(usr, EDIT_INIT);
 			Return;
 		}
-		if (!strcmp(usr->edit_buf, "date")) {
-			Print(usr, "%s %s\n\n$ ", print_date(usr, (time_t)0UL, buf), name_Timezone(usr->tz));
-			edit_line(usr, EDIT_INIT);
-			Return;
-		}
-		if (!strcmp(usr->edit_buf, "uname")) {
-			Print(usr, "%s %s\n$ ", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
-			edit_line(usr, EDIT_INIT);
-			Return;
-		}
-		if (!strcmp(usr->edit_buf, "uptime")) {
-			Print(usr, "last booted on %s\n", print_date(usr, stats.uptime, buf));
-			Print(usr, "uptime is %s\n\n$ ", print_total_time(usr, rtc - stats.uptime, buf));
-			edit_line(usr, EDIT_INIT);
-			Return;
-		}
-		if (!strcmp(usr->edit_buf, "exit")) {
+		if (!strcmp(usr->edit_buf, "exit") || !strcmp(usr->edit_buf, "logout")) {
 			if (usr->runtime_flags & RTF_WAS_HOLDING) {
 /* was on hold, so still on hold now, but not busy anymore */
 				usr->runtime_flags &= ~(RTF_WAS_HOLDING|RTF_BUSY);
@@ -3304,18 +3285,68 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (usr->cmd_chain == NULL)
-			usr->cmd_chain = new_PList(default_cmds);
-
-		if (exec_cmd(usr, usr->edit_buf) < 0)
-			Put(usr, "type 'exit' to return\n\n$ ");
+		if (cmd_line(usr, usr->edit_buf) < 0)
+			Put(usr, "\ntype 'exit' to return\n$ ");
 		else
-			Put(usr, "$ ");
+			Put(usr, "\n$ ");
 
 		edit_line(usr, EDIT_INIT);
 		Return;
 	}
 	Return;
+}
+
+/*
+	this is more or less a joke
+*/
+int cmd_line(User *usr, char *cmd) {
+int i, pos;
+char buf[MAX_LINE], *p;
+
+	if (usr == NULL)
+		return -1;
+
+	Enter(cmd_line);
+
+	if (!strcmp(cmd, "ls")) {
+		pos = 0;
+		for(i = 0; build_sums[i].filename != NULL; i++) {
+			if (pos + 20 > usr->display->term_width) {
+				Put(usr, "\n");
+				pos = 0;
+			}
+			strcpy(buf, build_sums[i].filename);
+			strcat(buf, ".c");
+			Print(usr, "%-20s", buf);
+			pos += 20;
+		}
+		Put(usr, "\n");
+		Return 0;
+	}
+	if (!strcmp(cmd, "uptime")) {
+		Print(usr, "up %s, ", print_total_time(usr, rtc - stats.uptime, buf));
+		i = list_Count(AllUsers);
+		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
+		Return 0;
+	}
+	if (!strcmp(usr->edit_buf, "date")) {
+		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf), name_Timezone(usr->tz));
+		Return 0;
+	}
+	if (!strcmp(usr->edit_buf, "uname")) {
+		Print(usr, "%s %s\n", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
+		Return 0;
+	}
+	if (!strcmp(cmd, "whoami")) {
+		strcpy(buf, usr->name);
+		cstrlwr(buf);
+		while((p = cstrchr(buf, ' ')) != NULL)
+			*p = '_';
+		Print(usr, "%s\n", buf);
+		Return 0;
+	}
+	Print(usr, "-bbs: %s: command not found\n", cmd);
+	Return -1;
 }
 
 void online_friends_list(User *usr) {
