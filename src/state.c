@@ -3267,6 +3267,29 @@ int r;
 
 			listdestroy_StringList(boss);
 			boss = NULL;
+		} else {
+			switch(rand() & 3) {
+				case 0:
+					Print(usr, "%c ls\n", (usr->runtime_flags & RTF_SYSOP) ? '#' : '$');
+					cmd_line(usr, "ls");
+					break;
+
+				case 1:
+					Print(usr, "%c date\n", (usr->runtime_flags & RTF_SYSOP) ? '#' : '$');
+					cmd_line(usr, "date");
+					break;
+
+				case 2:
+					Print(usr, "%c uname\n", (usr->runtime_flags & RTF_SYSOP) ? '#' : '$');
+					cmd_line(usr, "uname");
+					break;
+
+				case 3:
+					Print(usr, "%c uptime\n", (usr->runtime_flags & RTF_SYSOP) ? '#' : '$');
+					cmd_line(usr, "uptime");
+					break;
+			}
+			Put(usr, "\n");
 		}
 		Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "# " : "$ ");
 	}
@@ -3324,6 +3347,9 @@ char buf[MAX_LINE*3], *p;
 
 	Enter(cmd_line);
 
+	if ((p = cstrchr(cmd, ' ')) != NULL)
+		*p = 0;
+
 	if (!strcmp(cmd, "ls")) {
 		pos = 0;
 		for(i = 0; build_sums[i].filename != NULL; i++) {
@@ -3345,11 +3371,11 @@ char buf[MAX_LINE*3], *p;
 		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
 		Return 0;
 	}
-	if (!strcmp(usr->edit_buf, "date")) {
+	if (!strcmp(cmd, "date")) {
 		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf), name_Timezone(usr->tz));
 		Return 0;
 	}
-	if (!strcmp(usr->edit_buf, "uname")) {
+	if (!strcmp(cmd, "uname")) {
 		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
 		Return 0;
 	}
