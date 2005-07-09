@@ -3,6 +3,13 @@ bbs100 by Walter de Jong <walter@heiho.net> (C) 2005
 bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
+UPGRADING FROM bbs100 2.x
+
+No major issues. See the ChangeLog.
+
+
+
+UPGRADING FROM bbs100 1.x
 
 This is the first major upgrade of bbs100. You should know that you cannot
 go back to the old version once you have upgraded. This is because of the
@@ -35,9 +42,10 @@ are using site-specific data files, you will have to incorporate the
 changes into the BBS and the conversion program first.
 
 
+UPGRADING IN GENERAL
+
 Following are some standard instructions on how to upgrade any version
 of bbs100.
-
 
 To upgrade from an existing version of bbs100, do the following:
 - read the ChangeLog to see what's new
