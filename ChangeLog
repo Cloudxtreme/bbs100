@@ -1,5 +1,7 @@
 Changes as of July 9th 2005
 - removed multi-language code
+- unknown keywords in etc/param ignored for compatibility, particulary
+  useful when upgrading
 
 Changes as of July 8th 2005
 - removed data port for now
