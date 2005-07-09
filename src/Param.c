@@ -252,10 +252,8 @@ int i, line_no, errors;
 					break;
 				}
 			}
-			if (i >= NUM_PARAM) {
-				fprintf(stderr, "%s:%d: unknown keyword '%s'\n", filename, line_no, buf);
-				errors++;
-			}
+			if (i >= NUM_PARAM)
+				fprintf(stderr, "%s:%d: unknown keyword '%s', ignored\n", filename, line_no, buf);
 		}
 	}
 	closefile(f);
