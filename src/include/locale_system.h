@@ -23,9 +23,7 @@
 #ifndef LOCALE_SYSTEM_H_WJ105
 #define LOCALE_SYSTEM_H_WJ105	1
 
-#include "Lang.h"
-
-#include <time.h>
+#include "locales.h"
 
 extern Locale system_locale;
 extern Locale *lc_system;

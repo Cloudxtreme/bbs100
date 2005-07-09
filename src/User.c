@@ -45,7 +45,6 @@
 #include "Memory.h"
 #include "FileFormat.h"
 #include "Timezone.h"
-#include "Lang.h"
 #include "OnlineUser.h"
 
 #include <stdio.h>
@@ -105,10 +104,6 @@ int i;
 	usr->tz = NULL;					/* usr->tz is just a reference and is not destroyed here */
 	Free(usr->timezone);
 
-	unload_Language(usr->language);
-	Free(usr->language);
-	usr->lang = NULL;
-
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);
 
@@ -163,11 +158,8 @@ void Flush(User *usr) {
 		flush_Conn(usr->conn);
 }
 
-/*
-	Put() translates all texts on the fly
-*/
 void Put(User *usr, char *str) {
-	Out(usr, translate(usr->lang, str));
+	Out(usr, str);
 }
 
 void Print(User *usr, char *fmt, ...) {
@@ -178,9 +170,6 @@ char buf[PRINT_BUF];
 		return;
 
 	va_start(args, fmt);
-
-	fmt = translate(usr->lang, fmt);
-
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
@@ -195,9 +184,6 @@ char buf[PRINT_BUF];
 		return;
 
 	va_start(args, fmt);
-
-	fmt = translate(usr->lang, fmt);
-
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
@@ -221,18 +207,14 @@ char buf[PRINT_BUF];
 
 void notify_friends(User *usr, char *msg) {
 User *u;
-char buf[PRINT_BUF];
 
 	if (usr == NULL)
 		return;
 
-
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u != usr && u->name[0]
-			&& in_StringList(u->friends, usr->name) != NULL) {
-			strcpy(buf, translate(u->lang, msg));
-			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, buf);
-		}
+			&& in_StringList(u->friends, usr->name) != NULL)
+			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, msg);
 	}
 }
 
@@ -273,11 +255,6 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	Free(usr->timezone);
 	usr->timezone = NULL;
 
-	unload_Language(usr->language);
-	Free(usr->language);
-	usr->language = NULL;
-	usr->lang = NULL;
-
 /* open the file for loading */
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
@@ -312,8 +289,6 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
-
-		usr->lang = load_Language(usr->language);
 
 		Fclose(f);
 		usr->flags &= USR_ALL;
@@ -366,18 +341,6 @@ int term_width, term_height;
 			FF1_LOAD_DUP("reminder", usr->reminder);
 			FF1_LOAD_DUP("default_anon", usr->default_anon);
 			FF1_LOAD_DUP("timezone", usr->timezone);
-			FF1_LOAD_DUP("language", usr->language);
-/*
-	set the language
-	clear the field if the language no longer exists
-*/
-			if (!strcmp(buf, "language") && usr->language != NULL) {
-				cstrlwr(usr->language);
-				if ((usr->lang = in_Hash(languages, usr->language)) == NULL) {
-					Free(usr->language);
-					usr->language = NULL;
-				}
-			}
 		}
 		if (!strcmp(buf, "hostname")) {
 			Free(usr->tmpbuf[TMP_FROM_HOST]);
@@ -991,7 +954,6 @@ StringList *sl;
 	FF1_SAVE_STR("reminder", usr->reminder);
 	FF1_SAVE_STR("default_anon", usr->default_anon);
 	FF1_SAVE_STR("timezone", usr->timezone);
-	FF1_SAVE_STR("language", usr->language);
 
 	FF1_SAVE_STR("hostname", usr->conn->hostname);
 	FF1_SAVE_STR("ipnum", usr->conn->ipnum);

@@ -22,7 +22,6 @@
 #include "BufferedMsg.h"
 #include "Timezone.h"
 #include "Hash.h"
-#include "Lang.h"
 #include "Conn.h"
 #include "Telnet.h"
 #include "KVPair.h"
@@ -54,7 +53,6 @@ Typedef Types_table[NUM_TYPES+1] = {
 	{ "DST_Trans",			sizeof(DST_Transition),		},
 	{ "TimeType",			sizeof(TimeType),			},
 	{ "Hash",				sizeof(Hash),				},
-	{ "Lang",				sizeof(Lang),				},
 	{ "Conn",				sizeof(Conn),				},
 	{ "Telnet",				sizeof(Telnet),				},
 	{ "KVPair",				sizeof(KVPair),				},

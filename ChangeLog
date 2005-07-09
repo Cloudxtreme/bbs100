@@ -1,3 +1,6 @@
+Changes as of July 9th 2005
+- removed multi-language code
+
 Changes as of July 8th 2005
 - removed data port for now
 - define some signals for Win32 (cygwin) portability

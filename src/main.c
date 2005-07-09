@@ -49,7 +49,6 @@
 #include "AtomicFile.h"
 #include "Timezone.h"
 #include "Worldclock.h"
-#include "Lang.h"
 #include "Category.h"
 #include "ConnUser.h"
 #include "ConnResolv.h"
@@ -313,9 +312,6 @@ char buf[256];
 
 	printf("loading feelings from %s ... ", PARAM_FEELINGSDIR);
 	printf("%s\n", (init_Feelings() != 0) ? "failed" : "ok");
-
-	printf("loading default language %s ... ", PARAM_DEFAULT_LANGUAGE);
-	printf("%s\n", (init_Lang() != 0) ? "failed" : "ok");
 
 	printf("loading default timezone %s ... ", PARAM_DEFAULT_TIMEZONE);
 	if (init_Timezone())

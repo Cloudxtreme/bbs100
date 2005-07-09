@@ -65,8 +65,8 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	Message.o Room.o Joined.o Stats.o BufferedMsg.o \
 	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \
 	debug.o SymbolTable.o Types.o HostMap.o FileFormat.o \
-	Timezone.o Worldclock.o Lang.o locale_system.o locales.o \
-	locale_nl.o Category.o crc32.o Conn.o ConnUser.o ConnResolv.o Telnet.o \
+	Timezone.o Worldclock.o locale_system.o locales.o \
+	Category.o crc32.o Conn.o ConnUser.o ConnResolv.o Telnet.o \
 	KVPair.o StringIO.o	Display.o patchlist.o source_sum.o \
 	main.o
 

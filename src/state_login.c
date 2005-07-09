@@ -45,7 +45,6 @@
 #include "OnlineUser.h"
 #include "SU_Passwd.h"
 #include "Timezone.h"
-#include "Lang.h"
 #include "Wrapper.h"
 
 #include <stdio.h>
@@ -168,7 +167,7 @@ int r;
 			}
 			log_auth("LOGIN %s (%s)", usr->name, usr->conn->hostname);
 
-			usr->doing = cstrdup(translate(default_language, "is just looking around"));
+			usr->doing = cstrdup("is just looking around");
 			usr->flags |= USR_X_DISABLED;
 			usr->login_time = usr->online_timer = (unsigned long)rtc;
 
@@ -177,9 +176,6 @@ int r;
 				usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 			if (usr->tz == NULL)
 				usr->tz = load_Timezone(usr->timezone);
-
-			if (usr->lang == NULL)
-				usr->lang = load_Language(usr->language);
 
 			JMP(usr, STATE_ANSI_PROMPT);
 			Return;
@@ -481,9 +477,7 @@ char num_buf[25];
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];
 
-			sprintf(buf, translate(default_language, "is new to "));
-			strcat(buf, "<white>");
-			strcat(buf, PARAM_BBS_NAME);
+			sprintf(buf, "is new to <white>%s", PARAM_BBS_NAME);
 			buf[MAX_LINE] = 0;
 			usr->doing = cstrdup(buf);
 		}
@@ -821,9 +815,6 @@ int r;
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
-
-		if (usr->lang == NULL)
-			usr->lang = load_Language(usr->language);
 
 /* save user here, or we're not able to X/profile him yet! */
 		if (usr->logins <= 1 && save_User(usr))

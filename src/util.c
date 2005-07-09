@@ -33,7 +33,6 @@
 #include "access.h"
 #include "Memory.h"
 #include "OnlineUser.h"
-#include "Lang.h"
 #include "locale_system.h"
 #include "mkdir.h"
 #include "source_sum.h"
@@ -1085,31 +1084,18 @@ struct tm *user_time(User *usr, time_t tt) {
 	Note: date_str should be large enough (80 bytes will do)
 */
 char *print_date(User *usr, time_t tt, char *date_str) {
-struct tm *t;
-
 	if (date_str == NULL)
 		return NULL;
 
-	t = user_time(usr, tt);
-
-	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->print_date(usr->lang->locale, t, usr->flags & USR_12HRCLOCK, date_str);
-
-	if (usr == NULL)
-		return lc_system->print_date(lc_system, t, 0, date_str);
-
-	return lc_system->print_date(lc_system, t, usr->flags & USR_12HRCLOCK, date_str);
+	return lc_system->print_date(lc_system, user_time(usr, tt), (usr == NULL) ? 0 : usr->flags & USR_12HRCLOCK, date_str);
 }
 
 /*
 	Note: buf must be large enough (MAX_LINE bytes should do)
 */
 char *print_total_time(User *usr, unsigned long total, char *buf) {
-	if (buf == NULL)
+	if (usr == NULL || buf == NULL)
 		return NULL;
-
-	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->print_total_time(usr->lang->locale, total, buf);
 
 	return lc_system->print_total_time(lc_system, total, buf);
 }
@@ -1119,11 +1105,8 @@ char *print_total_time(User *usr, unsigned long total, char *buf) {
 	Note: buf must be large enough (at least 21 bytes)
 */
 char *print_number(User *usr, unsigned long ul, char *buf) {
-	if (buf == NULL)
+	if (usr == NULL || buf == NULL)
 		return NULL;
-
-	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->print_number(usr->lang->locale, ul, buf);
 
 	return lc_system->print_number(lc_system, ul, buf);
 }
@@ -1133,11 +1116,8 @@ char *print_number(User *usr, unsigned long ul, char *buf) {
 	Note: buf must be large enough (at least 25 bytes)
 */
 char *print_numberth(User *usr, unsigned long ul, char *buf) {
-	if (buf == NULL)
+	if (usr == NULL || buf == NULL)
 		return NULL;
-
-	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->print_numberth(usr->lang->locale, ul, buf);
 
 	return lc_system->print_numberth(lc_system, ul, buf);
 }
@@ -1146,11 +1126,8 @@ char *print_numberth(User *usr, unsigned long ul, char *buf) {
 	Note: buf must be large enough (MAX_LINE bytes in size)
 */
 char *possession(User *usr, char *name, char *obj, char *buf) {
-	if (buf == NULL)
+	if (usr == NULL || buf == NULL)
 		return NULL;
-
-	if (usr != NULL && usr->lang != NULL && usr->lang->locale != NULL && usr->lang->locale->print_date != NULL)
-		return usr->lang->locale->possession(usr->lang->locale, name, obj, buf);
 
 	return lc_system->possession(lc_system, name, obj, buf);
 }

@@ -32,7 +32,6 @@
 #include "Param.h"
 #include "util.h"
 #include "Timer.h"
-#include "Lang.h"
 #include "Memory.h"
 #include "locale_system.h"
 #include "cstring.h"

@@ -33,7 +33,6 @@
 #include "BufferedMsg.h"
 #include "Timer.h"
 #include "Timezone.h"
-#include "Lang.h"
 #include "Conn.h"
 #include "Telnet.h"
 #include "StringIO.h"
@@ -140,7 +139,7 @@ struct User_tag {
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
-	char *timezone, *language;
+	char *timezone;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time, last_online_time;
@@ -167,7 +166,6 @@ struct User_tag {
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
 	Telnet *telnet;
-	Lang *lang;
 	StringIO *text;
 	PList *scroll, *scrollp;
 	Display *display;

@@ -10,7 +10,6 @@ bindir                  bin/
 confdir                 etc/
 feelingsdir             etc/feelings/
 zoneinfodir             etc/zoneinfo/
-languagedir             etc/language/
 userdir                 users/
 roomdir                 rooms/
 trashdir                trash/
@@ -45,7 +44,6 @@ su_passwd_file          etc/su_passwd
 pid_file                etc/pid
 symtab_file             etc/symtab
 default_timezone        other/GMT
-default_language        nederlands
 
 syslog                  log/bbslog
 authlog                 log/authlog
@@ -96,7 +94,6 @@ have_worldclock			yes
 have_chatrooms          yes
 have_homeroom           yes
 have_mailroom           yes
-have_language           yes
 have_category           yes
 have_cycle_rooms        yes
 have_wrapper_all        yes

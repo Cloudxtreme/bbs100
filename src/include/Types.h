@@ -46,13 +46,12 @@
 #define TYPE_DST_TRANS		20
 #define TYPE_TIMETYPE		21
 #define TYPE_HASH			22
-#define TYPE_LANG			23
-#define TYPE_CONN			24
-#define TYPE_TELNET			25
-#define TYPE_KVPAIR			26
-#define TYPE_STRINGIO		27
-#define TYPE_DISPLAY		28
-#define NUM_TYPES			29
+#define TYPE_CONN			23
+#define TYPE_TELNET			24
+#define TYPE_KVPAIR			25
+#define TYPE_STRINGIO		26
+#define TYPE_DISPLAY		27
+#define NUM_TYPES			28
 
 typedef struct Typedef_tag Typedef;
 

@@ -22,18 +22,16 @@
 
 #include "locales.h"
 #include "locale_system.h"
-#include "locale_nl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 /*
-	this is coded without size so you can patch an additional locale
+	this is coded without size so you can patch an additional locales
 	in between
 */
 Locale *all_locales[] = {
 	&system_locale,
-	&nl_locale,
 	NULL
 };
 

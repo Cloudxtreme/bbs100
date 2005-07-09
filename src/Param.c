@@ -54,7 +54,6 @@ int i;
 	KVPair_setstring(KVPARAM_CONFDIR,			"confdir",			"etc/");
 	KVPair_setstring(KVPARAM_FEELINGSDIR,		"feelingsdir",		"etc/feelings/");
 	KVPair_setstring(KVPARAM_ZONEINFODIR,		"zoneinfodir",		"etc/zoneinfo/");
-	KVPair_setstring(KVPARAM_LANGUAGEDIR,		"languagedir",		"etc/language/");
 	KVPair_setstring(KVPARAM_USERDIR,			"userdir",			"users/");
 	KVPair_setstring(KVPARAM_ROOMDIR,			"roomdir",			"rooms/");
 	KVPair_setstring(KVPARAM_TRASHDIR,			"trashdir",			"trash/");
@@ -98,7 +97,6 @@ int i;
 	KVPair_setstring(KVPARAM_PID_FILE,			"pid_file",			"etc/pid");
 	KVPair_setstring(KVPARAM_SYMTAB_FILE,		"symtab_file",		"etc/symtab");
 	KVPair_setstring(KVPARAM_DEFAULT_TIMEZONE,	"default_timezone",	"Europe/Amsterdam");
-	KVPair_setstring(KVPARAM_DEFAULT_LANGUAGE,	"default_language",	"bbs100");
 
 	KVPair_setstring(KVPARAM_SEP6, "", "");
 
@@ -159,7 +157,6 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_CHATROOMS,		"have_chatrooms",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_HOMEROOM,		"have_homeroom",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_MAILROOM,		"have_mailroom",	PARAM_TRUE);
-	KVPair_setbool(KVPARAM_HAVE_LANGUAGE,		"have_language",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_CATEGORY,		"have_category",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_CYCLE_ROOMS,	"have_cycle_rooms",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_WRAPPER_ALL,	"have_wrapper_all",	PARAM_TRUE);
