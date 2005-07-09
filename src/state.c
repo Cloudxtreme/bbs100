@@ -576,11 +576,9 @@ int i, idx;
 					Put(usr, "<red>Message already has been deleted<yellow>..!\n\n");
 					break;
 				}
-				if (
-	((usr->message->flags & MSG_FROM_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
-	|| ((usr->message->flags & MSG_FROM_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
-	|| (usr->curr_room != usr->mail && strcmp(usr->name, usr->message->from) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
-				) {
+				if (((usr->message->flags & MSG_FROM_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
+					|| ((usr->message->flags & MSG_FROM_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
+					|| (usr->curr_room != usr->mail && strcmp(usr->name, usr->message->from) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
 					Put(usr, "<red>You are not allowed to delete this message\n\n");
 					break;
 				}
@@ -2320,6 +2318,7 @@ int r;
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
 		RET(usr);
+		Return;
 	}
 	if (r == EDIT_RETURN) {
 		char *pwd;
@@ -3269,7 +3268,7 @@ int r;
 			listdestroy_StringList(boss);
 			boss = NULL;
 		}
-		Put(usr, "$ ");
+		Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "# " : "$ ");
 	}
 	r = edit_line(usr, c);
 
@@ -3304,10 +3303,9 @@ int r;
 			Return;
 		}
 		if (cmd_line(usr, usr->edit_buf) < 0)
-			Put(usr, "\ntype 'exit' to return\n$ ");
-		else
-			Put(usr, "\n$ ");
+			Put(usr, "\ntype 'exit' to return");
 
+		Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "\n# " : "\n$ ");
 		edit_line(usr, EDIT_INIT);
 		Return;
 	}
@@ -3319,7 +3317,7 @@ int r;
 */
 int cmd_line(User *usr, char *cmd) {
 int i, pos;
-char buf[MAX_LINE], *p;
+char buf[MAX_LINE*3], *p;
 
 	if (usr == NULL)
 		return -1;
@@ -3352,7 +3350,7 @@ char buf[MAX_LINE], *p;
 		Return 0;
 	}
 	if (!strcmp(usr->edit_buf, "uname")) {
-		Print(usr, "%s %s\n", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
+		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
 		Return 0;
 	}
 	if (!strcmp(cmd, "whoami")) {
