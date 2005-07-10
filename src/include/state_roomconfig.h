@@ -32,6 +32,7 @@
 #define STATE_KICKOUT_PROMPT	state_kickout_prompt
 #define STATE_ASSIGN_ROOMAIDE	state_assign_roomaide
 #define STATE_CHANGE_ROOMNAME	state_change_roomname
+#define STATE_MAX_MESSAGES		state_max_messages
 #define STATE_REMOVE_ALL_POSTS	state_remove_all_posts
 #define STATE_DELETE_ROOM		state_delete_room
 
@@ -45,6 +46,7 @@ void state_invite_prompt(User *, char);
 void state_kickout_prompt(User *, char);
 void state_assign_roomaide(User *, char);
 void state_change_roomname(User *, char);
+void state_max_messages(User *, char);
 void state_remove_all_posts(User *, char);
 void state_delete_room(User *, char);
 

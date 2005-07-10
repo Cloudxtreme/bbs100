@@ -17,12 +17,12 @@
       is not the same as '<yellow>undo kickout<green>'.
 
      Mind that a hidden room can be public<yellow>;<green> this is also known as a
-     <yellow>'guess name'<green> room. It is often desired to make a hidden room invite-only
+     '<yellow>guess name<green>' room. It is often desired to make a hidden room invite-only
      as well.
 
      The option '<yellow>Change room name<green>' is not available in the <yellow>Home<white>><green> room.
 
+     The maximum amount of messages can be changed by a sysop.
      If you want to have a room altered in another way, for example make it
-     invite-only, have subject lines, or have more room aides, please contact
-     a sysop.
+     invite-only, or have more room aides, please contact a sysop.
 

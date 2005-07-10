@@ -100,6 +100,7 @@
 #define RTF_WAS_HOLDING			0x40000		/* user was in hold message mode when ... */
 #define RTF_WAS_HH				0x80000		/* X-disabled, user was Helping Hand */
 #define RTF_CATEGORY_EDITED		0x100000	/* categories changed in sysop menu */
+#define RTF_ROOM_RESIZED		0x200000	/* max amount of messages changed in roomconfig menu */
 
 /* load_User() flags (for faster loading) */
 #define LOAD_USER_ADDRESS		1

@@ -51,6 +51,7 @@ Room *r;
 	if ((r = (Room *)Malloc(sizeof(Room), TYPE_ROOM)) == NULL)
 		return NULL;
 
+	r->max_msgs = PARAM_MAX_MESSAGES;
 	return r;
 }
 
@@ -184,6 +185,12 @@ int version;
 	if (load_func != NULL && !load_func(f, r)) {
 		Fclose(f);
 		r->flags &= ROOM_ALL;
+
+		if (r->number == MAIL_ROOM)
+			r->max_msgs = PARAM_MAX_MAIL_MSGS;
+		else
+			if (r->max_msgs < 1)
+				r->max_msgs = PARAM_MAX_MESSAGES;
 		return r;
 	}
 	destroy_Room(r);
@@ -386,24 +393,13 @@ int save_Room_version0(File *f, Room *r) {
 	returns first new message in the room (usr->curr_msg should be set to this)
 */
 int newMsgs(Room *r, unsigned long num) {
-int i, max;
+int i;
 
 	if (r == NULL || r->msg_idx <= 0)
 		return -1;
 
-/*
-	see if a sysop changed the maximum amount of posts
-*/
-	max = (r->number == MAIL_ROOM) ? PARAM_MAX_MAIL_MSGS : PARAM_MAX_MESSAGES;
-	if (r->max_msgs < 1)
-		r->max_msgs = max;
-
-	if (r->max_msgs != max)
-		resize_Room(r, max, NULL);
-
 	if (num >= r->msgs[r->msg_idx-1])
 		return -1;
-
 /*
 	the search is backwards so that it is optimized for speed
 */
@@ -418,23 +414,11 @@ int i, max;
 
 void newMsg(Room *r, unsigned long number, User *usr) {
 char filename[MAX_PATHLEN];
-int max;
 
 	if (r == NULL)
 		return;
 
-/*
-	see if a sysop changed the maximum amount of posts
-*/
-	max = (r->number == MAIL_ROOM) ? PARAM_MAX_MAIL_MSGS : PARAM_MAX_MESSAGES;
-	if (r->max_msgs < 1)
-		r->max_msgs = max;
-
-	if (r->max_msgs != max) {
-		resize_Room(r, max, usr);
-		max = r->max_msgs;
-	}
-	if (r->msgs == NULL && (r->msgs = (unsigned long *)Malloc(sizeof(unsigned long) * max, TYPE_LONG)) == NULL)
+	if (r->msgs == NULL && (r->msgs = (unsigned long *)Malloc(sizeof(unsigned long) * r->max_msgs, TYPE_LONG)) == NULL)
 		return;
 
 	if (r->number == MAIL_ROOM) {
@@ -445,15 +429,15 @@ int max;
 	} else
 		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
 
-	if (r->msg_idx >= max) {
+	if (r->msg_idx >= r->max_msgs) {
 		if (filename[0]) {
 			path_strip(filename);
 			remove_Cache_filename(filename);
 			if (unlink(filename) == -1)
 				log_err("newMsg(): failed to delete file %s", filename);
 		}
-		memmove(r->msgs, &r->msgs[1], (max - 1) * sizeof(unsigned long));
-		r->msg_idx = max - 1;
+		memmove(r->msgs, &r->msgs[1], (r->max_msgs - 1) * sizeof(unsigned long));
+		r->msg_idx = r->max_msgs - 1;
 	}
 	r->msgs[r->msg_idx++] = number;
 }

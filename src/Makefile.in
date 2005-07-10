@@ -57,7 +57,7 @@ INCLUDE = include
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
 OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
-	log.o inet.o util.o screens.o edit.o access.o \
+	log.o inet.o util.o screens.o edit.o edit_param.o access.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
 	state.o state_login.o state_msg.o state_friendlist.o \

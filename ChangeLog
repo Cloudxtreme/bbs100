@@ -4,8 +4,9 @@ Changes as of July 10th 2005
   sysop-capable users get free ride
 - boss screen can be reloaded from the sysop menu
 - room info for Mail (hardcoded)
-- max_messages is now a live parameter
-- mail_mail_msgs is now a live parameter
+- max_mail_msgs is now a live parameter, but only applies on re-login
+- max_messages is a default for new rooms
+- per-room maximum of messages, configurable via room config menu
 
 Changes as of July 9th 2005
 - removed multi-language code

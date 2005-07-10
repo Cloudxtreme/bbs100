@@ -30,6 +30,7 @@
 #include "state_roomconfig.h"
 #include "state.h"
 #include "edit.h"
+#include "edit_param.h"
 #include "util.h"
 #include "log.h"
 #include "inet.h"
@@ -2406,7 +2407,9 @@ void state_maximums_menu(User *usr, char c) {
 
 		case 'r':
 		case 'R':
-			Put(usr, "Max messages in a room\n");
+			Put(usr, "Max messages in a room\n"
+				"<green>This is a default value that applies for new rooms only\n"
+			);
 			CALL(usr, STATE_PARAM_MESSAGES);
 			Return;
 
@@ -3083,158 +3086,6 @@ void state_param_archivedir(User *usr, char c) {
 void state_param_crashdir(User *usr, char c) {
 	Enter(state_param_crashdir);
 	change_string_param(usr, c, &PARAM_CRASHDIR, "<green>Enter core dump directory<yellow>: ");
-	Return;
-}
-
-
-void change_int_param(User *usr, char c, int *var) {
-int r;
-
-	if (usr == NULL || var == NULL)
-		return;
-
-	Enter(change_int_param);
-
-	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
-
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		if (usr->edit_buf[0]) {
-			r = atoi(usr->edit_buf);
-			if (r < 1)
-				Put(usr, "<red>Invalid value; not changed\n");
-			else {
-				*var = r;
-				usr->runtime_flags |= RTF_PARAM_EDITED;
-			}
-		} else
-			Put(usr, "<red>Not changed\n");
-		RET(usr);
-	}
-	Return;
-}
-
-/*
-	exactly the same as change_int_param(), except that this one
-	accepts zero as valid value
-*/
-void change_int0_param(User *usr, char c, int *var) {
-int r;
-
-	if (usr == NULL || var == NULL)
-		return;
-
-	Enter(change_int_param);
-
-	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
-
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		if (usr->edit_buf[0]) {
-			if (!strcmp(usr->edit_buf, "0"))
-				r = 0;
-			else {
-				r = atoi(usr->edit_buf);
-				if (r < 1) {
-					Put(usr, "<red>Invalid value; not changed\n");
-					RET(usr);
-					Return;
-				}
-			}
-			*var = r;
-			usr->runtime_flags |= RTF_PARAM_EDITED;
-		} else
-			Put(usr, "<red>Not changed\n");
-		RET(usr);
-	}
-	Return;
-}
-
-void change_octal_param(User *usr, char c, int *var) {
-int r;
-
-	if (usr == NULL || var == NULL)
-		return;
-
-	Enter(change_octal_param);
-
-	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new octal value <white>[0%02o]: <yellow>", *var);
-
-	r = edit_octal_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		if (usr->edit_buf[0]) {
-			*var = (int)strtoul(usr->edit_buf, NULL, 8);
-			usr->runtime_flags |= RTF_PARAM_EDITED;
-		} else
-			Put(usr, "<red>Not changed\n");
-		RET(usr);
-	}
-	Return;
-}
-
-/*
-	practically copied from change_config() (in state_config.c) :P
-	except that this routine sets RTF_PARAM_EDITED
-*/
-void change_string_param(User *usr, char c, char **var, char *prompt) {
-int r;
-
-	if (usr == NULL || var == NULL)
-		return;
-
-	Enter(change_string_param);
-
-	if (c == INIT_STATE && prompt != NULL)
-		Put(usr, prompt);
-
-	r = edit_line(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		if (usr->edit_buf[0]) {
-			cstrip_line(usr->edit_buf);
-
-			if (!usr->edit_buf[0]) {
-				Free(*var);
-				*var = NULL;
-			} else {
-				char *s;
-
-				if ((s = cstrdup(usr->edit_buf)) == NULL) {
-					Perror(usr, "Out of memory");
-					RET(usr);
-					Return;
-				}
-				Free(*var);
-				*var = s;
-			}
-			usr->runtime_flags |= RTF_PARAM_EDITED;
-		} else
-			if (var != NULL && *var != NULL && **var)
-				Put(usr, "<red>Not changed\n");
-		RET(usr);
-	}
 	Return;
 }
 

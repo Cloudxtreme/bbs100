@@ -28,6 +28,7 @@
 #include "state_msg.h"
 #include "state.h"
 #include "edit.h"
+#include "edit_param.h"
 #include "util.h"
 #include "log.h"
 #include "cstring.h"
@@ -51,6 +52,14 @@ void state_room_config_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
+			if (usr->runtime_flags & RTF_ROOM_RESIZED) {
+				if (usr->read_lines == usr->curr_room->max_msgs)
+					Put(usr, "<red>Not changed\n");
+				else {
+					resize_Room(usr->curr_room, usr->read_lines, NULL);
+					usr->runtime_flags &= ~RTF_ROOM_RESIZED;
+				}
+			}
 			Put(usr, "\n"
 				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
 
@@ -75,6 +84,7 @@ void state_room_config_menu(User *usr, char c) {
 					Put(usr, "Change room <hotkey>name\n");
 
 				if (usr->runtime_flags & RTF_SYSOP) {
+
 					Put(usr,
 						"Reset <hotkey>creation date (all users unjoin)\n"
 						"\n"
@@ -248,6 +258,21 @@ void state_room_config_menu(User *usr, char c) {
 			if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM) {
 				Put(usr, "Change room name\n");
 				CALL(usr, STATE_CHANGE_ROOMNAME);
+				Return;
+			}
+			break;
+
+		case 'm':
+		case 'M':
+			if ((usr->runtime_flags & RTF_SYSOP) && !(usr->curr_room->flags & ROOM_CHATROOM)) {
+				Put(usr, "Maximum amount of messages\n");
+
+				usr->runtime_flags |= RTF_ROOM_RESIZED;
+				usr->read_lines = usr->curr_room->max_msgs;
+				if (usr->read_lines < 1)
+					usr->read_lines = PARAM_MAX_MESSAGES;
+
+				CALL(usr, STATE_MAX_MESSAGES);
 				Return;
 			}
 			break;
@@ -878,6 +903,12 @@ int r;
 			Perror(usr, "failed to set new room name");
 		RET(usr);
 	}
+	Return;
+}
+
+void state_max_messages(User *usr, char c) {
+	Enter(state_max_messages);
+	change_int_param(usr, c, &usr->read_lines);		/* abuse read_lines for this */
 	Return;
 }
 
