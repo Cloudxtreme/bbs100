@@ -551,7 +551,6 @@ char num_buf[25];
 				Print(usr, "<green>There are <yellow>%d<green> other users online\n", num_users);
 		}
 	}
-/* as suggested by Richard of MatrixBBS */
 	if (usr->flags & USR_X_DISABLED)
 		Put(usr, "<magenta>Message reception is turned off\n");
 
@@ -581,6 +580,9 @@ char num_buf[25];
 	else
 		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
 			Put(usr, "\n<white>NOTE<yellow>: <red>The system is rebooting\n");
+
+	if (nologin_active)
+		Put(usr, "\n<white>NOTE<yellow>: <red>nologin is active\n");
 
 	MOV(usr, STATE_ROOM_PROMPT);
 

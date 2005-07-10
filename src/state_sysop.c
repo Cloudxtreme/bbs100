@@ -88,11 +88,11 @@ void state_sysop_menu(User *usr, char c) {
 				Put(usr, "\n");
 
 			if (PARAM_HAVE_CATEGORY)
-				Put(usr, "Manage <hotkey>Categories\n");
+				Put(usr, "Manage <hotkey>categories\n");
 
 			Put(usr,
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
-				"<hotkey>Banish user                       Edit <hotkey>Wrappers\n"
+				"<hotkey>Banish user                       Edit <hotkey>wrappers\n"
 			);
 			Put(usr,
 				"<hotkey>Uncache file                      <hotkey>Memory allocation status\n"
@@ -110,7 +110,10 @@ void state_sysop_menu(User *usr, char c) {
 			else
 				Put(usr, "<white>Ctrl-<hotkey>S<magenta>hutdown\n");
 
-			Print(usr, "%sctivate <hotkey>Nologin                  <hotkey>Help\n", (nologin_active == 0) ? "A" : "De-a");
+			if (!nologin_active)
+				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
+			else
+				Put(usr, "Deactivate <hotkey>nologin                <hotkey>Help\n");
 			break;
 
 		case ' ':
@@ -2188,7 +2191,7 @@ void state_reload_files_menu(User *usr, char c) {
 			Put(usr,
 				"Reload cr<hotkey>edits screen           Reload <hotkey>room config menu help\n"
 				"Reload <hotkey>boss screen              Reload <hotkey>sysop menu help\n"
-				"Reload cr<hotkey>ash screen\n"
+				"Reload cr<hotkey>ash screen             Reload <hotkey>nologin screen\n"
 			);
 			Put(usr,
 				"\n"
@@ -2251,6 +2254,11 @@ void state_reload_files_menu(User *usr, char c) {
 		case 'A':
 			Put(usr, "Reload crash screen\n");
 			RELOAD_FILE(PARAM_CRASH_SCREEN, crash_screen);
+
+		case 'n':
+		case 'N':
+			Put(usr, "Reload nologin screen\n");
+			UNCACHE_FILE(PARAM_NOLOGIN_SCREEN);
 
 		case '1':
 			Put(usr, "Reload 1st login screen\n");

@@ -12,6 +12,7 @@ Changes as of July 10th 2005
 - load_screen() uses StringIO
 - Help files use color code '<key>', which ignores USR_UPPERCASE_HOTKEYS
 - all screens work via the cache, except for the crash_screen
+- display nologin status upon login, if active (only useful for sysops)
 
 Changes as of July 9th 2005
 - removed multi-language code
