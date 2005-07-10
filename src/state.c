@@ -2980,6 +2980,7 @@ char *category = NULL;
 void room_info(User *usr) {
 char buf[MAX_LINE*3];
 Joined *j;
+StringList *sl;
 
 	if (usr == NULL)
 		return;
@@ -2994,16 +2995,14 @@ Joined *j;
 	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
 		j->roominfo_read = usr->curr_room->roominfo_changed;		/* now we've read it */
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
-
-	usr->more_text = add_String(&usr->more_text, "<white>Room info of <yellow>%s<white>> (room #%u)",
+	free_StringIO(usr->text);
+	print_StringIO(usr->text, "<white>Room info of <yellow>%s<white>> (room #%u)\n",
 		usr->curr_room->name, usr->curr_room->number);
 
 	if (usr->curr_room->generation) {
 		char date_buf[80];
 
-		usr->more_text = add_String(&usr->more_text, "<green>Created on <yellow>%s", print_date(usr, usr->curr_room->generation, date_buf));
+		print_StringIO(usr->text, "<green>Created on <yellow>%s\n", print_date(usr, usr->curr_room->generation, date_buf));
 	}
 	*buf = 0;
 	if (usr->curr_room->flags & ROOM_READONLY)
@@ -3016,52 +3015,40 @@ Joined *j;
 		strcat(buf, ", not zappable");
 	if ((usr->curr_room->flags & ROOM_HIDDEN) && (usr->runtime_flags & RTF_SYSOP))
 		strcat(buf, ", hidden");
-	if (*buf) {
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(""));
-		usr->more_text = add_String(&usr->more_text, "<green>This room is %s", buf+2);
-	}
+	if (*buf)
+		print_StringIO(usr->text, "\n<green>This room is %s\n", buf+2);
+
 	if (usr->curr_room->room_aides != NULL) {
 		if (usr->curr_room->room_aides->next != NULL) {
-			StringList *sl;
-			int l, dl;					/* l = strlen, dl = display length */
+			print_StringIO(usr->text, "<cyan>%ss are<white>: ", PARAM_NAME_ROOMAIDE);
+			for(sl = usr->curr_room->room_aides; sl != NULL && sl->next != NULL; sl = sl->next)
+				print_StringIO(usr->text, "<yellow>%s<green>, ", sl->str);
 
-			sprintf(buf, "<cyan>%ss are<white>: ", PARAM_NAME_ROOMAIDE);
-			l = strlen(buf);
-			dl = l - 2;
-			for(sl = usr->curr_room->room_aides; sl != NULL && sl->next != NULL; sl = sl->next) {
-				if ((dl + strlen(sl->str)+2) < MAX_LINE)
-					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
-				else {
-					usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
-				}
-				dl = l - 2;
-			}
-			usr->more_text = add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
+			print_StringIO(usr->text, "<yellow>%s<green>\n", sl->str);
 		} else
-			usr->more_text = add_String(&usr->more_text, "<cyan>%s is<white>: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
+			print_StringIO(usr->text, "<cyan>%s is<white>: <cyan>%s\n", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
 	}
 	if (PARAM_HAVE_CATEGORY && usr->curr_room->category && usr->curr_room->category[0]) {
 		if (!in_Category(usr->curr_room->category)) {
 			Free(usr->curr_room->category);
 			usr->curr_room->category = NULL;
 		} else
-			usr->more_text = add_String(&usr->more_text, "<cyan>Category<white>:<yellow> %s", usr->curr_room->category);
+			print_StringIO(usr->text, "<cyan>Category<white>:<yellow> %s\n", usr->curr_room->category);
 	}
-	usr->more_text = add_String(&usr->more_text, "<green>");
+	put_StringIO(usr->text, "<green>\n");
 
 	if (usr->curr_room == NULL || usr->curr_room->info == NULL) {
 		if (usr->curr_room != NULL && usr->curr_room->number == MAIL_ROOM)
-			usr->more_text = add_String(&usr->more_text, "Here you can leave messages to users that are not online.");
+			put_StringIO(usr->text, "Here you can leave messages to users that are not online.\n");
 		else
-			usr->more_text = add_String(&usr->more_text, "<red>This room has no room info");
+			put_StringIO(usr->text, "<red>This room has no room info\n");
 	} else {
-		if ((usr->more_text->next = copy_StringList(usr->curr_room->info)) == NULL) {
-			Perror(usr, "Out of memory ; can't display room info");
-		} else
-			usr->more_text->next->prev = usr->more_text;
+		for(sl = usr->curr_room->info; sl != NULL; sl = sl->next) {
+			put_StringIO(usr->text, sl->str);
+			write_StringIO(usr->text, "\n", 1);
+		}
 	}
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 
