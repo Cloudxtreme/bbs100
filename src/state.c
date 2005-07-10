@@ -2890,7 +2890,8 @@ int read_it = 1, idx;
 		}
 	}
 	buf2[MAX_LINE-1] = 0;
-	usr->more_text = add_String(&usr->more_text, buf2);
+	put_StringIO(usr->text, buf2);
+	write_StringIO(usr->text, "\n", 1);
 	Return;
 }
 
@@ -2901,8 +2902,7 @@ char *category = NULL;
 
 	Enter(known_rooms);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -2926,8 +2926,7 @@ char *category = NULL;
 				continue;
 		}
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
-			usr->more_text = add_String(&usr->more_text, "");
-			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
+			print_StringIO(usr->text, "\n<white>[<cyan>%s<white>]\n", r->category);
 			category = r->category;
 		}
 		print_known_room(usr, r);
@@ -2938,7 +2937,7 @@ char *category = NULL;
 	if ((r = find_Roombynumber(usr, 2)) != NULL)
 		unload_Room(r);
 
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 
@@ -2949,8 +2948,7 @@ char *category = NULL;
 
 	Enter(allknown_rooms);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -2966,8 +2964,7 @@ char *category = NULL;
 			continue;
 
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
-			usr->more_text = add_String(&usr->more_text, "");
-			usr->more_text = add_String(&usr->more_text, "<white>[<cyan>%s<white>]", r->category);
+			print_StringIO(usr->text, "\n<white>[<cyan>%s<white>]\n", r->category);
 			category = r->category;
 		}
 		print_known_room(usr, r);
@@ -2975,7 +2972,7 @@ char *category = NULL;
 	if ((r = find_Roombynumber(usr, 2)) != NULL)
 		unload_Room(r);
 
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 

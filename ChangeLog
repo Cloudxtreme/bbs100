@@ -14,6 +14,7 @@ Changes as of July 10th 2005
 - all screens work via the cache, except for the crash_screen
 - display nologin status upon login, if active (only useful for sysops)
 - profile_user() uses StringIO
+- known_rooms() uses StringIO
 
 Changes as of July 9th 2005
 - removed multi-language code
