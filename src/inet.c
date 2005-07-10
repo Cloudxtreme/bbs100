@@ -292,6 +292,42 @@ char input_char[2];
 				wait_for_input = 0;
 				continue;
 			}
+			if (c->state & CONN_LISTEN)		/* non-blocking listen, handled below */
+				continue;
+
+			if (c->state & CONN_CONNECTING)	/* non-blocking connect, handled below */
+				continue;
+/*
+	connected
+*/
+			if (c->state & CONN_ESTABLISHED) {
+				if (c->input->pos < c->input->len) {
+					if ((err = read_StringIO(c->input, input_char, 1)) == 1)
+						c->conn_type->process(c, input_char[0]);
+					else
+						log_err("mainloop(): failed to read from input buffer");
+				}
+			}
+		}
+/*
+	now we need to check _again_ if a status has changed without doing
+	further processing
+	this is needed because it is possible that one user changes the status
+	of another, that already has been checked in the loop -- if you don't
+	use two loops, it possible to that everything freezes until select()
+	times out, when a user changes the status of a 'previous' user
+	Everything is very dynamic and things like process() and Ret()
+	actually may change a lot...
+*/
+		for(c = AllConns; c != NULL; c = c_next) {
+			c_next = c->next;
+
+/* remove dead connections */
+			if (c->sock <= 0) {
+				remove_Conn(&AllConns, c);
+				destroy_Conn(c);
+				continue;
+			}
 /*
 	non-blocking listen()
 */
@@ -311,9 +347,6 @@ char input_char[2];
 					highest_fd = c->sock + 1;
 				continue;
 			}
-/*
-	connected
-*/
 			if (c->state & CONN_ESTABLISHED) {
 				if (c->output->len > 0) {			/* got data to write */
 					FD_SET(c->sock, &wfds);
@@ -321,23 +354,9 @@ char input_char[2];
 						highest_fd = c->sock + 1;
 					wait_for_input = 0;
 				}
-				if (c->input->pos < c->input->len) {
-					if ((err = read_StringIO(c->input, input_char, 1)) == 1)
-						c->conn_type->process(c, input_char[0]);
-					else
-						log_err("mainloop(): failed to read from input buffer");
-
-/* maybe we produced output (maybe not) */
-					if (c->sock > 0 && c->output->len > 0) {
-						FD_SET(c->sock, &wfds);
-						if (highest_fd <= c->sock)
-							highest_fd = c->sock + 1;
-						wait_for_input = 0;
-					}
-					if (c->input->pos < c->input->len) {	/* got more input ready */
-						wait_for_input = 0;
-						continue;
-					}
+				if (c->input->pos < c->input->len) {	/* got input ready */
+					wait_for_input = 0;
+					continue;
 				}
 /*
 	no input ready, mark for request to read()

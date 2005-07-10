@@ -16,6 +16,7 @@ Changes as of July 10th 2005
 - profile_user() uses StringIO
 - known_rooms() uses StringIO
 - reading room info uses StringIO
+- fixed problem in mainloop(); sometimes you'd have to wait for a timeout
 
 Changes as of July 9th 2005
 - removed multi-language code
