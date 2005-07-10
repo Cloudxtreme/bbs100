@@ -5,7 +5,8 @@ bbs100 is distributed under terms described in the GNU General Public License.
 
 UPGRADING FROM bbs100 2.x
 
-No major issues. See the ChangeLog.
+No major issues, but be sure to update the Help files. See the ChangeLog
+for new features and inform your users of them, after upgrading.
 
 
 
