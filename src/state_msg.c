@@ -775,7 +775,6 @@ unsigned long msg_number;
 		Return;
 	}
 	free_StringIO(usr->text);
-
 	msg_header(usr);
 
 	if (usr->message->deleted != (time_t)0UL) {

@@ -821,8 +821,6 @@ int i, idx;
 			break;
 
 		case ' ':
-			listdestroy_StringList(usr->more_text);
-			usr->more_text = NULL;
 			destroy_Message(usr->message);
 			usr->message = NULL;
 
