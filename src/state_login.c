@@ -522,9 +522,12 @@ char num_buf[25];
 	if (!PARAM_HAVE_QUESTIONS)
 		usr->flags &= ~USR_HELPING_HAND;
 
-	if (usr->flags & USR_HELPING_HAND)
-		Put(usr, "<magenta>You are available to help others\n");
-
+	if (usr->flags & USR_HELPING_HAND) {
+		if (get_su_passwd(usr->name) == NULL && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
+			usr->flags &= ~USR_HELPING_HAND;
+		else
+			Put(usr, "<magenta>You are available to help others\n");
+	}
 /* count number of users online */
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u == usr)

@@ -122,6 +122,7 @@ int i;
 	KVPair_setint(KVPARAM_LOCK_TIMEOUT,			"lock_timeout",		DEFAULT_LOCK_TIMEOUT);
 	KVPair_setint(KVPARAM_SAVE_TIMEOUT,			"periodic_saving",	DEFAULT_SAVE_TIMEOUT);
 	KVPair_setint(KVPARAM_CACHE_TIMEOUT,		"cache_expire",		DEFAULT_CACHE_TIMEOUT);
+	KVPair_setint(KVPARAM_HELPER_AGE,			"helper_age",		DEFAULT_HELPER_AGE);
 
 	KVPair_setstring(KVPARAM_SEP8, "", "");
 

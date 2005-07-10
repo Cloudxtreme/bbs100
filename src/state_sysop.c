@@ -2329,11 +2329,11 @@ void state_maximums_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			Print(usr, "<magenta>\n"
-				"Max number of <hotkey>Cached files            <white>%6u<magenta>\n"
+				"Max number of <hotkey>cached files            <white>%6u<magenta>\n"
 				"Max number of messages kept in a <hotkey>Room <white>%6u<magenta>\n"
 				"Max number of messages kept in <hotkey>Mail>  <white>%6u<magenta>\n"
 				"Max number of lines in an <hotkey>X message   <white>%6u<magenta>\n"
-				"Max number of <hotkey>Lines in a message      <white>%6u<magenta>\n",
+				"Max number of <hotkey>lines in a message      <white>%6u<magenta>\n",
 				PARAM_MAX_CACHED,
 				PARAM_MAX_MESSAGES,
 				PARAM_MAX_MAIL_MSGS,
@@ -2342,7 +2342,7 @@ void state_maximums_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"Max lines in ch<hotkey>at room history        <white>%6u<magenta>\n"
-				"Max number of messages in X <hotkey>History   <white>%6u<magenta>\n"
+				"Max number of messages in X <hotkey>history   <white>%6u<magenta>\n"
 				"Max number of <hotkey>Friends                 <white>%6u<magenta>\n"
 				"Max number of <hotkey>Enemies                 <white>%6u<magenta>\n",
 				PARAM_MAX_CHAT_HISTORY,
@@ -2359,6 +2359,10 @@ void state_maximums_menu(User *usr, char c) {
 				PARAM_LOCK_TIMEOUT, (PARAM_LOCK_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_CACHE_TIMEOUT, (PARAM_CACHE_TIMEOUT == 1) ? "minute" : "minutes"
+			);
+			Print(usr,
+				"Minimum helper a<hotkey>ge                    <white>%6u %s<magenta>\n",
+				PARAM_HELPER_AGE, (PARAM_HELPER_AGE == 1) ? "day" : "days"
 			);
 			break;
 
@@ -2463,6 +2467,12 @@ void state_maximums_menu(User *usr, char c) {
 			Put(usr, "Cache expire time\n");
 			CALL(usr, STATE_PARAM_CACHE_TIMEOUT);
 			Return;
+
+		case 'g':
+		case 'G':
+			Put(usr, "Minimum helper age\n");
+			CALL(usr, STATE_PARAM_HELPER_AGE);
+			Return;
 	}
 	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Maximums<white># ", PARAM_NAME_SYSOP);
 	Return;
@@ -2548,7 +2558,13 @@ void state_param_save(User *usr, char c) {
 void state_param_cache_timeout(User *usr, char c) {
 	Enter(state_param_cache_timeout);
 	change_int_param(usr, c, &PARAM_CACHE_TIMEOUT);
-	usr->runtime_flags |= RTF_WRAPPER_EDITED;
+	usr->runtime_flags |= RTF_WRAPPER_EDITED;		/* flag change in timer (see code above) */
+	Return;
+}
+
+void state_param_helper_age(User *usr, char c) {
+	Enter(state_param_helper_age);
+	change_int0_param(usr, c, &PARAM_HELPER_AGE);
 	Return;
 }
 

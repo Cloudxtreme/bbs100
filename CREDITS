@@ -205,3 +205,5 @@ Credits for bug fixes et al after public release
 
 - Martin Bethlehem provided a patch for supporting cygwin on Win32
   included in 2.2
+
+- WHYz' comments led to the implementation of parameter helper_age

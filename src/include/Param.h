@@ -119,8 +119,9 @@
 #define KVPARAM_LOCK_TIMEOUT		param[KVPARAM_MAX_N+11]
 #define KVPARAM_SAVE_TIMEOUT		param[KVPARAM_MAX_N+12]
 #define KVPARAM_CACHE_TIMEOUT		param[KVPARAM_MAX_N+13]
+#define KVPARAM_HELPER_AGE			param[KVPARAM_MAX_N+14]
 
-#define KVPARAM_NAME_N				64
+#define KVPARAM_NAME_N				65
 #define KVPARAM_SEP8				param[KVPARAM_NAME_N]
 
 #define KVPARAM_NAME_SYSOP			param[KVPARAM_NAME_N+1]
@@ -128,7 +129,7 @@
 #define KVPARAM_NAME_HELPER			param[KVPARAM_NAME_N+3]
 #define KVPARAM_NAME_GUEST			param[KVPARAM_NAME_N+4]
 
-#define KVPARAM_NOTIFY_N			69
+#define KVPARAM_NOTIFY_N			70
 #define KVPARAM_SEP9				param[KVPARAM_NOTIFY_N]
 
 #define KVPARAM_NOTIFY_LOGIN		param[KVPARAM_NOTIFY_N+1]
@@ -140,7 +141,7 @@
 #define KVPARAM_NOTIFY_ENTER_CHAT	param[KVPARAM_NOTIFY_N+7]
 #define KVPARAM_NOTIFY_LEAVE_CHAT	param[KVPARAM_NOTIFY_N+8]
 
-#define KVPARAM_HAVE_N				78
+#define KVPARAM_HAVE_N				79
 #define KVPARAM_SEP10				param[KVPARAM_HAVE_N]
 
 #define KVPARAM_HAVE_XMSGS			param[KVPARAM_HAVE_N+1]
@@ -238,6 +239,7 @@
 #define PARAM_LOCK_TIMEOUT			IPARAM(LOCK_TIMEOUT)
 #define PARAM_SAVE_TIMEOUT			IPARAM(SAVE_TIMEOUT)
 #define PARAM_CACHE_TIMEOUT			IPARAM(CACHE_TIMEOUT)
+#define PARAM_HELPER_AGE			IPARAM(HELPER_AGE)
 
 #define PARAM_NAME_SYSOP			SPARAM(NAME_SYSOP)
 #define PARAM_NAME_ROOMAIDE			SPARAM(NAME_ROOMAIDE)
@@ -291,6 +293,7 @@
 #define DEFAULT_LOCK_TIMEOUT		30		/* 30 minute timeout */
 #define DEFAULT_SAVE_TIMEOUT		5		/* save user every 5 minutes */
 #define DEFAULT_CACHE_TIMEOUT		30		/* expire unused cached files every 30 minutes */
+#define DEFAULT_HELPER_AGE			1		/* minimum age in days required for Helper status */
 #define DEFAULT_UMASK				007		/* allow user+group, deny others */
 
 extern KVPair **param;

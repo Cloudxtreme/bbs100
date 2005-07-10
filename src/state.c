@@ -317,6 +317,23 @@ int i, idx;
 					usr->runtime_flags &= ~RTF_WAS_HH;
 					Put(usr, "<magenta>You are no longer available to help others\n");
 				} else {
+					if (get_su_passwd(usr->name) == NULL) {
+/*
+	first see if the person is old enough to use to enable Helper status
+	Sysop-capable users get a free ride
+	PARAM_HELPER_AGE is measured in 24-hour days and may be 0
+*/
+						if (!usr->online_timer)
+							usr->online_timer = rtc;
+						if (usr->online_timer < rtc)
+							usr->total_time += (rtc - usr->online_timer);
+						usr->online_timer = rtc;
+
+						if (usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE) {
+							Put(usr, "<red>You are still wet behind the ears. True wisdom comes with age\n");
+							break;
+						}
+					}
 					if (usr->flags & USR_X_DISABLED) {
 						Put(usr, "<red>You must enable message reception if you want to be available to help others\n");
 						break;
