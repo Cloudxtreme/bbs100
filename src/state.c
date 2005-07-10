@@ -4018,16 +4018,16 @@ int i, j, found, printed;
 				if (memcmp(orig_sums[i].sum, build_sums[j].sum, MD5_DIGITS)) {
 					if (!printed) {
 						printed++;
-						Put(usr, "<yellow>There are changes in the following components<white>:\n<green>  ");
+						Put(usr, "<yellow>There are changes in the following components<white>:\n<green>");
 					}
-					Print(usr, "%s ", build_sums[j].filename);
+					Print(usr, " %s", build_sums[j].filename);
 				}
 				break;
 			}
 			j++;
 		}
 		if (!found) {
-			Print(usr, "<red>missing:<yellow>%s <green>", orig_sums[i].filename);
+			Print(usr, " <red>missing:<yellow>%s<green>", orig_sums[i].filename);
 			printed++;
 		}
 		i++;

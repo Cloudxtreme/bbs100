@@ -31,6 +31,7 @@
 #include "main.h"
 #include "copyright.h"
 #include "Param.h"
+#include "screens.h"
 
 #include <stdio.h>
 #include <stdlib.h>
