@@ -430,12 +430,9 @@ char filename[MAX_PATHLEN];
 		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
 
 	if (r->msg_idx >= r->max_msgs) {
-		if (filename[0]) {
-			path_strip(filename);
-			remove_Cache_filename(filename);
-			if (unlink(filename) == -1)
-				log_err("newMsg(): failed to delete file %s", filename);
-		}
+		if (filename[0] && unlink_file(filename) == -1)
+			log_err("newMsg(): failed to delete file %s", filename);
+
 		memmove(r->msgs, &r->msgs[1], (r->max_msgs - 1) * sizeof(unsigned long));
 		r->msg_idx = r->max_msgs - 1;
 	}
