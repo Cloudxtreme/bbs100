@@ -23,6 +23,8 @@
 #ifndef STRINGIO_H_WJ105
 #define STRINGIO_H_WJ105	1
 
+#include <stdarg.h>
+
 #define STRINGIO_MINSIZE	128
 #define STRINGIO_BLKSIZE	1024
 
@@ -54,6 +56,7 @@ int save_StringIO(StringIO *, char *);
 
 char *gets_StringIO(StringIO *, char *, int);
 int put_StringIO(StringIO *, char *);
+int vprint_StringIO(StringIO *, char *, va_list);
 int print_StringIO(StringIO *, char *, ...);
 
 void free_StringIO(StringIO *);

@@ -32,7 +32,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 
 StringIO *new_StringIO(void) {
@@ -314,19 +313,27 @@ int put_StringIO(StringIO *s, char *str) {
 	return write_StringIO(s, str, strlen(str));
 }
 
-int print_StringIO(StringIO *s, char *fmt, ...) {
+int vprint_StringIO(StringIO *s, char *fmt, va_list args) {
 char buf[PRINT_BUF];
-va_list args;
 int l;
 
 	if (s == NULL || fmt == NULL || !*fmt)
 		return 0;
 
-	va_start(args, fmt);
 	l = vsprintf(buf, fmt, args);
 	va_end(args);
 
 	return put_StringIO(s, buf);
+}
+
+int print_StringIO(StringIO *s, char *fmt, ...) {
+va_list args;
+
+	if (s == NULL || fmt == NULL || !*fmt)
+		return 0;
+
+	va_start(args, fmt);
+	return vprint_StringIO(s, fmt, args);
 }
 
 void free_StringIO(StringIO *s) {
