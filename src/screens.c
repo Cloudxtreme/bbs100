@@ -33,20 +33,20 @@ StringList *login_screen = NULL, *logout_screen = NULL, *nologin_screen = NULL,
 
 
 /*
-	this function seems so simple, but note that it now reads the file
+	this function seems so simple, but note that it reads the file
 	from the cache
 */
-StringList *load_screen(char *filename) {
-StringList *sl;
+int load_screen(StringIO *s, char *filename) {
+int err;
 File *f;
 
-	if ((f = Fopen(filename)) == NULL)
-		return NULL;
+	if (s == NULL || filename == NULL || !*filename || (f = Fopen(filename)) == NULL)
+		return -1;
 
-	sl = StringList_from_StringIO(f->data);
+	err = copy_StringIO(s, f->data);
 
 	Fclose(f);
-	return sl;
+	return err;
 }
 
 /* EOB */

@@ -774,12 +774,7 @@ unsigned long msg_number;
 		RET(usr);
 		Return;
 	}
-	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
-		Perror(usr, "Out of memory");
-		RET(usr);
-		Return;
-	} else
-		free_StringIO(usr->text);
+	free_StringIO(usr->text);
 
 	msg_header(usr);
 
@@ -2626,11 +2621,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
 	Enter(msg_header);
 
-	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
-		Perror(usr, "Out of memory");
-		Return;
-	} else
-		free_StringIO(usr->text);
+	free_StringIO(usr->text);
 
 	if (usr->message == NULL) {
 		Perror(usr, "I have a problem with this");

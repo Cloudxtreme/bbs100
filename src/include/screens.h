@@ -24,6 +24,7 @@
 #define SCREENS_H_WJ99 1
 
 #include "StringList.h"
+#include "StringIO.h"
 
 extern StringList *login_screen;
 extern StringList *logout_screen;
@@ -32,7 +33,7 @@ extern StringList *motd_screen;
 extern StringList *crash_screen;
 extern StringList *nologin_screen;
 
-StringList *load_screen(char *);
+int load_screen(StringIO *, char *);
 
 #endif	/* SCREENS_H_WJ99 */
 

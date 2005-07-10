@@ -467,12 +467,7 @@ unsigned long num;
 
 	update_stats(usr);
 
-	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
-		Perror(usr, "Out of memory");
-		Return;
-	} else
-		free_StringIO(usr->text);
-
+	free_StringIO(usr->text);
 	print_StringIO(usr->text, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
 		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf));
 

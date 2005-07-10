@@ -69,6 +69,10 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
+	if ((usr->text = new_StringIO()) == NULL) {
+		destroy_User(usr);
+		return NULL;
+	}
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
@@ -77,7 +81,6 @@ User *usr;
 	default_colors(usr);
 
 	usr->curr_msg = -1;
-
 	return usr;
 }
 

@@ -186,22 +186,20 @@ int i, idx;
 		case 'H':
 		case '?':
 			Put(usr, "<white>Help\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_HELP_STD)) == NULL) {
+			if (load_screen(usr->text, PARAM_HELP_STD) < 0) {
 				Put(usr, "<red>No help available\n");
 				break;
 			}
-			read_more(usr);
+			read_text(usr);
 			Return;
 
 		case KEY_CTRL('G'):
 			Put(usr, "<white>GNU General Public License\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_GPL_SCREEN)) == NULL) {
+			if (load_screen(usr->text, PARAM_GPL_SCREEN) < 0) {
 				Put(usr, "<red>The GPL file is missing\n");		/* or out of memory! */
 				break;
 			}
-			read_more(usr);
+			read_text(usr);
 			Return;
 
 		case '[':
@@ -211,12 +209,11 @@ int i, idx;
 
 		case ']':
 			Put(usr, "<white>Local modifications made to bbs100\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_MODS_SCREEN)) == NULL) {
+			if (load_screen(usr->text, PARAM_MODS_SCREEN) < 0) {
 				Put(usr, "<red>The local mods file is missing\n");		/* or out of memory! */
 				break;
 			}
-			read_more(usr);
+			read_text(usr);
 			Return;
 
 		case '{':
@@ -3260,8 +3257,6 @@ int r;
 	Enter(state_boss);
 
 	if (c == INIT_STATE) {
-		StringList *boss;
-
 		edit_line(usr, EDIT_INIT);
 
 		if (PARAM_HAVE_HOLD) {
@@ -3279,14 +3274,13 @@ int r;
 		else
 			Put(usr, "\n");
 
-		if ((boss = load_screen(PARAM_BOSS_SCREEN)) != NULL) {
-			StringList *sl;
+		if (load_screen(usr->text, PARAM_BOSS_SCREEN) >= 0) {
+			char buf[PRINT_BUF];
 
-			for(sl = boss; sl != NULL; sl = sl->next)
-				Print(usr, "%s\n", sl->str);
-
-			listdestroy_StringList(boss);
-			boss = NULL;
+			while(gets_StringIO(usr->text, buf, PRINT_BUF) != NULL) {
+				Put(usr, buf);
+				Put(usr, "\n");
+			}
 		} else {
 			switch(rand() & 3) {
 				case 0:

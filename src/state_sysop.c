@@ -125,13 +125,12 @@ void state_sysop_menu(User *usr, char c) {
 		case 'H':
 		case '?':
 			Put(usr, "Help\n");
-			listdestroy_StringList(usr->more_text);
-			if ((usr->more_text = load_screen(PARAM_HELP_SYSOP)) == NULL) {
+			if (load_screen(usr->text, PARAM_HELP_SYSOP) < 0) {
 				Put(usr, "<red>No help available\n");
 				break;
 			}
 			PUSH(usr, STATE_PRESS_ANY_KEY);
-			read_more(usr);
+			read_text(usr);
 			Return;
 
 		case 'r':

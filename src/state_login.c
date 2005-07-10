@@ -385,8 +385,7 @@ void state_ansi_prompt(User *usr, char c) {
 			Put(usr, "\n<yellow>Are you on an ANSI terminal, <hotkey>Yes or <hotkey>No? <white>(<yellow>Y<white>/<yellow>n<white>): ");
 			Return;
 	}
-	listdestroy_StringList(usr->more_text);
-	if ((usr->more_text = load_screen(PARAM_FIRST_LOGIN)) != NULL) {
+	if (load_screen(usr->text, PARAM_FIRST_LOGIN) >= 0) {
 /*
 	for the new users, we reset the timeout timer here so they have some
 	time to read the displayed text
@@ -398,7 +397,7 @@ void state_ansi_prompt(User *usr, char c) {
 		}
 		MOV(usr, STATE_DISPLAY_MOTD);
 		PUSH(usr, STATE_PRESS_ANY_KEY);
-		read_more(usr);
+		read_text(usr);
 		Return;
 	}
 	JMP(usr, STATE_DISPLAY_MOTD);
