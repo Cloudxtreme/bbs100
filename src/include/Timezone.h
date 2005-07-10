@@ -27,6 +27,7 @@
 
 #include <time.h>
 
+#define TZ_INDEX_FILE		"/.tz_index"
 
 typedef struct {
 	time_t when;			/* when DST transition occurs */

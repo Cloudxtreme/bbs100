@@ -7,6 +7,8 @@ Changes as of July 10th 2005
 - max_mail_msgs is now a live parameter, but only applies on re-login
 - max_messages is a default for new rooms
 - per-room maximum of messages, configurable via room config menu
+- cache is now StringIO
+- bugfixes in time zone selection
 
 Changes as of July 9th 2005
 - removed multi-language code

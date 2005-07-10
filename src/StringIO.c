@@ -224,7 +224,7 @@ int newpos;
 		return -1;
 
 	s->pos = newpos;
-	return 0;
+	return s->pos;
 }
 
 int copy_StringIO(StringIO *dest, StringIO *from) {

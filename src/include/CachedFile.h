@@ -24,6 +24,7 @@
 #define CACHEDFILE_H_WJ100 1
 
 #include "StringList.h"
+#include "StringIO.h"
 #include "Timer.h"
 
 #include <stdarg.h>
@@ -31,12 +32,16 @@
 
 #define FILE_DIRTY		1
 
+#define FSEEK_SET		0
+#define FSEEK_CUR		1
+#define FSEEK_END		2
+
 typedef struct File_tag File;
 
 struct File_tag {
 	unsigned int flags;
 	char *filename;
-	StringList *data, *datap;
+	StringIO *data;
 };
 
 typedef struct CachedFile_tag CachedFile;

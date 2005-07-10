@@ -1312,10 +1312,15 @@ int i;
 StringList *StringList_from_StringIO(StringIO *s) {
 StringList *sl;
 char buf[PRINT_BUF];
+int pos;
+
+	pos = tell_StringIO(s);
 
 	sl = NULL;
 	while(gets_StringIO(s, buf, PRINT_BUF) != NULL)
 		sl = add_StringList(&sl, new_StringList(buf));
+
+	seek_StringIO(s, pos, STRINGIO_SET);
 
 	sl = rewind_StringList(sl);
 	return sl;

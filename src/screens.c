@@ -23,6 +23,7 @@
 #include "config.h"
 #include "screens.h"
 #include "CachedFile.h"
+#include "util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,7 @@ File *f;
 	if ((f = Fopen(filename)) == NULL)
 		return NULL;
 
-	sl = copy_StringList(f->data);
+	sl = StringList_from_StringIO(f->data);
 
 	Fclose(f);
 	return sl;

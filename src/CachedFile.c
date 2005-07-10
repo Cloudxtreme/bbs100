@@ -103,7 +103,16 @@ void destroy_CachedFile(CachedFile *cf) {
 
 
 File *new_File(void) {
-	return (File *)Malloc(sizeof(File), TYPE_FILE);
+File *f;
+
+	if ((f = (File *)Malloc(sizeof(File), TYPE_FILE)) == NULL)
+		return NULL;
+
+	if ((f->data = new_StringIO()) == NULL) {
+		destroy_File(f);
+		return NULL;
+	}
+	return f;
 }
 
 void destroy_File(File *f) {
@@ -111,7 +120,7 @@ void destroy_File(File *f) {
 		return;
 
 	Free(f->filename);
-	listdestroy_StringList(f->data);
+	destroy_StringIO(f->data);
 	Free(f);
 }
 
@@ -144,17 +153,19 @@ File *f;
 
 	path_strip(filename);
 
-	if ((f = copy_from_cache(filename)) != NULL)
+	if ((f = copy_from_cache(filename)) != NULL) {
+		Frewind(f);
 		return f;
-
+	}
 	if ((f = new_File()) == NULL)
 		return NULL;
 
-	if ((f->data = f->datap = load_StringList(filename)) == NULL
+	if (load_StringIO(f->data, filename) < 0
 		|| (f->filename = cstrdup(filename)) == NULL) {
 		destroy_File(f);
 		return NULL;
 	}
+	Frewind(f);
 	add_Cache(f);
 	return f;
 }
@@ -164,7 +175,7 @@ void Fclose(File *f) {
 		return;
 
 	if ((f->flags & FILE_DIRTY) && f->filename != NULL && f->filename[0]) {
-		save_StringList(f->data, f->filename);		/* sync to disk */
+		save_StringIO(f->data, f->filename);		/* sync to disk */
 		copy_to_cache(f);
 	}
 	destroy_File(f);
@@ -182,7 +193,7 @@ CachedFile *cf;
 		return NULL;
 
 	if ((f->filename = cstrdup(filename)) == NULL
-		|| (f->data = f->datap = copy_StringList(cf->f->data)) == NULL) {
+		|| copy_StringIO(f->data, cf->f->data) < 0) {
 		destroy_File(f);
 		return NULL;
 	}
@@ -195,10 +206,9 @@ CachedFile *cf;
 	if (f == NULL || f->filename == NULL || !f->filename[0])
 		return;
 
-	if ((cf = in_Cache(f->filename)) != NULL) {
-		listdestroy_StringList(cf->f->data);
-		cf->f->data = cf->f->datap = copy_StringList(f->data);
-	} else
+	if ((cf = in_Cache(f->filename)) != NULL)
+		copy_StringIO(cf->f->data, f->data);
+	else
 		add_Cache(f);
 }
 
@@ -224,40 +234,55 @@ void Frewind(File *f) {
 	if (f == NULL)
 		return;
 
-	f->datap = f->data;
+	seek_StringIO(f->data, 0, STRINGIO_SET);
+}
+
+int Fseek(File *f, int relpos, int whence) {
+	if (f == NULL)
+		return -1;
+
+	switch(whence) {
+		case FSEEK_SET:
+			return seek_StringIO(f->data, relpos, STRINGIO_SET);
+
+		case FSEEK_CUR:
+			return seek_StringIO(f->data, relpos, STRINGIO_CUR);
+
+		case FSEEK_END:
+			return seek_StringIO(f->data, relpos, STRINGIO_END);
+
+		default:
+			return -1;
+	}
+	return 0;
 }
 
 char *Fgets(File *f, char *buf, int max) {
-	if (f == NULL || buf == NULL || f->datap == NULL)
+	if (f == NULL || buf == NULL)
 		return NULL;
 
-	strncpy(buf, f->datap->str, max);
-	buf[max-1] = 0;
-	f->datap = f->datap->next;
-	return buf;
+	return gets_StringIO(f->data, buf, max);
 }
 
 int Fputs(File *f, char *buf) {
-StringList *sl;
+int err;
 
-	if (f == NULL || buf == NULL || (sl = new_StringList(buf)) == NULL)
+	if (f == NULL || buf == NULL)
 		return -1;
 
-	f->datap = add_StringList(&f->datap, sl);
-	if (f->data == NULL)
-		f->data = f->datap;
-
 	f->flags |= FILE_DIRTY;
-	return 0;
+
+	if ((err = put_StringIO(f->data, buf)) < 0)
+		return err;
+	return write_StringIO(f->data, "\n", 1);
 }
 
 int vFprintf(File *f, char *fmt, va_list ap) {
 	if (f == NULL || fmt == NULL)
 		return -1;
 
-	f->datap = vadd_String(&f->datap, fmt, ap);
-	if (f->data == NULL)
-		f->data = f->datap;
+	vprint_StringIO(f->data, fmt, ap);
+	write_StringIO(f->data, "\n", 1);
 
 	f->flags |= FILE_DIRTY;
 	return 0;
@@ -273,22 +298,20 @@ va_list ap;
 
 StringList *Fgetlist(File *f) {
 StringList *sl = NULL, *root = NULL;
+char buf[PRINT_BUF];
 
 	if (f == NULL)
 		return NULL;
 
-	while(f->datap != NULL) {
-		if (f->datap->str == NULL || !f->datap->str[0]) {
-			f->datap = f->datap->next;
+	while(gets_StringIO(f->data, buf, PRINT_BUF) != NULL) {
+		if (!buf[0])
 			break;
-		}
-		if ((sl = add_StringList(&sl, new_StringList(f->datap->str))) == NULL)
+
+		if ((sl = add_StringList(&sl, new_StringList(buf))) == NULL)
 			break;
 	
 		if (root == NULL)
 			root = sl;
-
-		f->datap = f->datap->next;
 	}
 	return root;
 }
@@ -298,10 +321,11 @@ void Fputlist(File *f, StringList *sl) {
 		return;
 
 	while(sl != NULL) {
-		f->datap = add_StringList(&f->datap, new_StringList(sl->str));
+		put_StringIO(f->data, sl->str);
+		write_StringIO(f->data, "\n", 1);
 		sl = sl->next;
 	}
-	f->datap = add_StringList(&f->datap, new_StringList(""));
+	write_StringIO(f->data, "\n", 1);
 	f->flags |= FILE_DIRTY;
 }
 
@@ -311,10 +335,8 @@ int unlink_file(char *filename) {
 		return -1;
 
 	path_strip(filename);
-
 	remove_Cache_filename(filename);
-	unlink(filename);			/* Note: this call could fail :P */
-	return 0;
+	return unlink(filename);
 }
 
 int rename_dir(char *dirname, char *newdirname) {
@@ -398,8 +420,8 @@ CachedFile *cf;
 		return;
 
 	if ((cf->f = new_File()) == NULL
-		|| (cf->f->data = copy_StringList(f->data)) == NULL
-		|| (cf->f->filename = cstrdup(f->filename)) == NULL) {
+		|| (cf->f->filename = cstrdup(f->filename)) == NULL
+		|| copy_StringIO(cf->f->data, f->data) < 0) {
 		destroy_CachedFile(cf);
 		return;
 	}

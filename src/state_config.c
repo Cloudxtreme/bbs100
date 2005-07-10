@@ -1428,12 +1428,12 @@ char filename[MAX_PATHLEN];
 	Enter(select_tz_continent);
 
 	strcpy(filename, PARAM_ZONEINFODIR);
-	strcat(filename, "/.tz_index");
+	strcat(filename, TZ_INDEX_FILE);
 	path_strip(filename);
 
 	if ((f = Fopen(filename)) == NULL) {
-		log_err("state_select_tz_continent(): failed to open %s", filename);
-		Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n");
+		log_err("select_tz_continent(): failed to open %s", filename);
+		Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n\n");
 		Return;
 	}
 /*
@@ -1441,18 +1441,18 @@ char filename[MAX_PATHLEN];
 	the user is stuck in this menu anyway so it shouldn't be a prob
 */
 	if (usr->tmpbuf[0] != NULL) {
-		log_err("state_select_tz_continent(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
+		log_err("select_tz_continent(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
 		Free(usr->tmpbuf[0]);
 	}
-	if ((usr->tmpbuf[0] = (char *)copy_StringList(f->data)) == NULL) {
-		log_err("state_select_tz_continent(): out of memory buffering tz_index file");
-		Put(usr, "\n<red>Out of memory error, please retry later\n");
+	if ((usr->tmpbuf[0] = (char *)Fgetlist(f)) == NULL) {
+		log_err("select_tz_continent(): out of memory buffering tz_index file");
+		Put(usr, "\n<red>Out of memory error, please retry later\n\n");
 		Fclose(f);
 		Return;
 	}
 	Fclose(f);
 
-	Put(usr, "\n<magenta>Time zone regions\n\n");
+	Put(usr, "<magenta>Time zone regions\n\n");
 
 	listdestroy_StringList(usr->more_text);
 	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->display->term_width);
@@ -1477,6 +1477,7 @@ int r;
 	if (r == EDIT_BREAK) {
 		destroy_StringList((StringList *)usr->tmpbuf[0]);
 		usr->tmpbuf[0] = NULL;
+		Put(usr, "\n");
 		RET(usr);
 		Return;
 	}
@@ -1488,13 +1489,15 @@ int r;
 		if (!usr->edit_buf[0]) {
 			destroy_StringList((StringList *)usr->tmpbuf[0]);
 			usr->tmpbuf[0] = NULL;
+			Put(usr, "\n");
 			RET(usr);
 			Return;
 		}
 		choice = atoi(usr->edit_buf);
-		if (!choice) {
+		if (choice <= 0) {
 			destroy_StringList((StringList *)usr->tmpbuf[0]);
 			usr->tmpbuf[0] = NULL;
+			Put(usr, "\n");
 			RET(usr);
 			Return;
 		}
@@ -1510,16 +1513,16 @@ int r;
 			}
 			idx++;
 		}
-		destroy_StringList((StringList *)usr->tmpbuf[0]);
-		usr->tmpbuf[0] = NULL;
-
 		if (!filename[0]) {				/* invalid choice */
 			CURRENT_STATE(usr);
 			Return;
 		}
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
+
 		if ((usr->tmpbuf[0] = cstrdup(filename)) == NULL) {
 			log_err("state_select_tz_continent(): out of memory during cstrdup()");
-			Put(usr, "<red>Out of memory! Please try again later\n");
+			Put(usr, "<red>Out of memory! Please try again later\n\n");
 			RET(usr);
 			Return;
 		}
@@ -1544,23 +1547,23 @@ char filename[MAX_PATHLEN];
 	Enter(select_tz_city);
 
 	if (usr->tmpbuf[0] == NULL) {
-		log_err("state_select_tz_city(): this is bad: usr->tmpbuf[0] == NULL");
-		Put(usr, "<red>Sorry, something is not working. Please try again later\n");
+		log_err("select_tz_city(): this is bad: usr->tmpbuf[0] == NULL");
+		Put(usr, "<red>Sorry, something is not working. Please try again later\n\n");
 		Return;
 	}
 	sprintf(filename, "%s/%s/.tz_index", PARAM_ZONEINFODIR, usr->tmpbuf[0]);
 	path_strip(filename);
 
 	if (usr->tmpbuf[1] != NULL) {
-		log_err("state_select_tz_city(): this is bad: usr->tmpbuf[1] != NULL, freeing it");
+		log_err("select_tz_city(): this is bad: usr->tmpbuf[1] != NULL, freeing it");
 		Free(usr->tmpbuf[1]);
 	}
 	usr->tmpbuf[1] = usr->tmpbuf[0];		/* tmpbuf[1] holds directory name */
 	usr->tmpbuf[0] = NULL;
 
 	if ((f = Fopen(filename)) == NULL) {
-		log_err("state_select_tz_city(): failed to open %s", filename);
-		Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n");
+		log_err("select_tz_city(): failed to open %s", filename);
+		Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n\n");
 
 		Free(usr->tmpbuf[1]);
 		usr->tmpbuf[1] = NULL;
@@ -1571,12 +1574,12 @@ char filename[MAX_PATHLEN];
 	the user is stuck in this menu anyway so it shouldn't be a prob
 */
 	if (usr->tmpbuf[0] != NULL) {
-		log_err("state_select_tz_city(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
+		log_err("select_tz_city(): this is bad: usr->tmpbuf[0] != NULL, freeing it");
 		Free(usr->tmpbuf[0]);
 	}
-	if ((usr->tmpbuf[0] = (char *)copy_StringList(f->data)) == NULL) {
-		log_err("state_select_tz_city(): out of memory buffering tz_index file");
-		Put(usr, "\n<red>Out of memory error, please retry later\n");
+	if ((usr->tmpbuf[0] = (char *)Fgetlist(f)) == NULL) {
+		log_err("select_tz_city(): out of memory buffering tz_index file");
+		Put(usr, "\n<red>Out of memory error, please retry later\n\n");
 
 		Fclose(f);
 		Free(usr->tmpbuf[1]);
@@ -1613,6 +1616,7 @@ int r;
 		Free(usr->tmpbuf[1]);
 		usr->tmpbuf[1] = NULL;
 
+		Put(usr, "\n");
 		RET(usr);
 		Return;
 	}
@@ -1629,17 +1633,19 @@ int r;
 			Free(usr->tmpbuf[1]);
 			usr->tmpbuf[1] = NULL;
 
+			Put(usr, "\n");
 			RET(usr);
 			Return;
 		}
 		choice = atoi(usr->edit_buf);
-		if (!choice) {
+		if (choice <= 0) {
 			destroy_StringList((StringList *)usr->tmpbuf[0]);
 			usr->tmpbuf[0] = NULL;
 
 			Free(usr->tmpbuf[1]);
 			usr->tmpbuf[1] = NULL;
 
+			Put(usr, "\n");
 			RET(usr);
 			Return;
 		}
@@ -1655,23 +1661,18 @@ int r;
 			}
 			idx++;
 		}
-		destroy_StringList((StringList *)usr->tmpbuf[0]);
-		usr->tmpbuf[0] = NULL;
-
 		if (!filename[0]) {						/* invalid choice */
-			usr->tmpbuf[0] = usr->tmpbuf[1];	/* put dirname in tmpbuf[0] */
-			usr->tmpbuf[1] = NULL;
-
-			CURRENT_STATE(usr);
+			CURRENT_STATE(usr);					/* stay here */
 			Return;
 		}
+		destroy_StringList((StringList *)usr->tmpbuf[0]);
+		usr->tmpbuf[0] = NULL;
 		Free(usr->tmpbuf[1]);
 		usr->tmpbuf[1] = NULL;
 
 		path_strip(filename);
 		if ((tz = load_Timezone(filename)) == NULL) {
-			Put(usr, "<red>That time zone cannot be used right now. Please try again later\n");
-
+			Put(usr, "<red>That time zone cannot be used right now. Please try again later\n\n");
 			RET(usr);
 			Return;
 		}
@@ -1680,13 +1681,13 @@ int r;
 		Free(usr->timezone);
 		if ((usr->timezone = cstrdup(filename)) == NULL) {
 			log_err("state_select_tz_city(): out of memory setting usr->timezone to %s for user %s", filename, usr->name);
-			Print(usr, "<red>Failed to set new time zone to <yellow>%s\n", filename);
-
+			Print(usr, "<red>Failed to set new time zone to <yellow>%s\n\n", filename);
 			RET(usr);
 			Return;
 		}
 		usr->tz = tz;
 
+		Put(usr, "\n");
 		RET(usr);
 		Return;
 	}

@@ -515,23 +515,12 @@ struct dirent *direntp;
 struct stat statbuf;
 File *f;
 char filename[MAX_PATHLEN];
+StringList *sl;
 
 	if ((dirp = opendir(dirname)) == NULL)
 		return -1;
 
-	strcpy(filename, dirname);
-	if (strlen(filename) + 11 >= MAX_PATHLEN) {
-		log_err("generate_tz_index(): tz_index path too long, directory skipped");
-		return -1;
-	}
-	strcat(filename, "/.tz_index");
-	path_strip(filename);
-
-	if ((f = Fcreate(filename)) == NULL) {
-		log_err("generate_tz_index(%s): failed to create file %s", dirname, filename);
-		closedir(dirp);
-		return -1;
-	}
+	sl = NULL;
 	while((direntp = readdir(dirp)) != NULL) {
 		if (direntp->d_name[0] == '.')
 			continue;
@@ -545,18 +534,39 @@ char filename[MAX_PATHLEN];
 
 		if (subdir) {
 			if (!stat(filename, &statbuf) && S_ISDIR(statbuf.st_mode)) {
-				Fprintf(f, "%s", direntp->d_name);
+				sl = add_StringList(&sl, new_StringList(direntp->d_name));
 				generate_tz_index(filename, 0);				/* recurse */
 			}
 		} else {
 			if (!stat(filename, &statbuf) && S_ISREG(statbuf.st_mode))
-				Fprintf(f, "%s", direntp->d_name);
+				sl = add_StringList(&sl, new_StringList(direntp->d_name));
 		}
 	}
 	closedir(dirp);
 
-	f->data = sort_StringList(f->data, tz_index_sort);
+	sl = rewind_StringList(sl);
+	sl = sort_StringList(sl, tz_index_sort);
+
+/*
+	now save the sorted list to a file
+*/
+	strcpy(filename, dirname);
+	if (strlen(filename) + 11 >= MAX_PATHLEN) {
+		log_err("generate_tz_index(): tz_index path too long, directory skipped");
+		return -1;
+	}
+	strcat(filename, TZ_INDEX_FILE);
+	path_strip(filename);
+
+	if ((f = Fcreate(filename)) == NULL) {
+		log_err("generate_tz_index(%s): failed to create file %s", dirname, filename);
+		closedir(dirp);
+		return -1;
+	}
+	Fputlist(f, sl);
 	Fclose(f);
+
+	listdestroy_StringList(sl);
 	return 0;
 }
 
