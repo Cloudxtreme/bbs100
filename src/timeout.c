@@ -90,7 +90,7 @@ User *usr;
 void reboot_timeout(void *v) {
 Timer *t;
 User *u;
-StringList *screen, *sl;
+StringIO *screen;
 
 	t = (Timer *)v;
 	switch(t->restart) {
@@ -112,13 +112,13 @@ StringList *screen, *sl;
 		case (TIMEOUT_REBOOT-3):
 			log_msg("rebooting, logging off all users");
 
-			screen = load_StringList(PARAM_REBOOT_SCREEN);
-
-			for(u = AllUsers; u != NULL; u = u->next) {
-				for(sl = screen; sl != NULL; sl = sl->next)
-					Print(u, "%s\n", sl->str);
-				close_connection(u, "reboot");
+			if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_REBOOT_SCREEN) >= 0) {
+				for(u = AllUsers; u != NULL; u = u->next) {
+					display_text(u, screen);
+					close_connection(u, "reboot");
+				}
 			}
+			destroy_StringIO(screen);
 			log_msg("reboot procedure completed, exiting");
 			exit_program(REBOOT);
 	}
@@ -127,7 +127,7 @@ StringList *screen, *sl;
 void shutdown_timeout(void *v) {
 Timer *t;
 User *u;
-StringList *screen, *sl;
+StringIO *screen;
 
 	t = (Timer *)v;
 	switch(t->restart) {
@@ -149,13 +149,13 @@ StringList *screen, *sl;
 		case (TIMEOUT_SHUTDOWN-3):
 			log_msg("shutting down, logging off all users");
 
-			screen = load_StringList(PARAM_SHUTDOWN_SCREEN);
-
-			for(u = AllUsers; u != NULL; u = u->next) {
-				for(sl = screen; sl != NULL; sl = sl->next)
-					Print(u, "%s\n", sl->str);
-				close_connection(u, "shutdown");
+			if ((screen = new_StringIO()) != NULL && load_StringList(PARAM_SHUTDOWN_SCREEN) >= 0) {
+				for(u = AllUsers; u != NULL; u = u->next) {
+					display_text(u, screen);
+					close_connection(u, "shutdown");
+				}
 			}
+			destroy_StringIO(screen);
 			log_msg("shutdown sequence completed, exiting");
 			exit_program(SHUTDOWN);
 	}
