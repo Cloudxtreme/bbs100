@@ -18,6 +18,10 @@
 */
 /*
 	StringIO.c	WJ105
+
+	s->size is size of the memory buffer
+	s->len is length of data in the buffer
+	s->pos is the current data pointer
 */
 
 #include "config.h"
@@ -50,7 +54,6 @@ char *p;
 
 	if (s == NULL)
 		return -1;
-
 /*
 	grow in steps
 */
@@ -118,7 +121,6 @@ int shift_StringIO(StringIO *s) {
 		s->len -= s->pos;
 	}
 	s->pos = 0;
-
 	return 0;
 }
 
@@ -226,6 +228,22 @@ int newpos;
 	return 0;
 }
 
+int copy_StringIO(StringIO *dest, StringIO *from) {
+char buf[1024];
+int bytes_read;
+
+	if (dest == NULL || from == NULL)
+		return -1;
+
+	seek_StringIO(from, 0, STRINGIO_SET);
+	free_StringIO(dest);
+
+	while((bytes_read = read_StringIO(from, buf, 1024)) > 0)
+		write_StringIO(dest, buf, bytes_read);
+
+	return 0;
+}
+
 int load_StringIO(StringIO *s, char *filename) {
 AtomicFile *f;
 char buf[PRINT_BUF];
@@ -279,7 +297,7 @@ char *p;
 		return NULL;
 
 	pos = tell_StringIO(s);
-	if (read_StringIO(s, buf, size-1) <= 0)
+	if (read_StringIO(s, buf, size) <= 0)
 		return NULL;
 
 	if ((p = cstrchr(buf, '\n')) != NULL) {

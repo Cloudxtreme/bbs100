@@ -845,7 +845,7 @@ unsigned long msg_number;
 			for(sl = usr->message->msg; sl != NULL; sl = sl->next) {
 				if (sl->str != NULL) {
 					put_StringIO(usr->text, sl->str);
-					put_StringIO(usr->text, "\n");
+					write_StringIO(usr->text, "\n", 1);
 				}
 			}
 		}

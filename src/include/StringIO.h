@@ -47,6 +47,7 @@ int write_StringIO(StringIO *, char *, int);
 int tell_StringIO(StringIO *);
 int rewind_StringIO(StringIO *);
 int seek_StringIO(StringIO *, int, int);
+int copy_StringIO(StringIO *, StringIO *);
 
 int load_StringIO(StringIO *, char *);
 int save_StringIO(StringIO *, char *);
