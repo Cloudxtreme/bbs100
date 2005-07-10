@@ -2,6 +2,7 @@ Changes as of July 10th 2005
 - minimum age requirement PARAM_HELPER_AGE for Helping Hand status
   measured in days and may be 0
   sysop-capable users get free ride
+- boss screen can be reloaded from the sysop menu
 
 Changes as of July 9th 2005
 - removed multi-language code

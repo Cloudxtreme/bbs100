@@ -57,9 +57,12 @@ way:
     It contains parameters that can be set to tune the system for you.
     The param file can only be edited when the BBS is not running. To change
     the values in the param file at runtime, use the sysop menu 'Parameters'.
+    Mind that the etc/param file is rewritten by the BBS itself. Any
+    additional comments will be lost.
 
     etc/login, etc/logout, etc/motd, etc/crash, etc/first_login,
-    etc/help.std, etc/help.config, etc/help.roomconfig, etc/help.sysop
+    etc/help.std, etc/help.config, etc/help.roomconfig, etc/help.sysop,
+    etc/boss, etc/credits
 
     These files are 'screens' that are displayed to the user at certain times.
     They are loaded at startup and kept in memory at all times. You can edit

@@ -2199,10 +2199,13 @@ StringList *sl;
 			);
 			Put(usr,
 				"Reload cr<hotkey>edits screen           Reload <hotkey>room config menu help\n"
-				"Reload cr<hotkey>ash screen             Reload <hotkey>sysop menu help\n"
+				"Reload <hotkey>boss screen              Reload <hotkey>sysop menu help\n"
+				"Reload cr<hotkey>ash screen\n"
+			);
+			Put(usr,
 				"\n"
-				"Reload <hotkey>GPL                      Reload <hotkey>local mods\n"
 				"Reload <hotkey>hostmap                  Reload <hotkey>feelings\n"
+				"Reload <hotkey>local mods               Reload <hotkey>GPL\n"
 			);
 			break;
 
@@ -2249,6 +2252,11 @@ StringList *sl;
 		case 'E':
 			Put(usr, "Reload credits screen\n");
 			UNCACHE_FILE(PARAM_CREDITS_SCREEN);
+
+		case 'b':
+		case 'B':
+			Put(usr, "Reload boss screen\n");
+			UNCACHE_FILE(PARAM_BOSS_SCREEN);
 /*
 	the crash screen is not cached
 	(just in case the cache becomes corrupted as well)
