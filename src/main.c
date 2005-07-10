@@ -65,7 +65,8 @@
 
 extern StringList *banished;
 
-char *param_file;
+char *param_file = NULL;
+int nologin_active = 1;
 
 
 static void write_pidfile(void) {
@@ -280,18 +281,10 @@ char buf[256];
 		fprintf(stderr, "bbs100: failed to initialize file cache\n");
 		exit(-1);
 	}
-	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
-	printf("%s\n", ((login_screen = load_StringList(PARAM_LOGIN_SCREEN)) == NULL) ? "failed" : "ok");
-
-	printf("loading logout_screen %s ... ", PARAM_LOGOUT_SCREEN);
-	printf("%s\n", ((logout_screen = load_StringList(PARAM_LOGOUT_SCREEN)) == NULL) ? "failed" : "ok");
-
-	printf("loading motd_screen %s ... ", PARAM_MOTD_SCREEN);
-	printf("%s\n", ((motd_screen = load_StringList(PARAM_MOTD_SCREEN)) == NULL) ? "failed" : "ok");
-
-	printf("loading crash_screen %s ... ", PARAM_CRASH_SCREEN);
-	printf("%s\n", ((crash_screen = load_StringList(PARAM_CRASH_SCREEN)) == NULL) ? "failed" : "ok");
-
+	if (init_screens()) {
+		fprintf(stderr, "bbs100: failed to initialize screens\n");
+		exit(-1);
+	}
 	printf("loading stat_file %s ... ", PARAM_STAT_FILE);
 	printf("%s\n", (load_Stats(&stats, PARAM_STAT_FILE) != 0) ? "failed" : "ok");
 
@@ -345,7 +338,7 @@ char buf[256];
 		printf("running under debugger, signal handling disabled\n");
 		printf("running under debugger, not going to background\n");
 	}
-	init_log();				/* start logging to files */
+	init_log();						/* start logging to files */
 
 	log_info("bbs restart");
 	log_entry(stderr, "bbs restart", 'I', NULL);
@@ -357,8 +350,9 @@ char buf[256];
 
 	stats.uptime = rtc = time(NULL);
 
+	nologin_active = 0;				/* users can login */
 	mainloop();
-	exit_program(SHUTDOWN);						/* clean shutdown */
+	exit_program(SHUTDOWN);			/* clean shutdown */
 	Return 0;
 }
 

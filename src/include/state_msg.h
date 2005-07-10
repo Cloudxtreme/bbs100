@@ -46,6 +46,8 @@
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
 #define STATE_PRESS_ANY_KEY				state_press_any_key
+#define STATE_SCROLL_TEXT	state_scroll_text
+
 
 void state_post_as_anon(User *, char);
 void state_enter_anonymous(User *, char);
@@ -89,14 +91,9 @@ Room *unread_room(User *, Room *);
 Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
-
-
-void read_text(User *);
 void msg_header(User *);
+void read_text(User *);
 void state_scroll_text(User *, char);
-
-#define STATE_SCROLL_TEXT	state_scroll_text
-
 
 #endif	/* STATE_MSG_H_WJ99 */
 

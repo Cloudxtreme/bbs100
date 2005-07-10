@@ -329,6 +329,20 @@ void Fputlist(File *f, StringList *sl) {
 	f->flags |= FILE_DIRTY;
 }
 
+int Fget_StringIO(File *f, StringIO *s) {
+	if (f == NULL || s == NULL)
+		return -1;
+
+	return copy_StringIO(s, f->data);
+}
+
+int Fput_StringIO(File *f, StringIO *s) {
+	if (f == NULL || s == NULL)
+		return -1;
+
+	f->flags |= FILE_DIRTY;
+	return copy_StringIO(f->data, s);
+}
 
 int unlink_file(char *filename) {
 	if (filename == NULL || !*filename)

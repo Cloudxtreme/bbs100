@@ -104,7 +104,6 @@ void ConnUser_accept(Conn *conn) {
 User *new_user;
 Conn *new_conn;
 char buf[256];
-StringList *sl;
 int s, err, optval;
 struct sockaddr_storage client;
 socklen_t client_len = sizeof(struct sockaddr_storage);
@@ -169,8 +168,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	it's a pity that we still do not know the user's terminal height+width,
 	we don't have that input yet, and we're surely not going to wait for it
 */
-	for(sl = login_screen; sl != NULL; sl = sl->next)
-		Print(new_user, "%s\n", sl->str);
+	display_screen(new_user, PARAM_LOGIN_SCREEN);
 	Print(new_user, "        %s\n", print_copyright(SHORT, NULL, buf));
 
 	CALL(new_user, STATE_LOGIN_PROMPT);

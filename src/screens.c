@@ -21,16 +21,64 @@
 */
 
 #include "config.h"
+#include "debug.h"
 #include "screens.h"
 #include "CachedFile.h"
+#include "Param.h"
 #include "util.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-StringList *login_screen = NULL, *logout_screen = NULL, *nologin_screen = NULL,
-	*motd_screen = NULL, *crash_screen = NULL;
+/*
+	the screen screen is the only screen that is kept in-core and does
+	not go through the file cache
+*/
+StringIO *crash_screen = NULL;
 
+
+int init_screens(void) {
+File *f;
+
+	Enter(init_screens);
+
+	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
+	if ((f = Fopen(PARAM_LOGIN_SCREEN)) == NULL) {
+		printf("failed\n");
+		Return -1;
+	}
+	Fclose(f);
+	printf("Ok\n");
+
+	printf("loading logout_screen %s ... ", PARAM_LOGOUT_SCREEN);
+	if ((f = Fopen(PARAM_LOGOUT_SCREEN)) == NULL) {
+		printf("failed\n");
+		Return -1;
+	}
+	Fclose(f);
+	printf("Ok\n");
+
+	printf("loading motd_screen %s ... ", PARAM_MOTD_SCREEN);
+	if ((f = Fopen(PARAM_MOTD_SCREEN)) == NULL) {
+		printf("failed\n");
+		Return -1;
+	}
+	Fclose(f);
+	printf("Ok\n");
+
+	printf("loading crash_screen %s ... ", PARAM_CRASH_SCREEN);
+	if ((crash_screen = new_StringIO()) == NULL) {
+		printf("failed\n");
+		Return -1;
+	}
+	if (load_StringIO(crash_screen, PARAM_CRASH_SCREEN) < 0) {
+		printf("failed\n");
+		Return -1;
+	}
+	printf("Ok\n");
+	Return 0;
+}
 
 /*
 	this function seems so simple, but note that it reads the file
@@ -43,10 +91,47 @@ File *f;
 	if (s == NULL || filename == NULL || !*filename || (f = Fopen(filename)) == NULL)
 		return -1;
 
-	err = copy_StringIO(s, f->data);
+	err = Fget_StringIO(f, s);
 
 	Fclose(f);
 	return err;
+}
+
+int display_screen(User *usr, char *filename) {
+File *f;
+char buf[PRINT_BUF];
+
+	if (usr == NULL || filename == NULL || !*filename)
+		return -1;
+
+	Enter(display_screen);
+
+	if ((f = Fopen(filename)) == NULL) {
+		log_err("display_screen(): failed to open file %s", filename);
+		Return -1;
+	}
+	while(Fgets(f, buf, PRINT_BUF) != NULL) {
+		Put(usr, buf);
+		Put(usr, "\n");
+	}
+	Fclose(f);
+	Return 0;
+}
+
+void display_text(User *usr, StringIO *s) {
+char buf[PRINT_BUF];
+
+	if (usr == NULL || s == NULL)
+		return;
+
+	Enter(display_text);
+
+	rewind_StringIO(s);
+	while(gets_StringIO(s, buf, PRINT_BUF)) {
+		Put(usr, buf);
+		Put(usr, "\n");
+	}
+	Return;
 }
 
 /* EOB */

@@ -27,6 +27,7 @@
 #define SHUTDOWN	0
 
 extern char *param_file;
+extern int nologin_active;
 
 void exit_program(int);
 int main(int, char **);

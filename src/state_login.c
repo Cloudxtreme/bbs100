@@ -31,6 +31,7 @@
 #include "inet.h"
 #include "util.h"
 #include "log.h"
+#include "main.h"
 #include "passwd.h"
 #include "Stats.h"
 #include "timeout.h"
@@ -126,13 +127,9 @@ int r;
 /*
 	nologin is active and user is not a sysop
 */
-		if (nologin_screen != NULL && get_su_passwd(usr->tmpbuf[TMP_NAME]) == NULL) {
-			StringList *sl;
-
+		if (nologin_active && get_su_passwd(usr->tmpbuf[TMP_NAME]) == NULL) {
 			Put(usr, "\n");
-			for(sl = nologin_screen; sl != NULL; sl = sl->next)
-				Print(usr, "%s\n", sl->str);
-
+			display_screen(usr, PARAM_NOLOGIN_SCREEN);
 			close_connection(usr, "connection closed by nologin");
 			Return;
 		}
@@ -335,15 +332,10 @@ char buf[MAX_LINE*2];
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
 			notify_logout(usr);
-			if (logout_screen != NULL) {
-				StringList *sl;
 
-				Put(usr, "\n");
-				for(sl = logout_screen; sl != NULL; sl = sl->next) {
-					Out(usr, sl->str);
-					Out(usr, "\n");
-				}
-			}
+			Put(usr, "\n");
+			display_screen(usr, PARAM_LOGOUT_SCREEN);
+
 			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->hostname);
 			close_connection(usr, "%s has logged out from %s", usr->name, usr->conn->hostname);
 			break;
@@ -405,6 +397,8 @@ void state_ansi_prompt(User *usr, char c) {
 }
 
 void state_display_motd(User *usr, char c) {
+File *f;
+
 	Enter(state_display_motd);
 
 	if (usr->idle_timer != NULL) {			/* reset the 'timeout timer' */
@@ -412,12 +406,13 @@ void state_display_motd(User *usr, char c) {
 		usr->idle_timer->restart = TIMEOUT_USER;
 		usr->idle_timer->action = user_timeout;
 	}
-	if (motd_screen != NULL
-		&& (usr->more_text = copy_StringList(motd_screen)) != NULL) {
+	if ((f = Fopen(PARAM_MOTD_SCREEN)) != NULL) {
+		Fget_StringIO(f, usr->text);
+		Fclose(f);
 		Put(usr, "\n");
 
 		PUSH(usr, STATE_GO_ONLINE);
-		read_more(usr);
+		read_text(usr);						/* read with --More-- prompt */
 		Return;
 	}
 	JMP(usr, STATE_GO_ONLINE);
@@ -593,8 +588,6 @@ char num_buf[25];
 	if there are new Lobby posts, go to the Lobby> first regardless
 	of whether you have new mail or not. New Mail> will be read right
 	after having read the Lobby> anyway
-
-	as suggested by Mz Boobala and Lightspeed of MatrixBBS
 */
 	new_mail = 0;
 	if (usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL

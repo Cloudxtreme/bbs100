@@ -81,6 +81,8 @@ int vFprintf(File *, char *, va_list);
 int Fprintf(File *, char *, ...);
 StringList *Fgetlist(File *);
 void Fputlist(File *, StringList *);
+int Fget_StringIO(File *, StringIO *);
+int Fput_StringIO(File *, StringIO *);
 int unlink_file(char *);
 int rename_dir(char *, char *);
 

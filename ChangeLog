@@ -11,6 +11,7 @@ Changes as of July 10th 2005
 - cache is now StringIO
 - load_screen() uses StringIO
 - Help files use color code '<key>', which ignores USR_UPPERCASE_HOTKEYS
+- all screens work via the cache, except for the crash_screen
 
 Changes as of July 9th 2005
 - removed multi-language code

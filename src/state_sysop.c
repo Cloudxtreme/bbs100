@@ -110,7 +110,7 @@ void state_sysop_menu(User *usr, char c) {
 			else
 				Put(usr, "<white>Ctrl-<hotkey>S<magenta>hutdown\n");
 
-			Print(usr, "%sctivate <hotkey>Nologin                  <hotkey>Help\n", (nologin_screen == NULL) ? "A" : "De-a");
+			Print(usr, "%sctivate <hotkey>Nologin                  <hotkey>Help\n", (nologin_active == 0) ? "A" : "De-a");
 			break;
 
 		case ' ':
@@ -257,32 +257,22 @@ void state_sysop_menu(User *usr, char c) {
 
 		case 'n':
 		case 'N':
-			if (nologin_screen != NULL) {
-				Put(usr, "Deactivate nologin\n");
+			if (nologin_active) {
+				Put(usr, "Deactivate nologin\n"
+					"Deactivated\n");
 
-				listdestroy_StringList(nologin_screen);
-				nologin_screen = NULL;
-
-				Put(usr, "Deactivated\n");
+				nologin_active = 0;
 				log_msg("SYSOP %s deactivated nologin", usr->name);
 				CURRENT_STATE(usr);
 				Return;
 			} else {
-				StringList *sl;
+				Put(usr, "Activate nologin\n"
+					"Activated\n");
 
-				Put(usr, "Activate nologin\n");
-
-				if ((sl = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL) {
-					Perror(usr, "Failed to load nologin_screen");
-				} else {
-					listdestroy_StringList(nologin_screen);
-					nologin_screen = sl;
-
-					Put(usr, "Activated\n");
-					log_msg("SYSOP %s activated nologin", usr->name);
-					CURRENT_STATE(usr);
-					Return;
-				}
+				nologin_active = 1;
+				log_msg("SYSOP %s activated nologin", usr->name);
+				CURRENT_STATE(usr);
+				Return;
 			}
 			break;
 	}
@@ -2183,8 +2173,6 @@ void state_param_def_timezone(User *usr, char c) {
 
 
 void state_reload_files_menu(User *usr, char c) {
-StringList *sl;
-
 	if (usr == NULL)
 		return;
 
@@ -2223,30 +2211,28 @@ StringList *sl;
 	Return
 
 #define RELOAD_FILE(x,y)											\
-	if ((sl = load_StringList(x)) == NULL)							\
+	free_StringIO(y);												\
+	if (load_StringIO((y), (x)) < 0)								\
 		Print(usr, "<red>Failed to load file <white>%s\n", (x));	\
-	else {															\
-		listdestroy_StringList(y);									\
-		(y) = sl;													\
+	else															\
 		Print(usr, "Reloaded file %s\n", (x));						\
-	}																\
 	CURRENT_STATE(usr);												\
 	Return
 
 		case 'i':
 		case 'I':
 			Put(usr, "Reload login screen\n");
-			RELOAD_FILE(PARAM_LOGIN_SCREEN, login_screen);
+			UNCACHE_FILE(PARAM_LOGIN_SCREEN);
 
 		case 'o':
 		case 'O':
 			Put(usr, "Reload logout screen\n");
-			RELOAD_FILE(PARAM_LOGOUT_SCREEN, logout_screen);
+			UNCACHE_FILE(PARAM_LOGOUT_SCREEN);
 
 		case 'm':
 		case 'M':
 			Put(usr, "Reload motd\n");
-			RELOAD_FILE(PARAM_MOTD_SCREEN, motd_screen);
+			UNCACHE_FILE(PARAM_MOTD_SCREEN);
 
 		case 'e':
 		case 'E':

@@ -23,6 +23,7 @@
 #include "config.h"
 #include "Signal.h"
 #include "debug.h"
+#include "main.h"
 #include "cstring.h"
 #include "User.h"
 #include "screens.h"
@@ -393,7 +394,7 @@ char buf[128], total_buf[128];
 	SIGTERM: immediate shutdown
 */
 void sig_shutnow(int sig) {
-StringList *screen, *sl;
+StringIO *screen;
 User *u;
 char signame_buf[MAX_LINE];
 
@@ -401,14 +402,13 @@ char signame_buf[MAX_LINE];
 
 	log_info("*** shutting down on %s ***", sig_name(sig, signame_buf));
 
-	if ((screen = load_StringList(PARAM_SHUTDOWN_SCREEN)) == NULL)
-		screen = crash_screen;
-
-	for(u = AllUsers; u != NULL; u = u->next) {
-		for(sl = screen; sl != NULL; sl = sl->next)
-			Print(u, "%s\n", sl->str);
-		close_connection(u, "system shutdown");
+	if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_SHUTDOWN_SCREEN) >= 0) {
+		for(u = AllUsers; u != NULL; u = u->next) {
+			display_text(u, screen);
+			close_connection(u, "system shutdown");
+		}
 	}
+	destroy_StringIO(screen);
 	exit_program(SHUTDOWN);
 	Return;
 }
@@ -456,14 +456,11 @@ void sig_nologin(int sig) {
 
 	log_msg("SIGHUP caught; reset nologin");
 
-	if (nologin_screen == NULL) {
-		if ((nologin_screen = load_StringList(PARAM_NOLOGIN_SCREEN)) == NULL)
-			log_err("failed to load nologin_screen %s", PARAM_NOLOGIN_SCREEN);
-		else
-			log_msg("nologin set ; users cannot login");
+	if (!nologin_active) {
+		nologin_active = 1;
+		log_msg("nologin set ; users cannot login");
 	} else {
-		listdestroy_StringList(nologin_screen);
-		nologin_screen = NULL;
+		nologin_active = 0;
 		log_msg("nologin reset ; users can login");
 	}
 	Return;
@@ -532,7 +529,6 @@ User *usr;
 		usr->conn->callstack = NULL;
 		CALL(usr, STATE_ROOM_PROMPT);
 	} else {
-		StringList *sl;
 		User *u;
 
 		deinit_Signal();		/* reset all signal handlers */
@@ -542,8 +538,7 @@ User *usr;
 		dump_debug_stack();
 #endif
 		for(u = AllUsers; u != NULL; u = u->next) {
-			for(sl = crash_screen; sl != NULL; sl = sl->next)
-				Print(u, "%s\n", sl->str);
+			display_text(u, crash_screen);
 			close_connection(u, "system crash");
 		}
 		if (!cstricmp(PARAM_ONCRASH, "recover"))

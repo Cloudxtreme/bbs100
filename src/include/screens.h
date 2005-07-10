@@ -23,17 +23,14 @@
 #ifndef SCREENS_H_WJ99
 #define SCREENS_H_WJ99 1
 
-#include "StringList.h"
-#include "StringIO.h"
+#include "User.h"
 
-extern StringList *login_screen;
-extern StringList *logout_screen;
-extern StringList *nologin_screen;
-extern StringList *motd_screen;
-extern StringList *crash_screen;
-extern StringList *nologin_screen;
+extern StringIO *crash_screen;
 
+int init_screens(void);
 int load_screen(StringIO *, char *);
+int display_screen(User *, char *);
+void display_text(User *, StringIO *);
 
 #endif	/* SCREENS_H_WJ99 */
 
