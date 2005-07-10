@@ -456,6 +456,30 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		put_StringIO(dev, buf);
 		return 8;
 	}
+	if (!cstrnicmp(code, "<key>", 5)) {
+		c = code[5];
+		if (!c)
+			return 4;
+/*
+	Don't do this; the <key> code is used in the Help files to keep this from happening
+
+		if (usr->flags & USR_UPPERCASE_HOTKEYS)
+			c = ctoupper(c);
+*/
+		if (usr->flags & USR_ANSI) {
+			if (usr->flags & USR_BOLD)
+				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+			else
+				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+
+			(*cpos)++;
+		} else {
+			sprintf(buf, "<%c>", c);
+			*cpos += 3;
+		}
+		put_StringIO(dev, buf);
+		return 5;
+	}
 	if (!cstrnicmp(code, "<beep>", 6)) {
 		if (usr->flags & USR_BEEP)
 			print_StringIO(dev, "%c", KEY_BEEP);
@@ -696,6 +720,9 @@ char colorbuf[20];
 */
 	if (!cstrnicmp(code, "<hotkey>", 8))
 		return 8;
+
+	if (!cstrnicmp(code, "<key>", 5))
+		return 5;
 
 	if (!cstrnicmp(code, "<beep>", 6))
 		return 6;

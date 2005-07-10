@@ -110,7 +110,7 @@ void state_sysop_menu(User *usr, char c) {
 			else
 				Put(usr, "<white>Ctrl-<hotkey>S<magenta>hutdown\n");
 
-			Print(usr, "%sctivate <hotkey>Nologin\n", (nologin_screen == NULL) ? "A" : "De-a");
+			Print(usr, "%sctivate <hotkey>Nologin                  <hotkey>Help\n", (nologin_screen == NULL) ? "A" : "De-a");
 			break;
 
 		case ' ':

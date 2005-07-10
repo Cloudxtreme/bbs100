@@ -1,26 +1,26 @@
 <green>This Help screen is a list of keypresses that apply to the <yellow>Sysop menu<green>.
 
 <white><<yellow>space<white>><green>   Leaves the <yellow>Sysop menu<green>
-     <hotkey>h/<hotkey>?  Display this <yellow>Help<green> screen
+     <key>h/<key>?  Display this <yellow>Help<green> screen
 
-     <hotkey>c    Create new room
-<white>Ctrl-<hotkey>D<green>    Delete room <yellow>;<green> remove all room data
-     <hotkey>g    Create or delete room categories
-     <hotkey>d    Disconnect user
-<white>Ctrl-<hotkey>N<green>    Nuke user <yellow>;<green> remove user data
-     <hotkey>b    Banish<yellow>/<green>Unbanish username
-     <hotkey>w    Edit TCP wrappers for locking out sites
-     <hotkey>u    Remove file from internal cache
-     <hotkey>m    Display object allocation summary
+     <key>c    Create new room
+<white>Ctrl-<key>D<green>    Delete room <yellow>;<green> remove all room data
+     <key>g    Create or delete room categories
+     <key>d    Disconnect user
+<white>Ctrl-<key>N<green>    Nuke user <yellow>;<green> remove user data
+     <key>b    Banish<yellow>/<green>Unbanish username
+     <key>w    Edit TCP wrappers for locking out sites
+     <key>u    Remove file from internal cache
+     <key>m    Display object allocation summary
 
-<white>Ctrl-<hotkey>P<green>    Adjust system parameters and configuration
-     <hotkey>p    Change <yellow>Super User<green> mode password
+<white>Ctrl-<key>P<green>    Adjust system parameters and configuration
+     <key>p    Change <yellow>Super User<green> mode password
 
-<white>Ctrl-<hotkey>R<green>    Schedule a reboot
-     <hotkey>r    Cancel scheduled reboot
-<white>Ctrl-<hotkey>S<green>    Schedule shutdown
-     <hotkey>s    Cancel scheduled shutdown
-     <hotkey>n    Toggle nologin status<yellow>;<green> when set, nobody can login
+<white>Ctrl-<key>R<green>    Schedule a reboot
+     <key>r    Cancel scheduled reboot
+<white>Ctrl-<key>S<green>    Schedule shutdown
+     <key>s    Cancel scheduled shutdown
+     <key>n    Toggle nologin status<yellow>;<green> when set, nobody can login
 
 <white>Note:<green> When a user or room is deleted, it is moved to the <yellow>trash<white>/<green> folder.
       Thus, a system administrator should able to restore the deleted data.
@@ -29,8 +29,4 @@ Any changes in the <yellow>Parameters<green> subsection are made in real-time. T
 that changes to parameters come into effect immediately. The parameters are
 saved in the param file as soon as you leave the subsection. To discard these
 changes and revert to the old configuration, you can <yellow>Reload<green> the param file.
-
-Mind that whenever the location of a file is changed (for example, you have
-installed a new help file), you still have to <yellow>Reload<green> the file in order to
-make it active.
-
+ 

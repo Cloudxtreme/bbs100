@@ -1,16 +1,16 @@
 <green>This Help screen is a list of keypresses that apply to the <yellow>Room Config menu<green>.
 
 <white><<yellow>space<white>><green>   Leaves the <yellow>Room Config menu<green>
-     <hotkey>h/<hotkey>?  Display this <yellow>Help<green> screen
+     <key>h/<key>?  Display this <yellow>Help<green> screen
 
-     <hotkey>e    Edit room info
-     <hotkey>g    Change room category
-<white>Shft-<hotkey>I<green>    Invite<yellow>/<green>Uninvite user into invite<yellow>-<green>only room
-     <hotkey>i    Show invited users in invite<yellow>-<green>only room
-<white>Shft-<hotkey>K<green>    Kickout<yellow>/<green>Undo kickout user
-     <hotkey>k    Show kicked users
+     <key>e    Edit room info
+     <key>g    Change room category
+<white>Shft-<key>I<green>    Invite<yellow>/<green>Uninvite user into invite<yellow>-<green>only room
+     <key>i    Show invited users in invite<yellow>-<green>only room
+<white>Shft-<key>K<green>    Kickout<yellow>/<green>Undo kickout user
+     <key>k    Show kicked users
 
-     <hotkey>n    Change the room name
+     <key>n    Change the room name
 
 <white>Note: <yellow>Invite<green> and <yellow>uninvite<green> apply to invite<yellow>-<green>only rooms.
       Also mind that '<yellow>uninvite<green>' is not the same as '<yellow>kickout<green>' and '<yellow>invite<green>'
@@ -25,4 +25,4 @@
      The maximum amount of messages can be changed by a sysop.
      If you want to have a room altered in another way, for example make it
      invite-only, or have more room aides, please contact a sysop.
-
+ 
