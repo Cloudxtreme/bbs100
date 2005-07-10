@@ -960,7 +960,7 @@ int i, idx;
 					if (usr->curr_room != usr->mail) {
 						char num_buf[25];
 
-						sprintf(m->subject, "<message #%s>", print_number(usr, usr->message->number, num_buf));
+						sprintf(m->subject, "<message #%s>", print_number(usr->message->number, num_buf));
 					}
 */
 				destroy_Message(usr->new_message);
@@ -1137,7 +1137,7 @@ void PrintPrompt(User *usr) {
 			char roomname[MAX_LINE];
 
 			if (usr->curr_room == usr->mail)
-				possession(usr, usr->name, "Mail", roomname);
+				possession(usr->name, "Mail", roomname);
 			else
 				strcpy(roomname, usr->curr_room->name);
 
@@ -1151,10 +1151,10 @@ void PrintPrompt(User *usr) {
 
 				if (usr->flags & USR_ROOMNUMBERS)
 					Print(usr, "\n<white>[%u <yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						usr->curr_room->number, roomname, print_number(usr, usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						usr->curr_room->number, roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
 					Print(usr, "\n<white>[<yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
-						roomname, print_number(usr, usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+						roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 			} else {
 				destroy_Message(usr->message);
 				usr->message = NULL;
@@ -1409,14 +1409,14 @@ void loop_ping(User *usr, char c) {
 			if (tdiff >= 120UL) {
 				char total_buf[MAX_LINE];
 
-				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(usr, tdiff, total_buf));
+				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf));
 			}
 		}
 /*
 		if (in_StringList(u->friends, usr->name) != NULL)
-			Print(usr, "You are on %s\n", possession(usr, u->name, "friend list", name_buf));
+			Print(usr, "You are on %s\n", possession(u->name, "friend list", name_buf));
 		if (in_StringList(u->enemies, usr->name) != NULL)
-			Print(usr, "<red>You are on %s\n", possession(usr, u->name, "enemy list", name_buf));
+			Print(usr, "<red>You are on %s\n", possession(u->name, "enemy list", name_buf));
 */
 	}
 	Return;
@@ -1466,7 +1466,7 @@ int r;
 			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s", print_total_time(usr, (unsigned long)rtc - (unsigned long)u->login_time, total_buf));
+				Print(usr, "<green>Online for <cyan>%s", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
 						Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
@@ -1581,7 +1581,7 @@ int r;
 				int l;
 
 				l = sprintf(online_for, "%c for %c", color_by_name("green"), color_by_name("yellow"));
-				print_total_time(usr, u->last_online_time, online_for+l);
+				print_total_time(u->last_online_time, online_for+l);
 			} else
 				online_for[0] = 0;
 
@@ -1596,7 +1596,7 @@ int r;
 	display for how long someone is online
 	by Richard of MatrixBBS
 */
-			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(usr, rtc - u->login_time, total_buf));
+			usr->more_text = add_String(&usr->more_text, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time, total_buf));
 			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
 					usr->more_text = add_String(&usr->more_text, "<green>From host: <yellow>%s <white>[%s]", u->conn->hostname, u->conn->ipnum);
@@ -1608,7 +1608,7 @@ int r;
 		}
 		if (!allocated)
 			update_stats(u);
-		usr->more_text = add_String(&usr->more_text, "<green>Total online time: <yellow>%s", print_total_time(usr, u->total_time, total_buf));
+		usr->more_text = add_String(&usr->more_text, "<green>Total online time: <yellow>%s", print_total_time(u->total_time, total_buf));
 
 		if (u->flags & USR_X_DISABLED)
 			usr->more_text = add_String(&usr->more_text, "<red>%s has message reception turned off", u->name);
@@ -1617,7 +1617,7 @@ int r;
 			char namebuf[MAX_NAME+20];
 
 			sprintf(namebuf, "<yellow>%s<green>", u->name);
-			usr->more_text = add_String(&usr->more_text, "<green>You are on %s", possession(usr, namebuf, "friend list", total_buf));
+			usr->more_text = add_String(&usr->more_text, "<green>You are on %s", possession(namebuf, "friend list", total_buf));
 		}
 		visible = 1;
 		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
@@ -3053,9 +3053,12 @@ Joined *j;
 	}
 	usr->more_text = add_String(&usr->more_text, "<green>");
 
-	if (usr->curr_room == NULL || usr->curr_room->info == NULL)
-		usr->more_text = add_String(&usr->more_text, "<red>This room has no room info");
-	else {
+	if (usr->curr_room == NULL || usr->curr_room->info == NULL) {
+		if (usr->curr_room != NULL && usr->curr_room->number == MAIL_ROOM)
+			usr->more_text = add_String(&usr->more_text, "Here you can leave messages to users that are not online.");
+		else
+			usr->more_text = add_String(&usr->more_text, "<red>This room has no room info");
+	} else {
 		if ((usr->more_text->next = copy_StringList(usr->curr_room->info)) == NULL) {
 			Perror(usr, "Out of memory ; can't display room info");
 		} else
@@ -3383,7 +3386,7 @@ char buf[MAX_LINE*3], *p;
 		Return 0;
 	}
 	if (!strcmp(cmd, "uptime")) {
-		Print(usr, "up %s, ", print_total_time(usr, rtc - stats.uptime, buf));
+		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf));
 		i = list_Count(AllUsers);
 		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
 		Return 0;
@@ -3719,7 +3722,7 @@ StringList *sl;
 	Enter(enter_chatroom);
 
 	if (usr->curr_room->number == HOME_ROOM) {
-		possession(usr, usr->name, "Home", buf);
+		possession(usr->name, "Home", buf);
 
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);

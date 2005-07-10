@@ -75,10 +75,10 @@ void state_room_config_menu(User *usr, char c) {
 					Put(usr, "Change room <hotkey>name\n");
 
 				if (usr->runtime_flags & RTF_SYSOP) {
-					Print(usr, "Reset <hotkey>creation date (all users unjoin)\n");
-					Put(usr, "\n"
-						"<white>Ctrl-<hotkey>R<magenta>emove all posts\n"
-						"<white>Ctrl-<hotkey>D<magenta>elete room\n"
+					Put(usr,
+						"Reset <hotkey>creation date (all users unjoin)\n"
+						"\n"
+						"<white>Ctrl-<hotkey>R<magenta>emove all posts       <white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
 				}
 				Print(usr, "\n"

@@ -99,7 +99,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = MAIL_ROOM;
-	possession(NULL, username, "Mail", roomname);
+	possession(username, "Mail", roomname);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -133,7 +133,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = HOME_ROOM;
-	possession(NULL, username, "Home", roomname);
+	possession(username, "Home", roomname);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -203,6 +203,7 @@ char buf[MAX_LINE*3], *p;
 		FF1_LOAD_ULONG("generation", r->generation);
 		FF1_LOAD_HEX("flags", r->flags);
 		FF1_LOAD_UINT("roominfo_changed", r->roominfo_changed);
+		FF1_LOAD_UINT("max_msgs", r->max_msgs);
 
 		FF1_LOAD_STRINGLIST("info", r->info);
 		FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
@@ -352,6 +353,7 @@ StringList *sl;
 	Fprintf(f, "generation=%lu", r->generation);
 	Fprintf(f, "flags=0x%x", r->flags);
 	Fprintf(f, "roominfo_changed=%u", r->roominfo_changed);
+	Fprintf(f, "max_msgs=%u", r->max_msgs);
 
 	FF1_SAVE_STRINGLIST("info", r->info);
 	FF1_SAVE_STRINGLIST("room_aides", r->room_aides);
@@ -384,10 +386,20 @@ int save_Room_version0(File *f, Room *r) {
 	returns first new message in the room (usr->curr_msg should be set to this)
 */
 int newMsgs(Room *r, unsigned long num) {
-int i;
+int i, max;
 
 	if (r == NULL || r->msg_idx <= 0)
 		return -1;
+
+/*
+	see if a sysop changed the maximum amount of posts
+*/
+	max = (r->number == MAIL_ROOM) ? PARAM_MAX_MAIL_MSGS : PARAM_MAX_MESSAGES;
+	if (r->max_msgs < 1)
+		r->max_msgs = max;
+
+	if (r->max_msgs != max)
+		resize_Room(r, max, NULL);
 
 	if (num >= r->msgs[r->msg_idx-1])
 		return -1;
@@ -411,8 +423,17 @@ int max;
 	if (r == NULL)
 		return;
 
+/*
+	see if a sysop changed the maximum amount of posts
+*/
 	max = (r->number == MAIL_ROOM) ? PARAM_MAX_MAIL_MSGS : PARAM_MAX_MESSAGES;
+	if (r->max_msgs < 1)
+		r->max_msgs = max;
 
+	if (r->max_msgs != max) {
+		resize_Room(r, max, usr);
+		max = r->max_msgs;
+	}
 	if (r->msgs == NULL && (r->msgs = (unsigned long *)Malloc(sizeof(unsigned long) * max, TYPE_LONG)) == NULL)
 		return;
 
@@ -427,6 +448,7 @@ int max;
 	if (r->msg_idx >= max) {
 		if (filename[0]) {
 			path_strip(filename);
+			remove_Cache_filename(filename);
 			if (unlink(filename) == -1)
 				log_err("newMsg(): failed to delete file %s", filename);
 		}
@@ -434,6 +456,37 @@ int max;
 		r->msg_idx = max - 1;
 	}
 	r->msgs[r->msg_idx++] = number;
+}
+
+/*
+	size the maximum amount of messages in a Room
+*/
+void resize_Room(Room *r, int newsize, User *usr) {
+unsigned long *old_idx, *new_idx;
+
+	if (r == NULL || newsize <= 0 || newsize == r->max_msgs)
+		return;
+
+	if ((new_idx = (unsigned long *)Malloc(sizeof(unsigned long) * newsize, TYPE_LONG)) != NULL) {
+		int old_msg_idx;
+
+		old_idx = r->msgs;
+		old_msg_idx = r->msg_idx;
+		r->msgs = new_idx;
+		r->msg_idx = 0;
+		r->max_msgs = newsize;
+/*
+	recurse; the only easy way to safely migrate to the new size
+*/
+		if (old_idx != NULL) {
+			int i;
+
+			for(i = 0; i < old_msg_idx; i++)
+				newMsg(r, old_idx[i], usr);
+
+			Free(old_idx);
+		}
+	}
 }
 
 void room_readdir(Room *r) {
@@ -670,7 +723,7 @@ char buf[MAX_LINE];
 	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
 
-	possession(NULL, username, "Home", buf);
+	possession(username, "Home", buf);
 
 	for(r = HomeRooms; r != NULL; r = r->next)
 		if (!strcmp(r->name, buf))

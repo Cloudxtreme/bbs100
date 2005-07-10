@@ -14,8 +14,8 @@ I suggest you use /home/bbs as base directory. You may use another
 directory as well (such as /usr/local/bbs), but I prefer /home/bbs as
 base directory. /usr/local is strongly discouraged, because the BBS needs
 write access to certain directories and you usually don't do that on
-/usr/local. The BBS directories should not be world-readable, so set your
-umask to either 007 or 027.
+/usr/local. The BBS directories should not be world-readable, so the
+Makefile uses the umask of 027.
 
 	$ cd src
 	$ ./configure --prefix=/home/bbs

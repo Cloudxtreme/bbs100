@@ -33,19 +33,20 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     AIX 4.2.1 with DFS      IBM RS/6000
     Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000
     Unicos 10.0.0.x         Cray C90
+    Mac OS X                I think it was a Apple MacIntosh G5
+    Windows 2000            under Cygwin
+    Windows XP SP2          under Cygwin
 
 All this with just configure and make setup.
-bbs100 also runs under MacOS X and Windows platforms, but you will
-need the appropriate patches from the web site to make it work.
-The web site is at http://www.heiho.net/bbs100/
-If you run bbs100 on an other platform than listed here, please let me
-know your experiences in building and running the software.
+The portability list changes with each version, so your mileage
+may vary.
+If you got bbs100 running on a platform not listed here, please
+share your experiences.
 
 
 IS bbs100 IPv6 ENABLED?
-Nope, it's all IPv4 code. I am interested in making it work on both
-IPv4 and IPv6, so if you can help me any way (patches, or giving good
-IPv6 code examples) I will be most thankful!
+Yes. If you have problems with running bbs100 due to the networking code,
+please let me know.
 
 
 YAWC
@@ -65,4 +66,3 @@ There used to be a mailing list, but it is not active anymore.
 If you need help on modifying bbs100, the author (me) is always happy to
 provide you with some pointers and explain how specific parts of bbs100 work,
 and what you should do to make it work the way you want it to work.
-

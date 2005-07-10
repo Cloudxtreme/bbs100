@@ -71,7 +71,7 @@ struct Room_tag {
 	List(Room);
 
 	char *name, *category;
-	unsigned int number, flags, roominfo_changed, msg_idx;
+	unsigned int number, flags, roominfo_changed, msg_idx, max_msgs;
 	unsigned long generation, *msgs;
 	StringList *info, *room_aides, *kicked, *invited, *chat_history;
 
@@ -98,7 +98,7 @@ int save_Room_version1(File *, Room *);
 
 void newMsg(Room *, unsigned long, User *);
 int newMsgs(Room *, unsigned long);
-
+void resize_Room(Room *, int, User *);
 void room_readdir(Room *);
 void room_readmaildir(Room *, char *);
 void room_readroomdir(Room *, char *);

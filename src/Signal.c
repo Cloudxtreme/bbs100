@@ -341,7 +341,7 @@ char buf[128], total_buf[MAX_LINE];
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now rebooting in %s", 
-			print_total_time(NULL, (unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -353,7 +353,7 @@ char buf[128], total_buf[MAX_LINE];
 	add_Timer(&timerq, reboot_timer);
 
 	sprintf(buf, "The system is rebooting in %s",
-		print_total_time(NULL, (unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -372,7 +372,7 @@ char buf[128], total_buf[128];
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
 		sprintf(buf, "The system is now shutting down in %s",
-			print_total_time(NULL, (unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -384,7 +384,7 @@ char buf[128], total_buf[128];
 	add_Timer(&timerq, shutdown_timer);
 
 	sprintf(buf, "The system is shutting down in %s",
-		print_total_time(NULL, (unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
 	system_broadcast(0, buf);
 	Return;
 }

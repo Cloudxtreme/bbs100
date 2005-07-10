@@ -477,9 +477,9 @@ unsigned long num;
 		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf));
 
 	print_StringIO(usr->text, "<green>The system was last booted on <cyan>%s\n", print_date(usr, stats.uptime, date_buf));
-	print_StringIO(usr->text, "<green>Uptime is <yellow>%s\n", print_total_time(usr, rtc - stats.uptime, date_buf));
+	print_StringIO(usr->text, "<green>Uptime is <yellow>%s\n", print_total_time(rtc - stats.uptime, date_buf));
 	print_StringIO(usr->text, "<yellow>%s<green> successful login%s made since boot time\n",
-		print_number(usr, stats.num_logins, date_buf), (stats.num_logins == 1UL) ? "" : "s");
+		print_number(stats.num_logins, date_buf), (stats.num_logins == 1UL) ? "" : "s");
 
 	if (reboot_timer != NULL)
 		put_StringIO(usr->text, "<red>The system is rebooting\n");
@@ -489,21 +489,21 @@ unsigned long num;
 	if (usr->runtime_flags & RTF_SYSOP) {
 		put_StringIO(usr->text, "\n");
 
-		print_StringIO(usr->text, "<green>Cache size: <yellow>%s", print_number(usr, cache_size, date_buf));
-		print_StringIO(usr->text, "<white>/<yellow>%s<green>   ", print_number(usr, num_cached, date_buf));
-		print_StringIO(usr->text, "hits: <yellow>%s<green>   ", print_number(usr, stats.cache_hit, date_buf));
-		print_StringIO(usr->text, "misses: <yellow>%s<green>   ", print_number(usr, stats.cache_miss, date_buf));
+		print_StringIO(usr->text, "<green>Cache size: <yellow>%s", print_number(cache_size, date_buf));
+		print_StringIO(usr->text, "<white>/<yellow>%s<green>   ", print_number(num_cached, date_buf));
+		print_StringIO(usr->text, "hits: <yellow>%s<green>   ", print_number(stats.cache_hit, date_buf));
+		print_StringIO(usr->text, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf));
 		if ((stats.cache_hit + stats.cache_miss) > 0)
 			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
 		else
 			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 0UL);
 
-		print_StringIO(usr->text, "\n<green>Total memory in use: <yellow>%s <green>bytes\n", print_number(usr, memory_total, date_buf));
+		print_StringIO(usr->text, "\n<green>Total memory in use: <yellow>%s <green>bytes\n", print_number(memory_total, date_buf));
 	}
 	print_StringIO(usr->text, "\n<yellow>User statistics\n");
 
 	print_StringIO(usr->text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s\n", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
-	print_StringIO(usr->text, "<green>Oldest user is <white>%s<green>, online for <yellow>%s\n", stats.oldest, print_total_time(usr, stats.oldest_age, date_buf));
+	print_StringIO(usr->text, "<green>Oldest user is <white>%s<green>, online for <yellow>%s\n", stats.oldest, print_total_time(stats.oldest_age, date_buf));
 
 /*
 	determine width of next block of text
@@ -527,50 +527,50 @@ unsigned long num;
 	if ((l = strlen(stats.most_read)) > w)
 		w = l;
 
-	print_StringIO(usr->text, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(usr, stats.logins, date_buf));
+	print_StringIO(usr->text, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(stats.logins, date_buf));
 	if (PARAM_HAVE_XMSGS) {
-		print_StringIO(usr->text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(usr, stats.xsent, date_buf));
-		print_StringIO(usr->text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(usr, stats.xrecv, date_buf));
+		print_StringIO(usr->text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf));
+		print_StringIO(usr->text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
 	}
 	if (PARAM_HAVE_EMOTES) {
-		print_StringIO(usr->text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(usr, stats.esent, date_buf));
-		print_StringIO(usr->text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(usr, stats.erecv, date_buf));
+		print_StringIO(usr->text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf));
+		print_StringIO(usr->text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf));
 	}
 	if (PARAM_HAVE_FEELINGS) {
-		print_StringIO(usr->text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(usr, stats.fsent, date_buf));
-		print_StringIO(usr->text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(usr, stats.frecv, date_buf));
+		print_StringIO(usr->text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf));
+		print_StringIO(usr->text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf));
 	}
-	print_StringIO(usr->text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(usr, stats.posted, date_buf));
-	print_StringIO(usr->text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(usr, stats.read, date_buf));
+	print_StringIO(usr->text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf));
+	print_StringIO(usr->text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf));
 
 	if (!is_guest(usr->name)) {
 		put_StringIO(usr->text, "\n<yellow>Your statistics\n");
 
 		if (PARAM_HAVE_XMSGS) {
-			print_StringIO(usr->text, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr, usr->xsent, date_buf));
-			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->xrecv, date_buf));
+			print_StringIO(usr->text, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr->xsent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr->xrecv, date_buf));
 		}
 		if (PARAM_HAVE_EMOTES) {
-			print_StringIO(usr->text, "<green>Emotes sent          : <yellow>%-15s", print_number(usr, usr->esent, date_buf));
-			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->erecv, date_buf));
+			print_StringIO(usr->text, "<green>Emotes sent          : <yellow>%-15s", print_number(usr->esent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr->erecv, date_buf));
 		}
 		if (PARAM_HAVE_FEELINGS) {
-			print_StringIO(usr->text, "<green>Feelings sent        : <yellow>%-15s", print_number(usr, usr->fsent, date_buf));
-			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr, usr->frecv, date_buf));
+			print_StringIO(usr->text, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf));
+			print_StringIO(usr->text, "<green> received: <yellow>%s\n", print_number(usr->frecv, date_buf));
 		}
-		print_StringIO(usr->text, "<green>Messages posted      : <yellow>%-15s", print_number(usr, usr->posted, date_buf));
-		print_StringIO(usr->text, "<green> read    : <yellow>%s\n", print_number(usr, usr->read, date_buf));
+		print_StringIO(usr->text, "<green>Messages posted      : <yellow>%-15s", print_number(usr->posted, date_buf));
+		print_StringIO(usr->text, "<green> read    : <yellow>%s\n", print_number(usr->read, date_buf));
 
 		print_StringIO(usr->text, "\n<green>Account created on <cyan>%s<green>\n", print_date(usr, usr->birth, date_buf));
-		print_StringIO(usr->text, "You have logged on <yellow>%s<green> times, ", print_number(usr, usr->logins, date_buf));
+		print_StringIO(usr->text, "You have logged on <yellow>%s<green> times, ", print_number(usr->logins, date_buf));
 
 		num = (unsigned long)((rtc - usr->birth) / (unsigned long)(30 * SECS_IN_DAY));
 		if (num == 0UL)
 			num = 1UL;
 		num = usr->logins / num;
 
-		print_StringIO(usr->text, "an average of <yellow>%s<green> time%s per month\n", print_number(usr, num, date_buf), (num == 1UL) ? "" : "s");
-		print_StringIO(usr->text, "Your total online time is <yellow>%s\n", print_total_time(usr, usr->total_time, date_buf));
+		print_StringIO(usr->text, "an average of <yellow>%s<green> time%s per month\n", print_number(num, date_buf), (num == 1UL) ? "" : "s");
+		print_StringIO(usr->text, "Your total online time is <yellow>%s\n", print_total_time(usr->total_time, date_buf));
 	}
 	read_text(usr);
 	Return;

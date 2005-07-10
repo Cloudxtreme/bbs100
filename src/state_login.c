@@ -491,7 +491,7 @@ char num_buf[25];
 			exclaim[0] = 0;
 
 		Print(usr, "<green>Welcome back, <yellow>%s<green>! "
-			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr, usr->logins, num_buf), exclaim);
+			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf), exclaim);
 	}
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
@@ -504,7 +504,7 @@ char num_buf[25];
 			int l;
 
 			l = sprintf(online_for, "%c, for %c", color_by_name("green"), color_by_name("yellow"));
-			print_total_time(usr, usr->last_online_time, online_for+l);
+			print_total_time(usr->last_online_time, online_for+l);
 		} else
 			online_for[0] = 0;
 
@@ -578,7 +578,7 @@ char num_buf[25];
 		tm = user_time(usr, (time_t)0UL);
 
 		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
-			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(usr, tm->tm_year - bday_year, num_buf));
+			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
 	}
 
 /* if booting/shutting down, inform the user */

@@ -1093,8 +1093,8 @@ char *print_date(User *usr, time_t tt, char *date_str) {
 /*
 	Note: buf must be large enough (MAX_LINE bytes should do)
 */
-char *print_total_time(User *usr, unsigned long total, char *buf) {
-	if (usr == NULL || buf == NULL)
+char *print_total_time(unsigned long total, char *buf) {
+	if (buf == NULL)
 		return NULL;
 
 	return lc_system->print_total_time(lc_system, total, buf);
@@ -1104,8 +1104,8 @@ char *print_total_time(User *usr, unsigned long total, char *buf) {
 /*
 	Note: buf must be large enough (at least 21 bytes)
 */
-char *print_number(User *usr, unsigned long ul, char *buf) {
-	if (usr == NULL || buf == NULL)
+char *print_number(unsigned long ul, char *buf) {
+	if (buf == NULL)
 		return NULL;
 
 	return lc_system->print_number(lc_system, ul, buf);
@@ -1115,8 +1115,8 @@ char *print_number(User *usr, unsigned long ul, char *buf) {
 	print_number() with '1st', '2nd', '3rd', '4th', ... extension
 	Note: buf must be large enough (at least 25 bytes)
 */
-char *print_numberth(User *usr, unsigned long ul, char *buf) {
-	if (usr == NULL || buf == NULL)
+char *print_numberth(unsigned long ul, char *buf) {
+	if (buf == NULL)
 		return NULL;
 
 	return lc_system->print_numberth(lc_system, ul, buf);
@@ -1125,8 +1125,8 @@ char *print_numberth(User *usr, unsigned long ul, char *buf) {
 /*
 	Note: buf must be large enough (MAX_LINE bytes in size)
 */
-char *possession(User *usr, char *name, char *obj, char *buf) {
-	if (usr == NULL || buf == NULL)
+char *possession(char *name, char *obj, char *buf) {
+	if (buf == NULL)
 		return NULL;
 
 	return lc_system->possession(lc_system, name, obj, buf);
