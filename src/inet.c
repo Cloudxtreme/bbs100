@@ -303,6 +303,7 @@ char input_char[2];
 			}
 /*
 	non-blocking connect()
+	(untested, because the BBS doesn't use it (yet))
 */
 			if (c->state & CONN_CONNECTING) {
 				FD_SET(c->sock, &wfds);
