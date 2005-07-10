@@ -38,18 +38,16 @@ from the Sysop->Parameters->Maximums menu.
 
 IMPORTANT
 As a consequence of caching, you cannot edit ANY userfiles or filed messages
-at Unix level. User files remain in memory even after they have logged off
-the system, so if you use an editor to edit the file at Unix level the changes
-will be lost whenever the cached file is synced to disk.
-Always keep in mind that any file under users/ and rooms/ might be present
-in the cache.
+at Unix level. Unless the cache is disabled, user files remain in memory even
+after they have logged off the system, so if you use an editor to edit the
+file at Unix level the changes will be lost whenever the cached file is synced
+to disk. Always keep in mind that any file might be present in the cache.
 Sysops have the option of clearing a file from the cache. To do this, choose
 'uncache file' from the Sysop menu. The filename is the Unix filename,
 relative to the BBS' basedir. For example, to clear the user file of a
 user named 'Walter' from the cache, enter users/W/Walter/UserData as filename.
 
-Files under etc/ are not cached. However, they should be treated in a special
-way:
+Files under etc/ have special meaning:
 
     etc/param
 
@@ -68,6 +66,11 @@ way:
     They are loaded at startup and kept in memory at all times. You can edit
     them using a Unix editor, you should use the 'reload <file>' option in
     the BBS' Sysop menu to make the new message active.
+
+    etc/categories
+    
+    Contains list of room categories. Can be managed from within the Sysop
+    menu.
 
     etc/GPL
 
@@ -161,32 +164,12 @@ Most other signals are either ignored or linked to the crash handler.
 TIME ZONE
 By default, the time displayed by the BBS is in GMT (Greenwich Mean Time).
 This may seem confusing, but the users of the BBS can connect from
-anywhere in the world. In the Config Time Zone menu, the user can enter his
-or her local time to 'synchronize clocks'.
-Note that the BBS does not actually reset the clock, it just calculates a
-time displacement for this user, and uses it to adjust the clock for this
-user. The BBS is intelligent about whether the user has a positive or
-negative time displacement relative to GMT, but problems occur on the date
-line; the BBS cannot tell whether it's -12 hours on day 1 or +12 hours on
-day 2. If a user has a time displacement of 12 hours, the BBS will ask him/her
-if the date is correct.
+anywhere in the world. In the Config Time Zone menu, the user can select
+his or her timezone.
+The default timezone that new users get is configurable, but I strongly
+suggest it be set to 'other/GMT'.
 
-Americans don't seem to like 'military time' very much. Especially for them
-there's an option in the Config menu to switch from 24 hour clock to 12 hour
-clock (with AM and PM). AM means 'in the morning' (after midnight and before
-noon), and PM means 'in the evening' (after noon and before midnight).
-
-Mind that the BBS doesn't know anything about daylight savings time. If the
-clock the machine runs on uses daylight savings and the user does not, the
-clocks will display a difference of an hour when daylight savings apply and
-the user will have to re-synchronize.
-The world clock in the calendar function is smart; it does knows about
-timezones and when daylight savings are in use. Because the users may
-have to re-synchronize, it is possible that the world clock displays the
-wrong timezone to the user. This is a known issue and exists as long as
-users are unable to input what their timezone is.
-
-The log files display local time in the format MM DD hh:mm:ss.
+The log files display _local_ time in the format MM DD hh:mm:ss.
 
 
 TRASH DIRECTORY
@@ -202,10 +185,10 @@ but they are flagged as 'deleted'. Deleted messages can be undeleted by using
 the <U>ndelete option in the BBS.
 Old messages expire from the room automatically, they cannot be undeleted.
 Old unread mail messages are kept until the user has actually read them, so
-it is possible that some user has more than <max_mail> mail messages in his
-Mail> room. <max_mail> is in the param file, its default is 50.
-If a user has more than <max_mail> Mail> messages, the message will expire
-immediately after the message has been read.
+it is possible that some user has more than <max_mail_msgs> mail messages in
+the Mail> room. <max_mail_msgs> is in the param file, its default is 50.
+If a user has more than <max_mail_msgs> Mail> messages, the message will
+expire immediately after the message has been read.
 
 
 EXPIRING OLD ACCOUNTS
@@ -272,7 +255,7 @@ IRC-like chat servers. Most of them were only half-finished, and none
 of them ever seriously ran as an online service.
 In the beginning of 1999 I set off to write some big and sophisticated
 online service, a re-invention of usenet on steriods -- if only because the
-new millenium needs something new. The ideas were wilder than ever and the
+new millenium needed something new. The ideas were wilder than ever and the
 code grew into something monstruous. As you may guess, the sophisticated
 online service was never going to be realized.
 At some point I quit and started hacking in a single process chat server
