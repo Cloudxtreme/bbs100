@@ -271,6 +271,24 @@ int err, err2;
 	return 0;
 }
 
+char *gets_StringIO(StringIO *s, char *buf, int size) {
+int pos;
+char *p;
+
+	if (s == NULL || buf == NULL || size <= 1)
+		return NULL;
+
+	pos = tell_StringIO(s);
+	if (read_StringIO(s, buf, size-1) <= 0)
+		return NULL;
+
+	if ((p = cstrchr(buf, '\n')) != NULL) {
+		*p = 0;
+		seek_StringIO(s, pos + strlen(buf) + 1, STRINGIO_SET);
+	}
+	return buf;
+}
+
 int put_StringIO(StringIO *s, char *str) {
 	if (s == NULL || str == NULL || !*str)
 		return 0;

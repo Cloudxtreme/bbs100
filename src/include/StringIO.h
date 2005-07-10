@@ -51,6 +51,7 @@ int seek_StringIO(StringIO *, int, int);
 int load_StringIO(StringIO *, char *);
 int save_StringIO(StringIO *, char *);
 
+char *gets_StringIO(StringIO *, char *, int);
 int put_StringIO(StringIO *, char *);
 int print_StringIO(StringIO *, char *, ...);
 

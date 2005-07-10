@@ -1309,4 +1309,30 @@ int i;
 	return digest;
 }
 
+StringList *StringList_from_StringIO(StringIO *s) {
+StringList *sl;
+char buf[PRINT_BUF];
+
+	sl = NULL;
+	while(gets_StringIO(s, buf, PRINT_BUF) != NULL)
+		sl = add_StringList(&sl, new_StringList(buf));
+
+	sl = rewind_StringList(sl);
+	return sl;
+}
+
+StringIO *StringIO_from_StringList(StringList *sl) {
+StringIO *s;
+
+	if ((s = new_StringIO()) == NULL)
+		return NULL;
+
+	while(sl != NULL) {
+		put_StringIO(s, sl->str);
+		write_StringIO(s, "\n", 1);
+		sl = sl->next;
+	}
+	return s;
+}
+
 /* EOB */
