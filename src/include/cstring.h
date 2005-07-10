@@ -65,7 +65,6 @@ char *cstrichr(char *, char);
 void chop(char *);
 void cstrip_line(char *);
 void cstrip_spaces(char *);
-void cstrip_filename(char *);
 char **cstrsplit(char *, char);
 char *cstrjoin(char **);
 

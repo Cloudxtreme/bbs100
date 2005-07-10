@@ -155,20 +155,6 @@ char *p;
 }
 
 /*
-	strip double slashes from a filename
-*/
-void cstrip_filename(char *filename) {
-char *p;
-
-	p = filename;
-	while((p = cstrchr(p, '/')) != NULL) {
-		p++;
-		while(*p == '/')
-			memmove(p, p+1, strlen(p));		/* strlen(p+1)+1 */
-	}
-}
-
-/*
 	Splits a line into an array
 	Just like Perl's split() function
 	The substrings are not copied into the array; the string that is

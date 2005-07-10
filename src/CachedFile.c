@@ -128,7 +128,7 @@ int addr;
 	if (filename == NULL || !*filename)
 		return -1;
 
-	cstrip_filename(filename);
+	path_strip(filename);
 
 	addr = (int)update_crc32(0UL, filename, strlen(filename));
 	addr %= cache_size;
@@ -142,7 +142,7 @@ int addr;
 File *Fopen(char *filename) {
 File *f;
 
-	cstrip_filename(filename);
+	path_strip(filename);
 
 	if ((f = copy_from_cache(filename)) != NULL)
 		return f;
@@ -209,7 +209,7 @@ CachedFile *cf;
 File *Fcreate(char *filename) {
 File *f;
 
-	cstrip_filename(filename);
+	path_strip(filename);
 
 	if ((f = new_File()) == NULL
 		|| (f->filename = cstrdup(filename)) == NULL) {
@@ -310,7 +310,7 @@ int unlink_file(char *filename) {
 	if (filename == NULL || !*filename)
 		return -1;
 
-	cstrip_filename(filename);
+	path_strip(filename);
 
 	remove_Cache_filename(filename);
 	unlink(filename);			/* Note: this call could fail :P */
@@ -325,8 +325,8 @@ int l, i;
 	if (dirname == NULL || newdirname == NULL || !*dirname || !*newdirname)
 		return -1;
 
-	cstrip_filename(dirname);
-	cstrip_filename(newdirname);
+	path_strip(dirname);
+	path_strip(newdirname);
 
 	rename(dirname, newdirname);		/* this does the job */
 
