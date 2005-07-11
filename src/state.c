@@ -745,7 +745,6 @@ int i, idx;
 			PUSH(usr, STATE_ROOM_PROMPT);
 			readMsg(usr);
 			Return;
-			break;
 
 /*
 	read parent message of a Reply
