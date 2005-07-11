@@ -2524,20 +2524,21 @@ int total;
 	}
 	proot = sort_PList(proot, sort_func);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 
 /* make the who list in usr->more_text */
-	if (format & WHO_LIST_LONG) {
-		total = long_who_list(usr, proot);
-		who_list_header(usr, total, format);
-	} else {
-		total = short_who_list(usr, proot);
-		who_list_header(usr, total, format);
-	}
+
+	total = list_Count(proot);
+	who_list_header(usr, total, format);
+
+	if (format & WHO_LIST_LONG)
+		long_who_list(usr, proot);
+	else
+		short_who_list(usr, proot, total);
+
 	listdestroy_PList(proot);		/* destroy temp list */
 
-	read_more(usr);					/* display the who list */
+	read_text(usr);					/* display the who list */
 	Return;
 }
 
@@ -2545,8 +2546,7 @@ int total;
 	construct a long format who list
 */
 int long_who_list(User *usr, PList *pl) {
-StringList *s = NULL;
-int total = 0, hrs, mins, l, c, width;
+int hrs, mins, l, c, width;
 unsigned long time_now;
 time_t t;
 char buf[PRINT_BUF], buf2[PRINT_BUF], col, stat;
@@ -2557,9 +2557,6 @@ User *u;
 
 	Enter(long_who_list);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
-
 	time_now = rtc;
 
 	while(pl != NULL) {
@@ -2569,8 +2566,6 @@ User *u;
 
 		if (u == NULL)
 			continue;
-
-		total++;
 
 		stat = ' ';
 		col = (char)color_by_name("yellow");
@@ -2638,29 +2633,26 @@ User *u;
 			c++;
 		}
 		buf[l] = 0;
-		s = add_String(&s, "%s <white>%c <yellow>%2d<white>:<yellow>%02d", buf, stat, hrs, mins);
+		print_StringIO(usr->text, "%s <white>%c <yellow>%2d<white>:<yellow>%02d\n", buf, stat, hrs, mins);
 	}
-	usr->more_text = rewind_StringList(s);
-	Return total;
+	Return 0;
 }
 
 /*
 	construct a short format who list
+
+	total should equal list_Count(pl)
 */
-int short_who_list(User *usr, PList *pl) {
-StringList *s = NULL, *sl;
-int i, j, total, buflen = 0, cols, rows;
+int short_who_list(User *usr, PList *pl, int total) {
+int i, j, buflen = 0, cols, rows;
 char buf[PRINT_BUF], col, stat;
 User *u;
 PList *pl_cols[16];
 
-	if (pl == NULL || pl->p == NULL)
+	if (usr == NULL || pl == NULL || pl->p == NULL)
 		return 0;
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
-
-	total = list_Count(pl);
+	Enter(short_who_list);
 
 	cols = usr->display->term_width / (MAX_NAME+2);
 	if (cols < 1)
@@ -2747,13 +2739,10 @@ PList *pl_cols[16];
 			}
 			pl_cols[i] = pl_cols[i]->next;
 		}
-		if ((sl = new_StringList(buf)) == NULL)
-			break;
-
-		s = add_StringList(&s, sl);
+		put_StringIO(usr->text, buf);
+		write_StringIO(usr->text, "\n", 1);
 	}
-	usr->more_text = rewind_StringList(s);
-	Return total;
+	Return 0;
 }
 
 void who_list_header(User *usr, int total, int drawline) {
@@ -2767,33 +2756,22 @@ struct tm *tm;
 	sl = NULL;
 	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
 		if (total == 1)
-			sl = add_String(&sl, "<green>You are the only one in <yellow>%s<white>>", usr->curr_room->name);
+			print_StringIO(usr->text, "<green>You are the only one in <yellow>%s<white>>\n", usr->curr_room->name);
 		else
-			sl = add_String(&sl, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s<white>><magenta> at <yellow>%02d<white>:<yellow>%02d",
+			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s<white>><magenta> at <yellow>%02d<white>:<yellow>%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				usr->curr_room->name, tm->tm_hour, tm->tm_min);
 	} else {
 		if (total == 1)
-			sl = add_String(&sl, "<green>You are the only one online right now");
+			print_StringIO(usr->text, "<green>You are the only one online right now\n");
 		else
-			sl = add_String(&sl, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d<white>:<yellow>%02d",
+			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d<white>:<yellow>%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				tm->tm_hour, tm->tm_min);
 	}
 /* draw a line across the full screen width */
 	if (drawline)
-		sl = add_StringList(&sl, new_StringList("<white><hline>-"));
-
-/* prepend header */
-
-	if (sl != NULL)
-		sl->next = usr->more_text;
-	if (usr->more_text != NULL)
-		usr->more_text->prev = sl;
-	else
-		usr->more_text = sl;
-	usr->more_text = rewind_StringList(usr->more_text);
-	Return;
+		print_StringIO(usr->text, "<white><hline>-\n");
 }
 
 
@@ -3391,9 +3369,9 @@ char buf[MAX_LINE*3], *p;
 }
 
 void online_friends_list(User *usr) {
-StringList *sl;
 User *u;
 struct tm *tm;
+StringList *sl;
 PList *pl = NULL;
 int total;
 
@@ -3423,30 +3401,23 @@ int total;
 	}
 	pl = rewind_PList(pl);
 	pl = sort_PList(pl, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-
-	total = short_who_list(usr, pl);
-
-	listdestroy_PList(pl);
+	total = list_Count(pl);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	sl = new_StringList("");
-	sl = add_String(&sl, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d<white>:<yellow>%02d",
+	free_StringIO(usr->text);
+	print_StringIO(usr->text, "\n<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d<white>:<yellow>%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
-/* prepend header */
+	short_who_list(usr, pl, total);
 
-	sl->next = usr->more_text;
-	if (usr->more_text != NULL)
-		usr->more_text->prev = sl;
-	else
-		usr->more_text = sl;
+	listdestroy_PList(pl);
 
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 
@@ -3456,9 +3427,9 @@ int total;
 	with usr->talked_to
 */
 void talked_list(User *usr) {
-StringList *sl;
 User *u;
 struct tm *tm;
+StringList *sl;
 PList *pl = NULL;
 int total;
 
@@ -3488,30 +3459,23 @@ int total;
 	}
 	pl = rewind_PList(pl);
 	pl = sort_PList(pl, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-
-	total = short_who_list(usr, pl);
-
-	listdestroy_PList(pl);
+	total = list_Count(pl);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	sl = new_StringList("");
-	sl = add_String(&sl, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d<white>:<yellow>%02d",
+	free_StringIO(usr->text);
+	print_StringIO(usr->text, "\n<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d<white>:<yellow>%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 
-/* prepend header */
+	short_who_list(usr, pl, total);
 
-	sl->next = usr->more_text;
-	if (usr->more_text != NULL)
-		usr->more_text->prev = sl;
-	else
-		usr->more_text = sl;
+	listdestroy_PList(pl);
 
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 

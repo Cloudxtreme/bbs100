@@ -1,5 +1,6 @@
 Changes as of July 11th 2005
 - mainloop() improved
+- who lists, online friends list, talked-to list all with StringIO
 
 Changes as of July 10th 2005
 - minimum age requirement PARAM_HELPER_AGE for Helping Hand status

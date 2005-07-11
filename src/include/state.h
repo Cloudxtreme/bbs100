@@ -92,7 +92,7 @@ int sort_who_desc_bytime(void *, void *);
 
 void who_list(User *, int);
 int long_who_list(User *, PList *);
-int short_who_list(User *, PList *);
+int short_who_list(User *, PList *, int);
 void who_list_header(User *, int, int);
 
 void print_known_room(User *, Room *);
