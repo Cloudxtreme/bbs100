@@ -261,12 +261,6 @@ char input_char[2];
 
 	nap = 1;
 	while(1) {
-		wait_for_input = 1;
-		highest_fd = 0;
-
-		FD_ZERO(&rfds);
-		FD_ZERO(&wfds);
-
 		for(c = AllConns; c != NULL; c = c_next) {
 			c_next = c->next;
 
@@ -289,7 +283,6 @@ char input_char[2];
 					c->state &= ~CONN_LOOPING;
 					Ret(c);
 				}
-				wait_for_input = 0;
 				continue;
 			}
 			if (c->state & CONN_LISTEN)		/* non-blocking listen, handled below */
@@ -319,6 +312,12 @@ char input_char[2];
 	Everything is very dynamic and things like process() and Ret()
 	actually may change a lot...
 */
+		wait_for_input = 1;
+		highest_fd = 0;
+
+		FD_ZERO(&rfds);
+		FD_ZERO(&wfds);
+
 		for(c = AllConns; c != NULL; c = c_next) {
 			c_next = c->next;
 
@@ -326,6 +325,13 @@ char input_char[2];
 			if (c->sock <= 0) {
 				remove_Conn(&AllConns, c);
 				destroy_Conn(c);
+				continue;
+			}
+/*
+	someone is looping, keep it flowing
+*/
+			if (c->state & CONN_LOOPING) {
+				wait_for_input = 0;
 				continue;
 			}
 /*
@@ -348,7 +354,7 @@ char input_char[2];
 				continue;
 			}
 			if (c->state & CONN_ESTABLISHED) {
-				if (c->output->len > 0) {			/* got data to write */
+				if (c->output->len > 0) {				/* got data to write */
 					FD_SET(c->sock, &wfds);
 					if (highest_fd <= c->sock)
 						highest_fd = c->sock + 1;

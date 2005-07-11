@@ -1,3 +1,6 @@
+Changes as of July 11th 2005
+- mainloop() improved
+
 Changes as of July 10th 2005
 - minimum age requirement PARAM_HELPER_AGE for Helping Hand status
   measured in days and may be 0
