@@ -40,8 +40,8 @@
 #define KEY_TAB			'\t'
 #define KEY_BACKTAB		'\\'
 
-#define WRAP_LEN		25
-#define WRAP_CHARSET	" .:;,-!?"
+#define WRAP_CHARSET1	" .:;,-!?>}])/"
+#define WRAP_CHARSET2	"<{[($'\""
 
 int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);

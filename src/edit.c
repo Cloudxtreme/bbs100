@@ -808,13 +808,17 @@ int i, wrap_len;
 	erase[0] = wrap[0] = 0;
 	wrap_len = usr->display->term_width / 3;
 	for(i = usr->edit_pos - 1; i > wrap_len; i--) {
-		if (cstrchr(WRAP_CHARSET, usr->edit_buf[i]) != NULL)
+		if (cstrchr(WRAP_CHARSET1, usr->edit_buf[i]) != NULL) {
+			i++;
 			break;
-
+		}
+		if (cstrchr(WRAP_CHARSET2, usr->edit_buf[i]) != NULL) {
+			strcat(erase, "\b \b");
+			break;
+		}
 		strcat(erase, "\b \b");
 	}
 	if (i > wrap_len) {
-		i++;
 		strcpy(wrap, usr->edit_buf+i);
 		usr->edit_buf[i] = 0;
 		Put(usr, erase);
