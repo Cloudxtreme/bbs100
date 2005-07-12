@@ -238,7 +238,7 @@ int i, idx;
 			break;
 
 		case 'w':
-			Put(usr, "<white>Who\n\n");
+			Put(usr, "<white>Who\n");
 			if (usr->flags & USR_SHORT_WHO)
 				who_list(usr, WHO_LIST_SHORT);
 			else
@@ -246,7 +246,7 @@ int i, idx;
 			Return;
 
 		case 'W':
-			Put(usr, "<white>Who\n\n");
+			Put(usr, "<white>Who\n");
 			if (usr->flags & USR_SHORT_WHO)
 				who_list(usr, WHO_LIST_LONG);
 			else
@@ -3406,7 +3406,7 @@ int total;
 		tm->tm_hour -= 12;
 
 	free_StringIO(usr->text);
-	print_StringIO(usr->text, "\n<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d<white>:<yellow>%02d\n",
+	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d<white>:<yellow>%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
@@ -3464,7 +3464,7 @@ int total;
 		tm->tm_hour -= 12;
 
 	free_StringIO(usr->text);
-	print_StringIO(usr->text, "\n<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d<white>:<yellow>%02d\n",
+	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d<white>:<yellow>%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 

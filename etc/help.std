@@ -64,7 +64,7 @@ When in a <yellow>chat room<green>, press <key>/ before giving the command.
 On the <white>--More--<green> prompt, you can use the following keys:
 
 <white><<yellow>space<white>><green>   Next page
-     <key>b    Previous page
+     <key>b/<key>u  Previous page
      <key>q/<key>s  Quit/stop reading here
      <key>g    Goto beginning
      <key>G    Goto end

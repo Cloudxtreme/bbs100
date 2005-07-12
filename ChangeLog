@@ -1,5 +1,6 @@
 Changes as of July 12th 2005
-- find function on --More-- prompt, for StringIO usr->text
+- find function on --More-- prompt using StringIO
+- find backwards on --More-- prompt using StringIO
 
 Changes as of July 11th 2005
 - mainloop() improved

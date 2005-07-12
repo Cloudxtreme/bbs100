@@ -1829,20 +1829,6 @@ StringList *sl;
 			}
 			break;
 
-		case '/':						/* find */
-			if (usr->textp == NULL)
-				break;
-
-			CALL(usr, STATE_MORE_FIND_PROMPT);
-			Return;
-
-		case '?':						/* find backwards */
-			if (usr->textp == NULL)
-				break;
-
-			CALL(usr, STATE_MORE_FINDBACK_PROMPT);
-			Return;
-
 		case 'q':
 		case 'Q':
 		case 's':
@@ -1870,62 +1856,6 @@ StringList *sl;
 		usr->more_text = usr->textp = NULL;
 		usr->read_lines = usr->total_lines = 0;
 		RET(usr);
-	}
-	Return;
-}
-
-void state_more_find_prompt(User *usr, char c) {
-StringList *sl;
-int r, l;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_more_find_prompt);
-
-	if (c == INIT_STATE)
-		Put(usr, "<white>Find: ");
-
-	r = edit_line(usr, c);
-
-	if (r == EDIT_BREAK) {
-		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->display->term_height; sl = sl->prev)
-			l++;
-		usr->textp = sl;
-		usr->read_lines -= l;
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		wipe_line(usr);
-		if (!usr->edit_buf[0]) {
-			l = 0;
-			for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->display->term_height; sl = sl->prev)
-				l++;
-			usr->textp = sl;
-			usr->read_lines -= l;
-			RET(usr);
-			Return;
-		}
-/* always search from the top */
-		l = 0;
-		for(sl = usr->textp; sl != NULL && sl->prev != NULL && l < usr->display->term_height-1; sl = sl->prev)
-			l++;
-
-		l = -l;
-		for(; sl != NULL; sl = sl->next) {
-			l++;
-			if (cstrstr(sl->str, usr->edit_buf) != NULL) {
-				usr->textp = sl;
-				l--;						/* error correction (?) */
-				usr->read_lines += l;
-				RET(usr);
-				Return;
-			}
-		}
-		MOV(usr, STATE_MORE_PROMPT);
-		CALL(usr, STATE_MORE_NOTFOUND);
 	}
 	Return;
 }
@@ -2694,6 +2624,8 @@ int l;
 
 		case 'b':
 		case 'B':
+		case 'u':
+		case 'U':
 			for(l = 1; l < usr->display->term_height * 2; l++) {
 				if (usr->scrollp->prev != NULL) {
 					usr->scrollp = usr->scrollp->prev;
@@ -2711,6 +2643,8 @@ int l;
 		case ' ':
 		case 'n':
 		case 'N':
+		case 'v':
+		case 'V':
 			display_page(usr, 1);
 			break;
 
@@ -2773,7 +2707,7 @@ int l;
 			if (usr->scrollp == NULL)
 				break;
 
-/*			CALL(usr, STATE_SCROLL_FINDBACK_PROMPT);	*/
+			CALL(usr, STATE_SCROLL_FINDBACK_PROMPT);
 			Return;
 
 		case 'q':
@@ -2787,7 +2721,8 @@ int l;
 			break;
 
 		default:
-			Put(usr, "<green>Press <white><<yellow>space<white>><green> for next page, <white><<yellow>b<white>><green> for previous page, <white><<yellow>enter<white>><green> for next line\n");
+			Put(usr, "<cyan>Press <white><<yellow>space<white>><cyan> for next page, <white><<yellow>b<white>><cyan> for previous page, <white><<yellow>enter<white>><cyan> for next line");
+			Return;
 	}
 	if (usr->scrollp != NULL)
 		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
@@ -2888,6 +2823,58 @@ int r, l;
 				Return;
 			}
 			l++;
+		}
+		MOV(usr, STATE_SCROLL_TEXT);
+		CALL(usr, STATE_SCROLL_TEXT_NOTFOUND);
+	}
+	Return;
+}
+
+void state_scroll_findback_prompt(User *usr, char c) {
+PList *pl;
+int r, l;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_scroll_findback_prompt);
+
+	if (c == INIT_STATE)
+		Put(usr, "<white>Find (backwards): ");
+
+	r = edit_line(usr, c);
+
+	if (r == EDIT_BREAK) {
+		wipe_line(usr);
+		goto_page_start(usr);
+
+		Put(usr, "<green>");
+		display_page(usr, 0);
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		wipe_line(usr);
+		goto_page_start(usr);
+
+		if (!usr->edit_buf[0]) {
+			Put(usr, "<green>");
+			display_page(usr, 0);
+			RET(usr);
+			Return;
+		}
+		l = usr->read_lines;
+		for(pl = usr->scrollp->prev; pl != NULL; pl = pl->prev) {
+			l--;
+			if (!line_search((char *)pl->p, usr->edit_buf)) {
+				usr->scrollp = pl;
+				usr->read_lines = l;
+
+				Put(usr, "<green>");
+				display_page(usr, 0);
+				RET(usr);
+				Return;
+			}
 		}
 		MOV(usr, STATE_SCROLL_TEXT);
 		CALL(usr, STATE_SCROLL_TEXT_NOTFOUND);
