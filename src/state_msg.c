@@ -2330,8 +2330,8 @@ int pos, len;
 		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
 	}
 	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
-	usr->read_lines = 1;
-	usr->total_lines = list_Count(usr->scroll);
+	usr->read_lines = 0;
+	usr->total_lines = list_Count(usr->scroll) - 1;
 
 	Put(usr, "\n");
 	display_page(usr, 2);
