@@ -7,6 +7,7 @@ Changes as of July 12th 2005
 - profile info is StringIO
 - BufferedMsg text is StringIO
 - usr->more_txt is out of here; everything is now StringIO
+- better word-wrap
 
 Changes as of July 11th 2005
 - mainloop() improved

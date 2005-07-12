@@ -128,7 +128,7 @@ char many_buf[MAX_LINE*3];
 
 					add_StringList(&usr->recipients, new_StringList(sl->str));
 			}
-			Print(usr, "%s", print_many(usr, many_buf));
+			Put(usr, print_many(usr, many_buf));
 			break;
 /*
 	talked-to list: donated by Richard of MatrixBBS
@@ -155,7 +155,7 @@ char many_buf[MAX_LINE*3];
 
 					add_StringList(&usr->recipients, new_StringList(sl->str));
 			}
-			Print(usr, "%s", print_many(usr, many_buf));
+			Put(usr, print_many(usr, many_buf));
 			break;
 
 		case KEY_CTRL('W'):
@@ -176,7 +176,7 @@ char many_buf[MAX_LINE*3];
 						usr->recipients = add_StringList(&usr->recipients, new_StringList(u->name));
 				}
 				usr->recipients = rewind_StringList(usr->recipients);
-				Print(usr, "%s", print_many(usr, many_buf));
+				Put(usr, print_many(usr, many_buf));
 			}
 			break;
 
@@ -384,7 +384,7 @@ char many_buf[MAX_LINE*3];
 
 				usr->edit_buf[usr->edit_pos++] = c;
 				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
 			}
 	}
 	return 0;
@@ -481,7 +481,7 @@ char many_buf[MAX_LINE*3];
 
 				usr->edit_buf[usr->edit_pos++] = c;
 				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
 			}
 	}
 	return 0;
@@ -647,7 +647,7 @@ int edit_roomname(User *usr, char c) {
 
 				usr->edit_buf[usr->edit_pos++] = c;
 				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
 			}
 	}
 	Return 0;
@@ -771,15 +771,66 @@ int edit_line(User *usr, char c) {
 			if (usr->edit_pos < MAX_LINE-1) {
 				usr->edit_buf[usr->edit_pos++] = c;
 				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
 			}
 	}
 	return 0;
 }
 
-int edit_x(User *usr, char c) {
-int wrapable = 0;
+/*
+	word wrapping for edit_x() and edit_msg()
+*/
+static void edit_wrap(User *usr, char c, char *prompt) {
+char erase[MAX_LINE*3], wrap[MAX_LINE];
+int i;
 
+	Enter(edit_wrap);
+
+	if (usr->edit_pos < MAX_LINE-2) {
+		char *p;
+/*
+	this strange construction is faster than using Print()
+	(not that anyone cares, but hey...)
+*/
+		p = usr->edit_buf + usr->edit_pos;
+		*p = c;
+		p[1] = 0;
+		usr->edit_pos++;
+		Put(usr, p);
+		Return;
+	}
+/* word wrap */
+
+	erase[0] = wrap[0] = 0;
+	for(i = usr->edit_pos - 1; i > WRAP_LEN; i--) {
+		if (cstrchr(WRAP_CHARSET, usr->edit_buf[i]) != NULL)
+			break;
+
+		strcat(erase, "\b \b");
+	}
+	if (i > WRAP_LEN) {
+		i++;
+		strcpy(wrap, usr->edit_buf+i);
+		usr->edit_buf[i] = 0;
+	} else
+		*erase = 0;
+
+/* add new line */
+	put_StringIO(usr->text, usr->edit_buf);
+	write_StringIO(usr->text, "\n", 1);
+	usr->total_lines++;
+
+/* wrap word to next line */
+	strcpy(usr->edit_buf, wrap);
+	usr->edit_pos = strlen(usr->edit_buf);
+	usr->edit_buf[usr->edit_pos++] = c;
+	usr->edit_buf[usr->edit_pos] = 0;
+
+	Print(usr, "%s\n%s%s", erase, prompt, usr->edit_buf);
+	Return;
+}
+
+int edit_x(User *usr, char c) {
 	if (usr == NULL)
 		return 0;
 
@@ -843,7 +894,6 @@ int wrapable = 0;
 			Put(usr, "\n");
 			return EDIT_RETURN;
 
-
 		case KEY_BS:
 			if (usr->edit_pos) {
 				usr->edit_pos--;
@@ -887,57 +937,12 @@ int wrapable = 0;
 			if (c < ' ' || c > '~')
 				break;
 
-			if (usr->edit_pos < MAX_LINE-2) {
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
-			} else {
-				int i;
-				char buf[MAX_LINE*3] = "", buf2[MAX_LINE];
-
-/* word wrap */
-/* improved by Fearlezz of MatrixBBS */
-				i = usr->edit_pos;
-				while(i > (MAX_LINE >> 1)) {
-					if (usr->edit_buf[i] == ' ')
-						wrapable = 1;
-					i--;
-				}
-				if (!wrapable)
-					i = MAX_LINE-1;
-				else {
-					i = usr->edit_pos;
-					if (wrapable)
-						while(i > (MAX_LINE >> 1) && usr->edit_buf[i] != ' ') {
-							if (usr->edit_buf[i] >= ' ' && usr->edit_buf[i] <= '~')
-								strcat(buf, "\b \b");
-							i--;
-						}
-				}
-				i++;
-				strcpy(buf2, usr->edit_buf+i);
-				usr->edit_buf[i] = 0;
-
-/* add new line */
-				put_StringIO(usr->text, usr->edit_buf);
-				write_StringIO(usr->text, "\n", 1);
-
-/* wrap word to next line */
-				usr->edit_pos = strlen(buf2);
-				buf2[usr->edit_pos++] = c;
-				buf2[usr->edit_pos] = 0;
-
-				Print(usr, "%s\n>%s", buf, buf2);
-				strcpy(usr->edit_buf, buf2);
-				usr->total_lines++;
-			}
+			edit_wrap(usr, c, ">");
 	}
 	return 0;
 }
 
 int edit_msg(User *usr, char c) {
-int wrapable = 0;
-
 	if (usr == NULL)
 		return 0;
 
@@ -1012,7 +1017,6 @@ int wrapable = 0;
 				usr->edit_buf[0] = 0;
 			}
 			break;
-
 /*
 	Eat words in post line, to be more like DOC
 	contributed by Shannon Prickett <spameater@metanav.org>
@@ -1025,53 +1029,8 @@ int wrapable = 0;
 			if (c < ' ' || c > '~')
 				break;
 
-			if (usr->edit_pos < MAX_LINE-2) {
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-				Print(usr, "%c", c);
-			} else {
-				int i;
-				char buf[MAX_LINE*3] = "", buf2[MAX_LINE];
+			edit_wrap(usr, c, "");
 
-/* word wrap */
-/* improved by Fearlezz of MatrixBBS */
-				i = usr->edit_pos;
-				while(i > (MAX_LINE >> 1)) {
-					if (usr->edit_buf[i] == ' ')
-						wrapable = 1;
-					i--;
-				}
-				if (!wrapable)
-					i = MAX_LINE-1;
-				else {
-					i = usr->edit_pos;
-
-					if (wrapable)
-						while(i > (MAX_LINE >> 1) && usr->edit_buf[i] != ' ') {
-							if (usr->edit_buf[i] >= ' ' && usr->edit_buf[i] <= '~')
-								strcat(buf, "\b \b");
-							i--;
-						}
-				}
-				strcat(buf, "\n");
-				Put(usr, buf);
-				i++;
-				strcpy(buf2, usr->edit_buf+i);
-				usr->edit_buf[i] = 0;
-
-/* add new line */
-				put_StringIO(usr->text, usr->edit_buf);
-				write_StringIO(usr->text, "\n", 1);
-
-/* wrap word to next line */
-				usr->edit_pos = strlen(buf2);
-				buf2[usr->edit_pos++] = c;
-				buf2[usr->edit_pos] = 0;
-
-				Print(usr, "%s", buf2);
-				strcpy(usr->edit_buf, buf2);
-				usr->total_lines++;
-			}
 	}
 	return 0;
 }
@@ -1121,7 +1080,7 @@ int edit_number(User *usr, char c) {
 				if (usr->edit_pos < MAX_NAME-1) {
 					usr->edit_buf[usr->edit_pos++] = c;
 					usr->edit_buf[usr->edit_pos] = 0;
-					Print(usr, "%c", c);
+					Put(usr, usr->edit_buf + usr->edit_pos - 1);
 				}
 			}
 	}
@@ -1173,7 +1132,7 @@ int edit_octal_number(User *usr, char c) {
 				if (usr->edit_pos < MAX_NAME-1) {
 					usr->edit_buf[usr->edit_pos++] = c;
 					usr->edit_buf[usr->edit_pos] = 0;
-					Print(usr, "%c", c);
+					Put(usr, usr->edit_buf + usr->edit_pos - 1);
 				}
 			}
 	}
@@ -1242,7 +1201,7 @@ char color = 0;
 
 		usr->edit_buf[usr->edit_pos++] = color;
 		usr->edit_buf[usr->edit_pos] = 0;
-		Print(usr, "%c", color);
+		Put(usr, usr->edit_buf + usr->edit_pos - 1);
 	}
 	usr->runtime_flags &= ~RTF_COLOR_EDITING;
 }
@@ -1284,7 +1243,7 @@ char lastcolor = 0;
 	}
 
 /* Restore our last color code */
-	for (where=usr->edit_pos; where > 0; where--) {
+	for(where = usr->edit_pos; where > 0; where--) {
 		if (iscntrl((int)usr->edit_buf[(where-1)] & 0xff)) {
 			lastcolor = usr->edit_buf[(where-1)];
 			break;

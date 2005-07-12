@@ -40,6 +40,9 @@
 #define KEY_TAB			'\t'
 #define KEY_BACKTAB		'\\'
 
+#define WRAP_LEN		25
+#define WRAP_CHARSET	" .:;,-!?"
+
 int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);
 int edit_tabname(User *, char);
