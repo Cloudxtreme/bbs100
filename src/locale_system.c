@@ -27,11 +27,11 @@
 
 #include "locale_system.h"
 #include "defines.h"
+#include "sys_time.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 
 /*

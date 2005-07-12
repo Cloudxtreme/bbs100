@@ -47,11 +47,11 @@
 #include "SU_Passwd.h"
 #include "Timezone.h"
 #include "Wrapper.h"
+#include "sys_time.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

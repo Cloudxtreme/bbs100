@@ -35,13 +35,13 @@
 #include "Memory.h"
 #include "locale_system.h"
 #include "cstring.h"
+#include "sys_time.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <time.h>
 
 StringList *internal_log = NULL;
 int internal_log_len = 0;
