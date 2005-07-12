@@ -7,7 +7,8 @@ Changes as of July 12th 2005
 - profile info is StringIO
 - BufferedMsg text is StringIO
 - usr->more_txt is out of here; everything is now StringIO
-- better word-wrap, also wraps on smaller screens
+- better input word-wrap, also wraps on smaller screens
+- better output word-wrap
 - live editing of long color codes (not all codes, just colors)
 
 Changes as of July 11th 2005

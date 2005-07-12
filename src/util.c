@@ -202,6 +202,11 @@ int pos, n;
 			case '-':
 			case '!':
 			case '?':
+			case '>':
+			case '}':
+			case ']':
+			case ')':
+			case '/':
 				if (*cpos + word_len(str+1) >= usr->display->term_width) {
 					if (*str != ' ')
 						write_StringIO(dev, str, 1);
@@ -217,7 +222,26 @@ int pos, n;
 						return pos;
 					break;
 				}
-/* fall through to default */
+/* do default */
+				write_StringIO(dev, &c, 1);
+				(*cpos)++;
+				break;
+
+/*			case '<':	*/
+			case '{':
+			case '[':
+			case '(':
+			case '$':
+			case '\'':
+			case '"':
+				if (*cpos + word_len(str+1) >= usr->display->term_width) {
+					write_StringIO(dev, "\r\n", 2);
+					*cpos = 0;
+					(*lines)++;
+					if (max_lines > -1 && *lines >= max_lines)
+						return pos-1;
+				}
+/* fall through */
 
 			default:
 				write_StringIO(dev, &c, 1);
@@ -259,6 +283,9 @@ int len;
 				return len;
 
 			default:
+				if (cstrchr(WRAP_CHARSET1, *str) != NULL || cstrchr(WRAP_CHARSET2, *str) != NULL)
+					return len;
+
 /* count as printable character (this is NOT always the case, however) */
 				if (*str >= ' ' && *str <= '~') {
 					len++;

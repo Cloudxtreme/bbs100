@@ -61,7 +61,7 @@ When in a <yellow>chat room<green>, press <key>/ before giving the command.
      <key>[    Display version information
      <key>]    View the local modifications to a standard bbs100 BBS
 
-On the <white>--More--<green> prompt, you can use the following keys:
+On the <white>--<yellow>More<white>--<green> prompt, you can use the following keys:
 
 <white><<yellow>space<white>><green>   Next page
      <key>b/<key>u  Previous page
