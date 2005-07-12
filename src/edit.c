@@ -779,14 +779,18 @@ int edit_line(User *usr, char c) {
 
 /*
 	word wrapping for edit_x() and edit_msg()
+
+	The word wrap wraps on terminal width, but is also delimited by
+	the maximum buffer size MAX_LINE
+	(this will be forever the case, until all buffers are dynamically sizeable)
 */
 static void edit_wrap(User *usr, char c, char *prompt) {
 char erase[MAX_LINE*3], wrap[MAX_LINE];
-int i;
+int i, wrap_len;
 
 	Enter(edit_wrap);
 
-	if (usr->edit_pos < MAX_LINE-2) {
+	if (usr->edit_pos < MAX_LINE-2 && usr->edit_pos < usr->display->term_width-2) {
 		char *p;
 /*
 	this strange construction is faster than using Print()
@@ -802,20 +806,24 @@ int i;
 /* word wrap */
 
 	erase[0] = wrap[0] = 0;
-	for(i = usr->edit_pos - 1; i > WRAP_LEN; i--) {
+	wrap_len = usr->display->term_width / 3;
+	for(i = usr->edit_pos - 1; i > wrap_len; i--) {
 		if (cstrchr(WRAP_CHARSET, usr->edit_buf[i]) != NULL)
 			break;
 
 		strcat(erase, "\b \b");
 	}
-	if (i > WRAP_LEN) {
+	if (i > wrap_len) {
 		i++;
 		strcpy(wrap, usr->edit_buf+i);
 		usr->edit_buf[i] = 0;
-	} else
-		*erase = 0;
-
-/* add new line */
+		Put(usr, erase);
+	}
+/*
+	it is a nice experiment to leave out the newline, but it gives problems
+	because then it's suddenly possible to have really long lines
+	especially the load_xxx() and save_xxx() functions don't like it ...
+*/
 	put_StringIO(usr->text, usr->edit_buf);
 	write_StringIO(usr->text, "\n", 1);
 	usr->total_lines++;
@@ -826,7 +834,7 @@ int i;
 	usr->edit_buf[usr->edit_pos++] = c;
 	usr->edit_buf[usr->edit_pos] = 0;
 
-	Print(usr, "%s\n%s%s", erase, prompt, usr->edit_buf);
+	Print(usr, "\n%s%s", prompt, usr->edit_buf);
 	Return;
 }
 

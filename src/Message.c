@@ -114,9 +114,9 @@ int version;
 }
 
 int load_Message_version1(File *f, Message *m) {
-char buf[MAX_LINE*3], *p;
+char buf[PRINT_BUF], *p;
 
-	while(Fgets(f, buf, MAX_LINE*3) != NULL) {
+	while(Fgets(f, buf, PRINT_BUF) != NULL) {
 		FF1_PARSE;
 
 		FF1_LOAD_LEN("from", m->from, MAX_NAME);
