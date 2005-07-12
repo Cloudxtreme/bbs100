@@ -1330,14 +1330,12 @@ char buf[MAX_LINE], *p;
 }
 
 /*
-	returns allocated StringList to a timezone menu, formatted in columns
+	writes the entries in raw_list to StringIO s to create the time zone menu
 	this routine looks a lot like the one that formats the wide who-list
-
-	NOTE: the caller must Free() the returned StringList by himself!
 */
-StringList *format_tz_menu(StringList *raw_list, int term_width) {
+static void format_tz_menu(StringIO *s, StringList *raw_list, int term_width) {
 int total, cols, rows, i, j, buflen, len, max_width, idx;
-StringList *sl, *sl_cols[16], *sl_columns;
+StringList *sl, *sl_cols[16];
 char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 
 	total = 0;
@@ -1376,9 +1374,8 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 		}
 	}
 
-/* make the menu text in a stringlist */
+/* make the menu text */
 
-	sl_columns = NULL;
 	for(j = 0; j < rows; j++) {
 		idx = j + 1;
 
@@ -1406,10 +1403,9 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 			}
 			sl_cols[i] = sl_cols[i]->next;
 		}
-		add_StringList(&sl_columns, new_StringList(buf));
+		put_StringIO(s, buf);
+		write_StringIO(s, "\n", 1);
 	}
-	sl_columns = rewind_StringList(sl_columns);
-	return sl_columns;
 }
 
 void select_tz_continent(User *usr) {
@@ -1443,12 +1439,12 @@ char filename[MAX_PATHLEN];
 	}
 	Fclose(f);
 
-	Put(usr, "<magenta>Time zone regions\n\n");
+	Put(usr, "<magenta>Time zone regions\n");
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->display->term_width);
+	free_StringIO(usr->text);
+	format_tz_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 
@@ -1521,7 +1517,7 @@ int r;
 		while((p = cstrchr(p, '_')) != NULL)
 			*p = ' ';
 
-		Print(usr, "\n<green>Cities, countries, regions, and zones in category <yellow>%s:\n\n", filename);
+		Print(usr, "\n<green>Cities, countries, regions, and zones in category <yellow>%s:\n", filename);
 		select_tz_city(usr);
 		Return;
 	}
@@ -1579,11 +1575,11 @@ char filename[MAX_PATHLEN];
 	}
 	Fclose(f);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = format_tz_menu((StringList *)usr->tmpbuf[0], usr->display->term_width);
+	free_StringIO(usr->text);
+	format_tz_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
-	read_more(usr);
+	read_text(usr);
 	Return;
 }
 

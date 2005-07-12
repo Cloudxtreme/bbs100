@@ -580,6 +580,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		return 7;
 	}
 	write_StringIO(dev, "<", 1);
+	(*cpos)++;
 	return 0;
 }
 
