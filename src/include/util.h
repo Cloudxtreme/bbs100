@@ -105,8 +105,8 @@ char *path_strip(char *);
 long fread_int32(FILE *);
 char *print_md5_digest(unsigned char sum[], char *);
 
-StringList *StringList_from_StringIO(StringIO *);
-StringIO *StringIO_from_StringList(StringList *);
+StringList *StringIO_to_StringList(StringIO *);
+int StringList_to_StringIO(StringList *sl, StringIO *);
 
 extern ColorTable color_table[];
 

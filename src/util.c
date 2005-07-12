@@ -1336,7 +1336,7 @@ int i;
 	return digest;
 }
 
-StringList *StringList_from_StringIO(StringIO *s) {
+StringList *StringIO_to_StringList(StringIO *s) {
 StringList *sl;
 char buf[PRINT_BUF];
 int pos;
@@ -1353,18 +1353,16 @@ int pos;
 	return sl;
 }
 
-StringIO *StringIO_from_StringList(StringList *sl) {
-StringIO *s;
-
-	if ((s = new_StringIO()) == NULL)
-		return NULL;
+int StringList_to_StringIO(StringList *sl, StringIO *s) {
+	if (s == NULL)
+		return -1;
 
 	while(sl != NULL) {
 		put_StringIO(s, sl->str);
 		write_StringIO(s, "\n", 1);
 		sl = sl->next;
 	}
-	return s;
+	return 0;
 }
 
 /* EOB */
