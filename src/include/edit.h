@@ -54,7 +54,7 @@ int edit_msg(User *, char);
 int edit_number(User *, char);
 int edit_octal_number(User *, char);
 void edit_color(User *, char);
-
+void edit_long_color(User *);
 void erase_word(User *);
 void erase_line(User *, char *);
 void erase_name(User *);
@@ -66,8 +66,6 @@ void make_rooms_tablist(User *);
 void tab_list(User *, void (*)(User *));
 void backtab_list(User *, void (*)(User *));
 void reset_tablist(User *, char);
-
-int edit_data_cmd(User *, char);
 
 #endif	/* EDIT_H_WJ99 */
 

@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -764,6 +765,10 @@ int edit_line(User *usr, char c) {
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			break;
 
+		case '>':
+			edit_long_color(usr);
+			break;
+
 		default:
 			if (c < ' ' || c > '~')
 				break;
@@ -945,6 +950,10 @@ int edit_x(User *usr, char c) {
 			erase_word(usr);
 			break;
 
+		case '>':
+			edit_long_color(usr);
+			break;
+
 		default:
 			if (c < ' ' || c > '~')
 				break;
@@ -1018,6 +1027,13 @@ int edit_msg(User *usr, char c) {
 			usr->edit_buf[0] = 0;
 			Put(usr, "<green>");
 			break;
+/*
+	Eat words in post line, to be more like DOC
+	contributed by Shannon Prickett <spameater@metanav.org>
+*/
+		case KEY_CTRL('W'):
+			erase_word(usr);
+			break;
 
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
@@ -1029,12 +1045,9 @@ int edit_msg(User *usr, char c) {
 				usr->edit_buf[0] = 0;
 			}
 			break;
-/*
-	Eat words in post line, to be more like DOC
-	contributed by Shannon Prickett <spameater@metanav.org>
-*/
-		case KEY_CTRL('W'):
-			erase_word(usr);
+
+		case '>':
+			edit_long_color(usr);
 			break;
 
 		default:
@@ -1216,6 +1229,41 @@ char color = 0;
 		Put(usr, usr->edit_buf + usr->edit_pos - 1);
 	}
 	usr->runtime_flags &= ~RTF_COLOR_EDITING;
+}
+
+void edit_long_color(User *usr) {
+int i, l;
+char colorbuf[20];
+
+	if (usr == NULL)
+		return;
+
+	for(i = 0; i < NUM_COLORS; i++) {
+		if (i == HOTKEY)
+			continue;
+
+		l = sprintf(colorbuf, "<%s", color_table[i].name);
+		if (usr->edit_pos < l)
+			continue;
+
+		if (!cstrnicmp(colorbuf, usr->edit_buf + usr->edit_pos - l, l)) {
+			usr->edit_pos -= l;
+			usr->edit_buf[usr->edit_pos++] = color_table[i].key;
+			usr->edit_buf[usr->edit_pos] = 0;
+
+			while(l > 0) {
+				Put(usr, "\b \b");
+				l--;
+			}
+			Put(usr, usr->edit_buf + usr->edit_pos - 1);
+			return;
+		}
+	}
+
+/* no match, it wasn't a color code after all */
+
+	usr->edit_buf[usr->edit_pos++] = '>';
+	Put(usr, ">");
 }
 
 
@@ -1481,32 +1529,6 @@ void reset_tablist(User *usr, char c) {
 		listdestroy_StringList(usr->tablist);
 		usr->tablist = NULL;
 	}
-}
-
-int edit_data_cmd(User *usr, char c) {
-	if (usr == NULL)
-		return 0;
-
-	if (c == EDIT_INIT) {
-		usr->runtime_flags |= RTF_BUSY;
-		usr->edit_pos = 0;
-		usr->edit_buf[0] = 0;
-		return 0;
-	}
-	switch(c) {
-		case KEY_RETURN:
-			return EDIT_RETURN;
-
-		default:
-			if (c < ' ' || c > '~')
-				break;
-
-			if (usr->edit_pos < MAX_LINE-1) {
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-			}
-	}
-	return 0;
 }
 
 /* EOB */

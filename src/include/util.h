@@ -63,6 +63,7 @@
 #define CYAN			6
 #define WHITE			7
 #define HOTKEY			8
+#define NUM_COLORS		9
 
 typedef struct {
 	char *name;
@@ -108,7 +109,7 @@ char *print_md5_digest(unsigned char sum[], char *);
 StringList *StringIO_to_StringList(StringIO *);
 int StringList_to_StringIO(StringList *sl, StringIO *);
 
-extern ColorTable color_table[];
+extern ColorTable color_table[NUM_COLORS];
 
 #endif	/* UTIL_H_WJ99 */
 

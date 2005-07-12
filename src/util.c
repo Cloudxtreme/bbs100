@@ -48,7 +48,7 @@
 #define HACK_CHANCE	((rand() % 20) < 4)
 
 
-ColorTable color_table[] = {
+ColorTable color_table[NUM_COLORS] = {
 	{ "Black",		30,	KEY_CTRL('Z')	},
 	{ "Red",		31,	KEY_CTRL('R')	},
 	{ "Green",		32,	KEY_CTRL('G')	},
@@ -337,10 +337,9 @@ int hackerz_mode(int c) {
 }
 
 int color_by_name(char *name) {
-int colors, i;
+int i;
 
-	colors = sizeof(color_table)/sizeof(ColorTable);
-	for(i = 0; i < colors; i++) {
+	for(i = 0; i < NUM_COLORS; i++) {
 		if (i == HOTKEY)
 			continue;
 
@@ -390,14 +389,13 @@ int colors, i;
 	if dev is NULL, it produces no output
 */
 int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines) {
-int i, c, colors;
+int i, c;
 char colorbuf[20], buf[PRINT_BUF], *p;
 
 	if (usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
 		return 0;
 
-	colors = sizeof(color_table)/sizeof(ColorTable);
-	for(i = 0; i < colors; i++) {
+	for(i = 0; i < NUM_COLORS; i++) {
 		if (i == HOTKEY)
 			continue;
 
@@ -700,14 +698,13 @@ int l, n;
 	this function is kind of lame :)
 */
 int skip_long_color_code(char *code) {
-int colors, i;
+int i;
 char colorbuf[20];
 
 	if (code == NULL || !*code || *code != '<')
 		return 0;
 
-	colors = sizeof(color_table)/sizeof(ColorTable);
-	for(i = 0; i < colors; i++) {
+	for(i = 0; i < NUM_COLORS; i++) {
 		if (i == HOTKEY)
 			continue;
 
