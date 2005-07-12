@@ -2271,82 +2271,6 @@ char from[MAX_LINE], date_buf[MAX_LINE];
 	Return;
 }
 
-void more_msg_header(User *usr) {
-char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
-
-	if (usr == NULL)
-		return;
-
-	Enter(more_msg_header);
-
-	listdestroy_StringList(usr->more_text);
-	if ((usr->more_text = new_StringList("")) == NULL) {
-		Perror(usr, "Out of memory");
-		Return;
-	}
-	if (usr->message == NULL) {
-		Perror(usr, "I have a problem with this");
-		Return;
-	}
-/* print message header */
-
-	if (usr->message->anon[0])
-		sprintf(from, "<cyan>- %s -", usr->message->anon);
-	else
-		if (usr->message->flags & MSG_FROM_SYSOP)
-			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, usr->message->from);
-		else
-			if (usr->message->flags & MSG_FROM_ROOMAIDE)
-				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, usr->message->from);
-			else
-				sprintf(from, "<yellow>%s", usr->message->from);
-
-	if (usr->message->to != NULL) {
-		StringList *sl;
-		int l, dl, max_dl;			/* l = strlen, dl = display length */
-
-		max_dl = usr->display->term_width-1;
-		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
-			max_dl = MAX_LINE*3-1;
-
-		if (!strcmp(usr->message->from, usr->name)) {
-			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime, date_buf));
-			dl = color_strlen(buf);
-
-			for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-				if ((dl + strlen(sl->str)+2) < max_dl)
-					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
-				else {
-					usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
-				}
-				dl = color_strlen(buf);
-			}
-			add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
-		} else {
-			if (usr->message->to != NULL && usr->message->to->next == NULL && !strcmp(usr->message->to->str, usr->name))
-				usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime, date_buf), from);
-			else {
-				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime, date_buf), from);
-				dl = color_strlen(buf);
-
-				for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-					if ((dl + strlen(sl->str)+2) < MAX_LINE)
-						l += sprintf(buf+strlen(buf), "<yellow>%s<green>, ", sl->str);
-					else {
-						usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
-						l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
-					}
-					dl = color_strlen(buf);
-				}
-				usr->more_text = add_String(&usr->more_text, "%s<yellow>%s<green>", buf, sl->str);
-			}
-		}
-	} else
-		usr->more_text = add_String(&usr->more_text, "<cyan>%s<green>, from %s<green>", print_date(usr, usr->message->mtime, date_buf), from);
-	Return;
-}
-
 /*
 	find the next unread room
 	this is an unseemingly costly operation
@@ -2629,7 +2553,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 /* print message header */
 
 	if (usr->message->anon[0])
-		sprintf(from, "<cyan>- %s -", usr->message->anon);
+		sprintf(from, "<cyan>- %s <cyan>-", usr->message->anon);
 	else
 		if (usr->message->flags & MSG_FROM_SYSOP)
 			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, usr->message->from);
@@ -2686,6 +2610,21 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 	Return;
 }
 
+/*
+	helper function for reading usr->text
+	start is 0 for a full page, 1 for a page minus 1 line, etc.
+*/
+static void display_page(User *usr, int start) {
+int l;
+
+	for(l = start; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
+		usr->display->cpos = usr->display->line = 0;
+		Out_text(usr->conn->output, usr, (char *)usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
+		usr->read_lines++;
+		l++;
+	}
+}
+
 void read_text(User *usr) {
 int pos, len;
 
@@ -2708,27 +2647,15 @@ int pos, len;
 		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1);
 		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
 	}
-	usr->scroll = rewind_PList(usr->scroll);
+	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
 	usr->read_lines = 0;
 	usr->total_lines = list_Count(usr->scroll);
 
+	Put(usr, "\n");
+	display_page(usr, 2);
+
 	CALL(usr, STATE_SCROLL_TEXT);
 	Return;
-}
-
-/*
-	helper function for state_scroll_text()
-	start is 0 for a full page, 1 for a page minus 1 line, etc.
-*/
-static void display_page(User *usr, int start) {
-int l;
-
-	for(l = start; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
-		usr->display->cpos = usr->display->line = 0;
-		Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
-		usr->read_lines++;
-		l++;
-	}
 }
 
 void state_scroll_text(User *usr, char c) {
@@ -2748,9 +2675,6 @@ int l;
 				RET(usr);
 				Return;
 			}
-			usr->scrollp = usr->scroll;
-			usr->read_lines = 0;
-			display_page(usr, 1);
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
@@ -2828,7 +2752,7 @@ int l;
 			if (usr->scrollp == NULL)
 				break;
 
-/*			CALL(usr, STATE_SCROLL_FIND_PROMPT);	*/
+			CALL(usr, STATE_SCROLL_FIND_PROMPT);
 			Return;
 
 		case '?':						/* find backwards */
@@ -2867,6 +2791,115 @@ int l;
 		usr->read_lines = usr->total_lines = 0;
 		RET(usr);
 	}
+	Return;
+}
+
+/*
+	helper function for state_scroll_find_prompt()
+	We want to do a cstrstr(), but end on a newline character
+
+	Like strcmp(), this function returns 0 on match, and 1 on no match
+*/
+static int line_search(char *line, char *search) {
+int len;
+
+	if (line == NULL || search == NULL || !*search)
+		return 0;
+
+	len = strlen(search);
+	while(*line) {
+		if (*line == '\n')
+			break;
+
+		if (*line == *search && !strncmp(line, search, len))
+			return 0;
+
+		line++;
+	}
+	return 1;
+}
+
+void state_scroll_find_prompt(User *usr, char c) {
+PList *pl;
+int r, l;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_scroll_find_prompt);
+
+	if (c == INIT_STATE)
+		Put(usr, "<white>Find: ");
+
+	r = edit_line(usr, c);
+
+	if (r == EDIT_BREAK) {
+		l = 0;
+		for(pl = usr->scrollp; pl != NULL && pl->prev != NULL && l < usr->display->term_height; pl = pl->prev)
+			l++;
+		usr->scrollp = pl;
+		usr->read_lines -= l;
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		wipe_line(usr);
+
+/* always search from the top */
+
+		l = 1;
+		for(pl = usr->scrollp; pl != NULL && l < usr->display->term_height; pl = pl->prev)
+			l++;
+		if (pl == NULL)
+			pl = usr->scroll;
+
+		if (!usr->edit_buf[0]) {
+			usr->scrollp = pl;
+			usr->read_lines -= l;
+			RET(usr);
+			Return;
+		}
+		l = -l;
+		for(; pl != NULL; pl = pl->next) {
+			l++;
+			if (!line_search((char *)pl->p, usr->edit_buf)) {
+				usr->scrollp = pl;
+				l--;						/* error correction (?) */
+				usr->read_lines += l;
+				RET(usr);
+				Return;
+			}
+		}
+		MOV(usr, STATE_SCROLL_TEXT);
+		CALL(usr, STATE_SCROLL_TEXT_NOTFOUND);
+	}
+	Return;
+}
+
+void state_scroll_text_notfound(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_scroll_text_notfound);
+
+	if (c == INIT_STATE) {
+		Print(usr, "<red>Not found");
+		usr->runtime_flags |= RTF_BUSY;
+		Return;
+	}
+	if (c == KEY_RETURN || c == ' ' || c == KEY_BS || c == KEY_CTRL('H')
+		|| c == KEY_CTRL('C') || c == KEY_CTRL('D') || c == KEY_ESC) {
+		PList *pl;
+		int l = 0;
+
+		for(pl = usr->scrollp; pl != NULL && pl->prev != NULL && l < usr->display->term_height; pl = pl->prev)
+			l++;
+		usr->scrollp = pl;
+		usr->read_lines -= l;
+		RET(usr);
+	} else
+		Put(usr, "<beep>");
+
 	Return;
 }
 

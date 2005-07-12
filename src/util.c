@@ -121,7 +121,7 @@ int pos, n;
 
 			case KEY_CTRL('A'):
 				if (usr->flags & USR_BEEP)
-					print_StringIO(dev, "%c", KEY_BEEP);
+					write_StringIO(dev, "\a", 1);
 				break;
 
 			case KEY_CTRL('Z'):
@@ -482,7 +482,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	}
 	if (!cstrnicmp(code, "<beep>", 6)) {
 		if (usr->flags & USR_BEEP)
-			print_StringIO(dev, "%c", KEY_BEEP);
+			write_StringIO(dev, "\a", 1);
 		return 5;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {

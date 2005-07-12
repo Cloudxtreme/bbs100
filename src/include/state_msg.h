@@ -46,8 +46,9 @@
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
 #define STATE_PRESS_ANY_KEY				state_press_any_key
-#define STATE_SCROLL_TEXT	state_scroll_text
-
+#define STATE_SCROLL_TEXT				state_scroll_text
+#define STATE_SCROLL_FIND_PROMPT		state_scroll_find_prompt
+#define STATE_SCROLL_TEXT_NOTFOUND		state_scroll_text_notfound
 
 void state_post_as_anon(User *, char);
 void state_enter_anonymous(User *, char);
@@ -82,7 +83,6 @@ char *buffered_msg_header(User *, BufferedMsg *, char *);
 void print_buffered_msg(User *, BufferedMsg *);
 void spew_BufferedMsg(User *);
 void print_new_msg_header(User *);
-void more_msg_header(User *);
 void expire_msg(Room *);
 void expire_mail(User *);
 void undelete_msg(User *);
@@ -94,6 +94,8 @@ void room_beep(User *, Room *);
 void msg_header(User *);
 void read_text(User *);
 void state_scroll_text(User *, char);
+void state_scroll_find_prompt(User *, char);
+void state_scroll_text_notfound(User *, char);
 
 #endif	/* STATE_MSG_H_WJ99 */
 

@@ -1639,8 +1639,6 @@ int r;
 			u->conn = NULL;
 			destroy_User(u);
 		}
-		Put(usr, "\n");
-
 		POP(usr);
 		read_text(usr);
 	}
