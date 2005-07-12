@@ -2625,6 +2625,20 @@ int l;
 	}
 }
 
+/*
+	helper function for reading text
+*/
+static void goto_page_start(User *usr) {
+int l;
+
+	for(l = 0; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->prev) {
+		l++;
+		usr->read_lines--;
+	}
+	if (usr->scrollp == NULL)
+		usr->scrollp = usr->scroll;
+}
+
 void read_text(User *usr) {
 int pos, len;
 
@@ -2648,7 +2662,7 @@ int pos, len;
 		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
 	}
 	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
-	usr->read_lines = 0;
+	usr->read_lines = 1;
 	usr->total_lines = list_Count(usr->scroll);
 
 	Put(usr, "\n");
@@ -2834,41 +2848,46 @@ int r, l;
 	r = edit_line(usr, c);
 
 	if (r == EDIT_BREAK) {
-		l = 0;
-		for(pl = usr->scrollp; pl != NULL && pl->prev != NULL && l < usr->display->term_height; pl = pl->prev)
-			l++;
-		usr->scrollp = pl;
-		usr->read_lines -= l;
+		wipe_line(usr);
+		goto_page_start(usr);
+
+		Put(usr, "<green>");
+		display_page(usr, 0);
 		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
 		wipe_line(usr);
-
-/* always search from the top */
-
-		l = 1;
-		for(pl = usr->scrollp; pl != NULL && l < usr->display->term_height; pl = pl->prev)
-			l++;
-		if (pl == NULL)
-			pl = usr->scroll;
+		goto_page_start(usr);
 
 		if (!usr->edit_buf[0]) {
-			usr->scrollp = pl;
-			usr->read_lines -= l;
+			Put(usr, "<green>");
+			display_page(usr, 0);
 			RET(usr);
 			Return;
 		}
-		l = -l;
-		for(; pl != NULL; pl = pl->next) {
-			l++;
+		l = usr->read_lines;
+		for(pl = usr->scrollp; pl != NULL; pl = pl->next) {
 			if (!line_search((char *)pl->p, usr->edit_buf)) {
 				usr->scrollp = pl;
-				l--;						/* error correction (?) */
-				usr->read_lines += l;
+				usr->read_lines = l;
+/*
+	if on the last page, keep the --More-- prompt active
+	this means we have to go back to the beginning of the last page
+*/
+				if (usr->read_lines > usr->total_lines - usr->display->term_height) {
+					for(pl = usr->scrollp; pl != NULL && pl->next != NULL; pl = pl->next);
+					usr->scrollp = pl;
+					usr->read_lines = usr->total_lines;
+
+					goto_page_start(usr);
+				}
+				Put(usr, "<green>");
+				display_page(usr, 0);
 				RET(usr);
 				Return;
 			}
+			l++;
 		}
 		MOV(usr, STATE_SCROLL_TEXT);
 		CALL(usr, STATE_SCROLL_TEXT_NOTFOUND);
@@ -2883,19 +2902,15 @@ void state_scroll_text_notfound(User *usr, char c) {
 	Enter(state_scroll_text_notfound);
 
 	if (c == INIT_STATE) {
-		Print(usr, "<red>Not found");
+		Put(usr, "<red>Not found");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
 	if (c == KEY_RETURN || c == ' ' || c == KEY_BS || c == KEY_CTRL('H')
 		|| c == KEY_CTRL('C') || c == KEY_CTRL('D') || c == KEY_ESC) {
-		PList *pl;
-		int l = 0;
-
-		for(pl = usr->scrollp; pl != NULL && pl->prev != NULL && l < usr->display->term_height; pl = pl->prev)
-			l++;
-		usr->scrollp = pl;
-		usr->read_lines -= l;
+		wipe_line(usr);
+		Put(usr, "<green>");
+		display_page(usr, 0);
 		RET(usr);
 	} else
 		Put(usr, "<beep>");

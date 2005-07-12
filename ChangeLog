@@ -1,3 +1,6 @@
+Changes as of July 12th 2005
+- find function on --More-- prompt, for StringIO usr->text
+
 Changes as of July 11th 2005
 - mainloop() improved
 - who lists, online friends list, talked-to list all with StringIO
