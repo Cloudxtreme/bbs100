@@ -1882,21 +1882,11 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (usr->text->buf == NULL) {
-			Perror(usr, "BUG #1");
-			RET(usr);
-			Return;
-		}
 
 /* send X */
 
 		if ((xmsg = new_BufferedMsg()) == NULL) {
 			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
-		if (xmsg->msg == usr->text) {
-			Perror(usr, "WTF #1");
 			RET(usr);
 			Return;
 		}
@@ -1906,38 +1896,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (xmsg->msg == usr->text) {
-			Perror(usr, "WTF #2");
-			RET(usr);
-			Return;
-		}
-		debug_breakpoint();
-		if (usr->text->buf == NULL) {
-			Perror(usr, "BUG #2");
-			RET(usr);
-			Return;
-		}
-		if (xmsg->msg == usr->text) {
-			Perror(usr, "WTF #3");
-			RET(usr);
-			Return;
-		}
 		copy_StringIO(xmsg->msg, usr->text);
-		if (xmsg->msg == usr->text) {
-			Perror(usr, "WTF #4");
-			RET(usr);
-			Return;
-		}
-		if (usr->text->buf == NULL) {
-			Perror(usr, "BUG #3");
-			RET(usr);
-			Return;
-		}
-		if (xmsg->msg->buf == NULL) {
-			Perror(usr, "BUG #4");
-			RET(usr);
-			Return;
-		}
 
 		strcpy(xmsg->from, usr->name);
 		xmsg->mtime = rtc;
