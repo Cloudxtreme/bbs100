@@ -130,7 +130,6 @@ char many_buf[MAX_LINE*3];
 			}
 			Print(usr, "%s", print_many(usr, many_buf));
 			break;
-
 /*
 	talked-to list: donated by Richard of MatrixBBS
 	(same as for the friendlist, but now with usr->talked_to)
@@ -790,7 +789,7 @@ int wrapable = 0;
 		usr->edit_pos = usr->total_lines = 0;
 		usr->edit_buf[0] = 0;
 
-		destroy_StringIO(usr->text);
+		free_StringIO(usr->text);
 		return 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_XMSG_LINES) {
