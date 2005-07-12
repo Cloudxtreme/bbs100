@@ -43,6 +43,10 @@ Message *m;
 	if ((m = (Message *)Malloc(sizeof(Message), TYPE_MESSAGE)) == NULL)
 		return NULL;
 
+	if ((m->msg = new_StringIO()) == NULL) {
+		destroy_Message(m);
+		return NULL;
+	}
 	m->mtime = rtc;
 	return m;
 }
@@ -52,7 +56,7 @@ void destroy_Message(Message *m) {
 		return;
 
 	listdestroy_StringList(m->to);
-	listdestroy_StringList(m->msg);
+	destroy_StringIO(m->msg);
 	Free(m);
 }
 
@@ -126,7 +130,7 @@ char buf[MAX_LINE*3], *p;
 		FF1_LOAD_HEX("flags", m->flags);
 
 		FF1_LOAD_STRINGLIST("to", m->to);
-		FF1_LOAD_STRINGLIST("msg", m->msg);
+		FF1_LOAD_STRINGIO("msg", m->msg);
 
 		FF1_LOAD_UNKNOWN;
 	}
@@ -208,9 +212,14 @@ char buf[MAX_LINE*3];
 	m->to = Fgetlist(f);
 
 /* the message */
-	listdestroy_StringList(m->msg);
-	m->msg = Fgetlist(f);
+	free_StringIO(m->msg);
+	while(Fgets(f, buf, MAX_LINE) != NULL) {
+		if (!*buf)
+			break;
 
+		put_StringIO(m->msg, buf);
+		write_StringIO(m->msg, "\n", 1);
+	}
 /* reply_number */
 	if (Fgets(f, buf, MAX_LINE) != NULL) {
 		cstrip_line(buf);
@@ -222,7 +231,6 @@ char buf[MAX_LINE*3];
 err_load_message:
 	return -1;
 }
-
 
 int save_Message(Message *m, char *filename) {
 int ret;
@@ -253,37 +261,14 @@ StringList *sl;
 	Fprintf(f, "flags=0x%x", m->flags);
 
 	FF1_SAVE_STRINGLIST("to", m->to);
-	FF1_SAVE_STRINGLIST("msg", m->msg);
+	FF1_SAVE_STRINGIO("msg", m->msg);
 
-	return 0;
-}
-
-int save_Message_version0(File *f, Message *m) {
-/* mtime + deleted + flags */
-	Fprintf(f, "%lu", m->mtime);
-	Fprintf(f, "%lu", m->deleted);
-	Fprintf(f, "%X", m->flags);
-
-/* from + anon + deleted_by + subject */
-	Fputs(f, m->from);
-	Fputs(f, m->anon);
-	Fputs(f, m->deleted_by);
-	Fputs(f, m->subject);
-
-/* to */
-	Fputlist(f, m->to);
-
-/* msg data */
-	m->msg = rewind_StringList(m->msg);
-	Fputlist(f, m->msg);
-
-/* reply_number */
-	Fprintf(f, "%lu", m->reply_number);
 	return 0;
 }
 
 Message *copy_Message(Message *msg) {
 Message *m;
+StringIO *s;
 
 	if (msg == NULL)
 		return NULL;
@@ -291,11 +276,11 @@ Message *m;
 	if ((m = new_Message()) == NULL)
 		return NULL;
 
+	s = m->msg;
 	memcpy(m, msg, sizeof(Message));
-
 	m->to = copy_StringList(msg->to);
-	m->msg = copy_StringList(msg->msg);
-
+	m->msg = s;
+	copy_StringIO(m->msg, msg->msg);
 	return m;
 }
 

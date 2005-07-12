@@ -46,7 +46,8 @@ typedef struct {
 
 	char from[MAX_NAME], anon[MAX_NAME], subject[MAX_LINE], deleted_by[MAX_NAME];
 
-	StringList *to, *msg;
+	StringList *to;
+	StringIO *msg;
 } Message;
 
 Message *new_Message(void);
@@ -58,7 +59,6 @@ int save_Message(Message *, char *);
 int load_Message_version0(File *, Message *);
 int load_Message_version1(File *, Message *);
 
-int save_Message_version0(File *, Message *);
 int save_Message_version1(File *, Message *);
 
 Message *copy_Message(Message *);

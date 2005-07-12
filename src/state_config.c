@@ -91,13 +91,9 @@ void state_config_menu(User *usr, char c) {
 		case 'I':
 			Put(usr, "Profile info\n");
 
-			if (usr->info != NULL) {
+			if (usr->info->buf != NULL) {
 				Put(usr, "<cyan>Your current profile info is<white>:\n<green>");
-				free_StringIO(usr->text);
-				if (StringList_to_StringIO(usr->info, usr->text) < 0) {
-					Perror(usr, "Out of memory");
-					break;
-				}
+				copy_StringIO(usr->text, usr->info);
 				PUSH(usr, STATE_CHANGE_PROFILE);
 				read_text(usr);
 			} else {
@@ -435,15 +431,17 @@ void state_change_profile(User *usr, char c) {
 }
 
 void save_profile(User *usr, char c) {
+StringIO *tmp;
+
 	if (usr == NULL)
 		return;
 
 	Enter(save_profile);
 
-	listdestroy_StringList(usr->info);
-	usr->more_text = rewind_StringList(usr->more_text);
-	usr->info = usr->more_text;
-	usr->more_text = NULL;
+	free_StringIO(usr->info);
+	tmp = usr->info;
+	usr->info = usr->text;
+	usr->text = tmp;
 
 	usr->runtime_flags |= RTF_CONFIG_EDITED;
 	RET(usr);
@@ -456,8 +454,7 @@ void abort_profile(User *usr, char c) {
 
 	Enter(abort_profile);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 	RET(usr);
 	Return;
 }

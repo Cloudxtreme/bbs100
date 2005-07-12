@@ -51,6 +51,10 @@ Room *r;
 	if ((r = (Room *)Malloc(sizeof(Room), TYPE_ROOM)) == NULL)
 		return NULL;
 
+	if ((r->info = new_StringIO()) == NULL) {
+		destroy_Room(r);
+		return NULL;
+	}
 	r->max_msgs = PARAM_MAX_MESSAGES;
 	return r;
 }
@@ -61,14 +65,15 @@ void destroy_Room(Room *r) {
 
 	Free(r->name);
 	Free(r->category);
+	Free(r->msgs);
 
-	listdestroy_StringList(r->info);
 	listdestroy_StringList(r->room_aides);
 	listdestroy_StringList(r->kicked);
 	listdestroy_StringList(r->invited);
 	listdestroy_StringList(r->chat_history);
+	destroy_StringIO(r->info);
 	listdestroy_PList(r->inside);
-	Free(r->msgs);
+
 	Free(r);
 }
 
@@ -206,19 +211,18 @@ char buf[MAX_LINE*3], *p;
 		FF1_PARSE;
 
 		FF1_LOAD_DUP("name", r->name);
+		FF1_LOAD_DUP("category", r->category);
 
 		FF1_LOAD_ULONG("generation", r->generation);
 		FF1_LOAD_HEX("flags", r->flags);
 		FF1_LOAD_UINT("roominfo_changed", r->roominfo_changed);
 		FF1_LOAD_UINT("max_msgs", r->max_msgs);
 
-		FF1_LOAD_STRINGLIST("info", r->info);
 		FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
 		FF1_LOAD_STRINGLIST("invited", r->invited);
 		FF1_LOAD_STRINGLIST("kicked", r->kicked);
 		FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
-
-		FF1_LOAD_DUP("category", r->category);
+		FF1_LOAD_STRINGIO("info", r->info);
 
 		FF1_LOAD_UNKNOWN;
 	}
@@ -257,9 +261,14 @@ StringList *sl;
 	r->roominfo_changed = (unsigned int)strtoul(buf, NULL, 10);
 
 /* info */
-	listdestroy_StringList(r->info);
-	r->info = Fgetlist(f);
+	free_StringIO(r->info);
+	while(Fgets(f, buf, MAX_LINE) != NULL) {
+		if (!*buf)
+			break;
 
+		put_StringIO(r->info, buf);
+		write_StringIO(r->info, "\n", 1);
+	}
 /* room aides */
 	listdestroy_StringList(r->room_aides);
 	r->room_aides = NULL;
@@ -362,28 +371,11 @@ StringList *sl;
 	Fprintf(f, "roominfo_changed=%u", r->roominfo_changed);
 	Fprintf(f, "max_msgs=%u", r->max_msgs);
 
-	FF1_SAVE_STRINGLIST("info", r->info);
 	FF1_SAVE_STRINGLIST("room_aides", r->room_aides);
 	FF1_SAVE_STRINGLIST("invited", r->invited);
 	FF1_SAVE_STRINGLIST("kicked", r->kicked);
 	FF1_SAVE_STRINGLIST("chat_history", r->chat_history);
-
-	return 0;
-}
-
-int save_Room_version0(File *f, Room *r) {
-	Fputs(f, r->name);
-	Fprintf(f, "%lu", r->generation);
-	Fprintf(f, "%x", r->flags);
-	Fprintf(f, "%u", r->roominfo_changed);
-
-	Fputlist(f, r->info);
-	Fputlist(f, r->room_aides);
-	Fputlist(f, r->invited);
-	Fputlist(f, r->kicked);
-
-	if (r->flags & ROOM_CHATROOM)
-		Fputlist(f, r->chat_history);
+	FF1_SAVE_STRINGIO("info", r->info);
 
 	return 0;
 }

@@ -126,7 +126,7 @@ char buf[PRINT_BUF];
 
 	Enter(display_text);
 
-	rewind_StringIO(s);
+	seek_StringIO(s, 0, STRINGIO_SET);
 	while(gets_StringIO(s, buf, PRINT_BUF)) {
 		Put(usr, buf);
 		Put(usr, "\n");

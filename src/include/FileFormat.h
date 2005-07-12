@@ -24,7 +24,6 @@
 #define FILEFORMAT_H_WJ103	1
 
 #include "CachedFile.h"
-#include "log.h"
 
 /*
 	macros that help when writing file save/load functions
@@ -116,6 +115,14 @@
 		continue;												\
 	}
 
+#define FF1_LOAD_STRINGIO(x,y)		if (!strcmp(buf, (x))) {	\
+		if (*p) {												\
+			put_StringIO((y), p);								\
+			write_StringIO((y), "\n", 1);						\
+		}														\
+		continue;												\
+	}
+
 #define FF1_LOAD_USERLIST(x,y)		if (!strcmp(buf, (x))) {			\
 		if (*p && user_exists(p) && in_StringList((y), p) == NULL) {	\
 			(y) = add_StringList(&(y), new_StringList(p));				\
@@ -145,6 +152,12 @@
 			FF1_SAVE_STR((x), sl->str);				\
 	} while(0)
 
+#define FF1_SAVE_STRINGIO(x,y)		do {			\
+		char ff1_save_buf[PRINT_BUF];				\
+		seek_StringIO((y), 0, STRINGIO_SET);		\
+		while(gets_StringIO((y), ff1_save_buf, PRINT_BUF) != NULL)	\
+			FF1_SAVE_STR((x), ff1_save_buf);		\
+	} while(0)
 
 int fileformat_version(File *);
 

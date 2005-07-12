@@ -285,7 +285,7 @@ void save_message(User *usr, char c) {
 char filename[MAX_PATHLEN], *p;
 int err = 0;
 Joined *j;
-StringList *sl;
+StringIO *tmp;
 
 	if (usr == NULL)
 		return;
@@ -297,9 +297,11 @@ StringList *sl;
 		RET(usr);
 		Return;
 	}
-	listdestroy_StringList(usr->new_message->msg);
-	usr->new_message->msg = rewind_StringList(usr->more_text);
-	usr->more_text = NULL;
+/* swapping pointers around is faster than copying all the time */
+	tmp = usr->new_message->msg;
+	usr->new_message->msg = usr->text;
+	usr->text = tmp;
+	free_StringIO(usr->text);
 
 	if (usr->curr_room == NULL) {
 		Print(usr, "<red>In the meantime, the current room has vanished\n"
@@ -313,17 +315,14 @@ StringList *sl;
 		Return;
 	}
 /*
-	check for empty messages (completely empty or only containing spaces)
+	crude check for empty messages (completely empty or only containing spaces)
+	The check is crude because a single color code already counts as 'not empty'
 */
-	for(sl = usr->new_message->msg; sl != NULL; sl = sl->next) {
-		for(p = sl->str; *p; p++) {
-			if (*p != ' ')
-				break;
-		}
-		if (*p)
+	for(p = usr->new_message->msg->buf; *p; p++) {
+		if (*p != ' ' && *p != '\n')
 			break;
 	}
-	if (sl == NULL) {
+	if (!*p) {
 		Print(usr, "<red>Message is empty, message not saved\n");
 
 		destroy_Message(usr->new_message);
@@ -455,8 +454,7 @@ void abort_message(User *usr, char c) {
 
 	Enter(abort_message);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 
 	RET(usr);
 	Return;
@@ -482,8 +480,7 @@ int r;
 	Enter(state_edit_text);
 
 	if (c == INIT_STATE) {
-		listdestroy_StringList(usr->more_text);
-		usr->more_text = NULL;
+		free_StringIO(usr->text);
 		usr->total_lines = 0;
 
 		if (usr->curr_room == usr->mail)
@@ -502,7 +499,8 @@ int r;
 	}
 	if (r == EDIT_RETURN || r == EDIT_BREAK) {
 		if (usr->edit_buf[0]) {
-			usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+			put_StringIO(usr->text, usr->edit_buf);
+			write_StringIO(usr->text, "\n", 1);
 			usr->total_lines++;
 		}
 		usr->edit_pos = 0;
@@ -574,8 +572,7 @@ void (*abort_func)(void *, char);
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			listdestroy_StringList(usr->more_text);
-			usr->more_text = NULL;
+			free_StringIO(usr->text);
 
 			usr->runtime_flags &= ~RTF_BUSY_MAILING;
 /*
@@ -801,8 +798,6 @@ unsigned long msg_number;
 				print_date(usr, usr->message->deleted, date_buf), deleted_by);
 		}
 	} else {
-		StringList *sl;
-
 		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
 			if (usr->message->subject[0]) {
 				if (usr->message->flags & MSG_FORWARDED)
@@ -835,14 +830,8 @@ unsigned long msg_number;
 			}
 		}
 		put_StringIO(usr->text, "<green>\n");
-		if (usr->message->msg != NULL) {
-			for(sl = usr->message->msg; sl != NULL; sl = sl->next) {
-				if (sl->str != NULL) {
-					put_StringIO(usr->text, sl->str);
-					write_StringIO(usr->text, "\n", 1);
-				}
-			}
-		}
+		concat_StringIO(usr->text, usr->message->msg);
+
 		usr->read++;						/* update stats */
 		if (usr->read > stats.read) {
 			stats.read = usr->read;
@@ -954,7 +943,7 @@ BufferedMsg *new_msg;
 char msg_type[MAX_LINE];
 StringList *sl;
 
-	if (usr == NULL || from == NULL || msg == NULL)
+	if (usr == NULL || from == NULL || msg == NULL || msg->msg == NULL || msg->msg->buf == NULL)
 		return;
 
 	Enter(recvMsg);
@@ -1101,7 +1090,6 @@ Rcv_Remove_Recipient:
 }
 
 void spew_BufferedMsg(User *usr) {
-StringList *sl;
 BufferedMsg *m, *m_next;
 int printed;
 
@@ -1120,9 +1108,7 @@ int printed;
 		m_next = m->next;
 
 		if (!m->flags) {						/* one shot message */
-			for(sl = m->msg; sl != NULL; sl = sl->next)
-				Print(usr, "%s\n", sl->str);
-
+			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
 			destroy_BufferedMsg(m);				/* one-shots are not remembered */
@@ -1239,27 +1225,24 @@ int from_me = 0;
 }
 
 void print_buffered_msg(User *usr, BufferedMsg *msg) {
-StringList *sl;
 char buf[PRINT_BUF];
 
 	if (usr == NULL || msg == NULL)
 		return;
 
 	Enter(print_buffered_msg);
-
 /*
 	update talked-to list
-	we do it this late because you haven't really talked to anyone
-	until you see the message they sent you
+	we do it this late because you haven't really talked to anyone until you
+	see the message they sent you
 	(think about users that are in hold message mode)
 */
 	if (msg->from[0] && strcmp(usr->name, msg->from) && in_StringList(usr->talked_to, msg->from) == NULL)
 		add_StringList(&usr->talked_to, new_StringList(msg->from));
 
-	Print(usr, "\n%s", buffered_msg_header(usr, msg, buf));
-	for(sl = msg->msg; sl != NULL; sl = sl->next)
-		Print(usr, "%s\n", sl->str);
-
+	Put(usr, "\n");
+	Put(usr, buffered_msg_header(usr, msg, buf));
+	display_text(usr, msg->msg);
 	Return;
 }
 
@@ -1480,9 +1463,7 @@ int printed;
 	for(m = usr->held_msgs; m != NULL; m = m_next) {
 		m_next = m->next;
 		if (!m->flags) {						/* one shot message */
-			for(sl = m->msg; sl != NULL; sl = sl->next)
-				Print(usr, "%s\n", sl->str);
-
+			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
 			destroy_BufferedMsg(m);			/* one-shots are not remembered */
@@ -1680,6 +1661,8 @@ Exit_Held_History:
 }
 
 void state_enter_forward_recipients(User *usr, char c) {
+StringIO *tmp;
+
 	if (usr == NULL)
 		return;
 
@@ -1715,9 +1698,10 @@ void state_enter_forward_recipients(User *usr, char c) {
 			usr->new_message->mtime = rtc;
 
 /* swap these pointers for save_message() */
-			listdestroy_StringList(usr->more_text);
-			usr->more_text = usr->new_message->msg;
-			usr->new_message->msg = NULL;
+			free_StringIO(usr->text);
+			tmp = usr->text;
+			usr->text = usr->new_message->msg;
+			usr->new_message->msg = tmp;
 
 			Put(usr, "<green>Message forwarded\n");
 
@@ -1747,6 +1731,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		Room *r, *curr_room;
+		StringIO *tmp;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -1849,9 +1834,10 @@ int r;
 			}
 		}
 /* swap these pointers for save_message() */
-		listdestroy_StringList(usr->more_text);
-		usr->more_text = usr->new_message->msg;
-		usr->new_message->msg = NULL;
+		free_StringIO(usr->text);
+		tmp = usr->text;
+		usr->text = usr->new_message->msg;
+		usr->new_message->msg = tmp;
 
 		PUSH(usr, STATE_DUMMY);			/* push dummy ret (prevent reprinting prompt in wrong room) */
 		PUSH(usr, STATE_DUMMY);			/* one is not enough (!) */
@@ -2100,8 +2086,7 @@ Joined *j;
 void mail_msg(User *usr, BufferedMsg *msg) {
 StringList *sl;
 Room *room;
-char *p, c, buf[PRINT_BUF];
-int l;
+char buf[PRINT_BUF], c;
 
 	if (usr == NULL)
 		return;
@@ -2139,12 +2124,8 @@ int l;
 	}
 	strcpy(usr->new_message->subject, "<lost message>");
 
-	listdestroy_StringList(usr->more_text);
-	if ((usr->more_text = new_StringList("<cyan>Delivery of this message was impossible. You do get it this way.")) == NULL) {
-		Perror(usr, "Out of memory");
-		Return;
-	}
-	usr->more_text = add_StringList(&usr->more_text, new_StringList(" "));
+	free_StringIO(usr->text);
+	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
 /*
 	This is the most ugly hack ever; temporarely reset name to get a correct
 	msg header out of buffered_msg_header();
@@ -2152,20 +2133,12 @@ int l;
 */
 	c = usr->name[0];
 	usr->name[0] = 0;
-	p = buffered_msg_header(usr, usr->send_msg, buf);
+	buffered_msg_header(usr, usr->send_msg, buf);
 	usr->name[0] = c;
 
-/* kludge for emotes, which have the message on the same line as the header :P */
-	l = strlen(p)-1;
-	if (l >= 0 && p[l] == '\n') {
-		p[l] = 0;
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(p));
-		usr->more_text = concat_StringList(&usr->more_text, copy_StringList(usr->send_msg->msg));
-	} else {
-		strcat(p, usr->send_msg->msg->str);
-		usr->more_text = add_StringList(&usr->more_text, new_StringList(p));
-		usr->more_text = concat_StringList(&usr->more_text, copy_StringList(usr->send_msg->msg->next));
-	}
+	put_StringIO(usr->text, buf);
+	concat_StringIO(usr->text, usr->send_msg->msg);
+
 	room = usr->curr_room;
 	usr->curr_room = usr->mail;
 
@@ -2247,7 +2220,8 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 				if ((dl + strlen(sl->str)+2) < max_dl)
 					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
 				else {
-					usr->more_text = add_StringList(&usr->more_text, new_StringList(buf));
+					put_StringIO(usr->text, buf);
+					write_StringIO(usr->text, "\n", 1);
 					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
 				}
 				dl = color_strlen(buf);

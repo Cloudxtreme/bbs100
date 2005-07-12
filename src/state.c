@@ -217,7 +217,6 @@ int i, idx;
 			Return;
 
 		case '{':
-			debug_breakpoint();
 			Put(usr, "<white>Credits\n");
 
 			if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
@@ -1093,8 +1092,6 @@ void PrintPrompt(User *usr) {
 	do housekeeping: free up memory that we're not going to use anyway
 */
 	free_StringIO(usr->text);
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
 	listdestroy_PList(usr->scroll);
 	usr->scroll = usr->scrollp = NULL;
 
@@ -1620,14 +1617,9 @@ int r;
 		if (visible && in_StringList(u->enemies, usr->name) != NULL)
 			print_StringIO(usr->text, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
 
-		if (visible && u->info != NULL) {
-			StringList *sl;
-
+		if (visible && u->info->buf != NULL) {
 			put_StringIO(usr->text, "<green>\n");
-			for(sl = u->info; sl != NULL; sl = sl->next) {
-				put_StringIO(usr->text, sl->str);
-				write_StringIO(usr->text, "\n", 1);
-			}
+			concat_StringIO(usr->text, u->info);
 		}
 		if (usr->message != NULL && usr->message->anon[0]
 			&& !strcmp(usr->message->from, u->name)
@@ -1822,12 +1814,9 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->msg = new_StringList(usr->edit_buf)) == NULL) {
-			destroy_BufferedMsg(msg);
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
+		put_StringIO(msg->msg, usr->edit_buf);
+		write_StringIO(msg->msg, "\n", 1);
+
 		strcpy(msg->from, usr->name);
 		msg->mtime = rtc;
 
@@ -1854,7 +1843,6 @@ int r;
 	Return;
 }
 
-
 void state_edit_x(User *usr, char c) {
 int r;
 
@@ -1877,8 +1865,7 @@ int r;
 	r = edit_x(usr, c);
 
 	if (r == EDIT_BREAK) {
-		listdestroy_StringList(usr->more_text);
-		usr->more_text = NULL;
+		free_StringIO(usr->text);
 
 		Put(usr, "<red>Message not sent\n");
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
@@ -1890,8 +1877,13 @@ int r;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
-		if (!usr->edit_buf[0] && usr->more_text == NULL) {
+		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
 			Put(usr, "<red>Nothing entered, so no message was sent\n");
+			RET(usr);
+			Return;
+		}
+		if (usr->text->buf == NULL) {
+			Perror(usr, "BUG #1");
 			RET(usr);
 			Return;
 		}
@@ -1903,18 +1895,50 @@ int r;
 			RET(usr);
 			Return;
 		}
+		if (xmsg->msg == usr->text) {
+			Perror(usr, "WTF #1");
+			RET(usr);
+			Return;
+		}
 		if ((xmsg->to = copy_StringList(usr->recipients)) == NULL) {
 			destroy_BufferedMsg(xmsg);
 			Perror(usr, "Out of memory");
 			RET(usr);
 			Return;
 		}
-		if ((xmsg->msg = copy_StringList(usr->more_text)) == NULL) {
-			destroy_BufferedMsg(xmsg);
-			Perror(usr, "Out of memory");
+		if (xmsg->msg == usr->text) {
+			Perror(usr, "WTF #2");
 			RET(usr);
 			Return;
 		}
+		debug_breakpoint();
+		if (usr->text->buf == NULL) {
+			Perror(usr, "BUG #2");
+			RET(usr);
+			Return;
+		}
+		if (xmsg->msg == usr->text) {
+			Perror(usr, "WTF #3");
+			RET(usr);
+			Return;
+		}
+		copy_StringIO(xmsg->msg, usr->text);
+		if (xmsg->msg == usr->text) {
+			Perror(usr, "WTF #4");
+			RET(usr);
+			Return;
+		}
+		if (usr->text->buf == NULL) {
+			Perror(usr, "BUG #3");
+			RET(usr);
+			Return;
+		}
+		if (xmsg->msg->buf == NULL) {
+			Perror(usr, "BUG #4");
+			RET(usr);
+			Return;
+		}
+
 		strcpy(xmsg->from, usr->name);
 		xmsg->mtime = rtc;
 
@@ -1958,7 +1982,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		Out(usr, feelings_screen->buf);
+		display_text(usr, feelings_screen);
 		Put(usr, "\n<green>Feeling<yellow>: ");
 	}
 	r = edit_number(usr, c);
@@ -2024,7 +2048,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->msg = Fgetlist(file)) == NULL) {
+		if (Fget_StringIO(file, msg->msg) < 0) {
 			Fclose(file);
 			destroy_BufferedMsg(msg);
 			Perror(usr, "Out of memory");
@@ -2096,7 +2120,7 @@ int r;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
-		if (!usr->edit_buf[0] && usr->more_text == NULL) {
+		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
 			Put(usr, "<red>Nothing entered, so no question was asked\n");
 			RET(usr);
 			Return;
@@ -2119,12 +2143,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((question->msg = copy_StringList(usr->more_text)) == NULL) {
-			destroy_BufferedMsg(question);
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
+		copy_StringIO(question->msg, usr->text);
+
 		strcpy(question->from, usr->name);
 		question->mtime = rtc;
 
@@ -2133,7 +2153,6 @@ int r;
 			question->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, question);
-
 		recvMsg(u, usr, question);				/* the question is asked! */
 
 		question->flags |= BUFMSG_SEEN;
@@ -2523,7 +2542,7 @@ int total;
 
 	free_StringIO(usr->text);
 
-/* make the who list in usr->more_text */
+/* make the who list in usr->text */
 
 	total = list_Count(proot);
 	who_list_header(usr, total, format);
@@ -3010,21 +3029,17 @@ StringList *sl;
 	}
 	put_StringIO(usr->text, "<green>\n");
 
-	if (usr->curr_room == NULL || usr->curr_room->info == NULL) {
+	if (usr->curr_room == NULL || usr->curr_room->info->buf == NULL) {
 		if (usr->curr_room != NULL && usr->curr_room->number == MAIL_ROOM)
 			put_StringIO(usr->text, "Here you can leave messages to users that are not online.\n");
 		else
 			put_StringIO(usr->text, "<red>This room has no room info\n");
-	} else {
-		for(sl = usr->curr_room->info; sl != NULL; sl = sl->next) {
-			put_StringIO(usr->text, sl->str);
-			write_StringIO(usr->text, "\n", 1);
-		}
-	}
+	} else
+		concat_StringIO(usr->text, usr->curr_room->info);
+
 	read_text(usr);
 	Return;
 }
-
 
 void reply_x(User *usr, int all) {
 BufferedMsg *m;
@@ -3564,8 +3579,7 @@ Joined *j;
 	}
 	usr->curr_msg = -1;
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 
 	destroy_Message(usr->message);
 	usr->message = NULL;
@@ -3589,9 +3603,8 @@ Joined *j;
 			add_Joined(&usr->rooms, j);
 		}
 	}
-	if (j != NULL && r->info != NULL) {
+	if (j != NULL && r->info->buf != NULL) {
 		if (!j->roominfo_read) {
-			Put(usr, "\n");
 			room_info(usr);			/* first time here ; read room info */
 			Return;
 		}

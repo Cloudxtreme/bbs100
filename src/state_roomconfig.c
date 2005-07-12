@@ -162,13 +162,9 @@ void state_room_config_menu(User *usr, char c) {
 		case KEY_CTRL('E'):
 			Put(usr, "Edit room info\n");
 
-			if (usr->curr_room->info != NULL) {
+			if (usr->curr_room->info->buf != NULL) {
 				Put(usr, "<cyan>The room info currently is<white>:\n<green>");
-				free_StringIO(usr->text);
-				if (StringList_to_StringIO(usr->curr_room->info, usr->text) < 0) {
-					Perror(usr, "Out of memory");
-					break;
-				}
+				copy_StringIO(usr->text, usr->curr_room->info);
 				PUSH(usr, STATE_CHANGE_ROOMINFO);
 				read_text(usr);
 			} else {
@@ -513,6 +509,8 @@ void state_change_roominfo(User *usr, char c) {
 }
 
 void save_roominfo(User *usr, char c) {
+StringIO *tmp;
+
 	if (usr == NULL)
 		return;
 
@@ -525,10 +523,10 @@ void save_roominfo(User *usr, char c) {
 	}
 	usr->runtime_flags |= RTF_ROOM_EDITED;
 
-	listdestroy_StringList(usr->curr_room->info);
-	usr->more_text = rewind_StringList(usr->more_text);
-	usr->curr_room->info = usr->more_text;
-	usr->more_text = NULL;
+	free_StringIO(usr->curr_room->info);
+	tmp = usr->curr_room->info;
+	usr->curr_room->info = usr->text;
+	usr->text = tmp;
 
 	usr->curr_room->roominfo_changed++;		/* room info has been updated */
 	RET(usr);
@@ -541,10 +539,8 @@ void abort_roominfo(User *usr, char c) {
 
 	Enter(abort_roominfo);
 
-	listdestroy_StringList(usr->more_text);
-	usr->more_text = NULL;
+	free_StringIO(usr->text);
 	RET(usr);
-
 	Return;
 }
 

@@ -154,10 +154,8 @@ struct User_tag {
 	char *question_asked;
 
 	Joined *rooms;
-	StringList *friends, *enemies, *info;
-
+	StringList *friends, *enemies;
 	StringList *recipients, *tablist, *talked_to;
-	StringList *more_text;
 	StringList *chat_history;
 
 	Message *message, *new_message;
@@ -167,7 +165,7 @@ struct User_tag {
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
 	Telnet *telnet;
-	StringIO *text;
+	StringIO *text, *info;
 	PList *scroll, *scrollp;
 	Display *display;
 };

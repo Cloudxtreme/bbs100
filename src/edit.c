@@ -790,19 +790,16 @@ int wrapable = 0;
 		usr->edit_pos = usr->total_lines = 0;
 		usr->edit_buf[0] = 0;
 
-		listdestroy_StringList(usr->more_text);
-		usr->more_text = NULL;
+		destroy_StringIO(usr->text);
 		return 0;
 	}
 	if (usr->total_lines >= PARAM_MAX_XMSG_LINES) {
 		if (c == KEY_CTRL('C')) {
 			wipe_line(usr);
-			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_BREAK;
 		}
 		if (c == KEY_CTRL('X')) {
 			wipe_line(usr);
-			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_RETURN;
 		}
 		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>><red> to abort, <white><<yellow>Ctrl-X<white>><red> to send", KEY_CTRL('X'));
@@ -820,7 +817,6 @@ int wrapable = 0;
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 			Put(usr, "\n");
-			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_BREAK;
 
 		case KEY_RETURN:
@@ -830,11 +826,11 @@ int wrapable = 0;
 	'ABORT' aborts an X message (like it does in DOC)
 */
 				if (!strcmp(usr->edit_buf, "ABORT")) {
-					usr->more_text = rewind_StringList(usr->more_text);
 					Put(usr, "\n");
 					return EDIT_BREAK;
 				}
-				usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+				put_StringIO(usr->text, usr->edit_buf);
+				write_StringIO(usr->text, "\n", 1);
 
 				usr->total_lines++;
 				usr->edit_pos = 0;
@@ -846,7 +842,6 @@ int wrapable = 0;
 				}
 			}
 			Put(usr, "\n");
-			usr->more_text = rewind_StringList(usr->more_text);
 			return EDIT_RETURN;
 
 
@@ -856,7 +851,7 @@ int wrapable = 0;
 				if (usr->edit_buf[usr->edit_pos] >= ' ' && usr->edit_buf[usr->edit_pos] <= '~')
 					Put(usr, "\b \b");
 				else
-					Put(usr, "<green>");
+					Put(usr, "<yellow>");
 				usr->edit_buf[usr->edit_pos] = 0;
 			}
 			break;
@@ -868,13 +863,14 @@ int wrapable = 0;
 			erase_line(usr, usr->edit_buf);
 			usr->edit_pos = 0;
 			usr->edit_buf[0] = 0;
-			Put(usr, "<green>");
+			Put(usr, "<yellow>");
 			break;
 
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */
-				usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+				put_StringIO(usr->text, usr->edit_buf);
+				write_StringIO(usr->text, "\n", 1);
 				usr->total_lines++;
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
@@ -924,7 +920,8 @@ int wrapable = 0;
 				usr->edit_buf[i] = 0;
 
 /* add new line */
-				usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+				put_StringIO(usr->text, usr->edit_buf);
+				write_StringIO(usr->text, "\n", 1);
 
 /* wrap word to next line */
 				usr->edit_pos = strlen(buf2);
@@ -951,8 +948,8 @@ int wrapable = 0;
 		usr->edit_pos = usr->total_lines = 0;
 		usr->edit_buf[0] = 0;
 
-		listdestroy_StringList(usr->more_text);
-		usr->more_text = NULL;
+		free_StringIO(usr->text);
+
 		Put(usr, "<yellow>");
 		return 0;
 	}
@@ -1009,7 +1006,8 @@ int wrapable = 0;
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */
-				usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+				put_StringIO(usr->text, usr->edit_buf);
+				write_StringIO(usr->text, "\n", 1);
 				usr->total_lines++;
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
@@ -1063,7 +1061,8 @@ int wrapable = 0;
 				usr->edit_buf[i] = 0;
 
 /* add new line */
-				usr->more_text = add_StringList(&usr->more_text, new_StringList(usr->edit_buf));
+				put_StringIO(usr->text, usr->edit_buf);
+				write_StringIO(usr->text, "\n", 1);
 
 /* wrap word to next line */
 				usr->edit_pos = strlen(buf2);

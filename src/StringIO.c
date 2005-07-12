@@ -227,17 +227,23 @@ int newpos;
 	return s->pos;
 }
 
-int copy_StringIO(StringIO *dest, StringIO *from) {
-char buf[1024];
-int bytes_read;
-
-	if (dest == NULL || from == NULL)
+int copy_StringIO(StringIO *dest, StringIO *src) {
+	if (dest == NULL || src == NULL)
 		return -1;
 
-	seek_StringIO(from, 0, STRINGIO_SET);
 	free_StringIO(dest);
+	return concat_StringIO(dest, src);
+}
 
-	while((bytes_read = read_StringIO(from, buf, 1024)) > 0)
+int concat_StringIO(StringIO *dest, StringIO *src) {
+int bytes_read;
+char buf[1024];
+
+	if (dest == NULL || src == NULL)
+		return -1;
+
+	seek_StringIO(src, 0, STRINGIO_SET);
+	while((bytes_read = read_StringIO(src, buf, 1024)) > 0)
 		write_StringIO(dest, buf, bytes_read);
 
 	return 0;

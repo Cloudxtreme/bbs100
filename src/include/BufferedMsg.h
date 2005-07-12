@@ -27,6 +27,7 @@
 
 #include "defines.h"
 #include "StringList.h"
+#include "StringIO.h"
 #include "sys_time.h"
 
 #define add_BufferedMsg(x,y)		(BufferedMsg *)add_List((x), (y))
@@ -52,7 +53,8 @@ struct BufferedMsg_tag {
 	unsigned int flags;
 	time_t mtime;
 	char from[MAX_NAME];
-	StringList *to, *msg;
+	StringList *to;
+	StringIO *msg;
 };
 
 BufferedMsg *new_BufferedMsg(void);

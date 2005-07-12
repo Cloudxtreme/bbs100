@@ -182,9 +182,8 @@ char buf[PRINT_BUF], fmt[128];
 		buf[buflen++] = '\n';
 		buf[buflen] = 0;
 
-		write_StringIO(feelings_screen, buf, buflen);
+		put_StringIO(feelings_screen, buf);
 	}
-	write_StringIO(feelings_screen, "", 1);		/* append zero byte (string delimiter) */
 	Return;
 }
 

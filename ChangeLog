@@ -1,6 +1,12 @@
 Changes as of July 12th 2005
 - find function on --More-- prompt using StringIO
 - find backwards on --More-- prompt using StringIO
+- timezone menu uses StringIO
+- message text is StringIO
+- room info is StringIO
+- profile info is StringIO
+- BufferedMsg text is StringIO
+- usr->more_txt is out of here; everything is now StringIO
 
 Changes as of July 11th 2005
 - mainloop() improved

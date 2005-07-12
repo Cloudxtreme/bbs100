@@ -73,6 +73,10 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
+	if ((usr->info = new_StringIO()) == NULL) {
+		destroy_User(usr);
+		return NULL;
+	}
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
@@ -117,11 +121,9 @@ int i;
 
 	listdestroy_StringList(usr->friends);
 	listdestroy_StringList(usr->enemies);
-	listdestroy_StringList(usr->info);
 	listdestroy_StringList(usr->recipients);
 	listdestroy_StringList(usr->tablist);
 	listdestroy_StringList(usr->talked_to);
-	listdestroy_StringList(usr->more_text);
 	listdestroy_StringList(usr->chat_history);
 
 	listdestroy_Joined(usr->rooms);
@@ -140,6 +142,8 @@ int i;
 	destroy_Telnet(usr->telnet);
 
 	destroy_StringIO(usr->text);
+	destroy_StringIO(usr->info);
+
 	listdestroy_PList(usr->scroll);
 	destroy_Display(usr->display);
 
@@ -197,16 +201,12 @@ char buf[PRINT_BUF];
 			Perror(usr, "Out of memory buffering message");
 			return;
 		}
-		if ((m->msg = new_StringList(buf)) == NULL) {
-			destroy_BufferedMsg(m);
-			Perror(usr, "Out of memory buffering message");
-			return;
-		}
+		put_StringIO(m->msg, buf);
+		write_StringIO(m->msg, "\n", 1);
 		add_BufferedMsg(&usr->held_msgs, m);
 	} else
 		Out(usr, buf);
 }
-
 
 void notify_friends(User *usr, char *msg) {
 User *u;
@@ -244,8 +244,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 
 	listdestroy_StringList(usr->friends);
 	listdestroy_StringList(usr->enemies);
-	listdestroy_StringList(usr->info);
-	usr->friends = usr->enemies = usr->info = NULL;
+	usr->friends = usr->enemies = NULL;
+	free_StringIO(usr->info);
 
 	listdestroy_Joined(usr->rooms);
 	usr->rooms = NULL;
@@ -433,7 +433,7 @@ int term_width, term_height;
 			FF1_LOAD_USERLIST("enemies", usr->enemies);
 
 		if (flags & LOAD_USER_INFO)
-			FF1_LOAD_STRINGLIST("info", usr->info);
+			FF1_LOAD_STRINGIO("info", usr->info);
 
 /* joined rooms */
 		if ((flags & LOAD_USER_ROOMS) && !strcmp(buf, "rooms")) {
@@ -844,8 +844,14 @@ int i;
 
 /* info */
 	if (flags & LOAD_USER_INFO) {
-		listdestroy_StringList(usr->info);
-		usr->info = Fgetlist(f);
+		free_StringIO(usr->info);
+		while(Fgets(f, buf, MAX_PATHLEN) != NULL) {
+			if (!*buf)
+				break;
+
+			put_StringIO(usr->info, buf);
+			write_StringIO(usr->info, "\n", 1);
+		}
 	} else
 		LOAD_USER_SKIPLIST;
 
@@ -1001,7 +1007,7 @@ StringList *sl;
 
 	FF1_SAVE_STRINGLIST("friends", usr->friends);
 	FF1_SAVE_STRINGLIST("enemies", usr->enemies);
-	FF1_SAVE_STRINGLIST("info", usr->info);
+	FF1_SAVE_STRINGIO("info", usr->info);
 
 /*
 	add site-specific stuff here

@@ -33,6 +33,11 @@ BufferedMsg *m;
 
 	if ((m = (BufferedMsg *)Malloc(sizeof(BufferedMsg), TYPE_BUFFEREDMSG)) == NULL)
 		return NULL;
+
+	if ((m->msg = new_StringIO()) == NULL) {
+		destroy_BufferedMsg(m);
+		return NULL;
+	}
 	return m;
 }
 
@@ -41,7 +46,7 @@ void destroy_BufferedMsg(BufferedMsg *m) {
 		return;
 
 	listdestroy_StringList(m->to);
-	listdestroy_StringList(m->msg);
+	destroy_StringIO(m->msg);
 	Free(m);
 }
 
@@ -60,17 +65,8 @@ BufferedMsg *cp;
 			destroy_BufferedMsg(cp);
 			return NULL;
 		}
-	} else
-		m->to = NULL;
-
-	if (m->msg != NULL) {
-		if ((cp->msg = copy_StringList(m->msg)) == NULL) {
-			destroy_BufferedMsg(cp);
-			return NULL;
-		}
-	} else
-		m->msg = NULL;
-
+	}
+	copy_StringIO(cp->msg, m->msg);
 	return cp;
 }
 
