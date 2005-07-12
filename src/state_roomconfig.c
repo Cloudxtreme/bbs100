@@ -162,11 +162,7 @@ void state_room_config_menu(User *usr, char c) {
 		case KEY_CTRL('E'):
 			Put(usr, "Edit room info\n");
 
-			listdestroy_StringList(usr->more_text);
-			usr->more_text = usr->textp = NULL;
-
 			if (usr->curr_room->info != NULL) {
-
 				Put(usr, "<cyan>The room info currently is<white>:\n<green>");
 				free_StringIO(usr->text);
 				if (StringList_to_StringIO(usr->curr_room->info, usr->text) < 0) {
