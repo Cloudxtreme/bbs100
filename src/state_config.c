@@ -91,21 +91,13 @@ void state_config_menu(User *usr, char c) {
 		case 'I':
 			Put(usr, "Profile info\n");
 
-			listdestroy_StringList(usr->more_text);
-			usr->more_text = usr->textp = NULL;
-
 			if (usr->info != NULL) {
-				StringList *sl;
-
-				if ((usr->more_text = new_StringList("<cyan>Your current profile info is<white>:\n<green>")) == NULL
-					|| (sl = copy_StringList(usr->info)) == NULL) {
-					Perror(usr, "Out of memory");
-					break;
-				}
-				concat_StringList(&usr->more_text, sl);
+				Put(usr, "<cyan>Your current profile info is<white>:\n<green>");
+				free_StringIO(usr->text);
+				StringList_to_StringIO(usr->info, usr->text);
 
 				PUSH(usr, STATE_CHANGE_PROFILE);
-				read_more(usr);
+				read_text(usr);
 			} else {
 				Put(usr, "<cyan>Your current profile info is empty\n<green>");
 				CALL(usr, STATE_CHANGE_PROFILE);
