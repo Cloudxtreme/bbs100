@@ -483,7 +483,7 @@ int r;
 
 	if (c == INIT_STATE) {
 		listdestroy_StringList(usr->more_text);
-		usr->more_text = usr->textp = NULL;
+		usr->more_text = NULL;
 		usr->total_lines = 0;
 
 		if (usr->curr_room == usr->mail)

@@ -1094,7 +1094,7 @@ void PrintPrompt(User *usr) {
 */
 	free_StringIO(usr->text);
 	listdestroy_StringList(usr->more_text);
-	usr->more_text = usr->textp = NULL;
+	usr->more_text = NULL;
 	listdestroy_PList(usr->scroll);
 	usr->scroll = usr->scrollp = NULL;
 

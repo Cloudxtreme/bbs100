@@ -157,7 +157,7 @@ struct User_tag {
 	StringList *friends, *enemies, *info;
 
 	StringList *recipients, *tablist, *talked_to;
-	StringList *more_text, *textp;
+	StringList *more_text;
 	StringList *chat_history;
 
 	Message *message, *new_message;
