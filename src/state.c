@@ -1011,19 +1011,19 @@ int i, idx;
 			break;
 
 		case 'k':
-			Put(usr, "<white>Known rooms\n\n");
+			Put(usr, "<white>Known rooms\n");
 			known_rooms(usr);
 			Return;
 
 		case 'K':
 		case KEY_CTRL('K'):
-			Put(usr, "<white>All known rooms\n\n");
+			Put(usr, "<white>All known rooms\n");
 			allknown_rooms(usr);
 			Return;
 
 		case 'i':
 		case 'I':
-			Put(usr, "<white>Room info\n\n");
+			Put(usr, "<white>Room info\n");
 			room_info(usr);
 			Return;
 

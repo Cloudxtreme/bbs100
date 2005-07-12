@@ -94,8 +94,10 @@ void state_config_menu(User *usr, char c) {
 			if (usr->info != NULL) {
 				Put(usr, "<cyan>Your current profile info is<white>:\n<green>");
 				free_StringIO(usr->text);
-				StringList_to_StringIO(usr->info, usr->text);
-
+				if (StringList_to_StringIO(usr->info, usr->text) < 0) {
+					Perror(usr, "Out of memory");
+					break;
+				}
 				PUSH(usr, STATE_CHANGE_PROFILE);
 				read_text(usr);
 			} else {

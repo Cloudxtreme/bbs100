@@ -39,10 +39,6 @@
 #define STATE_DEL_MSG_PROMPT			state_del_msg_prompt
 #define STATE_HISTORY_PROMPT			state_history_prompt
 #define STATE_HELD_HISTORY_PROMPT		state_held_history_prompt
-#define STATE_MORE_PROMPT				state_more_prompt
-#define STATE_MORE_FIND_PROMPT			state_more_find_prompt
-#define STATE_MORE_FINDBACK_PROMPT		state_more_findback_prompt
-#define STATE_MORE_NOTFOUND				state_more_notfound
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
 #define STATE_PRESS_ANY_KEY				state_press_any_key
@@ -64,10 +60,6 @@ void state_enter_plus_msg(User *, char);
 void state_del_msg_prompt(User *, char);
 void state_history_prompt(User *, char);
 void state_held_history_prompt(User *, char);
-void state_more_prompt(User *, char);
-void state_more_find_prompt(User *, char);
-void state_more_findback_prompt(User *, char);
-void state_more_notfound(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
 void state_press_any_key(User *, char);

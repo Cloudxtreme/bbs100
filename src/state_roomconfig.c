@@ -166,17 +166,15 @@ void state_room_config_menu(User *usr, char c) {
 			usr->more_text = usr->textp = NULL;
 
 			if (usr->curr_room->info != NULL) {
-				StringList *sl;
 
-				if ((usr->more_text = new_StringList("<cyan>The room info currently is<white>:\n<green>")) == NULL
-					|| (sl = copy_StringList(usr->curr_room->info)) == NULL) {
+				Put(usr, "<cyan>The room info currently is<white>:\n<green>");
+				free_StringIO(usr->text);
+				if (StringList_to_StringIO(usr->curr_room->info, usr->text) < 0) {
 					Perror(usr, "Out of memory");
 					break;
 				}
-				concat_StringList(&usr->more_text, sl);
-
 				PUSH(usr, STATE_CHANGE_ROOMINFO);
-				read_more(usr);
+				read_text(usr);
 			} else {
 				Put(usr, "<cyan>The room info currently is empty\n<green>");
 				CALL(usr, STATE_CHANGE_ROOMINFO);
