@@ -74,10 +74,9 @@ On the <white>--More--<green> prompt, you can use the following keys:
      <key>/    Find text
      <key>?    Find backwards
 
-
-<white>Note: <green>Users can send you messages, unless you have message receiption
-      disabled. Users that are on your friend list can always contact you.
-      You can use your enemy list to block annoying users.
+Users can send you messages, unless you have message receiption disabled.
+Users that are on your friend list can always contact you. You can use
+your enemy list to block annoying users.
 
 You may need an invitation for certain rooms. Please contact the room aide
 for an invitation if necessary.
@@ -93,17 +92,21 @@ It is possible to enter multiple recipients<yellow>;<green> at the end of a name
 comma <white><<yellow>,<white>><green> instead of <white><<yellow>return<white>><green> to try it out. You can press <white><<yellow>Ctrl-L<white>><green> for a list
 of already entered recipients. Hit <white><<yellow>Ctrl-F<white>><green> to enter your friends, or
 <white><<yellow>Ctrl-T<white>><green> to enter the names of the users you have already talked to in this
-session. To remove someone from the recipients list, enter the name and hit <white><<yellow>Ctrl-R<white>><green>.
+session. To remove someone from the recipients list, enter the name and hit
+<white><<yellow>Ctrl-R<white>><green>.
 
-It is possible to use colors in your messages. To enter colors, press <white><<yellow>Ctrl-V<white>><green>
-while editing, followed by a special color character. Mind that you can
-backspace the color character as well <yellow>;<green> it may seem odd for the first time
-you can backspace an <yellow>'<green>invisible<yellow>'<green> character.
+It is possible to use colors in your messages. To enter colors, enter the name
+of the color, enclosed in brackets <yellow>'<white><lt><yellow>'<green> and <yellow>'<white><gt><yellow>'<green>.
+It is also possible to hit <white><<yellow>Ctrl-V<white>><green> while editing, followed by a special color
+character.
 
-     <white>Ctrl-<key>V <key>w<green> for <white>White            <white>Ctrl-<key>V <key>c<green> for <cyan>Cyan
-     <white>Ctrl-<key>V <key>y<green> for <yellow>Yellow          <white>Ctrl-<key>V <key>b<green> for <blue>Blue
-     <white>Ctrl-<key>V <key>r<green> for <red>Red                <white>Ctrl-<key>V <key>m<green> for <magenta>Magenta
-     <white>Ctrl-<key>V <key>g<green> for <green>Green            <white>Ctrl-<key>V <key>k<green> for blacK <black>blacK
+  <lt>white<gt>  or <white>Ctrl-<key>V <key>w<green> for <white>White<green>      <lt>cyan<gt>    or <white>Ctrl-<key>V <key>c<green> for <cyan>Cyan<green>
+  <lt>yellow<gt> or <white>Ctrl-<key>V <key>y<green> for <yellow>Yellow<green>     <lt>blue<gt>    or <white>Ctrl-<key>V <key>b<green> for <blue>Blue<green>
+  <lt>red<gt>    or <white>Ctrl-<key>V <key>r<green> for <red>Red<green>        <lt>magenta<gt> or <white>Ctrl-<key>V <key>m<green> for <magenta>Magenta<green>
+  <lt>green<gt>  or <white>Ctrl-<key>V <key>g<green> for <green>Green<green>      <lt>black<gt>   or <white>Ctrl-<key>V <key>k<green> for blacK <black>blacK<green>
+
+Mind that you can backspace the color character as well <yellow>;<green> it may
+seem odd for the first time that you can backspace an <yellow>'<green>invisible<yellow>'<green> character.
 
 <yellow>---
 
