@@ -3770,8 +3770,10 @@ User *u;
 
 		if (u->runtime_flags & RTF_BUSY)
 			add_StringList(&u->chat_history, new_StringList(str));
-		else
-			Print(u, "%s\n", str);
+		else {
+			Put(u, str);
+			Put(u, "\n");
+		}
 	}
 	Return;
 }
