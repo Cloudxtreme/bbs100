@@ -765,10 +765,22 @@ int edit_line(User *usr, char c) {
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			break;
 
+		case KEY_TAB:
+			if (edit_tab_color(usr, edit_line))
+				break;
+
+/*			edit_tab_spaces(usr);	*/
+			break;
+
 		case '>':
 			edit_long_color(usr);
 			break;
 
+		case KEY_BACKTAB:
+			if (edit_backtab_color(usr, edit_line))
+				break;
+
+/* fall through */
 		default:
 			if (c < ' ' || c > '~')
 				break;
@@ -950,6 +962,13 @@ int edit_x(User *usr, char c) {
 			erase_word(usr);
 			break;
 
+		case KEY_TAB:
+			if (edit_tab_color(usr, edit_x))
+				break;
+
+/*			edit_tab_spaces(usr, edit_x);	*/
+			break;
+
 		case '>':
 			edit_long_color(usr);
 			break;
@@ -1013,7 +1032,7 @@ int edit_msg(User *usr, char c) {
 				if (usr->edit_buf[usr->edit_pos] >= ' ' && usr->edit_buf[usr->edit_pos] <= '~')
 					Put(usr, "\b \b");
 				else
-					Put(usr, "<green>");
+					Put(usr, "<yellow>");
 				usr->edit_buf[usr->edit_pos] = 0;
 			}
 			break;
@@ -1025,7 +1044,7 @@ int edit_msg(User *usr, char c) {
 			erase_line(usr, usr->edit_buf);
 			usr->edit_pos = 0;
 			usr->edit_buf[0] = 0;
-			Put(usr, "<green>");
+			Put(usr, "<yellow>");
 			break;
 /*
 	Eat words in post line, to be more like DOC
@@ -1046,16 +1065,27 @@ int edit_msg(User *usr, char c) {
 			}
 			break;
 
+		case KEY_TAB:
+			if (edit_tab_color(usr, edit_msg))
+				break;
+
+/*			edit_tab_spaces(usr, edit_msg);	*/
+			break;
+
 		case '>':
 			edit_long_color(usr);
 			break;
 
+		case KEY_BACKTAB:
+			if (edit_backtab_color(usr, edit_line))
+				break;
+
+/* fall through */
 		default:
 			if (c < ' ' || c > '~')
 				break;
 
 			edit_wrap(usr, c, "");
-
 	}
 	return 0;
 }
@@ -1266,6 +1296,130 @@ char colorbuf[20];
 	Put(usr, ">");
 }
 
+/*
+	use the Tab key to expand color names
+	Black is skipped because black text doesn't work well on a black background,
+	and 99.99% percent of all cases you were typing for 'blue' anyway
+*/
+int edit_tab_color(User *usr, int (*edit_func)(User *, char)) {
+int pos, i, n;
+char color[16];
+
+	if (usr == NULL || edit_func == NULL)
+		return -1;
+
+	Enter(edit_tab_color);
+
+	pos = usr->edit_pos;
+	if (pos <= 0) {
+		Return 0;
+	} 
+	pos--;
+	n = 0;
+	while(usr->edit_buf[pos] != '<' && n < 8) {
+		pos--;
+		n++;
+	}
+	if (usr->edit_buf[pos] != '<') {
+		Return 0;
+	}
+	n = strlen(usr->edit_buf + pos);
+
+	for(i = 1; i < NUM_COLORS; i++) {			/* skip 0, which is black text */
+		if (i == HOTKEY)
+			continue;
+
+		sprintf(color, "<%s", color_table[i].name);
+		cstrlwr(color);
+
+		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
+			if (!color[n]) {
+				while(n > 1) {
+					Put(usr, "\b \b");
+
+					if (usr->edit_pos > 0)
+						usr->edit_pos--;
+					usr->edit_buf[usr->edit_pos] = 0;
+					n--;
+				}
+				i++;
+				if (i >= HOTKEY)
+					i = 1;				/* skip 0, which is black */
+
+				sprintf(color, "<%s", color_table[i].name);
+				cstrlwr(color);
+				n = 1;
+			}
+			pos = n;
+			n = strlen(color);
+			while(pos < n)
+				edit_func(usr, color[pos++]);
+			Return 1;
+		}
+	}
+	Return 0;
+}
+
+int edit_backtab_color(User *usr, int (*edit_func)(User *, char)) {
+int pos, i, n;
+char color[16];
+
+	if (usr == NULL || edit_func == NULL)
+		return -1;
+
+	Enter(edit_backtab_color);
+
+	pos = usr->edit_pos;
+	if (pos <= 0) {
+		Return 0;
+	} 
+	pos--;
+	n = 0;
+	while(usr->edit_buf[pos] != '<' && n < 8) {
+		pos--;
+		n++;
+	}
+	if (usr->edit_buf[pos] != '<') {
+		Return 0;
+	}
+	n = strlen(usr->edit_buf + pos);
+
+	for(i = NUM_COLORS-1; i >= 1; i--) {			/* skip 0, which is black text */
+		if (i == HOTKEY)
+			continue;
+
+		sprintf(color, "<%s", color_table[i].name);
+		cstrlwr(color);
+
+		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
+			if (!color[n]) {
+				while(n > 1) {
+					Put(usr, "\b \b");
+
+					if (usr->edit_pos > 0)
+						usr->edit_pos--;
+					usr->edit_buf[usr->edit_pos] = 0;
+					n--;
+				}
+				i--;
+				if (i <= 0) {						/* skip 0, which is black text */
+					i = NUM_COLORS-1;
+					if (i == HOTKEY)
+						i--;
+				}
+				sprintf(color, "<%s", color_table[i].name);
+				cstrlwr(color);
+				n = 1;
+			}
+			pos = n;
+			n = strlen(color);
+			while(pos < n)
+				edit_func(usr, color[pos++]);
+			Return 1;
+		}
+	}
+	Return 0;
+}
 
 /*
 	erase word
@@ -1478,7 +1632,6 @@ int i;
 		strcat(buf, "\b \b");
 	Put(usr, buf);
 }
-
 
 void tab_list(User *usr, void (*make_tablist)(User *)) {
 	if (usr == NULL)

@@ -318,11 +318,11 @@ StringIO *tmp;
 	crude check for empty messages (completely empty or only containing spaces)
 	The check is crude because a single color code already counts as 'not empty'
 */
-	for(p = usr->new_message->msg->buf; *p; p++) {
+	for(p = usr->new_message->msg->buf; p != NULL && *p; p++) {
 		if (*p != ' ' && *p != '\n')
 			break;
 	}
-	if (!*p) {
+	if (p == NULL || !*p) {
 		Print(usr, "<red>Message is empty, message not saved\n");
 
 		destroy_Message(usr->new_message);

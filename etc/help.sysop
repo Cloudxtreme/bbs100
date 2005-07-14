@@ -3,9 +3,9 @@
 <white><<yellow>space<white>><green>   Leaves the <yellow>Sysop menu<green>
      <key>h/<key>?  Display this <yellow>Help<green> screen
 
-     <key>c    Create new room
+     <key>r    Create new room
 <white>Ctrl-<key>D<green>    Delete room <yellow>;<green> remove all room data
-     <key>g    Create or delete room categories
+     <key>c    Create or delete room categories
      <key>d    Disconnect user
 <white>Ctrl-<key>N<green>    Nuke user <yellow>;<green> remove user data
      <key>b    Banish<yellow>/<green>Unbanish username

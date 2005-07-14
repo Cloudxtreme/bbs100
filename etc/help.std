@@ -87,7 +87,7 @@ menu, where you can invite people to your home.
 
 When sending an eXpress Message or an Emote, or when mailing someone you
 are given a prompt <yellow>'<green>Enter recipient<yellow>: '<green>.
-This prompt supports automatic name extension <yellow>(<green>press <white><<yellow>Tab<white>><green> and backtab <white><<yellow>\<white>><yellow>)<green>.
+This prompt supports automatic name expansion <yellow>(<green>press <white><<yellow>Tab<white>><green> and BackTab <white><<yellow>\<white>><yellow>)<green>.
 It is possible to enter multiple recipients<yellow>;<green> at the end of a name press
 comma <white><<yellow>,<white>><green> instead of <white><<yellow>return<white>><green> to try it out. You can press <white><<yellow>Ctrl-L<white>><green> for a list
 of already entered recipients. Hit <white><<yellow>Ctrl-F<white>><green> to enter your friends, or
@@ -97,6 +97,7 @@ session. To remove someone from the recipients list, enter the name and hit
 
 It is possible to use colors in your messages. To enter colors, enter the name
 of the color, enclosed in brackets <yellow>'<white><lt><yellow>'<green> and <yellow>'<white><gt><yellow>'<green>.
+To quicken typing, use <white><<yellow>Tab<white>><green> and BackTab <white><<yellow>\<white>><green> to expand the color names.
 It is also possible to hit <white><<yellow>Ctrl-V<white>><green> while editing, followed by a special color
 character.
 

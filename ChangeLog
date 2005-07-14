@@ -6,6 +6,7 @@ Changes as of July 14th 2005
 - PARAM_HAVE_VANITY
 - config menu option: disable multi Xs
 - room config menu looks a bit better
+- edit colors via <Tab> and <\> backtab
 
 Changes as of July 12th 2005
 - find function on --More-- prompt using StringIO

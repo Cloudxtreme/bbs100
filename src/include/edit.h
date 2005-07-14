@@ -55,6 +55,8 @@ int edit_number(User *, char);
 int edit_octal_number(User *, char);
 void edit_color(User *, char);
 void edit_long_color(User *);
+int edit_tab_color(User *, int (*)(User *, char));
+int edit_backtab_color(User *, int (*)(User *, char));
 void erase_word(User *);
 void erase_line(User *, char *);
 void erase_name(User *);
