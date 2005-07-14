@@ -4,13 +4,13 @@
      <key>h/<key>?  Display this <yellow>Help<green> screen
 
      <key>e    Edit room info
-     <key>g    Change room category
 <white>Shft-<key>I<green>    Invite<yellow>/<green>Uninvite user into invite<yellow>-<green>only room
      <key>i    Show invited users in invite<yellow>-<green>only room
 <white>Shft-<key>K<green>    Kickout<yellow>/<green>Undo kickout user
      <key>k    Show kicked users
 
      <key>n    Change the room name
+     <key>c    Change room category
 
 <white>Note: <yellow>Invite<green> and <yellow>uninvite<green> apply to invite<yellow>-<green>only rooms.
       Also mind that '<yellow>uninvite<green>' is not the same as '<yellow>kickout<green>' and '<yellow>invite<green>'

@@ -53,67 +53,81 @@ void state_room_config_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 
 			if (usr->runtime_flags & RTF_ROOM_RESIZED) {
-				if (usr->read_lines == usr->curr_room->max_msgs)
-					Put(usr, "<red>Not changed\n");
-				else {
+				if (usr->read_lines != usr->curr_room->max_msgs)
 					resize_Room(usr->curr_room, usr->read_lines, NULL);
-					usr->runtime_flags &= ~RTF_ROOM_RESIZED;
-				}
+
+				usr->runtime_flags &= ~RTF_ROOM_RESIZED;
 			}
 			Put(usr, "\n"
-				"<hotkey>E<magenta>dit room info              <hotkey>Help\n");
+				"<hotkey>E<magenta>dit room info                 <hotkey>Help\n");
 
-			if (PARAM_HAVE_CATEGORY && category != NULL) {
-				if (usr->curr_room->category != NULL)
-					Print(usr, "Cate<hotkey>gory                    <white>[%s]<magenta>\n", usr->curr_room->category);
-				else
-					Put(usr, "Cate<hotkey>gory\n");
-			}
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
-				Put(usr, "<hotkey>Invite/uninvite             Show <hotkey>invited\n");
+				Put(usr, "<hotkey>Invite/uninvite                Show <hotkey>invited\n");
 
-			Put(usr, "<hotkey>Kickout/unkick              Show <hotkey>kicked\n");
+			Put(usr, "<hotkey>Kickout/unkick                 Show <hotkey>kicked\n");
 
 			if (!(usr->curr_room->flags & ROOM_HOME)) {
 				Put(usr, "\n");
 
-				if (usr->runtime_flags & RTF_SYSOP)
-					Print(usr, "<hotkey>Assign/unassign %s\n", PARAM_NAME_ROOMAIDE);
-
-				if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM)
-					Put(usr, "Change room <hotkey>name\n");
-
 				if (usr->runtime_flags & RTF_SYSOP) {
+					StringList *sl;
+
+					Print(usr, "<hotkey>Assign/unassign %-15s", PARAM_NAME_ROOMAIDE);
+
+					for(sl = usr->curr_room->room_aides; sl != NULL; sl = sl->next) {
+						Print(usr, "<cyan>%s", sl->str);
+						if (sl->next != NULL)
+							Put(usr, "<white>, ");
+					}
+					Put(usr, "<magenta>\n");
+				}
+				if (usr->curr_room->number != MAIL_ROOM && usr->curr_room->number != HOME_ROOM)
+					Print(usr,
+						"Change room <hotkey>name               <white>%s<magenta>\n", usr->curr_room->name);
+
+				if (PARAM_HAVE_CATEGORY && category != NULL) {
+					Put(usr, "<hotkey>Category");
+
+					if (usr->curr_room->category != NULL)
+						Print(usr, "                       <white>%s<magenta>", usr->curr_room->category);
+
+					Put(usr, "\n");
+				}
+				if (usr->runtime_flags & RTF_SYSOP) {
+					if (!(usr->curr_room->flags & ROOM_CHATROOM))
+						Print(usr,
+						"<hotkey>Maximum amount of messages     <white>%d<magenta>\n", usr->curr_room->max_msgs);
 
 					Put(usr,
-						"Reset <hotkey>creation date (all users unjoin)\n"
-						"\n"
-						"<white>Ctrl-<hotkey>R<magenta>emove all posts       <white>Ctrl-<hotkey>D<magenta>elete room\n"
+						"<hotkey>Reset creation date            (all users unjoin)\n"
+						"<white>Ctrl-<hotkey>R<magenta>emove all posts          <white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
 				}
 				Print(usr, "\n"
-					"Flags\n"
-					"<hotkey>1 <magenta>Room has subject lines    <white>%s\n"
-					"<hotkey>2 <magenta>Allow anonymous posts     <white>%s\n",
+					"<hotkey>1 <magenta>Room has subject lines       <white>%s\n"
+					"<hotkey>2 <magenta>Allow anonymous posts        <white>%s\n",
+
 					(usr->curr_room->flags & ROOM_SUBJECTS)  ? "Yes" : "No",
 					(usr->curr_room->flags & ROOM_ANONYMOUS) ? "Yes" : "No"
 				);
 				if (usr->runtime_flags & RTF_SYSOP) {
 					Print(usr,
-						"<hotkey>3 <magenta>Room is invite-only       <white>%s\n"
-						"<hotkey>4 <magenta>Room is read-only         <white>%s\n",
+						"<hotkey>3 <magenta>Room is invite-only          <white>%s\n"
+						"<hotkey>4 <magenta>Room is read-only            <white>%s\n",
+
 						(usr->curr_room->flags & ROOM_INVITE_ONLY) ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_READONLY)    ? "Yes" : "No"
 					);
 					Print(usr,
-						"<hotkey>5 <magenta>Room is not zappable      <white>%s\n"
-						"<hotkey>6 <magenta>Room is hidden            <white>%s\n",
+						"<hotkey>5 <magenta>Room is not zappable         <white>%s\n"
+						"<hotkey>6 <magenta>Room is hidden               <white>%s\n",
+
 						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No"
 					);
 					if (PARAM_HAVE_CHATROOMS)
 						Print(usr,
-							"<hotkey>7 <magenta>Room is a chat room       <white>%s\n",
+							"<hotkey>7 <magenta>Room is a chat room          <white>%s\n",
 							(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
 						);
 				}
@@ -148,18 +162,8 @@ void state_room_config_menu(User *usr, char c) {
 			read_text(usr);
 			Return;
 
-		case 'g':
-		case 'G':
-			if (PARAM_HAVE_CATEGORY) {
-				Put(usr, "Category\n");
-				CALL(usr, STATE_CHOOSE_CATEGORY);
-				Return;
-			}
-			break;
-
 		case 'e':
 		case 'E':
-		case KEY_CTRL('E'):
 			Put(usr, "Edit room info\n");
 
 			if (usr->curr_room->info->buf != NULL) {
@@ -229,11 +233,12 @@ void state_room_config_menu(User *usr, char c) {
 				else
 					Print(usr, "<cyan>%ss are<white>: ", PARAM_NAME_ROOMAIDE);
 
-				for(sl = usr->curr_room->room_aides; sl != NULL; sl = sl->next)
+				for(sl = usr->curr_room->room_aides; sl != NULL; sl = sl->next) {
+					Print(usr, "<cyan>%s", sl->str);
 					if (sl->next != NULL)
-						Print(usr, "<cyan>%s<white>, ", sl->str);
-					else
-						Print(usr, "<cyan>%s\n\n", sl->str);
+						Put(usr, "<white>, ");
+				}
+				Put(usr, "\n\n");
 			} else
 				Print(usr, "<red>Currently, there are no %ss in this room\n\n", PARAM_NAME_ROOMAIDE);
 			enter_name(usr, STATE_ASSIGN_ROOMAIDE);
@@ -251,6 +256,15 @@ void state_room_config_menu(User *usr, char c) {
 			}
 			break;
 
+		case 'c':
+		case 'C':
+			if (!PARAM_HAVE_CATEGORY || (usr->curr_room->flags & ROOM_HOME))
+				break;
+
+			Put(usr, "Category\n");
+			CALL(usr, STATE_CHOOSE_CATEGORY);
+			Return;
+
 		case 'm':
 		case 'M':
 			if ((usr->runtime_flags & RTF_SYSOP) && !(usr->curr_room->flags & ROOM_CHATROOM)) {
@@ -266,16 +280,15 @@ void state_room_config_menu(User *usr, char c) {
 			}
 			break;
 
-		case 'c':
-		case 'C':
+		case 'r':
+		case 'R':
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
 			if (usr->runtime_flags & RTF_SYSOP) {
 				Put(usr, "Reset creation date\n");
-				usr->curr_room->generation = (unsigned long)rtc;
-				usr->runtime_flags |= RTF_ROOM_EDITED;
-				CURRENT_STATE(usr);
+				CALL(usr, STATE_RESET_CREATION_DATE);
+				Return;
 			}
 			Return;
 
@@ -898,6 +911,40 @@ int r;
 void state_max_messages(User *usr, char c) {
 	Enter(state_max_messages);
 	change_int_param(usr, c, &usr->read_lines);		/* abuse read_lines for this */
+	Return;
+}
+
+void state_reset_creation_date(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_remove_all_posts);
+
+	if (c == INIT_STATE) {
+		if (usr->curr_room->number == MAIL_ROOM) {
+			Put(usr, "<red>You can<yellow>'<red>t reset the creation date of the <yellow>Mail<white>><red> room\n");
+			RET(usr);
+			Return;
+		}
+		Put(usr, "\n"
+			"<yellow>Resetting the creation date makes all users unjoin the room.\n"
+			"\n"
+			"<cyan>Are you sure you wish to reset the creation date? <white>(<cyan>y<white>/<cyan>N<white>): "
+		);
+	} else {
+		switch(yesno(usr, c, 'N')) {
+			case YESNO_YES:
+				usr->curr_room->generation = (unsigned long)rtc;
+				usr->runtime_flags |= RTF_ROOM_EDITED;
+
+			case YESNO_NO:
+				RET(usr);
+				break;
+
+			case YESNO_UNDEF:
+				Put(usr, "<cyan>Reset creation date, <hotkey>Yes or <hotkey>No? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		}
+	}
 	Return;
 }
 
