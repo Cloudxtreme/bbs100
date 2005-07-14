@@ -1654,12 +1654,8 @@ void loop_send_msg(User *usr, char c) {
 		usr->conn->state |= CONN_LOOPING;
 		usr->conn->loop_counter = list_Count(usr->recipients);
 /*
-	this doesn't seem the right place to do this, but we can't do it
-	in recvMsg() because that function doesn't know whether this is a
-	multi-X or not
-	So the message that you send to yourself won't be received... but
-	you do get a copy in your X history buffer
-	Perhaps this design should be changed and turned the other way around...
+	the message that you send to yourself won't be received... but you do
+	get a copy in your X history buffer
 */
 		if (usr->conn->loop_counter == 1 && !strcmp(usr->recipients->str, usr->name))
 			Print(usr, "<green>Talking to yourself, are you?\n");

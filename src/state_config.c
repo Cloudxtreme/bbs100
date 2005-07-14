@@ -1229,11 +1229,13 @@ void state_config_options(User *usr, char c) {
 			Print(usr, "\n<magenta>"
 				"<hotkey>Beep on message arrival              <white>%s<magenta>\n"
 				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
+				"Mult<hotkey>i message reception is ...       <white>%s<magenta>\n"
 				"<hotkey>Follow up mode (auto reply)          <white>%s<magenta>\n"
 				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
 				(usr->flags & USR_X_DISABLED) ? "Disabled" : "Enabled",
+				(usr->flags & USR_DENY_MULTI) ? "Disabled" : "Enabled",
 				(usr->flags & USR_FOLLOWUP) ? "On" : "Off",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No"
 			);
@@ -1279,6 +1281,14 @@ void state_config_options(User *usr, char c) {
 			usr->flags ^= USR_X_DISABLED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Print(usr, "%s message reception\n", (usr->flags & USR_X_DISABLED) ? "Disable" : "Enable");
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'i':
+		case 'I':
+			usr->flags ^= USR_DENY_MULTI;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Print(usr, "%s multi message reception\n", (usr->flags & USR_DENY_MULTI) ? "Disable" : "Enable");
 			CURRENT_STATE(usr);
 			Return;
 

@@ -933,7 +933,6 @@ char filename[MAX_PATHLEN];
 	Return;
 }
 
-
 /*
 	receive a message that was sent
 	If busy, the message will be put in a buffer
@@ -957,8 +956,11 @@ StringList *sl;
 	}
 	if (!(from->runtime_flags & RTF_SYSOP)) {
 		if ((sl = in_StringList(usr->enemies, from->name)) != NULL) {
-			Print(from, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages from you\n"
-				"any longer\n", usr->name);
+			Print(from, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages from you any longer\n", usr->name);
+			goto Rcv_Remove_Recipient;
+		}
+		if ((usr->flags & USR_DENY_MULTI) && msg->to != NULL && msg->to->next != NULL) {
+			Print(from, "<yellow>%s<green> doesn't wish to receive multi messages\n", usr->name);
 			goto Rcv_Remove_Recipient;
 		}
 		if ((usr->flags & USR_X_DISABLED)

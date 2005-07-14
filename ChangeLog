@@ -4,6 +4,7 @@ Changes as of July 14th 2005
 - PARAM_HAVE_XMSG_HDR
 - vanity flag
 - PARAM_HAVE_VANITY
+- config menu option: disable multi Xs
 
 Changes as of July 12th 2005
 - find function on --More-- prompt using StringIO
