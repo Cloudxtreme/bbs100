@@ -1,3 +1,6 @@
+Changes as of July 14th 2005
+- config menu option: verbose friend notifications
+
 Changes as of July 12th 2005
 - find function on --More-- prompt using StringIO
 - find backwards on --More-- prompt using StringIO

@@ -208,15 +208,15 @@ char buf[PRINT_BUF];
 		Out(usr, buf);
 }
 
-void notify_friends(User *usr, char *msg) {
+void notify_friends(User *usr, char *msg, int force) {
 User *u;
 
 	if (usr == NULL)
 		return;
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u != usr && u->name[0]
-			&& in_StringList(u->friends, usr->name) != NULL)
+		if (u != usr && u->name[0] && in_StringList(u->friends, usr->name) != NULL
+			&& ((u->flags & USR_FRIEND_NOTIFY) || force))
 			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, msg);
 	}
 }

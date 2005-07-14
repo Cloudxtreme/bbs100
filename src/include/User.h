@@ -48,13 +48,12 @@
 #define unwind_User(x)			(User *)unwind_List((x))
 #define listdestroy_User(x)		listdestroy_List((x), destroy_User)
 
-#define notify_login(x)			notify_friends((x), PARAM_NOTIFY_LOGIN)
-#define notify_logout(x)		notify_friends((x), PARAM_NOTIFY_LOGOUT)
-#define notify_linkdead(x)		notify_friends((x), PARAM_NOTIFY_LINKDEAD)
-#define notify_idle(x)			notify_friends((x), PARAM_NOTIFY_IDLE)
-#define notify_locked(x)		notify_friends((x), PARAM_NOTIFY_LOCKED)
-#define notify_unlocked(x)		notify_friends((x), PARAM_NOTIFY_UNLOCKED)
-
+#define notify_login(x)			notify_friends((x), PARAM_NOTIFY_LOGIN, 1)
+#define notify_logout(x)		notify_friends((x), PARAM_NOTIFY_LOGOUT, 1)
+#define notify_linkdead(x)		notify_friends((x), PARAM_NOTIFY_LINKDEAD, 1)
+#define notify_idle(x)			notify_friends((x), PARAM_NOTIFY_IDLE, 0)
+#define notify_locked(x)		notify_friends((x), PARAM_NOTIFY_LOCKED, 0)
+#define notify_unlocked(x)		notify_friends((x), PARAM_NOTIFY_UNLOCKED, 0)
 
 #define USR_ANSI				1			/* ANSI terminal */
 #define USR_BOLD				2			/* bright/bold enabled */
@@ -76,7 +75,8 @@
 #define USR_HIDE_INFO			0x20000		/* hide profile info from enemies */
 #define USR_FORCE_TERM			0x40000		/* force terminal width and height */
 #define USR_UPPERCASE_HOTKEYS	0x80000		/* hotkeys always displayed in uppercase */
-#define USR_ALL					0xfffff		/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_FRIEND_NOTIFY		0x100000	/* display many friend notifications */
+#define USR_ALL					0x1fffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -187,7 +187,7 @@ void Flush(User *);
 void Put(User *, char *);
 void Print(User *, char *, ...);
 void Tell(User *, char *, ...);
-void notify_friends(User *, char *);
+void notify_friends(User *, char *, int);
 void close_connection(User *, char *, ...);
 
 extern User *AllUsers;

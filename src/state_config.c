@@ -1187,11 +1187,14 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_FOLLOWUP) ? "On" : "Off",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No"
 			);
-			Print(usr, "\n"
-				"<hotkey>Rooms beep on new postings           <white>%s<magenta>\n"
+			Print(usr,
+				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
+				"\n"
+				"<hotkey>Rooms beep on new posts              <white>%s<magenta>\n"
 				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
 				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n",
 
+				(usr->flags & USR_FRIEND_NOTIFY) ? "On" : "Off",
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
 				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No"
@@ -1241,9 +1244,13 @@ void state_config_options(User *usr, char c) {
 		case 'H':
 			CONFIG_OPTION(USR_HOLD_BUSY, "Hold message mode when busy");
 
+		case 'v':
+		case 'V':
+			CONFIG_OPTION(USR_FRIEND_NOTIFY, "Verbose friend notifications");
+
 		case 'r':
 		case 'R':
-			CONFIG_OPTION(USR_ROOMBEEP, "Beep on new postings");
+			CONFIG_OPTION(USR_ROOMBEEP, "Beep on new posts");
 
 		case 'n':
 		case 'N':
