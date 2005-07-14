@@ -52,8 +52,14 @@ void state_config_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Help\n"
-				"Profile <hotkey>info\n"
-				"Profile <hotkey>vanity flag          <hotkey>Terminal settings\n"
+				"Profile <hotkey>info                 "
+			);
+			if (PARAM_HAVE_VANITY)
+				Put(usr, "\n"
+					"Profile <hotkey>vanity flag          "
+				);
+
+			Put(usr, "<hotkey>Terminal settings\n"
 				"<hotkey>Doing                        Customize <hotkey>Who list\n"
 			);
 			Put(usr,
@@ -108,6 +114,15 @@ void state_config_menu(User *usr, char c) {
 			}
 			Return;
 
+		case 'v':
+		case 'V':
+			if (PARAM_HAVE_VANITY) {
+				Put(usr, "Vanity flag\n");
+				CALL(usr, STATE_CONFIG_VANITY);
+				Return;
+			}
+			break;
+
 		case 'd':
 		case 'D':
 			Put(usr, "Doing\n");
@@ -116,9 +131,12 @@ void state_config_menu(User *usr, char c) {
 
 		case 'x':
 		case 'X':
-			Put(usr, "eXpress Message header\n");
-			CALL(usr, STATE_CONFIG_XMSG_HEADER);
-			Return;
+			if (PARAM_HAVE_XMSG_HDR) {
+				Put(usr, "eXpress Message header\n");
+				CALL(usr, STATE_CONFIG_XMSG_HEADER);
+				Return;
+			}
+			break;
 
 		case 'r':
 		case 'R':
@@ -346,6 +364,16 @@ void state_change_www(User *usr, char c) {
 	Return;
 }
 
+
+void state_config_vanity(User *usr, char c) {
+	Enter(state_config_vanity);
+
+	if (c == INIT_STATE && usr->vanity != NULL && usr->vanity[0])
+		Print(usr, "<green>Your current vanity flag<white>:<cyan> %s\n", usr->vanity);
+
+	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag<yellow>: ");
+	Return;
+}
 
 void state_config_doing(User *usr, char c) {
 	Enter(state_config_doing);

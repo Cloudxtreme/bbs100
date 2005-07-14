@@ -1515,7 +1515,14 @@ int r;
 	make the profile
 */
 		free_StringIO(usr->text);
-		print_StringIO(usr->text, "<white>%s\n", u->name);
+
+		put_StringIO(usr->text, "<white>");
+		put_StringIO(usr->text, u->name);
+
+		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0])
+			print_StringIO(usr->text, "                 <magenta>* <white>%s <magenta>*", u->vanity);
+
+		put_StringIO(usr->text, "\n");
 
 		visible = 1;
 		hidden = "";

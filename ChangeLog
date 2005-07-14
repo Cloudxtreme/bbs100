@@ -2,6 +2,8 @@ Changes as of July 14th 2005
 - config menu option: verbose friend notifications
 - custom eXpress Message header
 - PARAM_HAVE_XMSG_HDR
+- vanity flag
+- PARAM_HAVE_VANITY
 
 Changes as of July 12th 2005
 - find function on --More-- prompt using StringIO

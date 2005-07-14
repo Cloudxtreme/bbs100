@@ -140,7 +140,7 @@ struct User_tag {
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
-	char *timezone, *xmsg_header;
+	char *timezone, *vanity, *xmsg_header;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time, last_online_time;

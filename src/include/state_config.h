@@ -26,16 +26,6 @@
 #include "User.h"
 
 #define STATE_CONFIG_MENU				state_config_menu
-#define STATE_CONFIG_DOING				state_config_doing
-#define STATE_CONFIG_XMSG_HEADER		state_config_xmsg_header
-#define STATE_CONFIG_REMINDER			state_config_reminder
-#define STATE_CHANGE_PROFILE			state_change_profile
-#define STATE_QUICKLIST_PROMPT			state_quicklist_prompt
-#define STATE_EDIT_QUICKLIST			state_edit_quicklist
-#define STATE_CONFIG_TERMINAL			state_config_terminal
-#define STATE_CONFIG_WIDTH				state_config_width
-#define STATE_CONFIG_HEIGHT				state_config_height
-#define STATE_CUSTOM_COLORS				state_custom_colors
 #define STATE_CONFIG_ADDRESS			state_config_address
 #define STATE_CHANGE_REALNAME			state_change_realname
 #define STATE_CHANGE_ADDRESS			state_change_address
@@ -47,6 +37,17 @@
 #define STATE_CHANGE_PHONE				state_change_phone
 #define STATE_CHANGE_EMAIL				state_change_email
 #define STATE_CHANGE_WWW				state_change_www
+#define STATE_CHANGE_PROFILE			state_change_profile
+#define STATE_CONFIG_VANITY				state_config_vanity
+#define STATE_CONFIG_DOING				state_config_doing
+#define STATE_CONFIG_XMSG_HEADER		state_config_xmsg_header
+#define STATE_CONFIG_REMINDER			state_config_reminder
+#define STATE_QUICKLIST_PROMPT			state_quicklist_prompt
+#define STATE_EDIT_QUICKLIST			state_edit_quicklist
+#define STATE_CONFIG_TERMINAL			state_config_terminal
+#define STATE_CONFIG_WIDTH				state_config_width
+#define STATE_CONFIG_HEIGHT				state_config_height
+#define STATE_CUSTOM_COLORS				state_custom_colors
 #define STATE_CONFIG_PASSWORD			state_config_password
 #define STATE_CHANGE_PASSWORD			state_change_password
 #define STATE_CONFIG_ANON				state_config_anon
@@ -58,6 +59,18 @@
 #define STATE_SELECT_TZ_CITY			state_select_tz_city
 
 void state_config_menu(User *, char);
+void state_config_address(User *, char);
+void state_change_realname(User *, char);
+void state_change_address(User *, char);
+void state_change_street(User *, char);
+void state_change_zipcode(User *, char);
+void state_change_city(User *, char);
+void state_change_state(User *, char);
+void state_change_country(User *, char);
+void state_change_phone(User *, char);
+void state_change_email(User *, char);
+void state_change_www(User *, char);
+void state_config_vanity(User *, char);
 void state_config_doing(User *, char);
 void state_config_xmsg_header(User *, char);
 void state_config_reminder(User *, char);
@@ -71,17 +84,6 @@ void state_config_width(User *, char);
 void state_config_height(User *, char);
 void config_dimensions(User *, char, int *, void (*)(User *, char));
 void state_custom_colors(User *, char);
-void state_config_address(User *, char);
-void state_change_realname(User *, char);
-void state_change_address(User *, char);
-void state_change_street(User *, char);
-void state_change_zipcode(User *, char);
-void state_change_city(User *, char);
-void state_change_state(User *, char);
-void state_change_country(User *, char);
-void state_change_phone(User *, char);
-void state_change_email(User *, char);
-void state_change_www(User *, char);
 void state_config_password(User *, char);
 void state_change_password(User *, char);
 void state_config_anon(User *, char);
