@@ -1517,10 +1517,15 @@ int r;
 		free_StringIO(usr->text);
 
 		put_StringIO(usr->text, "<white>");
-		put_StringIO(usr->text, u->name);
 
-		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0])
-			print_StringIO(usr->text, "                 <magenta>* <white>%s <magenta>*", u->vanity);
+		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
+			char fmt[16];
+
+			sprintf(fmt, "%%-%ds", MAX_NAME + 10);
+			print_StringIO(usr->text, fmt, u->name);
+			print_StringIO(usr->text, "<magenta>* <white>%s <magenta>*", u->vanity);
+		} else
+			put_StringIO(usr->text, u->name);
 
 		put_StringIO(usr->text, "\n");
 
