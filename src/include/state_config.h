@@ -27,6 +27,7 @@
 
 #define STATE_CONFIG_MENU				state_config_menu
 #define STATE_CONFIG_DOING				state_config_doing
+#define STATE_CONFIG_XMSG_HEADER		state_config_xmsg_header
 #define STATE_CONFIG_REMINDER			state_config_reminder
 #define STATE_CHANGE_PROFILE			state_change_profile
 #define STATE_QUICKLIST_PROMPT			state_quicklist_prompt
@@ -58,6 +59,7 @@
 
 void state_config_menu(User *, char);
 void state_config_doing(User *, char);
+void state_config_xmsg_header(User *, char);
 void state_config_reminder(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);

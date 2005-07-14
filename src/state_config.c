@@ -51,20 +51,26 @@ void state_config_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			Put(usr, "<magenta>\n"
-				"<hotkey>Address                      <hotkey>Terminal settings\n"
-				"Profile <hotkey>info                 Customize <hotkey>Who list\n"
-				"<hotkey>Doing                        <hotkey>Options\n"
-				"<hotkey>Reminder"
+				"<hotkey>Address                      <hotkey>Help\n"
+				"Profile <hotkey>info\n"
+				"Profile <hotkey>vanity flag          <hotkey>Terminal settings\n"
+				"<hotkey>Doing                        Customize <hotkey>Who list\n"
 			);
+			Put(usr,
+				"<hotkey>Reminder                     <hotkey>Options\n"
+			);
+			if (PARAM_HAVE_XMSG_HDR)
+				Put(usr, "e<hotkey>Xpress Message header       ");
+
 			if (PARAM_HAVE_QUICK_X)
-				Put(usr, "                     <hotkey>Quicklist\n");
+				Put(usr, "<hotkey>Quicklist\n");
 			else
-				Put(usr, "\n");
+				if (PARAM_HAVE_XMSG_HDR)
+					Put(usr, "\n");
 
 			Put(usr,
-				"Anon<hotkey>ymous alias              Time <hotkey>zone\n"
-				"<hotkey>Friends and <hotkey>Enemies\n"
-				"<hotkey>Password                     <hotkey>Help\n"
+				"Anon<hotkey>ymous alias              <hotkey>Friends and <hotkey>Enemies\n"
+				"<hotkey>Password                     Time <hotkey>zone\n"
 			);
 			break;
 
@@ -106,6 +112,12 @@ void state_config_menu(User *usr, char c) {
 		case 'D':
 			Put(usr, "Doing\n");
 			CALL(usr, STATE_CONFIG_DOING);
+			Return;
+
+		case 'x':
+		case 'X':
+			Put(usr, "eXpress Message header\n");
+			CALL(usr, STATE_CONFIG_XMSG_HEADER);
 			Return;
 
 		case 'r':
@@ -342,6 +354,16 @@ void state_config_doing(User *usr, char c) {
 		Print(usr, "<green>You are currently doing<white>:<cyan> %s\n", usr->doing);
 
 	change_config(usr, c, &usr->doing, "<green>Enter new Doing<yellow>: ");
+	Return;
+}
+
+void state_config_xmsg_header(User *usr, char c) {
+	Enter(state_config_xmsg_header);
+
+	if (c == INIT_STATE && usr->xmsg_header != NULL && usr->xmsg_header[0])
+		Print(usr, "<green>Your current eXpress Message header<white>:<cyan> %s\n", usr->xmsg_header);
+
+	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header<yellow>: ");
 	Return;
 }
 
@@ -1687,7 +1709,9 @@ int r;
 	Return;
 }
 
-
+/*
+	set a configurable string
+*/
 void change_config(User *usr, char c, char **var, char *prompt) {
 int r;
 

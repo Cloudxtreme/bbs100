@@ -1899,6 +1899,9 @@ int r;
 		copy_StringIO(xmsg->msg, usr->text);
 
 		strcpy(xmsg->from, usr->name);
+		if (PARAM_HAVE_XMSG_HDR && usr->xmsg_header != NULL && usr->xmsg_header[0])
+			xmsg->xmsg_header = cstrdup(usr->xmsg_header);
+
 		xmsg->mtime = rtc;
 
 		xmsg->flags |= (BUFMSG_XMSG | BUFMSG_SEEN);

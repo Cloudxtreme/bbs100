@@ -974,7 +974,7 @@ Rcv_Remove_Recipient:
 		}
 	}
 	if (msg->flags & BUFMSG_XMSG) {
-		strcpy(msg_type, "eXpress message");
+		strcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
 
 		if (from != usr) {
 			usr->xrecv++;							/* update stats */
@@ -1019,7 +1019,7 @@ Rcv_Remove_Recipient:
 
 	if ((new_msg = copy_BufferedMsg(msg)) == NULL) {
 		Perror(from, "Out of memory");
-		Print(from, "<red>%s was not received by <yellow>%s\n", msg_type, usr->name);
+		Print(from, "<red>%s<red> was not received by <yellow>%s\n", msg_type, usr->name);
 		Return;
 	}
 /*
@@ -1063,14 +1063,14 @@ Rcv_Remove_Recipient:
 				if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
 					Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
 				else
-					Print(from, "<yellow>%s<green> is busy and will receive your %s when done\n", usr->name, msg_type);
+					Print(from, "<yellow>%s<green> is busy and will receive your %s<green> when done\n", usr->name, msg_type);
 		Return;
 	}
 	Put(usr, "<beep>");									/* alarm beep */
 	print_buffered_msg(usr, new_msg);
 	Put(usr, "\n");
 
-	Print(from, "<green>%s received by <yellow>%s\n", msg_type, usr->name);
+	Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
 
 	if (in_StringList(from->talked_to, usr->name) == NULL)
 		add_StringList(&from->talked_to, new_StringList(usr->name));
@@ -1153,7 +1153,7 @@ int printed;
 */
 char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf) {
 struct tm *tm;
-char frombuf[256] = "", namebuf[256] = "", multi[32] = "", msgtype[64] = "";
+char frombuf[256] = "", namebuf[256] = "", multi[8] = "", msgtype[MAX_LINE] = "";
 int from_me = 0;
 
 	if (usr == NULL || msg == NULL || buf == NULL)
@@ -1199,7 +1199,7 @@ int from_me = 0;
 /* the message type */
 
 	if (msg->flags & BUFMSG_XMSG)
-		strcpy(msgtype, "eXpress message");
+		strcpy(msgtype, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
 	else
 		if (msg->flags & BUFMSG_EMOTE)
 			strcpy(msgtype, "Emote");
@@ -1216,9 +1216,9 @@ int from_me = 0;
 	} else {
 		if (msg->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION)) {
 			if (from_me)
-				sprintf(buf, "<blue>*** <cyan>You sent this %s%s to <yellow>%s<cyan> %sat <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to <yellow>%s<cyan> %sat <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
-				sprintf(buf, "<blue>*** <cyan>%s%s received from %s<cyan> at <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>*** <cyan>%s%s<cyan> received from %s<cyan> at <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
 		}
 	}
 	Return buf;

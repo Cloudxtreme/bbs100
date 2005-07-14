@@ -52,7 +52,7 @@ struct BufferedMsg_tag {
 
 	unsigned int flags;
 	time_t mtime;
-	char from[MAX_NAME];
+	char from[MAX_NAME], *xmsg_header;
 	StringList *to;
 	StringIO *msg;
 };

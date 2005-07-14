@@ -45,6 +45,7 @@ void destroy_BufferedMsg(BufferedMsg *m) {
 	if (m == NULL)
 		return;
 
+	Free(m->xmsg_header);
 	listdestroy_StringList(m->to);
 	destroy_StringIO(m->msg);
 	Free(m);
@@ -55,6 +56,9 @@ BufferedMsg *cp;
 
 	if ((cp = new_BufferedMsg()) == NULL)
 		return NULL;
+
+	if (m->xmsg_header != NULL && m->xmsg_header[0])
+		cp->xmsg_header = cstrdup(m->xmsg_header);
 
 	strcpy(cp->from, m->from);
 	cp->mtime = m->mtime;

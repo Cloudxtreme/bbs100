@@ -210,3 +210,6 @@ Credits for bug fixes et al after public release
   included in 2.2
 
 - WHYz' comments led to the implementation of parameter helper_age
+
+- Customizable eXpress Message header as implemented by Richard
+  finally included in 2.2

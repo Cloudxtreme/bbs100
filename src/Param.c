@@ -149,6 +149,7 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_FEELINGS,		"have_feelings",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_QUESTIONS,		"have_questions",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_QUICK_X,		"have_quick_x",		PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_XMSG_HDR,		"have_xmsg_hdr",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_TALKEDTO,		"have_talkedto",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_HOLD,			"have_hold_msgs",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_FOLLOWUP,		"have_followup",	PARAM_TRUE);

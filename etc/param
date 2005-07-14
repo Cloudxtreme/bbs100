@@ -86,6 +86,7 @@ have_emotes				yes
 have_feelings			yes
 have_questions			yes
 have_quick_x			yes
+have_xmsg_hdr           yes
 have_talkedto			yes
 have_hold_msgs			yes
 have_followup			yes

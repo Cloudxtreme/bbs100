@@ -110,6 +110,7 @@ int i;
 	unload_Timezone(usr->timezone);
 	usr->tz = NULL;					/* usr->tz is just a reference and is not destroyed here */
 	Free(usr->timezone);
+	Free(usr->xmsg_header);
 
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);
@@ -344,6 +345,7 @@ int term_width, term_height;
 			FF1_LOAD_DUP("reminder", usr->reminder);
 			FF1_LOAD_DUP("default_anon", usr->default_anon);
 			FF1_LOAD_DUP("timezone", usr->timezone);
+			FF1_LOAD_DUP("xmsg_header", usr->xmsg_header);
 		}
 		if (!strcmp(buf, "hostname")) {
 			Free(usr->tmpbuf[TMP_FROM_HOST]);
@@ -963,6 +965,7 @@ StringList *sl;
 	FF1_SAVE_STR("reminder", usr->reminder);
 	FF1_SAVE_STR("default_anon", usr->default_anon);
 	FF1_SAVE_STR("timezone", usr->timezone);
+	FF1_SAVE_STR("xmsg_header", usr->xmsg_header);
 
 	FF1_SAVE_STR("hostname", usr->conn->hostname);
 	FF1_SAVE_STR("ipnum", usr->conn->ipnum);
