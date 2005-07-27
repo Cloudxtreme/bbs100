@@ -98,6 +98,52 @@ int pos, n;
 		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
 			c = hackerz_mode(c);
 
+/*
+	word-wrap in display function
+	CHARSET1 contains characters that break the line
+*/
+		if (cstrchr(WRAP_CHARSET1, c) != NULL) {
+/*
+			if (usr->flags & USR_AUTOCOLOR)
+				auto_color(usr);
+*/
+			if (*cpos + word_len(str+1) >= usr->display->term_width) {
+				if (*str != ' ')
+					write_StringIO(dev, str, 1);
+
+				if (str[1] == ' ') {
+					str++;
+					pos++;
+				}
+				write_StringIO(dev, "\r\n", 2);
+				*cpos = 0;
+				(*lines)++;
+				if (max_lines > -1 && *lines >= max_lines)
+					return pos;
+
+				if (*str)
+					str++;
+				continue;
+			}
+		} else {
+/*
+	pretty word-wrap: CHARSET2 contains characters that wrap along with the line
+	mind that the < character is also used for long color codes
+*/
+			if (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL) {
+/*
+				if (usr->flags & USR_AUTOCOLOR)
+					auto_color(usr);
+*/
+				if (*cpos + word_len(str+1) >= usr->display->term_width) {
+					write_StringIO(dev, "\r\n", 2);
+					*cpos = 0;
+					(*lines)++;
+					if (max_lines > -1 && *lines >= max_lines)
+						return pos-1;
+				}
+			}
+		}
 		switch(c) {
 			case '\b':
 				write_StringIO(dev, "\b", 1);
@@ -191,57 +237,6 @@ int pos, n;
 				str += n;
 				pos += n;
 				break;
-/*
-	word-wrapping for long strings
-*/
-			case ' ':
-			case '.':
-			case ':':
-			case ';':
-			case ',':
-			case '-':
-			case '!':
-			case '?':
-			case '>':
-			case '}':
-			case ']':
-			case ')':
-			case '/':
-				if (*cpos + word_len(str+1) >= usr->display->term_width) {
-					if (*str != ' ')
-						write_StringIO(dev, str, 1);
-
-					if (str[1] == ' ') {
-						str++;
-						pos++;
-					}
-					write_StringIO(dev, "\r\n", 2);
-					*cpos = 0;
-					(*lines)++;
-					if (max_lines > -1 && *lines >= max_lines)
-						return pos;
-					break;
-				}
-/* do default */
-				write_StringIO(dev, &c, 1);
-				(*cpos)++;
-				break;
-
-/*			case '<':	*/
-			case '{':
-			case '[':
-			case '(':
-			case '$':
-			case '\'':
-			case '"':
-				if (*cpos + word_len(str+1) >= usr->display->term_width) {
-					write_StringIO(dev, "\r\n", 2);
-					*cpos = 0;
-					(*lines)++;
-					if (max_lines > -1 && *lines >= max_lines)
-						return pos-1;
-				}
-/* fall through */
 
 			default:
 				write_StringIO(dev, &c, 1);
