@@ -860,6 +860,8 @@ int i, wrap_len;
 }
 
 int edit_x(User *usr, char c) {
+int color;
+
 	if (usr == NULL)
 		return 0;
 
@@ -881,7 +883,9 @@ int edit_x(User *usr, char c) {
 			wipe_line(usr);
 			return EDIT_RETURN;
 		}
+		color = usr->color;
 		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>><red> to abort, <white><<yellow>Ctrl-X<white>><red> to send", KEY_CTRL('X'));
+		restore_color(usr, color);
 		return 0;
 	}
 	if (usr->runtime_flags & RTF_COLOR_EDITING) {
@@ -983,6 +987,8 @@ int edit_x(User *usr, char c) {
 }
 
 int edit_msg(User *usr, char c) {
+int color;
+
 	if (usr == NULL)
 		return 0;
 
@@ -1003,7 +1009,9 @@ int edit_msg(User *usr, char c) {
 			Put(usr, "\n");
 			return EDIT_BREAK;
 		}
+		color = usr->color;
 		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>>", KEY_CTRL('X'));
+		restore_color(usr, color);
 		return 0;
 	}
 	if (usr->runtime_flags & RTF_COLOR_EDITING) {
