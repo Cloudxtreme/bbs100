@@ -77,7 +77,8 @@
 #define USR_UPPERCASE_HOTKEYS	0x80000		/* hotkeys always displayed in uppercase */
 #define USR_DENY_MULTI			0x100000	/* don't receive multi X's */
 #define USR_FRIEND_NOTIFY		0x200000	/* display many friend notifications */
-#define USR_ALL					0x3fffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_AUTO_COLOR			0x400000	/* do automatic coloring of symbols */
+#define USR_ALL					0x7fffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */

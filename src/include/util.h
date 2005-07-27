@@ -72,18 +72,22 @@ typedef struct {
 } ColorTable;
 
 int Out(User *, char *);
-int Out_text(StringIO *, User *, char *, int *, int *, int);
+int Out_text(StringIO *, User *, char *, int *, int *, int, int);
 int word_len(char *);
 int hackerz_mode(int);
 int color_by_name(char *);
-int long_color_code(StringIO *, User *, char *, int *, int *, int);
+int long_color_code(StringIO *, User *, char *, int *, int *, int, int);
 void expand_hline(char *, char *, int, int);
 void expand_center(char *, char *, int, int);
 int skip_long_color_code(char *);
 int color_strlen(char *);
 int color_index(char *, int);
+void auto_color(User *, char *);
+void restore_colorbuf(User *, int, char *);
 void restore_color(User *, int);
 int Ansi_Color(User *, int);
+int Color_Ansi(User *, int);
+int color_key_index(int);
 void default_colors(User *);
 void wipe_line(User *);
 int yesno(User *, char, char);

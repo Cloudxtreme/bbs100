@@ -1251,6 +1251,12 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
 				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No"
 			);
+			if (usr->flags & USR_ANSI)
+				Print(usr,
+					"Do automatic <hotkey>coloring of symbols     <white>%s<magenta>\n",
+					(usr->flags & USR_AUTO_COLOR) ? "Yes" : "No"
+				);
+
 			Print(usr, "\n"
 				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
 				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
@@ -1319,6 +1325,13 @@ void state_config_options(User *usr, char c) {
 		case 'u':
 		case 'U':
 			CONFIG_OPTION(USR_UPPERCASE_HOTKEYS, "Uppercase hotkeys");
+
+		case 'c':
+		case 'C':
+			if (!(usr->flags & USR_ANSI))
+				break;
+
+			CONFIG_OPTION(USR_AUTO_COLOR, "Automatic coloring");
 
 		case 'a':
 		case 'A':

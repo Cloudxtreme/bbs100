@@ -2834,16 +2834,16 @@ int read_it = 1, idx;
 /* add room aides to the line */
 	if (r->room_aides == NULL) {
 		if (r->number >= SPECIAL_ROOMS)
-			sprintf(buf2+strlen(buf2), "%c(no %s)", (char)color_by_name("red"), PARAM_NAME_ROOMAIDE);
+			sprintf(buf2+strlen(buf2), "%c (no %s)", (char)color_by_name("red"), PARAM_NAME_ROOMAIDE);
 	} else {
 		StringList *sl;
 		int l;
 
 		l = strlen(buf2);
 		for(sl = r->room_aides; sl != NULL && l < MAX_LINE; sl = sl->next)
-			l += sprintf(buf2+l, "%c%s%c, ", (char)color_by_name("cyan"), sl->str, (char)color_by_name("white"));
+			l += sprintf(buf2+l, " %c%s%c,", (char)color_by_name("cyan"), sl->str, (char)color_by_name("white"));
 
-		l -= 3;
+		l -= 2;
 		buf2[l] = 0;
 		if (l > MAX_LINE) {				/* display as '...' */
 			buf2[MAX_LINE-1] = 0;

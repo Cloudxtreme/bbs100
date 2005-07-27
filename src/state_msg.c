@@ -801,12 +801,12 @@ unsigned long msg_number;
 		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
 			if (usr->message->subject[0]) {
 				if (usr->message->flags & MSG_FORWARDED)
-					print_StringIO(usr->text, "<cyan>Subject: <white>Fwd: <yellow>%s\n", usr->message->subject);
+					print_StringIO(usr->text, "<cyan>Subject: <white>Fwd:<yellow> %s\n", usr->message->subject);
 				else
 					if (usr->message->flags & MSG_REPLY)
-						print_StringIO(usr->text, "<cyan>Subject: <white>Re: <yellow>%s\n", usr->message->subject);
+						print_StringIO(usr->text, "<cyan>Subject: <white>Re:<yellow> %s\n", usr->message->subject);
 					else
-						print_StringIO(usr->text, "<cyan>Subject: <yellow>%s\n", usr->message->subject);
+						print_StringIO(usr->text, "<cyan>Subject:<yellow> %s\n", usr->message->subject);
 			} else {
 /*
 	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
@@ -814,18 +814,18 @@ unsigned long msg_number;
 	recipient of the Mail> message
 */
 				if (usr->message->flags & MSG_REPLY && usr->message->reply_number)
-					print_StringIO(usr->text, "<cyan>Subject: <white>Re: <yellow><message #%lu>\n", usr->message->reply_number);
+					print_StringIO(usr->text, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", usr->message->reply_number);
 			}
 		} else {
 			if ((usr->message->flags & MSG_FORWARDED) && usr->message->subject[0])
-				print_StringIO(usr->text, "<white>Fwd: <yellow>%s\n", usr->message->subject);
+				print_StringIO(usr->text, "<white>Fwd:<yellow> %s\n", usr->message->subject);
 			else {
 				if (usr->message->flags & MSG_REPLY) {			/* room without subject lines */
 					if (usr->message->subject[0])
-						print_StringIO(usr->text, "<white>Re: <yellow>%s\n", usr->message->subject);
+						print_StringIO(usr->text, "<white>Re:<yellow> %s\n", usr->message->subject);
 					else
 						if (usr->message->reply_number)
-							print_StringIO(usr->text, "<white>Re: <yellow><message #%lu>\n", usr->message->reply_number);
+							print_StringIO(usr->text, "<white>Re:<yellow> <message #%lu>\n", usr->message->reply_number);
 				}
 			}
 		}
@@ -2263,7 +2263,7 @@ int l;
 
 	for(l = start; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
 		usr->display->cpos = usr->display->line = 0;
-		Out_text(usr->conn->output, usr, (char *)usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
+		Out_text(usr->conn->output, usr, (char *)usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1, 0);
 		usr->read_lines++;
 		l++;
 	}
@@ -2302,7 +2302,7 @@ int pos, len;
 	while(pos < len) {
 		usr->display->cpos = 0;
 		usr->display->line = 0;
-		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1);
+		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1, 0);
 		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
 	}
 	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
@@ -2365,7 +2365,7 @@ int l, color;
 		case '+':
 		case '=':
 			usr->display->cpos = usr->display->line = 0;
-			Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1);
+			Out_text(usr->conn->output, usr, usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1, 0);
 			usr->scrollp = usr->scrollp->next;
 			usr->read_lines++;
 			break;

@@ -70,7 +70,7 @@ int Out(User *usr, char *str) {
 	if (usr->display == NULL && (usr->display = new_Display()) == NULL)
 		return 0;
 
-	return Out_text(usr->conn->output, usr, str, &usr->display->cpos, &usr->display->line, -1);
+	return Out_text(usr->conn->output, usr, str, &usr->display->cpos, &usr->display->line, -1, 0);
 }
 
 /*
@@ -80,16 +80,22 @@ int Out(User *usr, char *str) {
 	  (for --More-- prompt reading)
 	- returns position in the string where it stopped
 	- if dev is NULL, it produces no output, but does run the function
+	- force_auto_color_off is used for hline tags, that really don't like auto-coloring
+
+	- do_auto_color says if it's OK to auto-color symbols
+	- dont_auto_color is for controlling exceptions to the rule of auto-coloring
 */
-int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines) {
+int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines, int force_auto_color_off) {
 char buf[20], c;
-int pos, n;
+int pos, n, do_auto_color = 0, dont_auto_color, color;
 
 	if (usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
 
 	if (max_lines > -1 && *lines >= max_lines)
 		return 0;
+
+	dont_auto_color = force_auto_color_off;
 
 	pos = 0;
 	while(*str) {
@@ -101,21 +107,33 @@ int pos, n;
 /*
 	word-wrap in display function
 	CHARSET1 contains characters that break the line
+
+	we also like auto-coloring symbols
 */
 		if (cstrchr(WRAP_CHARSET1, c) != NULL) {
-/*
-			if (usr->flags & USR_AUTOCOLOR)
-				auto_color(usr);
-*/
-			if (*cpos + word_len(str+1) >= usr->display->term_width) {
-				if (*str != ' ')
-					write_StringIO(dev, str, 1);
+			if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
+				do_auto_color = 1;
 
+			if (*cpos + word_len(str+1) >= usr->display->term_width) {
+				if (*str != ' ') {
+					if (do_auto_color) {
+						auto_color(usr, buf);
+						put_StringIO(dev, buf);
+					}
+					write_StringIO(dev, str, 1);
+					dont_auto_color = force_auto_color_off;
+
+					if (do_auto_color) {
+						restore_colorbuf(usr, usr->color, buf);
+						put_StringIO(dev, buf);
+						do_auto_color = 0;
+					}
+				}
 				if (str[1] == ' ') {
 					str++;
 					pos++;
 				}
-				write_StringIO(dev, "\r\n", 2);
+				put_StringIO(dev, "\r\n");
 				*cpos = 0;
 				(*lines)++;
 				if (max_lines > -1 && *lines >= max_lines)
@@ -130,11 +148,10 @@ int pos, n;
 	pretty word-wrap: CHARSET2 contains characters that wrap along with the line
 	mind that the < character is also used for long color codes
 */
-			if (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL) {
-/*
-				if (usr->flags & USR_AUTOCOLOR)
-					auto_color(usr);
-*/
+			if (c == '@' || (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL)) {
+				if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
+					do_auto_color = 1;
+
 				if (*cpos + word_len(str+1) >= usr->display->term_width) {
 					write_StringIO(dev, "\r\n", 2);
 					*cpos = 0;
@@ -180,12 +197,14 @@ int pos, n;
 			case KEY_CTRL('W'):
 /*			case KEY_CTRL('F'):		*/
 				if (usr->flags & USR_ANSI) {
-					usr->color = Ansi_Color(usr, c);
+					usr->color = c;
+					color = Ansi_Color(usr, c);
 					if (usr->flags & USR_BOLD)
-						sprintf(buf, "\x1b[1;%dm", usr->color);
+						sprintf(buf, "\x1b[1;%dm", color);
 					else
-						sprintf(buf, "\x1b[%dm", usr->color);
+						sprintf(buf, "\x1b[%dm", color);
 					put_StringIO(dev, buf);
+					dont_auto_color = 1;
 				}
 				break;
 
@@ -201,9 +220,9 @@ int pos, n;
 
 				if (usr->flags & USR_ANSI) {
 					if (usr->flags & USR_BOLD)
-						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 					else
-						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 					(*cpos)++;
 				} else {
 					sprintf(buf, "<%c>", c);
@@ -227,20 +246,32 @@ int pos, n;
 			case KEY_CTRL('D'):
 				if (usr->flags & (USR_ANSI | USR_BOLD))
 					put_StringIO(dev, "\x1b[0m");
-				usr->color = 0;
+				usr->color = c;
 				break;
 
 /* long codes are specified as '<yellow>', '<beep>', etc. */
 
 			case '<':
-				n = long_color_code(dev, usr, str, cpos, lines, max_lines);
+				n = long_color_code(dev, usr, str, cpos, lines, max_lines, dont_auto_color);
+				dont_auto_color = 1;
 				str += n;
 				pos += n;
 				break;
 
 			default:
+				if (do_auto_color) {
+					auto_color(usr, buf);
+					put_StringIO(dev, buf);
+				}
 				write_StringIO(dev, &c, 1);
 				(*cpos)++;
+
+				dont_auto_color = force_auto_color_off;
+				if (do_auto_color) {
+					restore_colorbuf(usr, usr->color, buf);
+					put_StringIO(dev, buf);
+					do_auto_color = 0;
+				}
 		}
 		if (*str)
 			str++;
@@ -410,8 +441,8 @@ int i;
 
 	if dev is NULL, it produces no output
 */
-int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines) {
-int i, c;
+int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines, int dont_auto_color) {
+int i, c, color;
 char colorbuf[20], buf[PRINT_BUF], *p;
 
 	if (usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
@@ -427,13 +458,13 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 			if (!(usr->flags & USR_ANSI))
 				return strlen(colorbuf)-1;
 
-			c = color_table[i].key;
+			c = usr->color = color_table[i].key;
 
-			usr->color = Ansi_Color(usr, c);
+			color = Ansi_Color(usr, c);
 			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm", usr->color);
+				sprintf(buf, "\x1b[1;%dm", color);
 			else
-				sprintf(buf, "\x1b[%dm", usr->color);
+				sprintf(buf, "\x1b[%dm", color);
 			put_StringIO(dev, buf);
 			return strlen(colorbuf)-1;
 		}
@@ -445,11 +476,12 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		if (!(usr->flags & USR_ANSI))
 			return 6;
 
-		usr->color = Ansi_Color(usr, KEY_CTRL('F'));
+		usr->color = KEY_CTRL('F');
+		color = Ansi_Color(usr, KEY_CTRL('F'));
 		if (usr->flags & USR_BOLD)
-			sprintf(buf, "\x1b[1;%dm", usr->color);
+			sprintf(buf, "\x1b[1;%dm", color);
 		else
-			sprintf(buf, "\x1b[%dm", usr->color);
+			sprintf(buf, "\x1b[%dm", color);
 		put_StringIO(dev, buf);
 		return 6;
 	}
@@ -464,9 +496,9 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 
 		if (usr->flags & USR_ANSI) {
 			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 			else
-				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 
 			(*cpos)++;
 		} else {
@@ -488,9 +520,9 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 */
 		if (usr->flags & USR_ANSI) {
 			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 			else
-				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, usr->color);
+				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 
 			(*cpos)++;
 		} else {
@@ -520,17 +552,35 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	if (!cstrnicmp(code, "<default>", 9)) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))
 			put_StringIO(dev, "\x1b[0m");
-		usr->color = 0;
+		usr->color = KEY_CTRL('D');
 		return 8;
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
+		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+			auto_color(usr, colorbuf);
+			put_StringIO(dev, colorbuf);
+		}
 		write_StringIO(dev, "<", 1);
 		(*cpos)++;
+
+		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+			restore_colorbuf(usr, usr->color, colorbuf);
+			put_StringIO(dev, colorbuf);
+		}
 		return 3;
 	}
 	if (!cstrnicmp(code, "<gt>", 4)) {
+		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+			auto_color(usr, colorbuf);
+			put_StringIO(dev, colorbuf);
+		}
 		write_StringIO(dev, ">", 1);
 		(*cpos)++;
+
+		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+			restore_colorbuf(usr, usr->color, colorbuf);
+			put_StringIO(dev, colorbuf);
+		}
 		return 3;
 	}
 
@@ -570,11 +620,11 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		i = color_strlen(buf);
 
 		while(*cpos + i < usr->display->term_width-1)
-			Out_text(dev, usr, buf, cpos, lines, max_lines);	/* recurse */
+			Out_text(dev, usr, buf, cpos, lines, max_lines, 1);	/* recurse */
 
 		if (*cpos + i >= usr->display->term_width-1) {			/* 'partial put' of the remainder */
 			buf[color_index(buf, c - *cpos)] = 0;
-			Out_text(dev, usr, buf, cpos, lines, max_lines);
+			Out_text(dev, usr, buf, cpos, lines, max_lines, 1);
 		}
 		return 6+l;
 	}
@@ -599,8 +649,17 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		}
 		return 7;
 	}
+	if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		auto_color(usr, colorbuf);
+		put_StringIO(dev, colorbuf);
+	}
 	write_StringIO(dev, "<", 1);
 	(*cpos)++;
+
+	if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		restore_colorbuf(usr, usr->color, colorbuf);
+		put_StringIO(dev, colorbuf);
+	}
 	return 0;
 }
 
@@ -811,20 +870,97 @@ int cpos, i;
 	return cpos;
 }
 
+/*
+	automatically change color for symbols
+*/
+void auto_color(User *usr, char *colorbuf) {
+int color;
+
+	if (usr == NULL || colorbuf == NULL)
+		return;
+
+	*colorbuf = 0;
+	if (!(usr->flags & (USR_AUTO_COLOR|USR_ANSI)))
+		return;
+
+	color = color_key_index(usr->color);
+	switch(color) {
+		case BLACK:
+			color = color_table[BLUE].key;
+			break;
+
+		case RED:
+			color = color_table[YELLOW].key;
+			break;
+
+		case GREEN:
+			color = color_table[YELLOW].key;
+			break;
+
+		case YELLOW:
+			color = color_table[WHITE].key;
+			break;
+
+		case BLUE:
+			color = color_table[CYAN].key;
+			break;
+
+		case MAGENTA:
+			color = color_table[YELLOW].key;
+			break;
+
+		case CYAN:
+			color = color_table[WHITE].key;
+			break;
+
+		case WHITE:
+			color = color_table[WHITE].key;
+			break;
+
+		default:
+			color = color_table[WHITE].key;
+	}
+	color = Ansi_Color(usr, color);
+
+	if (usr->flags & USR_BOLD)
+		sprintf(colorbuf, "\x1b[1;%dm", color);
+	else
+		sprintf(colorbuf, "\x1b[0;%dm", color);
+}
+
+/*
+	only a helper function for Out_text() ... use restore_color() instead
+	color should be a CTRL_KEY() value like usr->color
+*/
+void restore_colorbuf(User *usr, int color, char *colorbuf) {
+	if (usr == NULL || colorbuf == NULL)
+		return;
+
+	*colorbuf = 0;
+	if (usr->flags & USR_ANSI) {
+		color = Ansi_Color(usr, color);
+		if (usr->flags & USR_BOLD)
+			sprintf(colorbuf, "\x1b[1;%dm", color);
+		else
+			sprintf(colorbuf, "\x1b[0;%dm", color);
+	}
+}
+
+/*
+	restore a previously saved usr->color
+
+	using restore_colorbuf() here doesn't work, because the auto-coloring
+	would color the escape sequence string
+*/
 void restore_color(User *usr, int color) {
+char buf[2];
+
 	if (usr == NULL)
 		return;
 
-	usr->color = color;
-	if (usr->flags & USR_ANSI) {
-		char color_buf[10];
-
-		if (usr->flags & USR_BOLD)
-			sprintf(color_buf, "\x1b[1;%dm", color);
-		else
-			sprintf(color_buf, "\x1b[0;%dm", color);
-		Put(usr, color_buf);
-	}
+	*buf = color;
+	buf[1] = 0;
+	Put(usr, buf);
 }
 
 int Ansi_Color(User *usr, int c) {
@@ -883,6 +1019,39 @@ int Ansi_Color(User *usr, int c) {
 			c = 0;
 	}
 	return color_table[usr->colors[c]].value;
+}
+
+/*
+	the reverse of Ansi_Color()
+*/
+int Color_Ansi(User *usr, int value) {
+int i;
+
+/*
+	if (value == 5)
+		return KEY_CTRL('F');
+*/
+	if (!value)
+		return KEY_CTRL('N');
+
+	for(i = 0; i < NUM_COLORS; i++) {
+		if (color_table[usr->colors[i]].value == value)
+			return color_table[usr->colors[i]].key;
+	}
+	return KEY_CTRL('G');
+}
+
+/*
+	get the index to the color_table for a given CTRL_KEY() color
+*/
+int color_key_index(int key) {
+int i;
+
+	for(i = 0; i < NUM_COLORS; i++) {
+		if (color_table[i].key == key)
+			return i;
+	}
+	return GREEN;		/* just pick something, green or yellow will do */
 }
 
 void default_colors(User *usr) {

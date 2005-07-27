@@ -41,7 +41,7 @@
 #define KEY_BACKTAB		'\\'
 
 #define WRAP_CHARSET1	" .:;,-+=*&^%!?>}])/"
-#define WRAP_CHARSET2	"<{[($'\"`"
+#define WRAP_CHARSET2	"<{[($'\"`#"
 
 int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);
