@@ -497,8 +497,11 @@ unsigned long num;
 	}
 	print_StringIO(usr->text, "\n<yellow>User statistics\n");
 
-	print_StringIO(usr->text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s\n", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
-	print_StringIO(usr->text, "<green>Oldest user is <white>%s<green>, online for <yellow>%s\n", stats.oldest, print_total_time(stats.oldest_age, date_buf));
+	if (stats.youngest[0])
+		print_StringIO(usr->text, "<green>Youngest user is <white>%s<green>, created on <cyan>%s\n", stats.youngest, print_date(usr, stats.youngest_birth, date_buf));
+
+	if (stats.oldest[0])
+		print_StringIO(usr->text, "<green>Oldest user is <white>%s<green>, online for <yellow>%s\n", stats.oldest, print_total_time(stats.oldest_age, date_buf));
 
 /*
 	determine width of next block of text
@@ -524,19 +527,31 @@ unsigned long num;
 
 	print_StringIO(usr->text, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(stats.logins, date_buf));
 	if (PARAM_HAVE_XMSGS) {
-		print_StringIO(usr->text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf));
-		print_StringIO(usr->text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
+		if (stats.most_xsent[0])
+			print_StringIO(usr->text, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf));
+
+		if (stats.most_xrecv[0])
+			print_StringIO(usr->text, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
 	}
 	if (PARAM_HAVE_EMOTES) {
-		print_StringIO(usr->text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf));
-		print_StringIO(usr->text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf));
+		if (stats.most_esent[0])
+			print_StringIO(usr->text, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf));
+
+		if (stats.most_erecv[0])
+			print_StringIO(usr->text, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf));
 	}
 	if (PARAM_HAVE_FEELINGS) {
-		print_StringIO(usr->text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf));
-		print_StringIO(usr->text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf));
+		if (stats.most_fsent[0])
+			print_StringIO(usr->text, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf));
+
+		if (stats.most_frecv[0])
+			print_StringIO(usr->text, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf));
 	}
-	print_StringIO(usr->text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf));
-	print_StringIO(usr->text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf));
+	if (stats.most_posted[0])
+		print_StringIO(usr->text, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf));
+
+	if (stats.most_read[0])
+		print_StringIO(usr->text, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf));
 
 	if (!is_guest(usr->name)) {
 		put_StringIO(usr->text, "\n<yellow>Your statistics\n");

@@ -1,6 +1,7 @@
 Changes as of July 27th 2005
 - More prompt no longer resets color to green, but restores the color
 - auto-coloring of symbols. It's an option in the Config menu
+- fixed bug in statistics screen (it would display empty names)
 
 Changes as of July 14th 2005
 - config menu option: verbose friend notifications
