@@ -82,6 +82,7 @@ void expand_center(char *, char *, int, int);
 int skip_long_color_code(char *);
 int color_strlen(char *);
 int color_index(char *, int);
+void restore_color(User *, int);
 int Ansi_Color(User *, int);
 void default_colors(User *);
 void wipe_line(User *);

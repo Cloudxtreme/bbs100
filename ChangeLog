@@ -1,3 +1,6 @@
+Changes as of July 27th 2005
+- More prompt no longer resets color to green, but restores the color
+
 Changes as of July 14th 2005
 - config menu option: verbose friend notifications
 - custom eXpress Message header

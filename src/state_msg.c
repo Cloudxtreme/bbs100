@@ -2317,7 +2317,7 @@ int pos, len;
 }
 
 void state_scroll_text(User *usr, char c) {
-int l;
+int l, color;
 
 	if (usr == NULL)
 		return;
@@ -2325,7 +2325,6 @@ int l;
 	Enter(state_scroll_text);
 
 	wipe_line(usr);
-	Put(usr, "<green>");
 
 	switch(c) {
 		case INIT_STATE:
@@ -2435,13 +2434,17 @@ int l;
 			break;
 
 		default:
+			color = usr->color;
 			Put(usr, "<cyan>Press <white><<yellow>space<white>><cyan> for next page, <white><<yellow>b<white>><cyan> for previous page, <white><<yellow>enter<white>><cyan> for next line");
+			restore_color(usr, color);
 			Return;
 	}
-	if (usr->scrollp != NULL)
+	if (usr->scrollp != NULL) {
+		color = usr->color;
 		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
 			100 * usr->read_lines / usr->total_lines);
-	else {
+		restore_color(usr, color);
+	} else {
 /*
 	Don't destroy in order to be able to reply to a message
 

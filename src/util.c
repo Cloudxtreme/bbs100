@@ -411,7 +411,7 @@ int i;
 	it less slow
 
 	cpos is the cursor position, which is used in <hline> and <center> tags
-	for <hline>, the function recurses with Out()
+	for <hline>, the function recurses with Out_text()
 
 	if dev is NULL, it produces no output
 */
@@ -814,6 +814,22 @@ int cpos, i;
 		}
 	}
 	return cpos;
+}
+
+void restore_color(User *usr, int color) {
+	if (usr == NULL)
+		return;
+
+	usr->color = color;
+	if (usr->flags & USR_ANSI) {
+		char color_buf[10];
+
+		if (usr->flags & USR_BOLD)
+			sprintf(color_buf, "\x1b[1;%dm", color);
+		else
+			sprintf(color_buf, "\x1b[0;%dm", color);
+		Put(usr, color_buf);
+	}
 }
 
 int Ansi_Color(User *usr, int c) {
