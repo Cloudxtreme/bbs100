@@ -87,7 +87,7 @@ int Out(User *usr, char *str) {
 */
 int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines, int force_auto_color_off) {
 char buf[20], c;
-int pos, n, do_auto_color = 0, dont_auto_color, color;
+int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 	if (usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
@@ -99,6 +99,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 
 	pos = 0;
 	while(*str) {
+		is_symbol = 0;
 		pos++;
 		c = *str;
 		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
@@ -111,6 +112,9 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 	we also like auto-coloring symbols
 */
 		if (cstrchr(WRAP_CHARSET1, c) != NULL) {
+			if (c != ' ')
+				is_symbol = 1;
+
 			if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
 				do_auto_color = 1;
 
@@ -121,7 +125,6 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 						put_StringIO(dev, buf);
 					}
 					write_StringIO(dev, str, 1);
-					dont_auto_color = force_auto_color_off;
 
 					if (do_auto_color) {
 						restore_colorbuf(usr, usr->color, buf);
@@ -149,6 +152,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 	mind that the < character is also used for long color codes
 */
 			if (c == '@' || (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL)) {
+				is_symbol = 1;
 				if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
 					do_auto_color = 1;
 
@@ -204,7 +208,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 					else
 						sprintf(buf, "\x1b[%dm", color);
 					put_StringIO(dev, buf);
-					dont_auto_color = 1;
+					dont_auto_color = AUTO_COLOR_FORCED;
 				}
 				break;
 
@@ -253,7 +257,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 
 			case '<':
 				n = long_color_code(dev, usr, str, cpos, lines, max_lines, dont_auto_color);
-				dont_auto_color = 1;
+				dont_auto_color = AUTO_COLOR_FORCED;
 				str += n;
 				pos += n;
 				break;
@@ -266,7 +270,9 @@ int pos, n, do_auto_color = 0, dont_auto_color, color;
 				write_StringIO(dev, &c, 1);
 				(*cpos)++;
 
-				dont_auto_color = force_auto_color_off;
+				if (dont_auto_color != AUTO_COLOR_FORCED || !is_symbol)
+					dont_auto_color = force_auto_color_off;
+
 				if (do_auto_color) {
 					restore_colorbuf(usr, usr->color, buf);
 					put_StringIO(dev, buf);
@@ -620,11 +626,11 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		i = color_strlen(buf);
 
 		while(*cpos + i < usr->display->term_width-1)
-			Out_text(dev, usr, buf, cpos, lines, max_lines, 1);	/* recurse */
+			Out_text(dev, usr, buf, cpos, lines, max_lines, AUTO_COLOR_FORCED);	/* recurse */
 
 		if (*cpos + i >= usr->display->term_width-1) {			/* 'partial put' of the remainder */
 			buf[color_index(buf, c - *cpos)] = 0;
-			Out_text(dev, usr, buf, cpos, lines, max_lines, 1);
+			Out_text(dev, usr, buf, cpos, lines, max_lines, AUTO_COLOR_FORCED);
 		}
 		return 6+l;
 	}

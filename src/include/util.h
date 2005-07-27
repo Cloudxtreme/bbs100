@@ -65,6 +65,8 @@
 #define HOTKEY			8
 #define NUM_COLORS		9
 
+#define AUTO_COLOR_FORCED	1		/* there's a color code in front of the symbol, forcing the color */
+
 typedef struct {
 	char *name;
 	int value;
