@@ -228,6 +228,7 @@ int i, idx;
 				Put(usr, "<red>The credits file is missing\n");		/* or out of memory! */
 				break;
 			}
+			Put(usr, "<green>");
 			read_text(usr);
 			Return;
 			
