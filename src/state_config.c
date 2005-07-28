@@ -217,7 +217,7 @@ void state_config_menu(User *usr, char c) {
 			read_text(usr);
 			Return;
 	}
-	Print(usr, "<yellow>\n[Config] %c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] %c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -255,7 +255,7 @@ void state_config_address(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "\n\nConfig menu\n");
+			Put(usr, "Config menu\n");
 			RET(usr);
 			Return;
 
@@ -289,7 +289,7 @@ void state_config_address(User *usr, char c) {
 			CALL(usr, STATE_CHANGE_WWW);
 			Return;
 	}
-	Print(usr, "<yellow>\n[Config] Address%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Address%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -620,7 +620,7 @@ void state_quicklist_prompt(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Put(usr, "Quicklist\n\n");
+			Put(usr, "<white>Quicklist\n\n");
 			print_quicklist(usr);
 			break;
 
@@ -647,11 +647,11 @@ void state_quicklist_prompt(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "\n\n<white>Config menu\n");
+			Put(usr, "Config menu\n");
 			RET(usr);
 			Return;
 	}
-	Put(usr, "\n<green>Enter number: <white>");
+	Put(usr, "\n<green>Enter number: <yellow>");
 	Return;
 }
 
@@ -746,6 +746,7 @@ void state_config_terminal(User *usr, char c) {
 					color_table[usr->colors[BACKGROUND]].key, color_table[usr->colors[BACKGROUND]].name
 				);
 			}
+			Put(usr, "<white>");
 			break;
 
 		case ' ':
@@ -753,7 +754,7 @@ void state_config_terminal(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "\n\n<white>Config menu\n");
+			Put(usr, "Config menu\n");
 			RET(usr);
 			Return;
 
@@ -898,7 +899,7 @@ void state_config_terminal(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 	}
-	Print(usr, "<yellow>\n[Config] Terminal%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Terminal%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -1202,13 +1203,13 @@ void state_config_who(User *usr, char c) {
 			who_list(usr, WHO_LIST_SHORT | WHO_LIST_ROOM);
 			Return;
 	}
-	Print(usr, "<yellow>\n[Config] Who%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Who%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
 void state_config_who_sysop(User *usr, char c) {
 	POP(usr);
-	Print(usr, "<yellow>\n[Config] Who%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Who%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 }
 
 
@@ -1286,7 +1287,7 @@ void state_config_options(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "\n\n<white>Config menu\n");
+			Put(usr, "Config menu\n");
 			RET(usr);
 			Return;
 
@@ -1371,7 +1372,7 @@ void state_config_options(User *usr, char c) {
 		case '0':
 			CONFIG_OPTION(USR_HACKERZ, "Hackerz mode");
 	}
-	Print(usr, "<yellow>\n[Config] Options%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Options%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -1414,7 +1415,7 @@ char buf[MAX_LINE], *p;
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "Exit\n");
+			Put(usr, "Config menu\n");
 			RET(usr);
 			Return;
 
@@ -1431,7 +1432,7 @@ char buf[MAX_LINE], *p;
 			select_tz_continent(usr);
 			Return;
 	}
-	Print(usr, "<yellow>\n[Config] Time Zone%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Time Zone%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 

@@ -573,7 +573,7 @@ int i, idx;
 
 		case 't':
 		case 'T':
-			Put(usr, "Time\n");
+			Put(usr, "<white>Time\n");
 			print_calendar(usr);
 			break;
 

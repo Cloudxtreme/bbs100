@@ -77,7 +77,7 @@ void state_room_config_menu(User *usr, char c) {
 					for(sl = usr->curr_room->room_aides; sl != NULL; sl = sl->next) {
 						Print(usr, "<cyan>%s", sl->str);
 						if (sl->next != NULL)
-							Put(usr, "<white>, ");
+							Put(usr, ", ");
 					}
 					Put(usr, "<magenta>\n");
 				}
@@ -98,7 +98,7 @@ void state_room_config_menu(User *usr, char c) {
 						Print(usr,
 						"<hotkey>Maximum amount of messages     <white>%d<magenta>\n", usr->curr_room->max_msgs);
 
-					Put(usr,
+					Put(usr, "\n"
 						"<hotkey>Reset creation date            (all users unjoin)\n"
 						"<white>Ctrl-<hotkey>R<magenta>emove all posts          <white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
@@ -402,9 +402,9 @@ void state_room_config_menu(User *usr, char c) {
 			break;
 	}
 	if (usr->flags & USR_ROOMNUMBERS)
-		Print(usr, "<yellow>\n[%u %s] Room Config%c ", usr->curr_room->number, usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+		Print(usr, "<yellow>\n[%u %s] Room Config%c <white>", usr->curr_room->number, usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	else
-		Print(usr, "<yellow>\n[%s] Room Config%c ", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+		Print(usr, "<yellow>\n[%s] Room Config%c <white>", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 

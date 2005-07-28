@@ -275,7 +275,7 @@ void state_sysop_menu(User *usr, char c) {
 			}
 			break;
 	}
-	Print(usr, "<yellow>\n[%s] # ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] # <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -446,7 +446,7 @@ void state_categories_menu(User *usr, char c) {
 			CALL(usr, STATE_REMOVE_CATEGORY);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Categories# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Categories# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -905,7 +905,7 @@ char buf[MAX_LINE];
 			RET(usr);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Wrapper# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Wrappers# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -1597,7 +1597,7 @@ void state_parameters_menu(User *usr, char c) {
 			}
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Parameters# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Parameters# <white>", PARAM_NAME_SYSOP);
 }
 
 
@@ -1754,7 +1754,7 @@ void state_system_config_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_DEF_TIMEZONE);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Sysconf# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Sysconf# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2029,7 +2029,7 @@ void state_config_files_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_SYMTAB_FILE);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Files# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Files# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2315,7 +2315,7 @@ void state_reload_files_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Reload# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Reload# <white>", PARAM_NAME_SYSOP);
 }
 
 
@@ -2476,7 +2476,7 @@ void state_maximums_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_HELPER_AGE);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Maximums# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Maximums# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2585,6 +2585,7 @@ void state_strings_menu(User *usr, char c) {
 				"<magenta>Name Room <hotkey>Aide      <white>%s<magenta>\n"
 				"<magenta>Name <hotkey>Helper         <white>%s<magenta>\n"
 				"<magenta>Name <hotkey>Guest          <white>%s<magenta>\n",
+
 				PARAM_NAME_SYSOP,
 				PARAM_NAME_ROOMAIDE,
 				PARAM_NAME_HELPER,
@@ -2593,24 +2594,28 @@ void state_strings_menu(User *usr, char c) {
 			Print(usr, "\n"
 				"<magenta>Notify logi<hotkey>n        %s\n"
 				"<magenta>Notify log<hotkey>out       %s\n",
+
 				PARAM_NOTIFY_LOGIN,
 				PARAM_NOTIFY_LOGOUT
 			);
 			Print(usr,
 				"<magenta>Notify link<hotkey>dead     %s\n"
 				"<magenta>Notify <hotkey>idle         %s\n",
+
 				PARAM_NOTIFY_LINKDEAD,
 				PARAM_NOTIFY_IDLE
 			);
 			Print(usr,
 				"<magenta>Notify <hotkey>locked       %s\n"
 				"<magenta>Notify <hotkey>unlocked     %s\n",
+
 				PARAM_NOTIFY_LOCKED,
 				PARAM_NOTIFY_UNLOCKED
 			);
 			Print(usr,
 				"<magenta>Notify <hotkey>enter chat   %s\n"
 				"<magenta>Notify lea<hotkey>ve chat   %s\n",
+
 				PARAM_NOTIFY_ENTER_CHAT,
 				PARAM_NOTIFY_LEAVE_CHAT
 			);
@@ -2695,7 +2700,7 @@ void state_strings_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_NOTIFY_LEAVE_CHAT);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Strings# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Strings# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2955,7 +2960,7 @@ void state_features_menu(User *usr, char c) {
 		case 'D':
 			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
 	}
-	Print(usr, "<yellow>\n[%s] Features# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Features# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -3063,7 +3068,7 @@ char *new_val;
 			CALL(usr, STATE_PARAM_CRASHDIR);
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Logrotate# ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Logrotate# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
