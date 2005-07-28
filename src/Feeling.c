@@ -37,7 +37,6 @@
 
 
 KVPair *feelings = NULL;
-StringIO *feelings_screen = NULL;
 
 
 /*
@@ -114,17 +113,17 @@ KVPair *kv1, *kv2;
 
 
 /* make screen */
-void make_feelings_screen(int width) {
+void make_feelings_screen(StringIO *screen, int width) {
 KVPair *f, *f_cols[16];
 int len, max_len = 0, i, j, rows, cols, buflen, total;
 char buf[PRINT_BUF], fmt[128];
 
+	if (screen == NULL)
+		return;
+
 	Enter(make_feelings_screen);
 
-	if (feelings_screen == NULL && (feelings_screen = new_StringIO()) == NULL) {
-		Return;
-	}
-	free_StringIO(feelings_screen);
+	free_StringIO(screen);
 
 	if (width < 10)
 		width = 10;
@@ -182,7 +181,7 @@ char buf[PRINT_BUF], fmt[128];
 		buf[buflen++] = '\n';
 		buf[buflen] = 0;
 
-		put_StringIO(feelings_screen, buf);
+		put_StringIO(screen, buf);
 	}
 	Return;
 }

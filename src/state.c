@@ -1966,13 +1966,14 @@ int r;
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
-		make_feelings_screen(usr->display->term_width);
-		if (feelings_screen == NULL || feelings_screen->buf == NULL || !feelings_screen->len) {
+		make_feelings_screen(usr->text, usr->display->term_width);
+		if (usr->text == NULL || usr->text->buf == NULL || !usr->text->len) {
 			Perror(usr, "The feelings are temporarily unavailable");
 			RET(usr);
 			Return;
 		}
-		display_text(usr, feelings_screen);
+		display_text(usr, usr->text);
+		free_StringIO(usr->text);
 		Put(usr, "\n<green>Feeling: <yellow>");
 	}
 	r = edit_number(usr, c);

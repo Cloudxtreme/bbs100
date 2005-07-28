@@ -295,7 +295,10 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 			case '<':
 				n = long_color_code(dev, usr, str, cpos, lines, max_lines, dont_auto_color);
-				dont_auto_color = force_auto_color_off;
+				if (n <= 0)
+					dont_auto_color = force_auto_color_off;
+				else
+					dont_auto_color = AUTO_COLOR_FORCED;
 				str += n;
 				pos += n;
 				break;

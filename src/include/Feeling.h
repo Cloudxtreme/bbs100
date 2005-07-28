@@ -27,12 +27,11 @@
 #include "StringIO.h"
 
 extern KVPair *feelings;
-extern StringIO *feelings_screen;
 
 KVPair *load_Feeling(char *);
 int init_Feelings(void);
 int feeling_sort_func(void *, void *);
-void make_feelings_screen(int);
+void make_feelings_screen(StringIO *, int);
 
 #endif	/* FEELING_H_WJ100 */
 
