@@ -79,7 +79,7 @@
 #define USR_UPPERCASE_HOTKEYS	0x80000		/* hotkeys always displayed in uppercase */
 #define USR_DENY_MULTI			0x100000	/* don't receive multi X's */
 #define USR_FRIEND_NOTIFY		0x200000	/* display many friend notifications */
-#define USR_AUTO_COLOR			0x400000	/* do automatic coloring of symbols */
+#define USR_DONT_AUTO_COLOR		0x400000	/* don't do automatic coloring of symbols */
 #define USR_HOTKEY_BRACKETS		0x800000	/* always display brackets around hotkeys */
 #define USR_DONT_ASK_REASON		0x1000000	/* don't ask for an Away reason, just go */
 #define USR_ALL					0x1ffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */

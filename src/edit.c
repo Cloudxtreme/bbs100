@@ -707,7 +707,7 @@ int edit_password(User *usr, char c) {
 	it's not pretty, but the result looks better this way
 */
 				flags = usr->flags;
-				usr->flags &= ~USR_AUTO_COLOR;
+				usr->flags |= USR_DONT_AUTO_COLOR;
 				Put(usr, "*");
 				usr->flags = flags;
 			}

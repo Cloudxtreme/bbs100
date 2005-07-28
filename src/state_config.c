@@ -1262,7 +1262,7 @@ void state_config_options(User *usr, char c) {
 					"Do automatic <hotkey>coloring of symbols     <white>%s<magenta>\n",
 
 					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No",
-					(usr->flags & USR_AUTO_COLOR) ? "Yes" : "No"
+					(usr->flags & USR_DONT_AUTO_COLOR) ? "No" : "Yes"
 				);
 
 			Print(usr, "\n"
@@ -1354,7 +1354,7 @@ void state_config_options(User *usr, char c) {
 			if (!(usr->flags & USR_ANSI))
 				break;
 
-			CONFIG_OPTION(USR_AUTO_COLOR, "Automatic coloring");
+			CONFIG_OPTION(USR_DONT_AUTO_COLOR, "Automatic coloring");
 
 		case 'a':
 		case 'A':

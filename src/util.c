@@ -115,7 +115,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 			if (c != ' ')
 				is_symbol = 1;
 
-			if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
+			if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
 				do_auto_color = 1;
 
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
@@ -153,7 +153,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 */
 			if (c == '@' || (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL)) {
 				is_symbol = 1;
-				if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color)
+				if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
 					do_auto_color = 1;
 
 				if (*cpos + word_len(str+1) >= usr->display->term_width) {
@@ -578,28 +578,28 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		return 8;
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
-		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 			auto_color(usr, colorbuf);
 			put_StringIO(dev, colorbuf);
 		}
 		write_StringIO(dev, "<", 1);
 		(*cpos)++;
 
-		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 			restore_colorbuf(usr, usr->color, colorbuf);
 			put_StringIO(dev, colorbuf);
 		}
 		return 3;
 	}
 	if (!cstrnicmp(code, "<gt>", 4)) {
-		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 			auto_color(usr, colorbuf);
 			put_StringIO(dev, colorbuf);
 		}
 		write_StringIO(dev, ">", 1);
 		(*cpos)++;
 
-		if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 			restore_colorbuf(usr, usr->color, colorbuf);
 			put_StringIO(dev, colorbuf);
 		}
@@ -671,14 +671,14 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		}
 		return 7;
 	}
-	if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+	if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 		auto_color(usr, colorbuf);
 		put_StringIO(dev, colorbuf);
 	}
 	write_StringIO(dev, "<", 1);
 	(*cpos)++;
 
-	if (((usr->flags & (USR_AUTO_COLOR|USR_ANSI)) == (USR_AUTO_COLOR|USR_ANSI)) && !dont_auto_color) {
+	if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
 		restore_colorbuf(usr, usr->color, colorbuf);
 		put_StringIO(dev, colorbuf);
 	}
@@ -902,7 +902,7 @@ int color;
 		return;
 
 	*colorbuf = 0;
-	if (!(usr->flags & (USR_AUTO_COLOR|USR_ANSI)))
+	if (usr->flags & USR_DONT_AUTO_COLOR)
 		return;
 
 	color = color_key_index(usr->color);
