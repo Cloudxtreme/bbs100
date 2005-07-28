@@ -40,6 +40,9 @@
 #define KEY_TAB			'\t'
 #define KEY_BACKTAB		'\\'
 
+/* tabsize must be a power of 2, preferred values are 4 and 8 */
+#define TABSIZE			4
+
 #define WRAP_CHARSET1	" .:;,-+=*&^%!?>}])/"
 #define WRAP_CHARSET2	"<{[($'\"`#"
 
@@ -57,6 +60,7 @@ void edit_color(User *, char);
 void edit_long_color(User *);
 int edit_tab_color(User *, int (*)(User *, char));
 int edit_backtab_color(User *, int (*)(User *, char));
+void edit_tab_spaces(User *, int (*)(User *, char));
 void erase_word(User *);
 void erase_line(User *, char *);
 void erase_name(User *);

@@ -7,6 +7,7 @@ Changes as of July 28th 2005
 - categories listed in columns in Sysop and Room Config menu
 - default is do auto-coloring
 - colored strings all changed to support 'Classic' and 'Modern' coloring
+- tabs in messages are possible; they expand to 4 spaces
 
 Changes as of July 27th 2005
 - More prompt no longer resets color to green, but restores the color

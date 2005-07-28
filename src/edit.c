@@ -778,7 +778,7 @@ int edit_line(User *usr, char c) {
 			if (edit_tab_color(usr, edit_line))
 				break;
 
-/*			edit_tab_spaces(usr);	*/
+			edit_tab_spaces(usr, edit_line);
 			break;
 
 		case '>':
@@ -979,7 +979,7 @@ int color;
 			if (edit_tab_color(usr, edit_x))
 				break;
 
-/*			edit_tab_spaces(usr, edit_x);	*/
+			edit_tab_spaces(usr, edit_x);
 			break;
 
 		case '>':
@@ -1086,7 +1086,7 @@ int color;
 			if (edit_tab_color(usr, edit_msg))
 				break;
 
-/*			edit_tab_spaces(usr, edit_msg);	*/
+			edit_tab_spaces(usr, edit_msg);
 			break;
 
 		case '>':
@@ -1436,6 +1436,29 @@ char color[16];
 		}
 	}
 	Return 0;
+}
+
+/*
+	insert spaces for tabs
+*/
+void edit_tab_spaces(User *usr, int (*edit_func)(User *, char)) {
+int n, i;
+
+	if (usr == NULL || edit_func == NULL)
+		return;
+
+	Enter(edit_tab_spaces);
+
+	n = usr->edit_pos + 1;
+	for(i = 0; i < TABSIZE; i++) {
+		edit_func(usr, ' ');
+
+		if (!(n & (TABSIZE-1)))
+			break;
+
+		n++;
+	}
+	Return;
 }
 
 /*
