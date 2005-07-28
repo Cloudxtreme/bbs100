@@ -770,6 +770,7 @@ int edit_line(User *usr, char c) {
 			Put(usr, "<yellow>");
 			break;
 
+		case '^':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			break;
@@ -957,6 +958,7 @@ int color;
 			Put(usr, "<yellow>");
 			break;
 
+		case '^':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */
@@ -1071,6 +1073,7 @@ int color;
 			erase_word(usr);
 			break;
 
+		case '^':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */
@@ -1265,11 +1268,16 @@ char color = 0;
 		case KEY_CTRL('W'):
 			color = (char)color_by_name("white");
 			break;
+
+		default:
+			if (c >= ' ' && c <= '~')
+				color = c;
 	}
 	if (color && usr->edit_pos < MAX_LINE-1) {
-		if (usr->edit_pos && (usr->edit_buf[usr->edit_pos-1] < ' '
-			|| usr->edit_buf[usr->edit_pos-1] > '~'))
-			usr->edit_pos--;			/* overwrite multiple colors */
+/* overwrite multiple colors */
+		if (usr->edit_pos > 0 && (color < ' ' || color > '~')
+			&& (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
+			usr->edit_pos--;
 
 		usr->edit_buf[usr->edit_pos++] = color;
 		usr->edit_buf[usr->edit_pos] = 0;
@@ -1295,6 +1303,11 @@ char colorbuf[20];
 
 		if (!cstrnicmp(colorbuf, usr->edit_buf + usr->edit_pos - l, l)) {
 			usr->edit_pos -= l;
+
+/* overwrite multiple colors */
+			if (usr->edit_pos > 0 && (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
+				usr->edit_pos--;
+
 			usr->edit_buf[usr->edit_pos++] = color_table[i].key;
 			usr->edit_buf[usr->edit_pos] = 0;
 
@@ -1449,7 +1462,8 @@ int n, i;
 
 	Enter(edit_tab_spaces);
 
-	n = usr->edit_pos + 1;
+	n = color_strlen(usr->edit_buf) + 1;
+
 	for(i = 0; i < TABSIZE; i++) {
 		edit_func(usr, ' ');
 

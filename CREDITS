@@ -226,3 +226,7 @@ Credits for bug fixes et al after public release
   message
 
 - WHYz suggested asking for a reason when going away, like on MalteBBS
+
+- Mz Boobala (among others) suggested using the caret ^ for color editing
+  and not just Ctrl-V. Although it tends to mess up ASCII art, I eventually
+  gave in
