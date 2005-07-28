@@ -698,9 +698,18 @@ int edit_password(User *usr, char c) {
 				break;
 
 			if (usr->edit_pos < MAX_LINE-1) {
+				int flags;
+
 				usr->edit_buf[usr->edit_pos++] = c;
 				usr->edit_buf[usr->edit_pos] = 0;
+/*
+	the juggling with the flags is to disable the auto-coloring habit here
+	it's not pretty, but the result looks better this way
+*/
+				flags = usr->flags;
+				usr->flags &= ~USR_AUTO_COLOR;
 				Put(usr, "*");
+				usr->flags = flags;
 			}
 	}
 	return 0;

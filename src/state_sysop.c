@@ -1122,7 +1122,7 @@ char total_buf[MAX_LINE];
 
 	if (c == INIT_STATE)
 		Print(usr, "\n"
-"<yellow>*** <white>WARNING<yellow> ***\n"
+"<yellow>*** <white>WARNING <yellow>***\n"
 "\n"
 "<red>This is serious. Enter the reboot password and the system will reboot\n"
 "in %s (including one minute grace period)\n"
@@ -1231,7 +1231,7 @@ char total_buf[MAX_LINE];
 
 	if (c == INIT_STATE)
 		Print(usr, "\n"
-"<yellow>*** <white>WARNING<yellow> ***\n"
+"<yellow>*** <white>WARNING <yellow>***\n"
 "\n"
 "<red>This is serious. Enter the shutdown password and the system will shut\n"
 "down in %s (including one minute grace period)\n"

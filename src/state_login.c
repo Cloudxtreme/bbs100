@@ -420,10 +420,9 @@ File *f;
 }
 
 void state_go_online(User *usr, char c) {
-int num_users = 0, num_friends = 0, i, new_mail;
 Joined *j;
-User *u;
 char num_buf[25];
+int i, new_mail;
 
 	if (usr == NULL)
 		return;
@@ -513,76 +512,7 @@ char num_buf[25];
 		Free(usr->tmpbuf[i]);
 		usr->tmpbuf[i] = NULL;
 	}
-	if (!PARAM_HAVE_QUESTIONS)
-		usr->flags &= ~USR_HELPING_HAND;
-
-	if (usr->flags & USR_HELPING_HAND) {
-		if (get_su_passwd(usr->name) == NULL && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
-			usr->flags &= ~USR_HELPING_HAND;
-		else
-			Put(usr, "<magenta>You are available to help others\n");
-	}
-/* count number of users online */
-	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u == usr)
-			continue;
-
-		if (u->name[0])
-			num_users++;
-
-		if (in_StringList(usr->friends, u->name) != NULL)
-			num_friends++;
-	}
-	if (!num_users)
-		Put(usr, "<green>You are the one and only user online right now...\n");
-	else {
-		if (num_users == 1) {
-			if (num_friends == 1)
-				Put(usr, "<green>There is one friend online\n");
-			else
-				Put(usr, "<green>There is one other user online\n");
-		} else {
-			if (num_friends > 0) {
-				num_users -= num_friends;
-				Print(usr, "<green>There are <yellow>%d<green> friend%s and <yellow>%d<green> other user%s online\n",
-					num_friends, (num_friends == 1) ? "" : "s",
-					num_users, (num_users == 1) ? "" : "s");
-			} else
-				Print(usr, "<green>There are <yellow>%d<green> other users online\n", num_users);
-		}
-	}
-	if (usr->flags & USR_X_DISABLED)
-		Put(usr, "<magenta>Message reception is turned off\n");
-
-	if (usr->reminder != NULL && usr->reminder[0])
-		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
-
-/* bbs birthday */
-	if (usr->logins > 1) {
-		struct tm *tm;
-		int bday_day, bday_mon, bday_year;
-		char num_buf[25];
-
-		tm = user_time(usr, usr->birth);
-		bday_day = tm->tm_mday;
-		bday_mon = tm->tm_mon;
-		bday_year = tm->tm_year;
-
-		tm = user_time(usr, (time_t)0UL);
-
-		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
-			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
-	}
-
-/* if booting/shutting down, inform the user */
-	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)
-		Put(usr, "\n<white>NOTE<yellow>: <red>The system is shutting down\n");
-	else
-		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
-			Put(usr, "\n<white>NOTE<yellow>: <red>The system is rebooting\n");
-
-	if (nologin_active)
-		Put(usr, "\n<white>NOTE<yellow>: <red>nologin is active\n");
+	new_mail = print_user_status(usr);
 
 	MOV(usr, STATE_ROOM_PROMPT);
 
@@ -591,14 +521,6 @@ char num_buf[25];
 	of whether you have new mail or not. New Mail> will be read right
 	after having read the Lobby> anyway
 */
-	new_mail = 0;
-	if (usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
-		&& newMsgs(usr->mail, j->last_read) >= 0) {
-		if (PARAM_HAVE_MAILROOM) {
-			new_mail = 1;
-			Put(usr, "\n<beep><cyan>You have new mail\n");
-		}
-	}
 	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) >= 0)
 		goto_room(usr, Lobby_room);
 	else {
@@ -820,6 +742,97 @@ int r;
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;
+}
+
+int print_user_status(User *usr) {
+int num_users = 0, num_friends = 0, new_mail;
+Joined *j;
+User *u;
+
+	if (!PARAM_HAVE_QUESTIONS)
+		usr->flags &= ~USR_HELPING_HAND;
+
+	if (usr->flags & USR_HELPING_HAND) {
+		if (get_su_passwd(usr->name) == NULL && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
+			usr->flags &= ~USR_HELPING_HAND;
+		else
+			Put(usr, "<magenta>You are available to help others\n");
+	}
+/* count number of users online */
+	for(u = AllUsers; u != NULL; u = u->next) {
+		if (u == usr)
+			continue;
+
+		if (u->name[0]) {
+			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
+				continue;
+
+			num_users++;
+		}
+		if (in_StringList(usr->friends, u->name) != NULL)
+			num_friends++;
+	}
+	if (!num_users)
+		Put(usr, "<green>You are the one and only user online right now...\n");
+	else {
+		if (num_users == 1) {
+			if (num_friends == 1)
+				Put(usr, "<green>There is one friend online\n");
+			else
+				Put(usr, "<green>There is one other user online\n");
+		} else {
+			if (num_friends > 0) {
+				num_users -= num_friends;
+				Print(usr, "<green>There are <yellow>%d<green> friend%s and <yellow>%d<green> other user%s online\n",
+					num_friends, (num_friends == 1) ? "" : "s",
+					num_users, (num_users == 1) ? "" : "s");
+			} else
+				Print(usr, "<green>There are <yellow>%d<green> other users online\n", num_users);
+		}
+	}
+	if (usr->flags & USR_X_DISABLED)
+		Put(usr, "<magenta>Message reception is turned off\n");
+
+	if (usr->runtime_flags & RTF_HOLD)
+		Put(usr, "<magenta>You have put messages on hold\n");
+
+	if (usr->reminder != NULL && usr->reminder[0])
+		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
+
+/* bbs birthday */
+	if (usr->logins > 1) {
+		struct tm *tm;
+		int bday_day, bday_mon, bday_year;
+		char num_buf[25];
+
+		tm = user_time(usr, usr->birth);
+		bday_day = tm->tm_mday;
+		bday_mon = tm->tm_mon;
+		bday_year = tm->tm_year;
+
+		tm = user_time(usr, (time_t)0UL);
+
+		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
+			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
+	}
+
+/* if booting/shutting down, inform the user */
+	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)
+		Put(usr, "\n<white>NOTE<yellow>: <red>The system is shutting down\n");
+	else
+		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
+			Put(usr, "\n<white>NOTE<yellow>: <red>The system is rebooting\n");
+
+	if (nologin_active)
+		Put(usr, "\n<white>NOTE<yellow>: <red>nologin is active\n");
+
+	new_mail = 0;
+	if (PARAM_HAVE_MAILROOM && usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
+		&& newMsgs(usr->mail, j->last_read) >= 0) {
+		new_mail = 1;
+		Put(usr, "\n<beep><cyan>You have new mail\n");
+	}
+	return new_mail;
 }
 
 /* EOB */

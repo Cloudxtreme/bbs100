@@ -3135,6 +3135,8 @@ char many_buf[MAX_LINE*3];
 }
 
 void state_lock_password(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -3160,7 +3162,20 @@ void state_lock_password(User *usr, char c) {
 		notify_locked(usr);
 		Return;
 	}
-	if (edit_password(usr, c) == EDIT_RETURN) {
+	r = edit_password(usr, c);
+
+	if (r == EDIT_BREAK) {
+		usr->edit_buf[0] = 0;
+		usr->edit_pos = 0;
+
+		Put(usr, "\n<red>Enter password to unlock: ");
+
+		if (usr->idle_timer != NULL)
+			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
+
+		Return;
+	}
+	if (r == EDIT_RETURN) {
 		char *pwd;
 
 /* sysops unlock with their sysop password */
@@ -3173,17 +3188,21 @@ void state_lock_password(User *usr, char c) {
 			pwd = usr->passwd;
 
 		if (!verify_phrase(usr->edit_buf, pwd)) {
-			Put(usr, "<yellow>Unlocked\n");
+			Put(usr, "<yellow>Unlocked\n\n");
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
 
 			if (usr->idle_timer != NULL)
 				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 
+			print_user_status(usr);
+
 			notify_unlocked(usr);
 			RET(usr);
 		} else
-			Put(usr, "Wrong password\n\nEnter password to unlock: ");
+			Put(usr, "Wrong password\n"
+				"\n"
+				"Enter password to unlock: ");
 
 		usr->edit_pos = 0;
 		usr->edit_buf[0] = 0;
