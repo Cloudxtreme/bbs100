@@ -113,7 +113,7 @@ void state_sysop_menu(User *usr, char c) {
 			if (!nologin_active)
 				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
 			else
-				Put(usr, "Deactivate <hotkey>nologin                <hotkey>Help\n");
+				Put(usr, "Deactivate <hotkey>nologin <white>[!]<magenta>            <hotkey>Help\n");
 			break;
 
 		case ' ':
@@ -261,17 +261,13 @@ void state_sysop_menu(User *usr, char c) {
 		case 'n':
 		case 'N':
 			if (nologin_active) {
-				Put(usr, "Deactivate nologin\n"
-					"Deactivated\n");
-
+				Put(usr, "Deactivate nologin\n");
 				nologin_active = 0;
 				log_msg("SYSOP %s deactivated nologin", usr->name);
 				CURRENT_STATE(usr);
 				Return;
 			} else {
-				Put(usr, "Activate nologin\n"
-					"Activated\n");
-
+				Put(usr, "Activate nologin\n");
 				nologin_active = 1;
 				log_msg("SYSOP %s activated nologin", usr->name);
 				CURRENT_STATE(usr);
