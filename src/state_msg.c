@@ -271,12 +271,14 @@ void enter_the_message(User *usr) {
 		usr->new_message->flags &= ~(MSG_FROM_SYSOP | MSG_FROM_ROOMAIDE);
 
 	if (usr->runtime_flags & RTF_UPLOAD)
-		Print(usr, "<green>Upload %smessage, press <white><<yellow>Ctrl-C<white>><green> to end\n",
+		Print(usr, "<green>Upload %smessage, press <white><<yellow>Ctrl-C<white>><green> to end\n\n",
 			(usr->curr_room == usr->mail) ? "mail " : "");
 	else
-		Print(usr, "<green>Enter %smessage, press <white><<yellow>return<white>><green> twice or press <white><<yellow>Ctrl-C<white>><green> to end\n",
+		Print(usr, "<green>Enter %smessage, press <white><<yellow>return<white>><green> twice or press <white><<yellow>Ctrl-C<white>><green> to end\n\n",
 			(usr->curr_room == usr->mail) ? "mail " : "");
-	print_new_msg_header(usr);
+
+	msg_header(usr, usr->new_message);
+	display_text(usr, usr->text);			/* show the message header */
 	edit_text(usr, save_message, abort_message);
 	Return;
 }
@@ -772,7 +774,7 @@ unsigned long msg_number;
 		Return;
 	}
 	free_StringIO(usr->text);
-	msg_header(usr);
+	msg_header(usr, usr->message);
 
 	if (usr->message->deleted != (time_t)0UL) {
 		put_StringIO(usr->text, "\n");
@@ -1875,58 +1877,6 @@ void state_press_any_key(User *usr, char c) {
 	Return;
 }
 
-
-void print_new_msg_header(User *usr) {
-char from[MAX_LINE], date_buf[MAX_LINE];
-
-	if (usr == NULL)
-		return;
-
-	Enter(print_new_msg_header);
-
-	Put(usr, "\n");
-	if (usr->new_message == NULL) {
-		Perror(usr, "I have a problem with this");
-		Return;
-	}
-/* print message header */
-
-	if (usr->new_message->anon[0])
-		sprintf(from, "<cyan>- %s <cyan>-", usr->new_message->anon);
-	else
-		if (usr->new_message->flags & MSG_FROM_SYSOP)
-			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, usr->new_message->from);
-		else
-			if (usr->new_message->flags & MSG_FROM_ROOMAIDE)
-				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, usr->new_message->from);
-			else
-				sprintf(from, "<yellow>%s", usr->new_message->from);
-
-	if (usr->new_message->to != NULL) {
-		StringList *sl;
-
-		if (!strcmp(usr->new_message->from, usr->name)) {
-			Print(usr, "<cyan>%s<green>, to ", print_date(usr, usr->new_message->mtime, date_buf));
-
-			for(sl = usr->new_message->to; sl != NULL && sl->next != NULL; sl = sl->next)
-				Print(usr, "<yellow>%s<green>, ", sl->str);
-			Print(usr, "<yellow>%s<green>\n", sl->str);
-		} else {
-			if (usr->new_message->to != NULL && usr->new_message->to->next == NULL && !strcmp(usr->new_message->to->str, usr->name))
-				Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime, date_buf), from);
-			else {
-				Print(usr, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->new_message->mtime, date_buf), from);
-
-				for(sl = usr->new_message->to; sl != NULL && sl->next != NULL; sl = sl->next)
-					Print(usr, "<yellow>%s<green>, ", sl->str);
-				Print(usr, "<yellow>%s<green>\n", sl->str);
-			}
-		}
-	} else
-		Print(usr, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->new_message->mtime, date_buf), from);
-	Return;
-}
-
 /*
 	find the next unread room
 	this is an unseemingly costly operation
@@ -2179,7 +2129,7 @@ User *u;
 	Return;
 }
 
-void msg_header(User *usr) {
+void msg_header(User *usr, Message *msg) {
 char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
 	if (usr == NULL)
@@ -2189,24 +2139,24 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
 	free_StringIO(usr->text);
 
-	if (usr->message == NULL) {
+	if (msg == NULL) {
 		Perror(usr, "I have a problem with this");
 		Return;
 	}
 /* print message header */
 
-	if (usr->message->anon[0])
-		sprintf(from, "<cyan>- %s <cyan>-", usr->message->anon);
+	if (msg->anon[0])
+		sprintf(from, "<cyan>- %s <cyan>-", msg->anon);
 	else
-		if (usr->message->flags & MSG_FROM_SYSOP)
-			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, usr->message->from);
+		if (msg->flags & MSG_FROM_SYSOP)
+			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, msg->from);
 		else
-			if (usr->message->flags & MSG_FROM_ROOMAIDE)
-				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, usr->message->from);
+			if (msg->flags & MSG_FROM_ROOMAIDE)
+				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, msg->from);
 			else
-				sprintf(from, "<yellow>%s", usr->message->from);
+				sprintf(from, "<yellow>%s", msg->from);
 
-	if (usr->message->to != NULL) {
+	if (msg->to != NULL) {			/* in the Mail> room */
 		StringList *sl;
 		int l, dl, max_dl;			/* l = strlen, dl = display length */
 
@@ -2214,11 +2164,11 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
 			max_dl = MAX_LINE*3-1;
 
-		if (!strcmp(usr->message->from, usr->name)) {
-			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, usr->message->mtime, date_buf));
+		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && !msg->anon[0]) {
+			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, msg->mtime, date_buf));
 			dl = color_strlen(buf);
 
-			for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
+			for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 				if ((dl + strlen(sl->str)+2) < max_dl)
 					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
 				else {
@@ -2230,13 +2180,13 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			}
 			print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
 		} else {
-			if (usr->message->to != NULL && usr->message->to->next == NULL && !strcmp(usr->message->to->str, usr->name))
-				print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->message->mtime, date_buf), from);
+			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
+				print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 			else {
-				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, usr->message->mtime, date_buf), from);
+				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, msg->mtime, date_buf), from);
 				dl = color_strlen(buf);
 
-				for(sl = usr->message->to; sl != NULL && sl->next != NULL; sl = sl->next) {
+				for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 					if ((dl + strlen(sl->str)+2) < MAX_LINE)
 						l += sprintf(buf+strlen(buf), "<yellow>%s<green>, ", sl->str);
 					else {
@@ -2250,7 +2200,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			}
 		}
 	} else
-		print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, usr->message->mtime, date_buf), from);
+		print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 	Return;
 }
 

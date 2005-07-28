@@ -3,6 +3,7 @@ Changes as of July 27th 2005
 - auto-coloring of symbols. It's an option in the Config menu
 - fixed bug in statistics screen (it would display empty names)
 - config option: show angle brackets around hotkeys
+- bugfix: header on entering a new message shows sysop or room aide status
 
 Changes as of July 14th 2005
 - config menu option: verbose friend notifications
