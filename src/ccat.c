@@ -18,6 +18,10 @@
 */
 /*
 	ccat for bbs100	WJ99
+
+	Note: ccat has gotten a bit old. The Out() function in util.c of bbs100
+	is much more sophisticated than the Put() presented here in ccat
+	Still, ccat serves its purpose, but it's just that you know ...
 */
 
 #include "config.h"

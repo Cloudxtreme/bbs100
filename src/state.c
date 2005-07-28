@@ -208,9 +208,9 @@ int i, idx;
 			break;
 
 		case ']':
-			Put(usr, "<white>Local modifications made to bbs100\n");
+			Put(usr, "<white>Local modifications made to bbs100");
 			if (load_screen(usr->text, PARAM_MODS_SCREEN) < 0) {
-				Put(usr, "<red>The local mods file is missing\n");		/* or out of memory! */
+				Put(usr, "\n<red>The local mods file is missing\n");		/* or out of memory! */
 				break;
 			}
 			Put(usr, "<green>");
