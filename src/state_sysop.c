@@ -657,7 +657,7 @@ int r;
 	if (c == INIT_STATE) {
 		if (banished != NULL) {
 			if (banished->next != NULL) {
-				Put(usr, "\n<magenta>Banished are<yellow>:\n");
+				Put(usr, "\n<magenta>Banished are:\n");
 				show_namelist(usr, banished);
 			} else
 				Print(usr, "\n<magenta>Banished is: <yellow>%s\n", banished->str);
@@ -721,7 +721,7 @@ int i;
 		char buf[MAX_LINE*3], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 
 		if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
-			Put(usr, "\n<red>WARNING<yellow>:<red> You are currently locked out yourself\n");
+			Put(usr, "\n<red>WARNING: You are currently locked out yourself\n");
 
 		Print(usr, "\n<yellow> 1 <white>Add new wrapper\n");
 		i = 2;
@@ -827,7 +827,7 @@ char buf[MAX_LINE];
 			usr->runtime_flags |= RTF_BUSY;
 
 			if (PARAM_HAVE_WRAPPER_ALL && !allow_one_Wrapper(w, usr->conn->ipnum, WRAPPER_ALL_USERS))
-				Put(usr, "\n<red>WARNING<yellow>:<red> You are locking yourself out\n");
+				Put(usr, "\n<red>WARNING: You are locking yourself out\n");
 
 			Print(usr, "<magenta>\n"
 				"<hotkey>Allow/deny connection        <white>%s<magenta>\n",
@@ -1479,7 +1479,7 @@ void state_malloc_status(User *usr, char c) {
 			if (i & 1)
 				l += sprintf(line+l, "      ");
 
-			l += sprintf(line+l, "<green>%-*s <yellow>:<white> %12s ", len, Types_table[i].type, print_number(mem_stats[i], num_buf));
+			l += sprintf(line+l, "<green>%-*s :<white> %12s ", len, Types_table[i].type, print_number(mem_stats[i], num_buf));
 
 			if (i & 1) {
 				Print(usr, "%s\n", line);

@@ -74,12 +74,11 @@ int Out(User *usr, char *str) {
 }
 
 /*
-	- puts texts without translating them
 	- it takes the cursor position into account for <hline> and <center> tags
 	- when max_lines > -1, can display a limited number of lines
-	  (for --More-- prompt reading)
+	  (used in --More-- prompt reading)
 	- returns position in the string where it stopped
-	- if dev is NULL, it produces no output, but does run the function
+	- if dev is NULL, it produces no output, but does run the function and update the cursor pos
 	- force_auto_color_off is used for hline tags, that really don't like auto-coloring
 
 	- do_auto_color says if it's OK to auto-color symbols
@@ -119,9 +118,18 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 	for some characters auto-coloring can be straight ugly
 	e.g, the space, dot, question mark
 */
-			if (c != ' ' && c != '.' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
-				do_auto_color = 1;
-
+			if (c != ' ' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
+				if (c == '.') {
+/*
+	auto-coloring a single dot is ugly, but multiple ones is fun
+*/
+					if (str[1] == '.' || (pos > 0 && str[-1] == '.'))
+						do_auto_color = 1;
+					else
+						do_auto_color = 0;
+				} else
+					do_auto_color = 1;
+			}
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
 				if (c != ' ') {
 					if (do_auto_color) {
@@ -159,7 +167,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 */
 			if (c == '@' || (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL)) {
 				is_symbol = 1;
-				if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
+				if (c != '#' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
 					do_auto_color = 1;
 
 				if (*cpos + word_len(str+1) >= usr->display->term_width) {
@@ -287,7 +295,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 			case '<':
 				n = long_color_code(dev, usr, str, cpos, lines, max_lines, dont_auto_color);
-				dont_auto_color = AUTO_COLOR_FORCED;
+				dont_auto_color = force_auto_color_off;
 				str += n;
 				pos += n;
 				break;
@@ -1288,7 +1296,7 @@ struct tm *tm;
 		if ((u->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 			tm->tm_hour -= 12;
 
-		sprintf(buf, "\n<beep><white>*** <yellow>System message received at %d<white>:<yellow>%02d<white> ***<red>\n"
+		sprintf(buf, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
 			"%s\n", tm->tm_hour, tm->tm_min, msg);
 
 		func(u, buf);

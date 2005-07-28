@@ -826,6 +826,12 @@ int i, wrap_len;
 		p = usr->edit_buf + usr->edit_pos;
 		*p = c;
 		p[1] = 0;
+/*
+	this fixes (most) auto-coloring problems when editing
+*/
+		if (usr->edit_pos > 0 && (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
+			p = usr->edit_buf + usr->edit_pos - 1;
+
 		usr->edit_pos++;
 		Put(usr, p);
 		Return;

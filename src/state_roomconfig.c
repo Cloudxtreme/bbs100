@@ -167,7 +167,7 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "Edit room info\n");
 
 			if (usr->curr_room->info->buf != NULL) {
-				Put(usr, "<cyan>The room info currently is<white>:\n<green>");
+				Put(usr, "<cyan>The room info currently is:\n<green>");
 				copy_StringIO(usr->text, usr->curr_room->info);
 				PUSH(usr, STATE_CHANGE_ROOMINFO);
 				read_text(usr);
@@ -962,8 +962,8 @@ void state_remove_all_posts(User *usr, char c) {
 			Return;
 		}
 		Put(usr, "\n"
-"<red>Warning<white>:<yellow> After removing all posts<white>,<yellow> you should also reset the creation date of\n"
-"the room<white>.<yellow> This makes everyone unjoin <white>(<yellow>bad for invite<white>-<yellow>only rooms<white>)\n");
+"<red>Warning:<yellow> After removing all posts, you should also reset the creation date of\n"
+"the room. This makes everyone unjoin (bad for invite-only rooms)\n");
 
 		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? (y/N): ");
 	} else {

@@ -104,7 +104,7 @@ void state_config_menu(User *usr, char c) {
 			Put(usr, "Profile info\n");
 
 			if (usr->info->buf != NULL) {
-				Put(usr, "<cyan>Your current profile info is<white>:\n<green>");
+				Put(usr, "<cyan>Your current profile info is:\n<green>");
 				copy_StringIO(usr->text, usr->info);
 				PUSH(usr, STATE_CHANGE_PROFILE);
 				read_text(usr);

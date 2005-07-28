@@ -483,7 +483,7 @@ int i, new_mail;
 		else
 			exclaim[0] = 0;
 
-		Print(usr, "<green>Welcome back, <yellow>%s<green>! "
+		Print(usr, "<green>Welcome back, <yellow>%s! <green>"
 			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf), exclaim);
 	}
 /*

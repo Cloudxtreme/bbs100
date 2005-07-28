@@ -1092,7 +1092,7 @@ int i, idx;
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING | RTF_BUSY_MAILING);
 
 		if (!(usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL)
-			Put(usr, "\n<green>The following messages were held while you were busy<yellow>:\n");
+			Put(usr, "\n<green>The following messages were held while you were busy:\n");
 	}
 	PrintPrompt(usr);
 	Return;
@@ -2639,7 +2639,7 @@ User *u;
 			c++;
 		}
 		buf[l] = 0;
-		print_StringIO(usr->text, "%s <white>%c <yellow>%2d<white>:<yellow>%02d\n", buf, stat, hrs, mins);
+		print_StringIO(usr->text, "%s <white>%c <yellow>%2d:%02d\n", buf, stat, hrs, mins);
 	}
 	Return 0;
 }
@@ -2764,14 +2764,14 @@ struct tm *tm;
 		if (total == 1)
 			print_StringIO(usr->text, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
 		else
-			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s><magenta> at <yellow>%02d<white>:<yellow>%02d\n",
+			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s><magenta> at <yellow>%02d:%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				usr->curr_room->name, tm->tm_hour, tm->tm_min);
 	} else {
 		if (total == 1)
 			print_StringIO(usr->text, "<green>You are the only one online right now\n");
 		else
-			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d<white>:<yellow>%02d\n",
+			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d:%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				tm->tm_hour, tm->tm_min);
 	}
@@ -3013,7 +3013,7 @@ StringList *sl;
 			Free(usr->curr_room->category);
 			usr->curr_room->category = NULL;
 		} else
-			print_StringIO(usr->text, "<cyan>Category<white>:<yellow> %s\n", usr->curr_room->category);
+			print_StringIO(usr->text, "<cyan>Category:<yellow> %s\n", usr->curr_room->category);
 	}
 	put_StringIO(usr->text, "<green>\n");
 
@@ -3442,7 +3442,7 @@ int total;
 		tm->tm_hour -= 12;
 
 	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d<white>:<yellow>%02d\n",
+	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d:%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
@@ -3500,7 +3500,7 @@ int total;
 		tm->tm_hour -= 12;
 
 	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d<white>:<yellow>%02d\n",
+	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d:%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 
@@ -4000,7 +4000,7 @@ int i, j, found, printed;
 				if (memcmp(orig_sums[i].sum, build_sums[j].sum, MD5_DIGITS)) {
 					if (!printed) {
 						printed++;
-						Put(usr, "<yellow>There are changes in the following components<white>:\n<green>");
+						Put(usr, "<yellow>There are changes in the following components:<green>\n");
 					}
 					Print(usr, " %s", build_sums[j].filename);
 				}
