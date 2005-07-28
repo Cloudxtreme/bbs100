@@ -1253,7 +1253,10 @@ void state_config_options(User *usr, char c) {
 			);
 			if (usr->flags & USR_ANSI)
 				Print(usr,
+					"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n"
 					"Do automatic <hotkey>coloring of symbols     <white>%s<magenta>\n",
+
+					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No",
 					(usr->flags & USR_AUTO_COLOR) ? "Yes" : "No"
 				);
 
@@ -1325,6 +1328,13 @@ void state_config_options(User *usr, char c) {
 		case 'u':
 		case 'U':
 			CONFIG_OPTION(USR_UPPERCASE_HOTKEYS, "Uppercase hotkeys");
+
+		case 'k':
+		case 'K':
+			if (!(usr->flags & USR_ANSI))
+				break;
+
+			CONFIG_OPTION(USR_HOTKEY_BRACKETS, "Angle brackets around hotkeys");
 
 		case 'c':
 		case 'C':

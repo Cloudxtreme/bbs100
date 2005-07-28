@@ -223,11 +223,19 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 					c = *str;
 
 				if (usr->flags & USR_ANSI) {
-					if (usr->flags & USR_BOLD)
-						sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-					else
-						sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-					(*cpos)++;
+					if (usr->flags & USR_HOTKEY_BRACKETS) {
+						if (usr->flags & USR_BOLD)
+							sprintf(buf, "\x1b[1;%dm<%c>\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+						else
+							sprintf(buf, "\x1b[%dm<%c>\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+						(*cpos) += 3;
+					} else {
+						if (usr->flags & USR_BOLD)
+							sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+						else
+							sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+						(*cpos)++;
+					}
 				} else {
 					sprintf(buf, "<%c>", c);
 					*cpos += 3;
@@ -501,12 +509,20 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 			c = ctoupper(c);
 
 		if (usr->flags & USR_ANSI) {
-			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-			else
-				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+			if (usr->flags & USR_HOTKEY_BRACKETS) {
+				if (usr->flags & USR_BOLD)
+					sprintf(buf, "\x1b[1;%dm<%c>\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				else
+					sprintf(buf, "\x1b[%dm<%c>\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				(*cpos) += 3;
+			} else {
+				if (usr->flags & USR_BOLD)
+					sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				else
+					sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 
-			(*cpos)++;
+				(*cpos)++;
+			}
 		} else {
 			sprintf(buf, "<%c>", c);
 			*cpos += 3;
