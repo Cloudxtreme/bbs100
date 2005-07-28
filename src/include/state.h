@@ -51,6 +51,7 @@
 #define STATE_SU_PROMPT					state_su_prompt
 #define STATE_LOCK_PASSWORD				state_lock_password
 #define STATE_BOSS						state_boss
+#define STATE_ASK_AWAY_REASON			state_ask_away_reason
 
 #define LOOP_PING						loop_ping
 #define LOOP_SEND_MSG					loop_send_msg
@@ -76,6 +77,7 @@ void state_su_prompt(User *, char);
 void state_lock_password(User *, char);
 void state_boss(User *, char);
 int cmd_line(User *, char *);
+void state_ask_away_reason(User *, char);
 
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);

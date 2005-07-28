@@ -225,11 +225,14 @@ User *u;
 			goto Remove_Checked_Recipient;
 		}
 		if (is_guest(sl->str)) {
-			Print(usr, "<red>Please leave the %s user alone\n", PARAM_NAME_GUEST);
+			Print(usr, "<red>Please leave the <yellow>%s<red> user alone\n", PARAM_NAME_GUEST);
 			goto Remove_Checked_Recipient;
 		}
 		if (u->runtime_flags & RTF_LOCKED) {
-			Print(usr, "<red>Sorry, but <yellow>%s<red> has locked the terminal\n", sl->str);
+			if (u->away != NULL && u->away[0])
+				Print(usr, "<red>Sorry, but <yellow>%s<red> is locked; %s\n", sl->str, u->away);
+			else
+				Print(usr, "<red>Sorry, but <yellow>%s<red> has locked the terminal\n", sl->str);
 			goto Remove_Checked_Recipient;
 		}
 		if (!(usr->runtime_flags & RTF_SYSOP)) {

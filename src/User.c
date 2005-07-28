@@ -113,6 +113,7 @@ int i;
 
 	Free(usr->vanity);
 	Free(usr->xmsg_header);
+	Free(usr->away);
 
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);

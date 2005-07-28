@@ -642,6 +642,10 @@ int i, idx;
 						usr->flags &= ~USR_HELPING_HAND;
 						usr->runtime_flags |= RTF_WAS_HH;
 					}
+					if (!(usr->flags & USR_DONT_ASK_REASON)) {
+						CALL(usr, STATE_ASK_AWAY_REASON);
+						Return;
+					}
 				} else {
 					Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
 
@@ -649,6 +653,9 @@ int i, idx;
 						usr->runtime_flags |= RTF_HOLD;			/* keep it on hold for a little longer */
 						CALL(usr, STATE_HELD_HISTORY_PROMPT);
 						Return;
+					} else {
+						Free(usr->away);
+						usr->away = NULL;
 					}
 					if (usr->runtime_flags & RTF_WAS_HH) {
 						usr->runtime_flags &= ~RTF_WAS_HH;
@@ -1043,7 +1050,12 @@ int i, idx;
 				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot lock the terminal\n", PARAM_NAME_GUEST);
 				break;
 			}
-			CALL(usr, STATE_LOCK_PASSWORD);
+			if (!(usr->flags & USR_DONT_ASK_REASON)) {
+				PUSH(usr, STATE_LOCK_PASSWORD);
+				Put(usr, "<green>");
+				CALL(usr, STATE_ASK_AWAY_REASON);
+			} else
+				CALL(usr, STATE_LOCK_PASSWORD);
 			Return;
 
 		case 'c':
@@ -1365,9 +1377,12 @@ void loop_ping(User *usr, char c) {
 			destroy_StringList(sl);
 			Return;
 		}
-		if (u->runtime_flags & RTF_LOCKED)
-			Print(usr, "<yellow>%s<green> is away from the terminal for a while\n", u->name);
-		else {
+		if (u->runtime_flags & RTF_LOCKED) {
+			if (u->away != NULL && u->away[0])
+				Print(usr, "<yellow>%s<green> is away from the terminal for a while; %s\n", u->name, u->away);
+			else
+				Print(usr, "<yellow>%s<green> is away from the terminal for a while\n", u->name);
+		} else {
 			if (u->runtime_flags & RTF_BUSY) {
 				if ((u->runtime_flags & RTF_BUSY_SENDING)
 					&& in_StringList(u->recipients, usr->name) != NULL)
@@ -1382,15 +1397,21 @@ void loop_ping(User *usr, char c) {
 						&& in_StringList(u->new_message->to, usr->name) != NULL)
 						Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
 					else
-						if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD))
-							Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
-						else
+						if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
+							if (u->away != NULL && u->away[0])
+								Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
+							else
+								Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
+						} else
 							Print(usr, "<yellow>%s<green> is busy\n", u->name);
 				}
 			} else
-				if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD))
-					Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
-				else
+				if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
+					if (u->away != NULL && u->away[0])
+						Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
+					else
+						Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
+				} else
 					Print(usr, "<yellow>%s<green> is not busy\n", u->name);
 
 /*
@@ -1398,7 +1419,7 @@ void loop_ping(User *usr, char c) {
 	(hardcoded) default is after 2 minutes
 */
 			tdiff = (unsigned long)rtc - (unsigned long)u->idle_time;
-			if (tdiff >= 120UL) {
+			if (tdiff >= 2UL * SECS_IN_MIN) {
 				char total_buf[MAX_LINE];
 
 				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf));
@@ -3121,10 +3142,13 @@ void state_lock_password(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
-			Print(usr, "%c[1;1H%c[2J", KEY_ESC, KEY_ESC);
+			put_StringIO(usr->conn->output, "\x1b[1;1H\x1b[2J");		/* bypass auto-coloring (!) */
 
-		Print(usr, "\n<white>%s terminal locked\n"
-			"<red>Enter password to unlock: ", PARAM_BBS_NAME);
+		Print(usr, "\n<white>%s terminal locked", PARAM_BBS_NAME);
+		if (usr->away != NULL && usr->away[0])
+			Print(usr, "; <yellow>%s", usr->away);
+
+		Put(usr, "\n<red>Enter password to unlock: ");
 
 		usr->edit_pos = 0;
 		usr->edit_buf[0] = 0;
@@ -3349,6 +3373,17 @@ char buf[MAX_LINE*3], *p;
 	}
 	Print(usr, "-bbs: %s: command not found\n", cmd);
 	Return -1;
+}
+
+void state_ask_away_reason(User *usr, char c) {
+	Enter(state_ask_away_reason);
+
+	if (c == INIT_STATE) {
+		Free(usr->away);
+		usr->away = NULL;
+	}
+	change_config(usr, c, &usr->away, "Enter reason<yellow>: ");
+	Return;
 }
 
 void online_friends_list(User *usr) {

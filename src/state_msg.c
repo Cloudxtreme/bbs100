@@ -36,6 +36,7 @@
 #include "strtoul.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1064,9 +1065,12 @@ Rcv_Remove_Recipient:
 				&& in_StringList(usr->recipients, from->name) != NULL)
 				Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
 			else
-				if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
-					Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
-				else
+				if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
+					if (usr->away != NULL && usr->away[0])
+						Print(from, "<yellow>%s<green> has put messages on hold; %s\n", usr->name, usr->away);
+					else
+						Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
+				} else
 					Print(from, "<yellow>%s<green> is busy and will receive your %s<green> when done\n", usr->name, msg_type);
 		Return;
 	}
@@ -1466,7 +1470,7 @@ int printed;
 	printed = 0;
 	for(m = usr->held_msgs; m != NULL; m = m_next) {
 		m_next = m->next;
-		if (!m->flags) {						/* one shot message */
+		if (!m->flags) {					/* one shot message */
 			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
@@ -1637,6 +1641,8 @@ Exit_Held_History:
 			usr->held_msgs = usr->held_msgp = NULL;
 
 			usr->runtime_flags &= ~(RTF_BUSY|RTF_HOLD);
+			Free(usr->away);
+			usr->away = NULL;
 
 			if (usr->runtime_flags & RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;

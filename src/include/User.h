@@ -79,7 +79,8 @@
 #define USR_FRIEND_NOTIFY		0x200000	/* display many friend notifications */
 #define USR_AUTO_COLOR			0x400000	/* do automatic coloring of symbols */
 #define USR_HOTKEY_BRACKETS		0x800000	/* always display brackets around hotkeys */
-#define USR_ALL					0xffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_DONT_ASK_REASON		0x1000000	/* don't ask for an Away reason, just go */
+#define USR_ALL					0x1ffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -143,7 +144,7 @@ struct User_tag {
 
 	char *real_name, *street, *zipcode, *city, *state, *country;
 	char *phone, *email, *www, *doing, *reminder, *default_anon;
-	char *timezone, *vanity, *xmsg_header;
+	char *timezone, *vanity, *xmsg_header, *away;
 
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time, last_online_time;

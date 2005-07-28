@@ -224,3 +224,5 @@ Credits for bug fixes et al after public release
 - Mz Boobala pointed out that when being in Sysop or Room Aide mode, the
   new message header doesn't reflect that status until you read the posted
   message
+
+- WHYz suggested asking for a reason when going away, like on MalteBBS
