@@ -3,6 +3,7 @@ Changes as of July 28th 2005
 - config option of turning off asking for a reason
 - print online status after unlocking
 - nologin shown more clearly in Sysop menu
+- verbose friend notification for putting messages on hold
 
 Changes as of July 27th 2005
 - More prompt no longer resets color to green, but restores the color

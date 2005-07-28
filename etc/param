@@ -78,6 +78,8 @@ notify_linkdead         freezes up and crumbles to dust
 notify_idle             has been logged out due to inactivity
 notify_locked           is away from the terminal for a while
 notify_unlocked         has returned to the terminal
+notify_hold             has put messages on hold
+notify_unhold           is accepting messages directly again
 notify_enter_chat       enters through a dimensional gateway
 notify_leave_chat       leaves through a dimensional gateway
 

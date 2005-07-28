@@ -139,6 +139,8 @@ int i;
 	KVPair_setstring(KVPARAM_NOTIFY_IDLE,		"notify_idle",		"has been logged off due to inactivity");
 	KVPair_setstring(KVPARAM_NOTIFY_LOCKED,		"notify_locked",	"is away from the terminal for a while");
 	KVPair_setstring(KVPARAM_NOTIFY_UNLOCKED,	"notify_unlocked",	"has returned to the terminal");
+	KVPair_setstring(KVPARAM_NOTIFY_HOLD,		"notify_hold",		"has put messages on hold");
+	KVPair_setstring(KVPARAM_NOTIFY_UNHOLD,		"notify_unhold",	"is accepting messages directly again");
 	KVPair_setstring(KVPARAM_NOTIFY_ENTER_CHAT,	"notify_enter_chat","enters");
 	KVPair_setstring(KVPARAM_NOTIFY_LEAVE_CHAT,	"notify_leave_chat","leaves");
 

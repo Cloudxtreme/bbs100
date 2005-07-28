@@ -642,6 +642,8 @@ int i, idx;
 						usr->flags &= ~USR_HELPING_HAND;
 						usr->runtime_flags |= RTF_WAS_HH;
 					}
+					notify_hold(usr);
+
 					if (!(usr->flags & USR_DONT_ASK_REASON)) {
 						CALL(usr, STATE_ASK_AWAY_REASON);
 						Return;
@@ -656,6 +658,8 @@ int i, idx;
 					} else {
 						Free(usr->away);
 						usr->away = NULL;
+
+						notify_unhold(usr);
 					}
 					if (usr->runtime_flags & RTF_WAS_HH) {
 						usr->runtime_flags &= ~RTF_WAS_HH;

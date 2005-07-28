@@ -54,6 +54,8 @@
 #define notify_idle(x)			notify_friends((x), PARAM_NOTIFY_IDLE, 0)
 #define notify_locked(x)		notify_friends((x), PARAM_NOTIFY_LOCKED, 0)
 #define notify_unlocked(x)		notify_friends((x), PARAM_NOTIFY_UNLOCKED, 0)
+#define notify_hold(x)			notify_friends((x), PARAM_NOTIFY_HOLD, 0)
+#define notify_unhold(x)		notify_friends((x), PARAM_NOTIFY_UNHOLD, 0)
 
 #define USR_ANSI				1			/* ANSI terminal */
 #define USR_BOLD				2			/* bright/bold enabled */

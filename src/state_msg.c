@@ -1648,6 +1648,8 @@ Exit_Held_History:
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
 			}
+			notify_unhold(usr);
+
 			RET(usr);
 			Return;
 	}
