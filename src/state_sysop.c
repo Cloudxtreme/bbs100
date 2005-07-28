@@ -2581,10 +2581,10 @@ void state_strings_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			Print(usr, "\n"
-				"<magenta>Name <hotkey>Sysop          <white>%s<magenta>\n"
-				"<magenta>Name Room <hotkey>Aide      <white>%s<magenta>\n"
-				"<magenta>Name <hotkey>Helper         <white>%s<magenta>\n"
-				"<magenta>Name <hotkey>Guest          <white>%s<magenta>\n",
+				"<magenta>Name <hotkey>Sysop               <white>%s<magenta>\n"
+				"<magenta>Name Room <hotkey>Aide           <white>%s<magenta>\n"
+				"<magenta>Name <hotkey>Helper              <white>%s<magenta>\n"
+				"<magenta>Name <hotkey>Guest               <white>%s<magenta>\n",
 
 				PARAM_NAME_SYSOP,
 				PARAM_NAME_ROOMAIDE,
@@ -2592,29 +2592,33 @@ void state_strings_menu(User *usr, char c) {
 				PARAM_NAME_GUEST
 			);
 			Print(usr, "\n"
-				"<magenta>Notify logi<hotkey>n        %s\n"
-				"<magenta>Notify log<hotkey>out       %s\n",
+				"<magenta>Notify logi<hotkey>n             %s\n"
+				"<magenta>Notify logou<hotkey>t            %s\n",
 
 				PARAM_NOTIFY_LOGIN,
 				PARAM_NOTIFY_LOGOUT
 			);
 			Print(usr,
-				"<magenta>Notify link<hotkey>dead     %s\n"
-				"<magenta>Notify <hotkey>idle         %s\n",
+				"<magenta>Notify link<hotkey>dead          %s\n"
+				"<magenta>Notify <hotkey>idle              %s\n",
 
 				PARAM_NOTIFY_LINKDEAD,
 				PARAM_NOTIFY_IDLE
 			);
 			Print(usr,
-				"<magenta>Notify <hotkey>locked       %s\n"
-				"<magenta>Notify <hotkey>unlocked     %s\n",
+				"<magenta>Notify <hotkey>locked            %s\n"
+				"<magenta>Notify <hotkey>unlocked          %s\n"
+				"<magenta>Notify h<hotkey>old              %s\n"
+				"<magenta>Notify <hotkey>release (unhold)  %s\n",
 
 				PARAM_NOTIFY_LOCKED,
-				PARAM_NOTIFY_UNLOCKED
+				PARAM_NOTIFY_UNLOCKED,
+				PARAM_NOTIFY_HOLD,
+				PARAM_NOTIFY_UNHOLD
 			);
 			Print(usr,
-				"<magenta>Notify <hotkey>enter chat   %s\n"
-				"<magenta>Notify lea<hotkey>ve chat   %s\n",
+				"<magenta>Notify <hotkey>enter chat        %s\n"
+				"<magenta>Notify lea<hotkey>ve chat        %s\n",
 
 				PARAM_NOTIFY_ENTER_CHAT,
 				PARAM_NOTIFY_LEAVE_CHAT
@@ -2658,8 +2662,8 @@ void state_strings_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_NOTIFY_LOGIN);
 			Return;
 
-		case 'o':
-		case 'O':
+		case 't':
+		case 'T':
 			Put(usr, "Notify logout\n");
 			CALL(usr, STATE_PARAM_NOTIFY_LOGOUT);
 			Return;
@@ -2686,6 +2690,18 @@ void state_strings_menu(User *usr, char c) {
 		case 'U':
 			Put(usr, "Notify unlocked\n");
 			CALL(usr, STATE_PARAM_NOTIFY_UNLOCKED);
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "Notify hold\n");
+			CALL(usr, STATE_PARAM_NOTIFY_HOLD);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "Notify release\n");
+			CALL(usr, STATE_PARAM_NOTIFY_UNHOLD);
 			Return;
 
 		case 'e':
@@ -2761,6 +2777,18 @@ void state_param_notify_locked(User *usr, char c) {
 void state_param_notify_unlocked(User *usr, char c) {
 	Enter(state_param_notify_unlocked);
 	change_string_param(usr, c, &PARAM_NOTIFY_UNLOCKED, "<green>Enter unlocked notification: ");
+	Return;
+}
+
+void state_param_notify_hold(User *usr, char c) {
+	Enter(state_param_notify_hold);
+	change_string_param(usr, c, &PARAM_NOTIFY_HOLD, "<green>Enter hold notification: ");
+	Return;
+}
+
+void state_param_notify_unhold(User *usr, char c) {
+	Enter(state_param_notify_unhold);
+	change_string_param(usr, c, &PARAM_NOTIFY_UNHOLD, "<green>Enter release notification: ");
 	Return;
 }
 

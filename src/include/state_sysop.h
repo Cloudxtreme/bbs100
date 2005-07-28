@@ -124,6 +124,8 @@
 #define STATE_PARAM_NOTIFY_IDLE			state_param_notify_idle
 #define STATE_PARAM_NOTIFY_LOCKED		state_param_notify_locked
 #define STATE_PARAM_NOTIFY_UNLOCKED		state_param_notify_unlocked
+#define STATE_PARAM_NOTIFY_HOLD			state_param_notify_hold
+#define STATE_PARAM_NOTIFY_UNHOLD		state_param_notify_unhold
 #define STATE_PARAM_NOTIFY_ENTER_CHAT	state_param_notify_enter_chat
 #define STATE_PARAM_NOTIFY_LEAVE_CHAT	state_param_notify_leave_chat
 
@@ -230,6 +232,8 @@ void state_param_notify_linkdead(User *, char);
 void state_param_notify_idle(User *, char);
 void state_param_notify_locked(User *, char);
 void state_param_notify_unlocked(User *, char);
+void state_param_notify_hold(User *, char);
+void state_param_notify_unhold(User *, char);
 void state_param_notify_enter_chat(User *, char);
 void state_param_notify_leave_chat(User *, char);
 
