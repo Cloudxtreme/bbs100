@@ -418,19 +418,20 @@ StringList *sl;
 	Enter(state_choose_category);
 
 	if (c == INIT_STATE) {
+		Put(usr, "\n<green>  0<yellow> (none)\n");
+
+		free_StringIO(usr->text);
+		format_menu(usr->text, category, usr->display->term_width, FORMAT_MENU_NUMBERED);
+		display_text(usr, usr->text);
+		free_StringIO(usr->text);
+
 		Put(usr, "\n");
-		n = 1;
-		Put(usr, "<white> 0<green> (none)\n");
-		for(sl = category; sl != NULL; sl = sl->next) {
-			if (usr->curr_room->category != NULL && !strcmp(sl->str, usr->curr_room->category))
-				Print(usr, "<white>%2d<yellow> %s\n", n, sl->str);
-			else
-				Print(usr, "<white>%2d<green> %s\n", n, sl->str);
-			n++;
-		}
-		Put(usr, "\n<green>Choose category<yellow>: ");
+		if (usr->curr_room->category != NULL)
+			Print(usr, "<cyan>The current category is: <white>%s\n", usr->curr_room->category);
+
+		Put(usr, "<green>Choose category<yellow>: ");
 	}
-	r = edit_roomname(usr, c);
+	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {
 		RET(usr);
 		Return;

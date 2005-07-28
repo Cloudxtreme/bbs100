@@ -1592,4 +1592,93 @@ int StringList_to_StringIO(StringList *sl, StringIO *s) {
 	return 0;
 }
 
+/*
+	writes the entries in raw_list to StringIO s to create the time zone menu
+	this routine looks a lot like the one that formats the wide who-list
+
+	- numbered is a flag saying if you want a numbered list or not
+*/
+void format_menu(StringIO *s, StringList *raw_list, int term_width, int numbered) {
+int total, cols, rows, i, j, buflen, len, max_width, idx;
+StringList *sl, *sl_cols[16];
+char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
+
+	if (term_width >= MAX_LINE*3)
+		term_width = MAX_LINE*3;
+
+	total = 0;
+	max_width = 10;
+	for(sl = raw_list; sl != NULL; sl = sl->next) {
+		len = strlen(sl->str);
+		if (len > max_width)
+			max_width = len;
+		total++;
+	}
+	if (numbered)
+		sprintf(format, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
+	else
+		sprintf(format, "%c%%-%ds", (char)color_by_name("green"), max_width);
+
+	cols = term_width / (max_width+6);
+	if (cols < 1)
+		cols = 1;
+	else
+		if (cols > 15)
+			cols = 15;
+
+	rows = total / cols;
+	if (total % cols)
+		rows++;
+
+	memset(sl_cols, 0, sizeof(StringList *) * cols);
+
+/* fill in array of pointers to columns */
+
+	sl = raw_list;
+	for(i = 0; i < cols; i++) {
+		sl_cols[i] = sl;
+		for(j = 0; j < rows; j++) {
+			if (sl == NULL)
+				break;
+
+			sl = sl->next;
+		}
+	}
+
+/* make the menu text */
+
+	for(j = 0; j < rows; j++) {
+		idx = j + 1;
+
+		buf[0] = 0;
+		buflen = 0;
+
+		for(i = 0; i < cols; i++) {
+			if (sl_cols[i] == NULL || sl_cols[i]->str == NULL)
+				continue;
+
+			strcpy(filename, sl_cols[i]->str);
+			p = filename;
+			while((p = cstrchr(p, '_')) != NULL)
+				*p = ' ';
+
+			if (numbered)
+				buflen += sprintf(buf+buflen, format, idx, filename);
+			else
+				buflen += sprintf(buf+buflen, format, filename);
+			idx += rows;
+
+			if ((i+1) < cols) {
+				buf[buflen++] = ' ';
+				buf[buflen++] = ' ';
+				buf[buflen] = 0;
+			}
+			sl_cols[i] = sl_cols[i]->next;
+		}
+		buf[buflen++] = '\n';
+		buf[buflen] = 0;
+		put_StringIO(s, buf);
+	}
+}
+
 /* EOB */

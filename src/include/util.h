@@ -65,7 +65,9 @@
 #define HOTKEY			8
 #define NUM_COLORS		9
 
-#define AUTO_COLOR_FORCED	1		/* there's a color code in front of the symbol, forcing the color */
+#define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color */
+
+#define FORMAT_MENU_NUMBERED	1	/* number the entries in format_menu() */
 
 typedef struct {
 	char *name;
@@ -115,6 +117,7 @@ char *print_md5_digest(unsigned char sum[], char *);
 
 StringList *StringIO_to_StringList(StringIO *);
 int StringList_to_StringIO(StringList *sl, StringIO *);
+void format_menu(StringIO *, StringList *, int, int);
 
 extern ColorTable color_table[NUM_COLORS];
 

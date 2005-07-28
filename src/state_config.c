@@ -1431,85 +1431,6 @@ char buf[MAX_LINE], *p;
 	Return;
 }
 
-/*
-	writes the entries in raw_list to StringIO s to create the time zone menu
-	this routine looks a lot like the one that formats the wide who-list
-*/
-static void format_tz_menu(StringIO *s, StringList *raw_list, int term_width) {
-int total, cols, rows, i, j, buflen, len, max_width, idx;
-StringList *sl, *sl_cols[16];
-char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
-
-	total = 0;
-	max_width = 10;
-	for(sl = raw_list; sl != NULL; sl = sl->next) {
-		len = strlen(sl->str);
-		if (len > max_width)
-			max_width = len;
-		total++;
-	}
-	sprintf(format, "<green>%%3d <yellow>%%-%ds", max_width);
-
-	cols = term_width / (max_width+6);
-	if (cols < 1)
-		cols = 1;
-	else
-		if (cols > 15)
-			cols = 15;
-
-	rows = total / cols;
-	if (total % cols)
-		rows++;
-
-	memset(sl_cols, 0, sizeof(StringList *) * cols);
-
-/* fill in array of pointers to columns */
-
-	sl = raw_list;
-	for(i = 0; i < cols; i++) {
-		sl_cols[i] = sl;
-		for(j = 0; j < rows; j++) {
-			if (sl == NULL)
-				break;
-
-			sl = sl->next;
-		}
-	}
-
-/* make the menu text */
-
-	for(j = 0; j < rows; j++) {
-		idx = j + 1;
-
-		buf[0] = 0;
-		buflen = 0;
-
-		for(i = 0; i < cols; i++) {
-			if (sl_cols[i] == NULL || sl_cols[i]->str == NULL)
-				continue;
-
-			strcpy(filename, sl_cols[i]->str);
-			p = filename;
-			while((p = cstrchr(p, '_')) != NULL)
-				*p = ' ';
-
-			sprintf(buf+buflen, format, idx, filename);
-			idx += rows;
-
-			buflen = strlen(buf);
-
-			if ((i+1) < cols) {
-				buf[buflen++] = ' ';
-				buf[buflen++] = ' ';
-				buf[buflen] = 0;
-			}
-			sl_cols[i] = sl_cols[i]->next;
-		}
-		put_StringIO(s, buf);
-		write_StringIO(s, "\n", 1);
-	}
-}
-
 void select_tz_continent(User *usr) {
 File *f;
 char filename[MAX_PATHLEN];
@@ -1544,7 +1465,7 @@ char filename[MAX_PATHLEN];
 	Put(usr, "<magenta>Time zone regions\n");
 
 	free_StringIO(usr->text);
-	format_tz_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width);
+	format_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width, FORMAT_MENU_NUMBERED);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_text(usr);
 	Return;
@@ -1678,7 +1599,7 @@ char filename[MAX_PATHLEN];
 	Fclose(f);
 
 	free_StringIO(usr->text);
-	format_tz_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width);
+	format_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width, FORMAT_MENU_NUMBERED);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_text(usr);

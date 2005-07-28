@@ -403,20 +403,19 @@ void state_categories_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_BUSY;
 
 			if (category != NULL) {
-				StringList *sl;
-				int n;
+				free_StringIO(usr->text);
+				format_menu(usr->text, category, usr->display->term_width, FORMAT_MENU_NUMBERED);
 
 				Put(usr, "\n");
-				n = 1;
-				for(sl = category; sl != NULL; sl = sl->next) {
-					Print(usr, "<white>%2d<green> %s\n", n, sl->str);
-					n++;
-				}
+				display_text(usr, usr->text);
+
+				free_StringIO(usr->text);
 			}
 			Print(usr, "<magenta>\n"
 				"<hotkey>Add category\n"
-				"<hotkey>Remove category\n"
 			);
+			if (category != NULL)
+				Put(usr, "<hotkey>Remove category\n");
 			break;
 
 		case ' ':
@@ -440,6 +439,9 @@ void state_categories_menu(User *usr, char c) {
 
 		case 'r':
 		case 'R':
+			if (category == NULL)
+				break;
+
 			Put(usr, "Remove category\n");
 			CALL(usr, STATE_REMOVE_CATEGORY);
 			Return;
