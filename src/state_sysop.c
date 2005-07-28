@@ -275,7 +275,7 @@ void state_sysop_menu(User *usr, char c) {
 			}
 			break;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] # ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] # ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -446,7 +446,7 @@ void state_categories_menu(User *usr, char c) {
 			CALL(usr, STATE_REMOVE_CATEGORY);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Categories<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Categories# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -606,7 +606,7 @@ int r;
 		}
 		for(su = su_passwd; su != NULL; su = su->next) {
 			if (!strcmp(su->key, usr->edit_buf)) {
-				Print(usr, "<red>You can't nuke someone who has %s access!\n", PARAM_NAME_SYSOP);
+				Print(usr, "<red>You can't nuke someone who has <yellow>%s<red> access!\n", PARAM_NAME_SYSOP);
 				RET(usr);
 				Return;
 			}
@@ -905,7 +905,7 @@ char buf[MAX_LINE];
 			RET(usr);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Wrapper<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Wrapper# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -1304,7 +1304,7 @@ int r;
 	Enter(state_su_passwd);
 
 	if (c == INIT_STATE)
-		Print(usr, "<red>Enter <yellow>%s<red> mode password<white>:<red> ", PARAM_NAME_SYSOP);
+		Print(usr, "<red>Enter <yellow>%s<red> mode password: ", PARAM_NAME_SYSOP);
 
 	r = edit_password(usr, c);
 
@@ -1343,7 +1343,7 @@ int r;
 	Enter(state_change_su_passwd);
 
 	if (c == INIT_STATE) {
-		Print(usr, "<red>Enter new <yellow>%s<red> mode password<white>:<red> ", PARAM_NAME_SYSOP);
+		Print(usr, "<red>Enter new <yellow>%s<red> mode password: ", PARAM_NAME_SYSOP);
 
 		Free(usr->tmpbuf[TMP_PASSWD]);
 		usr->tmpbuf[TMP_PASSWD] = NULL;
@@ -1414,7 +1414,7 @@ int r;
 				usr->runtime_flags &= ~RTF_SYSOP;
 				POP(usr);
 			} else
-				Print(usr, "<red>Passwords didn't match <white>; <yellow>%s<red> mode password NOT changed\n", PARAM_NAME_SYSOP);
+				Print(usr, "<red>Passwords didn't match; <yellow>%s<red> mode password NOT changed\n", PARAM_NAME_SYSOP);
 
 			Free(usr->tmpbuf[TMP_PASSWD]);
 			usr->tmpbuf[TMP_PASSWD] = NULL;
@@ -1493,8 +1493,8 @@ void state_malloc_status(User *usr, char c) {
 		if (!(i & 1))
 			Put(usr, "\n");
 
-		Put(usr, "\n"
-			"<white>[Press a key]");
+		Put(usr, "<white>\n"
+			"[Press a key]");
 	} else {
 		wipe_line(usr);
 		RET(usr);
@@ -1597,7 +1597,7 @@ void state_parameters_menu(User *usr, char c) {
 			}
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Parameters<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Parameters# ", PARAM_NAME_SYSOP);
 }
 
 
@@ -1754,7 +1754,7 @@ void state_system_config_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_DEF_TIMEZONE);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Sysconf<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Sysconf# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2029,7 +2029,7 @@ void state_config_files_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_SYMTAB_FILE);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Files<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Files# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2315,7 +2315,7 @@ void state_reload_files_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Reload<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Reload# ", PARAM_NAME_SYSOP);
 }
 
 
@@ -2476,7 +2476,7 @@ void state_maximums_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_HELPER_AGE);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Maximums<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Maximums# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2695,79 +2695,79 @@ void state_strings_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_NOTIFY_LEAVE_CHAT);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Strings<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Strings# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
 void state_param_name_sysop(User *usr, char c) {
 	Enter(state_param_name_sysop);
-	change_string_param(usr, c, &PARAM_NAME_SYSOP, "<green>Enter name Sysop<yellow>: ");
+	change_string_param(usr, c, &PARAM_NAME_SYSOP, "<green>Enter name Sysop: ");
 	Return;
 }
 
 void state_param_name_roomaide(User *usr, char c) {
 	Enter(state_param_name_roomaide);
-	change_string_param(usr, c, &PARAM_NAME_ROOMAIDE, "<green>Enter name Room Aide<yellow>: ");
+	change_string_param(usr, c, &PARAM_NAME_ROOMAIDE, "<green>Enter name Room Aide: ");
 	Return;
 }
 
 void state_param_name_helper(User *usr, char c) {
 	Enter(state_param_name_helper);
-	change_string_param(usr, c, &PARAM_NAME_HELPER, "<green>Enter name Helper<yellow>: ");
+	change_string_param(usr, c, &PARAM_NAME_HELPER, "<green>Enter name Helper: ");
 	Return;
 }
 
 void state_param_name_guest(User *usr, char c) {
 	Enter(state_param_name_guest);
-	change_string_param(usr, c, &PARAM_NAME_GUEST, "<green>Enter name Guest<yellow>: ");
+	change_string_param(usr, c, &PARAM_NAME_GUEST, "<green>Enter name Guest: ");
 	Return;
 }
 
 void state_param_notify_login(User *usr, char c) {
 	Enter(state_param_notify_login);
-	change_string_param(usr, c, &PARAM_NOTIFY_LOGIN, "<green>Enter login notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_LOGIN, "<green>Enter login notification: ");
 	Return;
 }
 
 void state_param_notify_logout(User *usr, char c) {
 	Enter(state_param_notify_logout);
-	change_string_param(usr, c, &PARAM_NOTIFY_LOGOUT, "<green>Enter logout notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_LOGOUT, "<green>Enter logout notification: ");
 	Return;
 }
 
 void state_param_notify_linkdead(User *usr, char c) {
 	Enter(state_param_notify_linkdead);
-	change_string_param(usr, c, &PARAM_NOTIFY_LINKDEAD, "<green>Enter linkdead notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_LINKDEAD, "<green>Enter linkdead notification: ");
 	Return;
 }
 
 void state_param_notify_idle(User *usr, char c) {
 	Enter(state_param_notify_idle);
-	change_string_param(usr, c, &PARAM_NOTIFY_IDLE, "<green>Enter idle notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_IDLE, "<green>Enter idle notification: ");
 	Return;
 }
 
 void state_param_notify_locked(User *usr, char c) {
 	Enter(state_param_notify_locked);
-	change_string_param(usr, c, &PARAM_NOTIFY_LOCKED, "<green>Enter locked notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_LOCKED, "<green>Enter locked notification: ");
 	Return;
 }
 
 void state_param_notify_unlocked(User *usr, char c) {
 	Enter(state_param_notify_unlocked);
-	change_string_param(usr, c, &PARAM_NOTIFY_UNLOCKED, "<green>Enter unlocked notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_UNLOCKED, "<green>Enter unlocked notification: ");
 	Return;
 }
 
 void state_param_notify_enter_chat(User *usr, char c) {
 	Enter(state_param_notify_enter_chat);
-	change_string_param(usr, c, &PARAM_NOTIFY_ENTER_CHAT, "<green>Enter chat notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_ENTER_CHAT, "<green>Enter chat notification: ");
 	Return;
 }
 
 void state_param_notify_leave_chat(User *usr, char c) {
 	Enter(state_param_notify_leave_chat);
-	change_string_param(usr, c, &PARAM_NOTIFY_LEAVE_CHAT, "<green>Leave chat notification<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOTIFY_LEAVE_CHAT, "<green>Leave chat notification: ");
 	Return;
 }
 
@@ -2955,7 +2955,7 @@ void state_features_menu(User *usr, char c) {
 		case 'D':
 			TOGGLE_FEATURE(PARAM_HAVE_DISABLED_MSG, "warnings");
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Features<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Features# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -3063,33 +3063,33 @@ char *new_val;
 			CALL(usr, STATE_PARAM_CRASHDIR);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>%s<white>] <yellow>Logrotate<white># ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Logrotate# ", PARAM_NAME_SYSOP);
 	Return;
 }
 
 void state_param_syslog(User *usr, char c) {
 	Enter(state_param_syslog);
-	change_string_param(usr, c, &PARAM_SYSLOG, "<green>Enter syslog file<yellow>: ");
+	change_string_param(usr, c, &PARAM_SYSLOG, "<green>Enter syslog file: ");
 	usr->runtime_flags |= RTF_WRAPPER_EDITED;
 	Return;
 }
 
 void state_param_authlog(User *usr, char c) {
 	Enter(state_param_authlog);
-	change_string_param(usr, c, &PARAM_AUTHLOG, "<green>Enter authlog file<yellow>: ");
+	change_string_param(usr, c, &PARAM_AUTHLOG, "<green>Enter authlog file: ");
 	usr->runtime_flags |= RTF_WRAPPER_EDITED;
 	Return;
 }
 
 void state_param_archivedir(User *usr, char c) {
 	Enter(state_param_archivedir);
-	change_string_param(usr, c, &PARAM_ARCHIVEDIR, "<green>Enter archive directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_ARCHIVEDIR, "<green>Enter archive directory: ");
 	Return;
 }
 
 void state_param_crashdir(User *usr, char c) {
 	Enter(state_param_crashdir);
-	change_string_param(usr, c, &PARAM_CRASHDIR, "<green>Enter core dump directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_CRASHDIR, "<green>Enter core dump directory: ");
 	Return;
 }
 

@@ -325,7 +325,7 @@ char buf[MAX_LINE*2];
 		}
 		sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 		Put(usr, buf);
-		Put(usr, "<white>(<cyan>y<white>/<cyan>N<white>): ");
+		Put(usr, "(y/N): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -347,7 +347,7 @@ char buf[MAX_LINE*2];
 		default:
 			sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 			Put(usr, buf);
-			Put(usr, "<white>(<cyan>y<white>/<cyan>N<white>): ");
+			Put(usr, "(y/N): ");
 	}
 	Return;
 }
@@ -359,7 +359,7 @@ void state_ansi_prompt(User *usr, char c) {
 	Enter(state_ansi_prompt);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<yellow>Are you on an ANSI terminal? <white>(<yellow>Y<white>/<yellow>n<white>): ");
+		Put(usr, "<yellow>Are you on an ANSI terminal? (Y/n): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -374,7 +374,7 @@ void state_ansi_prompt(User *usr, char c) {
 			break;
 
 		default:
-			Put(usr, "\n<yellow>Are you on an ANSI terminal, <hotkey>Yes or <hotkey>No? <white>(<yellow>Y<white>/<yellow>n<white>): ");
+			Put(usr, "\n<yellow>Are you on an ANSI terminal, <hotkey>Yes or <hotkey>No? (Y/n): ");
 			Return;
 	}
 	if (load_screen(usr->text, PARAM_FIRST_LOGIN) >= 0) {

@@ -77,7 +77,7 @@ int allocated = 0;
 char err_msg[MAX_LINE] = "";
 
 	if (is_guest(usr->edit_buf)) {
-		sprintf(err_msg, " <white>--> <red>%ss can't receive <yellow>Mail<white>><red> here", PARAM_NAME_GUEST);
+		sprintf(err_msg, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
 		goto No_multi_mail;
 	}
 	if (!user_exists(usr->edit_buf)) {
@@ -168,11 +168,11 @@ User *u = NULL;
 int allocated = 0;
 
 	if (is_guest(name)) {
-		Print(usr, "<red>%ss can't receive <yellow>Mail<white>><red> here\n", PARAM_NAME_GUEST);
+		Print(usr, "<red>%ss can't receive <yellow>Mail><red> here\n", PARAM_NAME_GUEST);
 		goto No_mail_access;
 	}
 	if (!user_exists(name)) {
-		Print(usr, "<red>No such user <white>'<yellow>%s<white>'\n", name);
+		Print(usr, "<red>No such user<yellow> '%s'\n", name);
 		goto No_mail_access;
 	}
 	if (in_StringList(usr->enemies, name) != NULL && !(usr->runtime_flags & RTF_SYSOP)) {

@@ -1,14 +1,14 @@
 <green>This Help screen is a list of keypresses that apply to the <yellow>Sysop menu<green>.
-
-<white><<yellow>space<white>><green>   Leaves the <yellow>Sysop menu<green>
+<yellow>
+<space><green>   Leaves the <yellow>Sysop menu<green>
      <key>h/<key>?  Display this <yellow>Help<green> screen
 
-     <key>r    Create new room
-<white>Ctrl-<key>D<green>    Delete room <yellow>;<green> remove all room data
-     <key>c    Create or delete room categories
+     <key>c    Create new room
+<white>Ctrl-<key>D<green>    Delete room; remove all room data
+     <key>g    Create or delete room categories
      <key>d    Disconnect user
-<white>Ctrl-<key>N<green>    Nuke user <yellow>;<green> remove user data
-     <key>b    Banish<yellow>/<green>Unbanish username
+<white>Ctrl-<key>N<green>    Nuke user; remove user data
+     <key>b    Banish/Unbanish username
      <key>w    Edit TCP wrappers for locking out sites
      <key>u    Remove file from internal cache
      <key>m    Display object allocation summary
@@ -20,13 +20,14 @@
      <key>r    Cancel scheduled reboot
 <white>Ctrl-<key>S<green>    Schedule shutdown
      <key>s    Cancel scheduled shutdown
-     <key>n    Toggle nologin status<yellow>;<green> when set, nobody can login
+     <key>n    Toggle nologin status; when set, nobody can login
 
-<white>Note:<green> When a user or room is deleted, it is moved to the <yellow>trash<white>/<green> folder.
+<white>Note:<green> When a user or room is deleted, it is moved to the <yellow>trash/<green> folder.
       Thus, a system administrator should able to restore the deleted data.
 
 Any changes in the <yellow>Parameters<green> subsection are made in real-time. This means
 that changes to parameters come into effect immediately. The parameters are
 saved in the param file as soon as you leave the subsection. To discard these
-changes and revert to the old configuration, you can <yellow>Reload<green> the param file.
+changes and revert to the old configuration, you can <yellow>Reload<green> the param file
+before exiting the <yellow>Parameters<green> submenu.
  

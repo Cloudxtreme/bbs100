@@ -893,7 +893,7 @@ int color;
 			return EDIT_RETURN;
 		}
 		color = usr->color;
-		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>><red> to abort, <white><<yellow>Ctrl-X<white>><red> to send", KEY_CTRL('X'));
+		Print(usr, "%c<red>Too many lines, press<yellow> <Ctrl-C><red> to abort,<yellow> <Ctrl-X><red> to send", KEY_CTRL('X'));
 		restore_color(usr, color);
 		return 0;
 	}
@@ -1019,7 +1019,7 @@ int color;
 			return EDIT_BREAK;
 		}
 		color = usr->color;
-		Print(usr, "%c<red>Too many lines, press <white><<yellow>Ctrl-C<white>>", KEY_CTRL('X'));
+		Print(usr, "%c<red>Too many lines, press<yellow> <Ctrl-C>", KEY_CTRL('X'));
 		restore_color(usr, color);
 		return 0;
 	}

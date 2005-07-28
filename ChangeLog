@@ -6,6 +6,7 @@ Changes as of July 28th 2005
 - verbose friend notification for putting messages on hold
 - categories listed in columns in Sysop and Room Config menu
 - default is do auto-coloring
+- colored strings all changed to support 'Classic' and 'Modern' coloring
 
 Changes as of July 27th 2005
 - More prompt no longer resets color to green, but restores the color

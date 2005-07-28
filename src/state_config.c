@@ -217,7 +217,7 @@ void state_config_menu(User *usr, char c) {
 			read_text(usr);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] %c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] %c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -238,7 +238,7 @@ void state_config_address(User *usr, char c) {
 				(usr->street == NULL  || !usr->street[0])  ? "<white><unknown street><yellow>"  : usr->street,
 				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
 				(usr->city == NULL    || !usr->city[0])    ? "<white><unknown city><yellow>"    : usr->city,
-				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state><yellow>"   : usr->state,
+				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state>"			: usr->state,
 				(usr->country == NULL || !usr->country[0]) ? "<white><unknown country><yellow>" : usr->country);
 			Print(usr,
 				"<hotkey>P<magenta>hone    : <yellow>%s\n"
@@ -289,7 +289,7 @@ void state_config_address(User *usr, char c) {
 			CALL(usr, STATE_CHANGE_WWW);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Address<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Address%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -369,7 +369,7 @@ void state_config_vanity(User *usr, char c) {
 	Enter(state_config_vanity);
 
 	if (c == INIT_STATE && usr->vanity != NULL && usr->vanity[0])
-		Print(usr, "<green>Your current vanity flag<white>:<cyan> %s\n", usr->vanity);
+		Print(usr, "<green>Your current vanity flag:<cyan> %s\n", usr->vanity);
 
 	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag<yellow>: ");
 	Return;
@@ -379,7 +379,7 @@ void state_config_doing(User *usr, char c) {
 	Enter(state_config_doing);
 
 	if (c == INIT_STATE && usr->doing != NULL && usr->doing[0])
-		Print(usr, "<green>You are currently doing<white>:<cyan> %s\n", usr->doing);
+		Print(usr, "<green>You are currently doing:<cyan> %s\n", usr->doing);
 
 	change_config(usr, c, &usr->doing, "<green>Enter new Doing<yellow>: ");
 	Return;
@@ -389,7 +389,7 @@ void state_config_xmsg_header(User *usr, char c) {
 	Enter(state_config_xmsg_header);
 
 	if (c == INIT_STATE && usr->xmsg_header != NULL && usr->xmsg_header[0])
-		Print(usr, "<green>Your current eXpress Message header<white>:<cyan> %s\n", usr->xmsg_header);
+		Print(usr, "<green>Your current eXpress Message header:<cyan> %s\n", usr->xmsg_header);
 
 	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header<yellow>: ");
 	Return;
@@ -399,7 +399,7 @@ void state_config_reminder(User *usr, char c) {
 	Enter(state_config_reminder);
 
 	if (c == INIT_STATE && usr->reminder != NULL && usr->reminder[0])
-		Print(usr, "<green>Current reminder<white>:<cyan> %s\n", usr->reminder);
+		Print(usr, "<green>Current reminder:<cyan> %s\n", usr->reminder);
 
 	change_config(usr, c, &usr->reminder, "<green>Enter new reminder<yellow>: ");
 	Return;
@@ -458,14 +458,14 @@ void state_change_profile(User *usr, char c) {
 	Enter(state_change_profile);
 
 	if (c == INIT_STATE) {
-		Put(usr, "\n<cyan>Are you sure you wish to change this? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+		Put(usr, "\n<cyan>Are you sure you wish to change this? (Y/n): ");
 		usr->runtime_flags |= RTF_BUSY;
 	} else {
 		switch(yesno(usr, c, 'Y')) {
 			case YESNO_YES:
 				POP(usr);			/* discard current state */
 				usr->runtime_flags |= RTF_UPLOAD;
-				Print(usr, "\n<green>Upload new profile info, press <white><<yellow>Ctrl-C<white>><green> to end\n");
+				Print(usr, "\n<green>Upload new profile info, press<yellow> <Ctrl-C><green> to end\n");
 				edit_text(usr, save_profile, abort_profile);
 				break;
 
@@ -600,7 +600,7 @@ int r;
 				Put(usr, "Password changed\n");
 				usr->runtime_flags |= RTF_CONFIG_EDITED;
 			} else
-				Put(usr, "<red>Passwords didn't match <white>;<red> password NOT changed\n");
+				Put(usr, "<red>Passwords didn't match; password NOT changed\n");
 
 			Free(usr->tmpbuf[TMP_PASSWD]);
 			usr->tmpbuf[TMP_PASSWD] = NULL;
@@ -651,7 +651,7 @@ void state_quicklist_prompt(User *usr, char c) {
 			RET(usr);
 			Return;
 	}
-	Put(usr, "\n<green>Enter number<yellow>: <white>");
+	Put(usr, "\n<green>Enter number: <white>");
 	Return;
 }
 
@@ -711,6 +711,7 @@ void state_config_terminal(User *usr, char c) {
 			Print(usr, "<normal><magenta>\n"
 				"<hotkey>Terminal emulation                   <white>%s<magenta>\n"
 				"Make use of bold/bright <hotkey>attribute    <white>%-3s<magenta>\n",
+
 				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
 				(usr->flags & USR_BOLD) ? "Yes"  : "No"
 			);
@@ -726,15 +727,18 @@ void state_config_terminal(User *usr, char c) {
 					"<white>Customize colors<magenta>\n"
 					"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
 					"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
+
 					color_table[usr->colors[WHITE]].key,	color_table[usr->colors[WHITE]].name,
 					color_table[usr->colors[CYAN]].key,		color_table[usr->colors[CYAN]].name,
 					color_table[usr->colors[YELLOW]].key,	color_table[usr->colors[YELLOW]].name,
 					color_table[usr->colors[BLUE]].key,		color_table[usr->colors[BLUE]].name
 				);
-				Print(usr, "<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
+				Print(usr,
+					"<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
 					"<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>\n"
 					"\n"
 					"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         <hotkey>Defaults for all colors\n",
+
 					color_table[usr->colors[RED]].key,		color_table[usr->colors[RED]].name,
 					color_table[usr->colors[MAGENTA]].key,	color_table[usr->colors[MAGENTA]].name,
 					color_table[usr->colors[GREEN]].key,	color_table[usr->colors[GREEN]].name,
@@ -894,7 +898,7 @@ void state_config_terminal(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Terminal<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Terminal%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -987,7 +991,7 @@ void state_custom_colors(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
-			Put(usr, "\n<green>Colors are<yellow>: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite <black>Blac<hotkey>k <hotkey>D<green>efault");
+			Put(usr, "\n<green>Colors are: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite <black>Blac<hotkey>k <hotkey>D<green>efault");
 			break;
 
 		case ' ':
@@ -1125,7 +1129,7 @@ void state_config_who(User *usr, char c) {
 			);
 			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "\n"
-					"<magenta><hotkey>Who is in this room          <white>(for %ss only)\n", PARAM_NAME_SYSOP
+					"<magenta><hotkey>Who is in this room         <white> (for %ss only)\n", PARAM_NAME_SYSOP
 				);
 
 			break;
@@ -1198,13 +1202,13 @@ void state_config_who(User *usr, char c) {
 			who_list(usr, WHO_LIST_SHORT | WHO_LIST_ROOM);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Who<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Who%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
 void state_config_who_sysop(User *usr, char c) {
 	POP(usr);
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Who<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Who%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 }
 
 
@@ -1259,10 +1263,10 @@ void state_config_options(User *usr, char c) {
 			if (usr->flags & USR_ANSI)
 				Print(usr,
 					"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n"
-					"Do automatic <hotkey>coloring of symbols     <white>%s<magenta>\n",
+					"<hotkey>Color scheme                         <white>%s<magenta>\n",
 
 					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No",
-					(usr->flags & USR_DONT_AUTO_COLOR) ? "No" : "Yes"
+					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
 				);
 
 			Print(usr, "\n"
@@ -1354,7 +1358,7 @@ void state_config_options(User *usr, char c) {
 			if (!(usr->flags & USR_ANSI))
 				break;
 
-			CONFIG_OPTION(USR_DONT_AUTO_COLOR, "Automatic coloring");
+			CONFIG_OPTION(USR_DONT_AUTO_COLOR, "Color scheme");
 
 		case 'a':
 		case 'A':
@@ -1367,7 +1371,7 @@ void state_config_options(User *usr, char c) {
 		case '0':
 			CONFIG_OPTION(USR_HACKERZ, "Hackerz mode");
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Options<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Options%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -1427,7 +1431,7 @@ char buf[MAX_LINE], *p;
 			select_tz_continent(usr);
 			Return;
 	}
-	Print(usr, "\n<white>[<yellow>Config<white>] <yellow>Time Zone<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Print(usr, "<yellow>\n[Config] Time Zone%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 

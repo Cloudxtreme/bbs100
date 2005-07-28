@@ -115,7 +115,11 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 			if (c != ' ')
 				is_symbol = 1;
 
-			if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
+/*
+	for some characters auto-coloring can be straight ugly
+	e.g, the dot, the question mark
+*/
+			if (c != '.' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
 				do_auto_color = 1;
 
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
@@ -170,6 +174,8 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				write_StringIO(dev, "\b", 1);
 				if (*cpos)
 					(*cpos)--;
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case '\n':
@@ -179,16 +185,22 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				(*lines)++;
 				if (max_lines > -1 && *lines >= max_lines)
 					return pos;
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case KEY_CTRL('X'):
 				write_StringIO(dev, "\r", 1);
 				*cpos = 0;
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case KEY_CTRL('A'):
 				if (usr->flags & USR_BEEP)
 					write_StringIO(dev, "\a", 1);
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case KEY_CTRL('Z'):
@@ -241,6 +253,8 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 					*cpos += 3;
 				}
 				put_StringIO(dev, buf);
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case KEY_CTRL('N'):
@@ -253,12 +267,16 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 				if (usr->flags & USR_BOLD)
 					put_StringIO(dev, "\x1b[1m");
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 			case KEY_CTRL('D'):
 				if (usr->flags & (USR_ANSI | USR_BOLD))
 					put_StringIO(dev, "\x1b[0m");
 				usr->color = c;
+
+				dont_auto_color = force_auto_color_off;
 				break;
 
 /* long codes are specified as '<yellow>', '<beep>', etc. */
@@ -936,7 +954,7 @@ int color;
 			break;
 
 		case WHITE:
-			color = color_table[WHITE].key;
+			color = color_table[YELLOW].key;
 			break;
 
 		default:
@@ -1421,9 +1439,9 @@ char *room_name(User *usr, Room *r, char *buf) {
 		return buf;
 
 	if (usr->flags & USR_ROOMNUMBERS)
-		sprintf(buf, "<white>%u <yellow>%s<white>>", r->number, r->name);
+		sprintf(buf, "<white>%u <yellow>%s>", r->number, r->name);
 	else
-		sprintf(buf, "<yellow>%s<white>>", r->name);
+		sprintf(buf, "<yellow>%s>", r->name);
 	return buf;
 }
 

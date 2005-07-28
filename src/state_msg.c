@@ -272,10 +272,10 @@ void enter_the_message(User *usr) {
 		usr->new_message->flags &= ~(MSG_FROM_SYSOP | MSG_FROM_ROOMAIDE);
 
 	if (usr->runtime_flags & RTF_UPLOAD)
-		Print(usr, "<green>Upload %smessage, press <white><<yellow>Ctrl-C<white>><green> to end\n\n",
+		Print(usr, "<green>Upload %smessage, press<yellow> <Ctrl-C><green> to end\n\n",
 			(usr->curr_room == usr->mail) ? "mail " : "");
 	else
-		Print(usr, "<green>Enter %smessage, press <white><<yellow>return<white>><green> twice or press <white><<yellow>Ctrl-C<white>><green> to end\n\n",
+		Print(usr, "<green>Enter %smessage, press<yellow> <return><green> twice or press<yellow> <Ctrl-C><green> to end\n\n",
 			(usr->curr_room == usr->mail) ? "mail " : "");
 
 	msg_header(usr, usr->new_message);
@@ -308,7 +308,7 @@ StringIO *tmp;
 
 	if (usr->curr_room == NULL) {
 		Print(usr, "<red>In the meantime, the current room has vanished\n"
-			"You are dropped off in the <yellow>%s<white>>\n", Lobby_room->name);
+			"You are dropped off in the <yellow>%s>\n", Lobby_room->name);
 
 		destroy_Message(usr->new_message);
 		usr->new_message = NULL;
@@ -359,7 +359,7 @@ StringIO *tmp;
 						continue;
 					}
 					if ((sl2 = in_StringList(u->enemies, usr->name)) != NULL) {
-						Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail<white>><red> from you\n", sl->str);
+						Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
 
 						remove_StringList(&usr->new_message->to, sl2);
 						destroy_StringList(sl2);
@@ -570,7 +570,7 @@ void (*abort_func)(void *, char);
 	Enter(state_abort_text);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		Put(usr, "<cyan>Are you sure? (y/N): ");
 		Return;
 	}
 	switch(yesno(usr, c, 'N')) {
@@ -855,7 +855,7 @@ int r;
 	Enter(state_del_msg_prompt);
 
 	if (c == INIT_STATE) {
-		Print(usr, "<cyan>Are you sure? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		Print(usr, "<cyan>Are you sure? (y/N): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -1195,8 +1195,8 @@ int from_me = 0;
 		if (from_me)
 			sprintf(frombuf, "as %s ", PARAM_NAME_SYSOP);
 		else
-			sprintf(frombuf, "<%s>%s<white>:<%s> %s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow",
-				PARAM_NAME_SYSOP, (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
+			sprintf(frombuf, "<%s>%s: %s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow",
+				PARAM_NAME_SYSOP, msg->from);
 	} else {
 		if (!from_me)
 			sprintf(frombuf, "<%s>%s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
@@ -1219,14 +1219,14 @@ int from_me = 0;
 					strcpy(msgtype, "Question");
 
 	if ((msg->flags & BUFMSG_EMOTE) && !from_me) {
-		sprintf(buf, "<yellow>%c<white>%d<yellow>:<white>%02d<yellow>%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
+		sprintf(buf, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
 			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', frombuf);
 	} else {
 		if (msg->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION)) {
 			if (from_me)
-				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to <yellow>%s<cyan> %sat <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to <yellow>%s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
-				sprintf(buf, "<blue>*** <cyan>%s%s<cyan> received from %s<cyan> at <white>%02d<yellow>:<white>%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>*** <cyan>%s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
 		}
 	}
 	Return buf;
@@ -1877,7 +1877,7 @@ void state_press_any_key(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= RTF_BUSY;
-		Put(usr, "<red>-- Press any key to continue --");
+		Put(usr, "<red> \b-- Press any key to continue --");
 	} else {
 		wipe_line(usr);
 		RET(usr);
@@ -2173,7 +2173,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			max_dl = MAX_LINE*3-1;
 
 		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && !msg->anon[0]) {
-			l = sprintf(buf, "<cyan>%s<green>, to ", print_date(usr, msg->mtime, date_buf));
+			l = sprintf(buf, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf));
 			dl = color_strlen(buf);
 
 			for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
@@ -2189,9 +2189,9 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
 		} else {
 			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
-				print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+				print_StringIO(usr->text, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 			else {
-				l = sprintf(buf, "<cyan>%s<green>, from %s<green> to ", print_date(usr, msg->mtime, date_buf), from);
+				l = sprintf(buf, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf), from);
 				dl = color_strlen(buf);
 
 				for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
@@ -2208,7 +2208,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			}
 		}
 	} else
-		print_StringIO(usr->text, "<cyan>%s<green>, from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+		print_StringIO(usr->text, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 	Return;
 }
 
@@ -2393,13 +2393,13 @@ int l, color;
 
 		default:
 			color = usr->color;
-			Put(usr, "<cyan>Press <white><<yellow>space<white>><cyan> for next page, <white><<yellow>b<white>><cyan> for previous page, <white><<yellow>enter<white>><cyan> for next line");
+			Put(usr, "<cyan>Press<yellow> <space><cyan> for next page,<yellow> <b><cyan> for previous page,<yellow> <enter><cyan> for next line");
 			restore_color(usr, color);
 			Return;
 	}
 	if (usr->scrollp != NULL) {
 		color = usr->color;
-		Print(usr, "<white>--<yellow>More<white>-- (<cyan>line %d<white>/<cyan>%d %d<white>%%)", usr->read_lines, usr->total_lines,
+		Print(usr, "<yellow> \b--More--<cyan> (line %d/%d %d%%)", usr->read_lines, usr->total_lines,
 			100 * usr->read_lines / usr->total_lines);
 		restore_color(usr, color);
 	} else {

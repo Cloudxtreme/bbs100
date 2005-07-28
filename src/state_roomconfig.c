@@ -198,11 +198,11 @@ void state_room_config_menu(User *usr, char c) {
 		case 'K':
 			Put(usr, "Kickout\n");
 			if (usr->curr_room == Lobby_room) {
-				Print(usr, "<red>You can't kick anyone from the <yellow>%s<white>>\n", Lobby_room->name);
+				Print(usr, "<red>You can't kick anyone from the <yellow>%s>\n", Lobby_room->name);
 				break;
 			}
 			if (usr->curr_room == usr->mail) {
-				Put(usr, "<red>You can't kick anyone from the <yellow>Mail<white>><red> room\n");
+				Put(usr, "<red>You can't kick anyone from the <yellow>Mail><red> room\n");
 				break;
 			}
 			listdestroy_StringList(usr->recipients);
@@ -402,9 +402,9 @@ void state_room_config_menu(User *usr, char c) {
 			break;
 	}
 	if (usr->flags & USR_ROOMNUMBERS)
-		Print(usr, "\n<white>[%u <yellow>%s<white>]<yellow> Room Config<white>> ", usr->curr_room->number, usr->curr_room->name);
+		Print(usr, "<yellow>\n[%u %s] Room Config%c ", usr->curr_room->number, usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	else
-		Print(usr, "\n<white>[<yellow>%s<white>]<yellow> Room Config<white>> ", usr->curr_room->name);
+		Print(usr, "<yellow>\n[%s] Room Config%c ", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -499,7 +499,7 @@ void state_change_roominfo(User *usr, char c) {
 	Enter(state_change_roominfo);
 
 	if (c == INIT_STATE) {
-		Put(usr, "\n<cyan>Are you sure you wish to change this? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+		Put(usr, "\n<cyan>Are you sure you wish to change this? (Y/n): ");
 		usr->runtime_flags |= RTF_BUSY;
 	} else {
 		switch(yesno(usr, c, 'Y')) {
@@ -507,7 +507,7 @@ void state_change_roominfo(User *usr, char c) {
 				POP(usr);
 				usr->runtime_flags &= ~RTF_ROOM_EDITED;
 				usr->runtime_flags |= RTF_UPLOAD;
-				Print(usr, "\n<green>Upload new room info, press <white><<yellow>Ctrl-C<white>><green> to end\n");
+				Print(usr, "\n<green>Upload new room info, press<yellow> <Ctrl-C><green> to end\n");
 				edit_text(usr, save_roominfo, abort_roominfo);
 				break;
 
@@ -662,12 +662,12 @@ int r;
 
 	if (c == INIT_STATE) {
 		if (usr->curr_room == Lobby_room) {
-			Print(usr, "<red>You can't kick anyone out of the <yellow>%s<white>><red>!\n", Lobby_room->name);
+			Print(usr, "<red>You can't kick anyone out of the <yellow>%s><red>!\n", Lobby_room->name);
 			RET(usr);
 			Return;
 		}
 		if (usr->curr_room->number == MAIL_ROOM) {
-			Put(usr, "<red>You can't kick anyone out of the <yellow>Mail<white>><red> room!\n");
+			Put(usr, "<red>You can't kick anyone out of the <yellow>Mail><red> room!\n");
 			RET(usr);
 			Return;
 		}
@@ -722,7 +722,7 @@ int r;
 				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 				if (u->curr_room == usr->curr_room) {
-					Tell(u, "<green>You are being dropped off in the <yellow>%s<white>>", Lobby_room->name);
+					Tell(u, "<green>You are being dropped off in the <yellow>%s>", Lobby_room->name);
 
 					if ((u->runtime_flags & RTF_ROOMAIDE)
 						&& in_StringList(Lobby_room->room_aides, usr->name) == NULL)
@@ -756,7 +756,7 @@ int r;
 					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
 
 					if (u->curr_room == usr->curr_room) {
-						Tell(u, "<green>You are being dropped off in the <yellow>%s<white>>\n", Lobby_room->name);
+						Tell(u, "<green>You are being dropped off in the <yellow>%s>\n", Lobby_room->name);
 
 						if ((u->runtime_flags & RTF_ROOMAIDE)
 							&& in_StringList(Lobby_room->room_aides, usr->name) == NULL)
@@ -833,7 +833,7 @@ int r;
 			destroy_StringList(sl);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-				Tell(u, "\n<magenta>You are no longer %s of <yellow>%s<white>>\n", PARAM_NAME_ROOMAIDE, usr->curr_room->name);
+				Tell(u, "\n<magenta>You are no longer %s of <yellow>%s>\n", PARAM_NAME_ROOMAIDE, usr->curr_room->name);
 				if (u->curr_room == usr->curr_room)
 					u->runtime_flags &= ~RTF_ROOMAIDE;
 			}
@@ -842,7 +842,7 @@ int r;
 			Print(usr, "<yellow>%s<green> assigned as %s\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr)
-				Tell(u, "\n<magenta>You have been assigned as %s of <yellow>%s<white>>\n", PARAM_NAME_ROOMAIDE, usr->curr_room->name);
+				Tell(u, "\n<magenta>You have been assigned as %s of <yellow>%s>\n", PARAM_NAME_ROOMAIDE, usr->curr_room->name);
 		}
 		usr->runtime_flags |= RTF_ROOM_EDITED;
 		RET(usr);
@@ -923,14 +923,14 @@ void state_reset_creation_date(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		if (usr->curr_room->number == MAIL_ROOM) {
-			Put(usr, "<red>You can<yellow>'<red>t reset the creation date of the <yellow>Mail<white>><red> room\n");
+			Put(usr, "<red>You can<yellow>'<red>t reset the creation date of the <yellow>Mail><red> room\n");
 			RET(usr);
 			Return;
 		}
 		Put(usr, "\n"
 			"<yellow>Resetting the creation date makes all users unjoin the room.\n"
 			"\n"
-			"<cyan>Are you sure you wish to reset the creation date? <white>(<cyan>y<white>/<cyan>N<white>): "
+			"<cyan>Are you sure you wish to reset the creation date? (y/N): "
 		);
 	} else {
 		switch(yesno(usr, c, 'N')) {
@@ -943,7 +943,7 @@ void state_reset_creation_date(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Reset creation date, <hotkey>Yes or <hotkey>No? <white>(<cyan>y<white>/<cyan>N<white>): ");
+				Put(usr, "<cyan>Reset creation date, <hotkey>Yes or <hotkey>No? (y/N): ");
 		}
 	}
 	Return;
@@ -957,7 +957,7 @@ void state_remove_all_posts(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		if (usr->curr_room->number == MAIL_ROOM) {
-			Put(usr, "<red>You can't remove any posts from the <yellow>Mail<white>><red> room\n");
+			Put(usr, "<red>You can't remove any posts from the <yellow>Mail><red> room\n");
 			RET(usr);
 			Return;
 		}
@@ -965,7 +965,7 @@ void state_remove_all_posts(User *usr, char c) {
 "<red>Warning<white>:<yellow> After removing all posts<white>,<yellow> you should also reset the creation date of\n"
 "the room<white>.<yellow> This makes everyone unjoin <white>(<yellow>bad for invite<white>-<yellow>only rooms<white>)\n");
 
-		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? (y/N): ");
 	} else {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
@@ -978,7 +978,7 @@ void state_remove_all_posts(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Remove all posts, <hotkey>Yes or <hotkey>No? <white>(<cyan>y<white>/<cyan>N<white>): ");
+				Put(usr, "<cyan>Remove all posts, <hotkey>Yes or <hotkey>No? (y/N): ");
 		}
 	}
 	Return;
@@ -1015,7 +1015,7 @@ void state_delete_room(User *usr, char c) {
 	Enter(state_delete_room);
 
 	if (c == INIT_STATE)
-		Put(usr, "<cyan>Are you sure? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		Put(usr, "<cyan>Are you sure? (y/N): ");
 	else {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
@@ -1026,7 +1026,7 @@ void state_delete_room(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Delete this room, <hotkey>Yes or <hotkey>No? <white>(<cyan>y<white>/<cyan>N<white>): ");
+				Put(usr, "<cyan>Delete this room, <hotkey>Yes or <hotkey>No? (y/N): ");
 		}
 	}
 	Return;
@@ -1044,7 +1044,7 @@ void (*func)(User *, char *, ...);
 	Enter(delete_room);
 
 	if (room->number == LOBBY_ROOM || room->number == MAIL_ROOM || room->number == HOME_ROOM) {
-		Print(usr, "<red>The <yellow>%s<white>><red> room is special and cannot be deleted\n", room->name);
+		Print(usr, "<red>The <yellow>%s><red> room is special and cannot be deleted\n", room->name);
 		Return;
 	}
 	remove_Room(&AllRooms, room);
@@ -1057,7 +1057,7 @@ void (*func)(User *, char *, ...);
 				func = Tell;
 
 			func(u, "\n<beep><red>The current room is being removed from the BBS.\n"
-				"You are dropped off in the <yellow>%s<white>>\n\n", Lobby_room->name);
+				"You are dropped off in the <yellow>%s>\n\n", Lobby_room->name);
 /* unjoin */
 			if ((j = in_Joined(u->rooms, u->curr_room->number)) != NULL) {
 				remove_Joined(&u->rooms, j);
@@ -1078,7 +1078,7 @@ void (*func)(User *, char *, ...);
 	rename_dir(path, newpath);
 
 	log_msg("SYSOP room %d %s removed by %s", room->number, room->name, usr->name);
-	Print(usr, "<yellow>%s<white>><red> deleted\n", room->name);
+	Print(usr, "<yellow>%s><red> deleted\n", room->name);
 
 	destroy_Room(room);
 	Return;

@@ -4,23 +4,23 @@
      <key>h/<key>?  Display this <yellow>Help<green> screen
 
      <key>e    Edit room info
-<white>Shft-<key>I<green>    Invite<yellow>/<green>Uninvite user into invite<yellow>-<green>only room
-     <key>i    Show invited users in invite<yellow>-<green>only room
-<white>Shft-<key>K<green>    Kickout<yellow>/<green>Undo kickout user
+<white>Shft-<key>I<green>    Invite/Uninvite user into invite-only room
+     <key>i    Show invited users in invite-only room
+<white>Shft-<key>K<green>    Kickout/Undo kickout user
      <key>k    Show kicked users
 
      <key>n    Change the room name
      <key>c    Change room category
 
-<white>Note: <yellow>Invite<green> and <yellow>uninvite<green> apply to invite<yellow>-<green>only rooms.
-      Also mind that '<yellow>uninvite<green>' is not the same as '<yellow>kickout<green>' and '<yellow>invite<green>'
-      is not the same as '<yellow>undo kickout<green>'.
+<white>Note: <yellow>Invite<green> and <yellow>uninvite<green> apply to invite-only rooms.
+      Also mind that<yellow> 'uninvite'<green> is not the same as<yellow> 'kickout'<green> and<yellow> 'invite'<green>
+      is not the same as<yellow> 'undo kickout'<green>.
 
-     Mind that a hidden room can be public<yellow>;<green> this is also known as a
-     '<yellow>guess name<green>' room. It is often desired to make a hidden room invite-only
+     Mind that a hidden room can be public; this is also known as a
+     <yellow>guess name<green> room. It is often desired to make a hidden room invite-only
      as well.
 
-     The option '<yellow>Change room name<green>' is not available in the <yellow>Home<white>><green> room.
+     The option<yellow> 'Change room name'<green> is not available in the <yellow>Home><green> room.
 
      The maximum amount of messages can be changed by a sysop.
      If you want to have a room altered in another way, for example make it

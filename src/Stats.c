@@ -485,13 +485,13 @@ unsigned long num;
 		put_StringIO(usr->text, "\n");
 
 		print_StringIO(usr->text, "<green>Cache size: <yellow>%s", print_number(cache_size, date_buf));
-		print_StringIO(usr->text, "<white>/<yellow>%s<green>   ", print_number(num_cached, date_buf));
+		print_StringIO(usr->text, "/%s<green>   ", print_number(num_cached, date_buf));
 		print_StringIO(usr->text, "hits: <yellow>%s<green>   ", print_number(stats.cache_hit, date_buf));
 		print_StringIO(usr->text, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf));
 		if ((stats.cache_hit + stats.cache_miss) > 0)
-			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
+			print_StringIO(usr->text, "rate: <yellow>%lu%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
 		else
-			print_StringIO(usr->text, "rate: <yellow>%lu<white>%%", 0UL);
+			print_StringIO(usr->text, "rate: <yellow>%lu%%", 0UL);
 
 		print_StringIO(usr->text, "\n<green>Total memory in use: <yellow>%s <green>bytes\n", print_number(memory_total, date_buf));
 	}

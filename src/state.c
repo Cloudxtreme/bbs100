@@ -397,7 +397,7 @@ int i, idx;
 					PUSH(usr, STATE_X_PROMPT);
 					Return;
 				} else
-					Put(usr, "<red>That quicklist entry is empty. Press <white><<yellow>Ctrl<white>-<yellow>C<white>><red> to enter the <yellow>Config menu<red>\n"
+					Put(usr, "<red>That quicklist entry is empty. Press<yellow> <Ctrl-C><red> to enter the <yellow>Config menu<red>\n"
 						"so you can configure your quicklist\n");
 			} else
 				if (PARAM_HAVE_DISABLED_MSG)
@@ -635,8 +635,7 @@ int i, idx;
 				usr->runtime_flags ^= RTF_HOLD;
 
 				if (usr->runtime_flags & RTF_HOLD) {
-					Put(usr, "<magenta>Messages will be held until you press "
-						"<white><<yellow>Ctrl<white>-<yellow>B<white>> <magenta>again\n");
+					Put(usr, "<magenta>Messages will be held until you press<yellow> <Ctrl-B><magenta> again\n");
 
 					if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
 						usr->flags &= ~USR_HELPING_HAND;
@@ -712,7 +711,7 @@ int i, idx;
 					goto_room(usr, usr->mail);		/* 'mail anywhere', by Richard of MatrixBBS */
 			} else {
 				if (PARAM_HAVE_DISABLED_MSG)
-					Put(usr, "<red>Sorry, but this server has no <yellow>Mail<white>> <red>room\n");
+					Put(usr, "<red>Sorry, but this server has no <yellow>Mail> <red>room\n");
 				break;
 			}
 
@@ -1064,7 +1063,7 @@ int i, idx;
 
 		case 'c':
 		case 'C':
-			Put(usr, "<red>Press <white><<yellow>Ctrl-C<white>><red> or <white><<yellow>Ctrl-O<white>><red> to access the Config menu\n");
+			Put(usr, "<red>Press<yellow> <Ctrl-C><red> or<yellow> <Ctrl-O><red> to access the Config menu\n");
 			break;
 
 		case KEY_CTRL('C'):				/* this don't work for some people (?) */
@@ -1137,10 +1136,7 @@ void PrintPrompt(User *usr) {
 			listdestroy_StringList(usr->chat_history);
 			usr->chat_history = NULL;
 
-			if (usr->runtime_flags & RTF_SYSOP)
-				Put(usr, "\n<white># ");
-			else
-				Put(usr, "\n<white>> ");
+			Print(usr, "\n<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 		} else {
 			char roomname[MAX_LINE];
 
@@ -1158,10 +1154,10 @@ void PrintPrompt(User *usr) {
 				remaining = usr->curr_room->msg_idx - 1 - usr->curr_msg;
 
 				if (usr->flags & USR_ROOMNUMBERS)
-					Print(usr, "\n<white>[%u <yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
+					Print(usr, "<yellow>\n[%u %s]<green> msg #%s (%d remaining) %c ",
 						usr->curr_room->number, roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
-					Print(usr, "\n<white>[<yellow>%s<white>]<green> msg #%s (%d remaining) <white>%c ",
+					Print(usr, "<yellow>\n[%s]<green> msg #%s (%d remaining) %c ",
 						roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 			} else {
 				destroy_Message(usr->message);
@@ -1170,15 +1166,14 @@ void PrintPrompt(User *usr) {
 /* print a prompt with roomname */
 
 				if (usr->flags & USR_ROOMNUMBERS)
-					Print(usr, "\n<white>%u <yellow>%s<white>%c ", usr->curr_room->number, roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+					Print(usr, "<yellow>\n%u %s%c ", usr->curr_room->number, roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
-					Print(usr, "\n<yellow>%s<white>%c ", roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+					Print(usr, "<yellow>\n%s%c ", roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 			}
 		}
 	}
 	Return;
 }
-
 
 void print_version_info(User *usr) {
 char version_buf[256];
@@ -1763,7 +1758,7 @@ StringList *sl;
 		usr->conn->state &= ~CONN_LOOPING;
 		usr->runtime_flags |= RTF_BUSY;
 
-		Put(usr, "<cyan>Do you wish to <yellow>Mail<white>><cyan> the message? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): ");
 		Return;
 	}
 	switch(yesno(usr, c, 'Y')) {
@@ -2239,7 +2234,7 @@ int r;
 			Return;
 		}
 		if (usr->curr_room == usr->mail) {
-			Put(usr, "<red>You can't Zap your own <yellow>Mail<white>><red> room\n");
+			Put(usr, "<red>You can't Zap your own <yellow>Mail><red> room\n");
 			RET(usr);
 			Return;
 		}
@@ -2253,7 +2248,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		Put(usr, "<cyan>Are you sure? <white>(<cyan>Y<white>/<cyan>n<white>): ");
+		Put(usr, "<cyan>Are you sure? (Y/n): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -2289,7 +2284,7 @@ int r;
 	Enter(state_zapall_prompt);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? <white>(<cyan>y<white>/<cyan>N<white>): ");
+		Put(usr, "<cyan>Are you sure? (y/N): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -2768,9 +2763,9 @@ struct tm *tm;
 	sl = NULL;
 	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
 		if (total == 1)
-			print_StringIO(usr->text, "<green>You are the only one in <yellow>%s<white>>\n", usr->curr_room->name);
+			print_StringIO(usr->text, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
 		else
-			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s<white>><magenta> at <yellow>%02d<white>:<yellow>%02d\n",
+			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s><magenta> at <yellow>%02d<white>:<yellow>%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				usr->curr_room->name, tm->tm_hour, tm->tm_min);
 	} else {
@@ -2849,11 +2844,10 @@ int read_it = 1, idx;
 			}
 		}
 	}
-	sprintf(buf, "%c%c%c %3u %c%s%c>",
+	sprintf(buf, "%c%c%c %3u %c%s>",
 		status[0], status[1],
 		(char)color_by_name("white"), r->number,
-		(char)color_by_name("yellow"), r->name,
-		(char)color_by_name("white"));
+		(char)color_by_name("yellow"), r->name);
 
 	sprintf(buf2, "%-50s", buf);
 
@@ -2867,14 +2861,13 @@ int read_it = 1, idx;
 
 		l = strlen(buf2);
 		for(sl = r->room_aides; sl != NULL && l < MAX_LINE; sl = sl->next)
-			l += sprintf(buf2+l, " %c%s%c,", (char)color_by_name("cyan"), sl->str, (char)color_by_name("white"));
+			l += sprintf(buf2+l, " %c%s,", (char)color_by_name("cyan"), sl->str);
 
-		l -= 2;
+		l--;							/* strip the final comma */
 		buf2[l] = 0;
 		if (l > MAX_LINE) {				/* display as '...' */
 			buf2[MAX_LINE-1] = 0;
 			buf2[MAX_LINE-2] = buf2[MAX_LINE-3] = buf2[MAX_LINE-4] = '.';
-			buf2[MAX_LINE-5] = (char)color_by_name("white");
 		}
 	}
 	buf2[MAX_LINE-1] = 0;
@@ -2914,7 +2907,7 @@ char *category = NULL;
 				continue;
 		}
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
-			print_StringIO(usr->text, "\n<white>[<cyan>%s<white>]\n", r->category);
+			print_StringIO(usr->text, "<cyan>\n[%s]\n", r->category);
 			category = r->category;
 		}
 		print_known_room(usr, r);
@@ -2984,7 +2977,7 @@ StringList *sl;
 		j->roominfo_read = usr->curr_room->roominfo_changed;		/* now we've read it */
 
 	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<white>Room info of <yellow>%s<white>> (room #%u)\n",
+	print_StringIO(usr->text, "<white>Room info of <yellow>%s><white> (room #%u)\n",
 		usr->curr_room->name, usr->curr_room->number);
 
 	if (usr->curr_room->generation) {
@@ -3237,7 +3230,7 @@ void state_chatroom(User *usr, char c) {
 
 	spew_BufferedMsg(usr);
 
-	Put(usr, "\n<white>> ");
+	Print(usr, "\n<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -3709,9 +3702,9 @@ StringList *sl;
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);
 		else
-			Print(usr, "\n<magenta>Welcome to <yellow>%s<white>>\n", usr->curr_room->name);
+			Print(usr, "\n<magenta>Welcome to <yellow>%s%c\n", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	} else
-		Print(usr, "\n<yellow>%s<white>>\n", usr->curr_room->name);
+		Print(usr, "\n<yellow>%s%c\n", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 
 	if (STRING_CHANCE)
 		str = PARAM_NOTIFY_ENTER_CHAT;
@@ -3883,13 +3876,13 @@ char zone_color[16], zone_color2[16];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		return sprintf(buf, "<cyan>%-15s <%s>%02d<white>:<%s>%02d %cM",
+		return sprintf(buf, "<cyan>%-15s <%s>%02d:%02d %cM",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
-			zone_color2, t->tm_hour, zone_color2, t->tm_min, am_pm);
+			zone_color2, t->tm_hour, t->tm_min, am_pm);
 	}
-	return sprintf(buf, "<cyan>%-15s <%s>%02d<white>:<%s>%02d",
+	return sprintf(buf, "<cyan>%-15s <%s>%02d:%02d",
 		(worldclock[item].name == NULL) ? "" : worldclock[item].name,
-		zone_color2, t->tm_hour, zone_color2, t->tm_min);
+		zone_color2, t->tm_hour, t->tm_min);
 }
 
 void print_calendar(User *usr) {
