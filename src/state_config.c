@@ -295,7 +295,7 @@ void state_config_address(User *usr, char c) {
 
 void state_change_realname(User *usr, char c) {
 	Enter(state_change_realname);
-	change_config(usr, c, &usr->real_name, "<green>Enter your real name<yellow>: ");
+	change_config(usr, c, &usr->real_name, "<green>Enter your real name: <yellow>");
 	Return;
 }
 
@@ -318,49 +318,49 @@ void state_change_address(User *usr, char c) {
 
 void state_change_street(User *usr, char c) {
 	Enter(state_change_street);
-	change_config(usr, c, &usr->street, "<green>Enter your street and number<yellow>: ");
+	change_config(usr, c, &usr->street, "<green>Enter your street and number: <yellow>");
 	Return;
 }
 
 void state_change_zipcode(User *usr, char c) {
 	Enter(state_change_zipcode);
-	change_config(usr, c, &usr->zipcode, "<green>Enter your ZIP or postal code<yellow>: ");
+	change_config(usr, c, &usr->zipcode, "<green>Enter your ZIP or postal code: <yellow>");
 	Return;
 }
 
 void state_change_city(User *usr, char c) {
 	Enter(state_change_city);
-	change_config(usr, c, &usr->city, "<green>Enter the city you live in<yellow>: ");
+	change_config(usr, c, &usr->city, "<green>Enter the city you live in: <yellow>");
 	Return;
 }
 
 void state_change_state(User *usr, char c) {
 	Enter(state_change_state);
-	change_config(usr, c, &usr->state, "<green>Enter the state you are from<yellow>: ");
+	change_config(usr, c, &usr->state, "<green>Enter the state you are from: <yellow>");
 	Return;
 }
 
 void state_change_country(User *usr, char c) {
 	Enter(state_change_country);
-	change_config(usr, c, &usr->country, "<green>Enter your country<yellow>: ");
+	change_config(usr, c, &usr->country, "<green>Enter your country: <yellow>");
 	Return;
 }
 
 void state_change_phone(User *usr, char c) {
 	Enter(state_change_phone);
-	change_config(usr, c, &usr->phone, "<green>Enter your phone number<yellow>: ");
+	change_config(usr, c, &usr->phone, "<green>Enter your phone number: <yellow>");
 	Return;
 }
 
 void state_change_email(User *usr, char c) {
 	Enter(state_change_email);
-	change_config(usr, c, &usr->email, "<green>Enter your e-mail address<yellow>: ");
+	change_config(usr, c, &usr->email, "<green>Enter your e-mail address: <yellow>");
 	Return;
 }
 
 void state_change_www(User *usr, char c) {
 	Enter(state_change_www);
-	change_config(usr, c, &usr->www, "<green>Enter your WWW address<yellow>: ");
+	change_config(usr, c, &usr->www, "<green>Enter your WWW address: <yellow>");
 	Return;
 }
 
@@ -371,7 +371,7 @@ void state_config_vanity(User *usr, char c) {
 	if (c == INIT_STATE && usr->vanity != NULL && usr->vanity[0])
 		Print(usr, "<green>Your current vanity flag:<cyan> %s\n", usr->vanity);
 
-	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag<yellow>: ");
+	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag: <yellow>");
 	Return;
 }
 
@@ -381,7 +381,7 @@ void state_config_doing(User *usr, char c) {
 	if (c == INIT_STATE && usr->doing != NULL && usr->doing[0])
 		Print(usr, "<green>You are currently doing:<cyan> %s\n", usr->doing);
 
-	change_config(usr, c, &usr->doing, "<green>Enter new Doing<yellow>: ");
+	change_config(usr, c, &usr->doing, "<green>Enter new Doing: <yellow>");
 	Return;
 }
 
@@ -391,7 +391,7 @@ void state_config_xmsg_header(User *usr, char c) {
 	if (c == INIT_STATE && usr->xmsg_header != NULL && usr->xmsg_header[0])
 		Print(usr, "<green>Your current eXpress Message header:<cyan> %s\n", usr->xmsg_header);
 
-	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header<yellow>: ");
+	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header: <yellow>");
 	Return;
 }
 
@@ -401,7 +401,7 @@ void state_config_reminder(User *usr, char c) {
 	if (c == INIT_STATE && usr->reminder != NULL && usr->reminder[0])
 		Print(usr, "<green>Current reminder:<cyan> %s\n", usr->reminder);
 
-	change_config(usr, c, &usr->reminder, "<green>Enter new reminder<yellow>: ");
+	change_config(usr, c, &usr->reminder, "<green>Enter new reminder: <yellow>");
 	Return;
 }
 
@@ -413,7 +413,7 @@ int r;
 	if (c == INIT_STATE) {
 		if (usr->default_anon != NULL && usr->default_anon[0])
 			Print(usr, "<green>Your current default anonymous alias is: <cyan>%s\n", usr->default_anon);
-		Put(usr, "<green>Enter new alias<yellow>: ");
+		Put(usr, "<green>Enter new alias: <yellow>");
 	}
 	r = edit_name(usr, c);
 
@@ -519,7 +519,7 @@ int r;
 	Enter(state_config_password);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter old password<yellow>: ");
+		Put(usr, "<green>Enter old password: <yellow>");
 
 	r = edit_password(usr, c);
 
@@ -552,7 +552,7 @@ int r;
 	Enter(state_change_password);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<green>Enter new password<yellow>: ");
+		Put(usr, "<green>Enter new password: <yellow>");
 
 		Free(usr->tmpbuf[TMP_PASSWD]);
 		usr->tmpbuf[TMP_PASSWD] = NULL;
@@ -575,7 +575,7 @@ int r;
 				CURRENT_STATE(usr);
 				Return;
 			}
-			Put(usr, "<green>Enter it again (for verification)<yellow>: ");
+			Put(usr, "<green>Enter it again (for verification): <yellow>");
 
 			if ((usr->tmpbuf[TMP_PASSWD] = cstrdup(usr->edit_buf)) == NULL) {
 				Perror(usr, "Out of memory");
@@ -1082,9 +1082,9 @@ void state_custom_colors(User *usr, char c) {
 			Return;
 	}
 	if (usr->read_lines == BACKGROUND)
-		Put(usr, "\n<cyan>Change the background color to<white>: ");
+		Put(usr, "\n<cyan>Change the background color to: <white>");
 	else
-		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to<white>: ", 
+		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to: <white>", 
 			color_table[usr->read_lines].key,
 			color_table[usr->read_lines].name);
 	Return;
@@ -1620,7 +1620,7 @@ int r;
 	Enter(state_select_tz_city);
 
 	if (c == INIT_STATE)
-		Put(usr, "\n<green>Enter city, country, or region near you<yellow>: ");
+		Put(usr, "\n<green>Enter city, country, or region near you: <yellow>");
 
 	r = edit_number(usr, c);
 

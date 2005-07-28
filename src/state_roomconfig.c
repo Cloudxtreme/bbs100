@@ -229,14 +229,14 @@ void state_room_config_menu(User *usr, char c) {
 				StringList *sl;
 
 				if (usr->curr_room->room_aides->next == NULL)
-					Print(usr, "<cyan>%s is<white>: ", PARAM_NAME_ROOMAIDE);
+					Print(usr, "<cyan>%s is: ", PARAM_NAME_ROOMAIDE);
 				else
-					Print(usr, "<cyan>%ss are<white>: ", PARAM_NAME_ROOMAIDE);
+					Print(usr, "<cyan>%ss are: ", PARAM_NAME_ROOMAIDE);
 
 				for(sl = usr->curr_room->room_aides; sl != NULL; sl = sl->next) {
-					Print(usr, "<cyan>%s", sl->str);
+					Print(usr, "%s", sl->str);
 					if (sl->next != NULL)
-						Put(usr, "<white>, ");
+						Put(usr, ", ");
 				}
 				Put(usr, "\n\n");
 			} else
@@ -429,7 +429,7 @@ StringList *sl;
 		if (usr->curr_room->category != NULL)
 			Print(usr, "<cyan>The current category is: <white>%s\n", usr->curr_room->category);
 
-		Put(usr, "<green>Choose category<yellow>: ");
+		Put(usr, "<green>Choose category: <yellow>");
 	}
 	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {
@@ -859,7 +859,7 @@ int r;
 	Enter(state_change_roomname);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter new room name<yellow>: ");
+		Put(usr, "<green>Enter new room name: <yellow>");
 
 	r = edit_roomname(usr, c);
 

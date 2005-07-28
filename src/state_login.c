@@ -503,7 +503,7 @@ int i, new_mail;
 
 		if (usr->tmpbuf[TMP_FROM_HOST]) {
 			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
-			Print(usr, "<green>From host<yellow>: %s\n", usr->tmpbuf[TMP_FROM_HOST]);
+			Print(usr, "<green>From host: <yellow>%s\n", usr->tmpbuf[TMP_FROM_HOST]);
 		} else
 			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
 	}
@@ -797,7 +797,7 @@ User *u;
 		Put(usr, "<magenta>You have put messages on hold\n");
 
 	if (usr->reminder != NULL && usr->reminder[0])
-		Print(usr, "\n<magenta>Reminder<yellow>: %s\n", usr->reminder);
+		Print(usr, "\n<magenta>Reminder: <yellow>%s\n", usr->reminder);
 
 /* bbs birthday */
 	if (usr->logins > 1) {
@@ -818,13 +818,13 @@ User *u;
 
 /* if booting/shutting down, inform the user */
 	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)
-		Put(usr, "\n<white>NOTE<yellow>: <red>The system is shutting down\n");
+		Put(usr, "\n<white>NOTE: <red>The system is shutting down\n");
 	else
 		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
-			Put(usr, "\n<white>NOTE<yellow>: <red>The system is rebooting\n");
+			Put(usr, "\n<white>NOTE: <red>The system is rebooting\n");
 
 	if (nologin_active)
-		Put(usr, "\n<white>NOTE<yellow>: <red>nologin is active\n");
+		Put(usr, "\n<white>NOTE: <red>nologin is active\n");
 
 	new_mail = 0;
 	if (PARAM_HAVE_MAILROOM && usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL

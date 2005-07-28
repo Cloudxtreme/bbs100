@@ -934,7 +934,7 @@ int color;
 			break;
 
 		case RED:
-			color = color_table[YELLOW].key;
+			color = color_table[RED].key;
 			break;
 
 		case GREEN:
@@ -958,7 +958,7 @@ int color;
 			break;
 
 		case WHITE:
-			color = color_table[YELLOW].key;
+			color = color_table[WHITE].key;
 			break;
 
 		default:

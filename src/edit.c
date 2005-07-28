@@ -1557,11 +1557,11 @@ char *print_many(User *usr, char *buf) {
 			sprintf(buf, " <white>[<yellow>%s<white>]%c <yellow>%s", usr->recipients->str,
 				(usr->runtime_flags & RTF_MULTI) ? ',' : ':', usr->edit_buf);
 		else
-			sprintf(buf, " <white>[<green><many><white>]%c <yellow>%s", (usr->runtime_flags & RTF_MULTI) ? ',' : ':',
+			sprintf(buf, "<green> <white>[<green><many<green>><white>]%c <yellow>%s", (usr->runtime_flags & RTF_MULTI) ? ',' : ':',
 				usr->edit_buf);
 	} else {
 		usr->runtime_flags &= ~RTF_MULTI;
-		sprintf(buf, "<yellow>: %s", usr->edit_buf);
+		sprintf(buf, ": <yellow>%s", usr->edit_buf);
 	}
 	return buf;
 }

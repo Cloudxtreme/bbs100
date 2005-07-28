@@ -289,7 +289,7 @@ int r;
 	Enter(state_create_room);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter new room name<yellow>: ");
+		Put(usr, "<green>Enter new room name: <yellow>");
 
 	r = edit_roomname(usr, c);
 	if (r == EDIT_BREAK) {
@@ -459,7 +459,7 @@ int r;
 	Enter(state_add_category);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter new category<yellow>: ");
+		Put(usr, "<green>Enter new category: <yellow>");
 
 	r = edit_roomname(usr, c);
 	if (r == EDIT_BREAK) {
@@ -492,7 +492,7 @@ int r;
 	Enter(state_remove_category);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter number of category to remove<yellow>: ");
+		Put(usr, "<green>Enter number of category to remove: <yellow>");
 
 	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {
@@ -660,7 +660,7 @@ int r;
 				Put(usr, "\n<magenta>Banished are<yellow>:\n");
 				show_namelist(usr, banished);
 			} else
-				Print(usr, "\n<magenta>Banished is<yellow>: %s\n", banished->str);
+				Print(usr, "\n<magenta>Banished is: <yellow>%s\n", banished->str);
 		}
 		Put(usr, "\n");
 		POP(usr);
@@ -743,7 +743,7 @@ int i;
 			i++;
 		}
 		Put(usr, "\n"
-			"<green>Enter number<yellow>: ");
+			"<green>Enter number: <yellow>");
 	}
 	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {
@@ -918,7 +918,7 @@ int r;
 	Enter(state_ipaddr_wrapper);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter IP address<yellow>: ");
+		Put(usr, "<green>Enter IP address: <yellow>");
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
@@ -964,7 +964,7 @@ int r;
 	Enter(state_ipmask_wrapper);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter IP mask<yellow>: ");
+		Put(usr, "<green>Enter IP mask: <yellow>");
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1010,7 +1010,7 @@ int r;
 	Enter(state_comment_wrapper);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter comment<yellow>: ");
+		Put(usr, "<green>Enter comment: <yellow>");
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1055,7 +1055,7 @@ int r;
 	Enter(state_delete_room_name);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter room name<yellow>: ");
+		Put(usr, "<green>Enter room name: <yellow>");
 
 	r = edit_roomname(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1523,7 +1523,7 @@ void state_parameters_menu(User *usr, char c) {
 				"<hotkey>Toggle features\n"
 				"<hotkey>Reload screens and help files\n"
 				"\n"
-				"<white>Ctrl-<hotkey>R<magenta>eload param file <white>%s\n", param_file);
+				"<white>Ctrl-<hotkey>R<magenta>eload param file<white> %s\n", param_file);
 			break;
 
 		case ' ':
@@ -1761,67 +1761,67 @@ void state_system_config_menu(User *usr, char c) {
 
 void state_param_bbs_name(User *usr, char c) {
 	Enter(state_param_bbs_name);
-	change_string_param(usr, c, &PARAM_BBS_NAME, "<green>Enter name<yellow>: ");
+	change_string_param(usr, c, &PARAM_BBS_NAME, "<green>Enter name: <yellow>");
 	Return;
 }
 
 void state_param_port_number(User *usr, char c) {
 	Enter(state_param_port_number);
-	change_string_param(usr, c, &PARAM_PORT_NUMBER, "<green>Enter service name or port number<yellow>: ");
+	change_string_param(usr, c, &PARAM_PORT_NUMBER, "<green>Enter service name or port number: <yellow>");
 	Return;
 }
 
 void state_param_file(User *usr, char c) {
 	Enter(state_param_file);
-	change_string_param(usr, c, &param_file, "<green>Enter param file<yellow>: ");
+	change_string_param(usr, c, &param_file, "<green>Enter param file: <yellow>");
 	Return;
 }
 
 void state_param_basedir(User *usr, char c) {
 	Enter(state_param_basedir);
-	change_string_param(usr, c, &PARAM_BASEDIR, "<green>Enter base directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_BASEDIR, "<green>Enter base directory: <yellow>");
 	Return;
 }
 
 void state_param_bindir(User *usr, char c) {
 	Enter(state_param_bindir);
-	change_string_param(usr, c, &PARAM_BINDIR, "<green>Enter binary directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_BINDIR, "<green>Enter binary directory: <yellow>");
 	Return;
 }
 
 void state_param_confdir(User *usr, char c) {
 	Enter(state_param_confdir);
-	change_string_param(usr, c, &PARAM_CONFDIR, "<green>Enter config directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_CONFDIR, "<green>Enter config directory: <yellow>");
 	Return;
 }
 
 void state_param_feelingsdir(User *usr, char c) {
 	Enter(state_param_feelingsdir);
-	change_string_param(usr, c, &PARAM_FEELINGSDIR, "<green>Enter feelings directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_FEELINGSDIR, "<green>Enter feelings directory: <yellow>");
 	Return;
 }
 
 void state_param_zoneinfodir(User *usr, char c) {
 	Enter(state_param_zoneinfodir);
-	change_string_param(usr, c, &PARAM_ZONEINFODIR, "<green>Enter zoneinfo directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_ZONEINFODIR, "<green>Enter zoneinfo directory: <yellow>");
 	Return;
 }
 
 void state_param_userdir(User *usr, char c) {
 	Enter(state_param_userdir);
-	change_string_param(usr, c, &PARAM_USERDIR, "<green>Enter user directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_USERDIR, "<green>Enter user directory: <yellow>");
 	Return;
 }
 
 void state_param_roomdir(User *usr, char c) {
 	Enter(state_param_roomdir);
-	change_string_param(usr, c, &PARAM_ROOMDIR, "<green>Enter room directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_ROOMDIR, "<green>Enter room directory: <yellow>");
 	Return;
 }
 
 void state_param_trashdir(User *usr, char c) {
 	Enter(state_param_trashdir);
-	change_string_param(usr, c, &PARAM_TRASHDIR, "<green>Enter trash directory<yellow>: ");
+	change_string_param(usr, c, &PARAM_TRASHDIR, "<green>Enter trash directory: <yellow>");
 	Return;
 }
 
@@ -1833,13 +1833,13 @@ void state_param_umask(User *usr, char c) {
 
 void state_param_program_main(User *usr, char c) {
 	Enter(state_param_program_main);
-	change_string_param(usr, c, &PARAM_PROGRAM_MAIN, "<green>Enter main program<yellow>: ");
+	change_string_param(usr, c, &PARAM_PROGRAM_MAIN, "<green>Enter main program: <yellow>");
 	Return;
 }
 
 void state_param_program_resolver(User *usr, char c) {
 	Enter(state_param_program_resolver);
-	change_string_param(usr, c, &PARAM_PROGRAM_RESOLVER, "<green>Enter resolver program<yellow>: ");
+	change_string_param(usr, c, &PARAM_PROGRAM_RESOLVER, "<green>Enter resolver program: <yellow>");
 	Return;
 }
 
@@ -2036,139 +2036,139 @@ void state_config_files_menu(User *usr, char c) {
 
 void state_param_gpl_screen(User *usr, char c) {
 	Enter(state_param_gpl_screen);
-	change_string_param(usr, c, &PARAM_GPL_SCREEN, "<green>Enter GPL file<yellow>: ");
+	change_string_param(usr, c, &PARAM_GPL_SCREEN, "<green>Enter GPL file: <yellow>");
 	Return;
 }
 
 void state_param_mods_screen(User *usr, char c) {
 	Enter(state_param_mods_screen);
-	change_string_param(usr, c, &PARAM_MODS_SCREEN, "<green>Enter local mods file<yellow>: ");
+	change_string_param(usr, c, &PARAM_MODS_SCREEN, "<green>Enter local mods file: <yellow>");
 	Return;
 }
 
 void state_param_login_screen(User *usr, char c) {
 	Enter(state_param_login_screen);
-	change_string_param(usr, c, &PARAM_LOGIN_SCREEN, "<green>Enter login screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_LOGIN_SCREEN, "<green>Enter login screen: <yellow>");
 	Return;
 }
 
 void state_param_logout_screen(User *usr, char c) {
 	Enter(state_param_logout_screen);
-	change_string_param(usr, c, &PARAM_LOGOUT_SCREEN, "<green>Enter logout screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_LOGOUT_SCREEN, "<green>Enter logout screen: <yellow>");
 	Return;
 }
 
 void state_param_nologin_screen(User *usr, char c) {
 	Enter(state_param_nologin_screen);
-	change_string_param(usr, c, &PARAM_NOLOGIN_SCREEN, "<green>Enter nologin screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_NOLOGIN_SCREEN, "<green>Enter nologin screen: <yellow>");
 	Return;
 }
 
 void state_param_motd_screen(User *usr, char c) {
 	Enter(state_param_motd_screen);
-	change_string_param(usr, c, &PARAM_MOTD_SCREEN, "<green>Enter motd screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_MOTD_SCREEN, "<green>Enter motd screen: <yellow>");
 	Return;
 }
 
 void state_param_reboot_screen(User *usr, char c) {
 	Enter(state_param_reboot_screen);
-	change_string_param(usr, c, &PARAM_REBOOT_SCREEN, "<green>Enter reboot screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_REBOOT_SCREEN, "<green>Enter reboot screen: <yellow>");
 	Return;
 }
 
 void state_param_shutdown_screen(User *usr, char c) {
 	Enter(state_param_shutdown_screen);
-	change_string_param(usr, c, &PARAM_SHUTDOWN_SCREEN, "<green>Enter shutdown screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_SHUTDOWN_SCREEN, "<green>Enter shutdown screen: <yellow>");
 	Return;
 }
 
 void state_param_crash_screen(User *usr, char c) {
 	Enter(state_param_crash_screen);
-	change_string_param(usr, c, &PARAM_CRASH_SCREEN, "<green>Enter crash screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_CRASH_SCREEN, "<green>Enter crash screen: <yellow>");
 	Return;
 }
 
 void state_param_first_login(User *usr, char c) {
 	Enter(state_param_first_login);
-	change_string_param(usr, c, &PARAM_FIRST_LOGIN, "<green>Enter first login screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_FIRST_LOGIN, "<green>Enter first login screen: <yellow>");
 	Return;
 }
 
 void state_param_credits_screen(User *usr, char c) {
 	Enter(state_param_first_login);
-	change_string_param(usr, c, &PARAM_CREDITS_SCREEN, "<green>Enter credits screen<yellow>: ");
+	change_string_param(usr, c, &PARAM_CREDITS_SCREEN, "<green>Enter credits screen: <yellow>");
 	Return;
 }
 
 void state_param_help_std(User *usr, char c) {
 	Enter(state_param_help_std);
-	change_string_param(usr, c, &PARAM_HELP_STD, "<green>Enter standard help file<yellow>: ");
+	change_string_param(usr, c, &PARAM_HELP_STD, "<green>Enter standard help file: <yellow>");
 	Return;
 }
 
 void state_param_help_config(User *usr, char c) {
 	Enter(state_param_help_config);
-	change_string_param(usr, c, &PARAM_HELP_CONFIG, "<green>Enter Config menu help<yellow>: ");
+	change_string_param(usr, c, &PARAM_HELP_CONFIG, "<green>Enter Config menu help: <yellow>");
 	Return;
 }
 
 void state_param_help_roomconfig(User *usr, char c) {
 	Enter(state_param_help_roomconfig);
-	change_string_param(usr, c, &PARAM_HELP_ROOMCONFIG, "<green>Enter Room Config help<yellow>: ");
+	change_string_param(usr, c, &PARAM_HELP_ROOMCONFIG, "<green>Enter Room Config help: <yellow>");
 	Return;
 }
 
 void state_param_help_sysop(User *usr, char c) {
 	Enter(state_param_help_sysop);
-	change_string_param(usr, c, &PARAM_HELP_SYSOP, "<green>Enter Sysop menu help<yellow>: ");
+	change_string_param(usr, c, &PARAM_HELP_SYSOP, "<green>Enter Sysop menu help: <yellow>");
 	Return;
 }
 
 void state_param_hosts_access(User *usr, char c) {
 	Enter(state_param_hosts_access);
-	change_string_param(usr, c, &PARAM_HOSTS_ACCESS_FILE, "<green>Enter hosts_access file<yellow>: ");
+	change_string_param(usr, c, &PARAM_HOSTS_ACCESS_FILE, "<green>Enter hosts_access file: <yellow>");
 	Return;
 }
 
 void state_param_banished_file(User *usr, char c) {
 	Enter(state_param_banished_file);
-	change_string_param(usr, c, &PARAM_BANISHED_FILE, "<green>Enter banished file<yellow>: ");
+	change_string_param(usr, c, &PARAM_BANISHED_FILE, "<green>Enter banished file: <yellow>");
 	Return;
 }
 
 void state_param_stat_file(User *usr, char c) {
 	Enter(state_param_stat_file);
-	change_string_param(usr, c, &PARAM_STAT_FILE, "<green>Enter statistics file<yellow>: ");
+	change_string_param(usr, c, &PARAM_STAT_FILE, "<green>Enter statistics file: <yellow>");
 	Return;
 }
 
 void state_param_su_passwd_file(User *usr, char c) {
 	Enter(state_param_su_passwd_file);
-	change_string_param(usr, c, &PARAM_SU_PASSWD_FILE, "<green>Enter su_passwd file<yellow>: ");
+	change_string_param(usr, c, &PARAM_SU_PASSWD_FILE, "<green>Enter su_passwd file: <yellow>");
 	Return;
 }
 
 void state_param_pid_file(User *usr, char c) {
 	Enter(state_param_pid_file);
-	change_string_param(usr, c, &PARAM_PID_FILE, "<green>Enter PID file<yellow>: ");
+	change_string_param(usr, c, &PARAM_PID_FILE, "<green>Enter PID file: <yellow>");
 	Return;
 }
 
 void state_param_symtab_file(User *usr, char c) {
 	Enter(state_param_symtab_file);
-	change_string_param(usr, c, &PARAM_SYMTAB_FILE, "<green>Enter symtab file<yellow>: ");
+	change_string_param(usr, c, &PARAM_SYMTAB_FILE, "<green>Enter symtab file: <yellow>");
 	Return;
 }
 
 void state_param_hostmap_file(User *usr, char c) {
 	Enter(state_param_hostmap_file);
-	change_string_param(usr, c, &PARAM_HOSTMAP_FILE, "<green>Enter hostmap file<yellow>: ");
+	change_string_param(usr, c, &PARAM_HOSTMAP_FILE, "<green>Enter hostmap file: <yellow>");
 	Return;
 }
 
 void state_param_def_timezone(User *usr, char c) {
 	Enter(state_param_def_timezone);
-	change_string_param(usr, c, &PARAM_DEFAULT_TIMEZONE, "<green>Enter default timezone<yellow>: ");
+	change_string_param(usr, c, &PARAM_DEFAULT_TIMEZONE, "<green>Enter default timezone: <yellow>");
 	Return;
 }
 

@@ -213,6 +213,7 @@ int i, idx;
 				Put(usr, "<red>The local mods file is missing\n");		/* or out of memory! */
 				break;
 			}
+			Put(usr, "<green>");
 			read_text(usr);
 			Return;
 
@@ -393,7 +394,7 @@ int i, idx;
 					usr->edit_pos = strlen(usr->edit_buf);
 					usr->runtime_flags |= RTF_BUSY;
 
-					Print(usr, "<green>Enter recipient<yellow>: %s", usr->edit_buf);
+					Print(usr, "<green>Enter recipient: <yellow>%s", usr->edit_buf);
 					PUSH(usr, STATE_X_PROMPT);
 					Return;
 				} else
@@ -1192,12 +1193,12 @@ void enter_recipients(User *usr, void (*state_func)(User *, char)) {
 	Enter(enter_recipients);
 
 	if (usr->recipients == NULL)
-		Put(usr, "<green>Enter recipient<yellow>: ");
+		Put(usr, "<green>Enter recipient: <yellow>");
 	else {
 		if (usr->recipients->next == NULL)
 			Print(usr, "<green>Enter recipient <white>[<yellow>%s<white>]:<yellow> ", usr->recipients->str);
 		else
-			Put(usr, "<green>Enter recipient <white>[<green><many><white>]:<yellow> ");
+			Put(usr, "<green>Enter recipient <white>[<green><many<green>><white>]:<yellow> ");
 	}
 	usr->runtime_flags |= RTF_BUSY;
 
@@ -1213,7 +1214,7 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 	Enter(enter_name);
 
 	if (usr->recipients == NULL)
-		Put(usr, "<green>Enter name<yellow>: ");
+		Put(usr, "<green>Enter name: <yellow>");
 	else {
 		if (usr->recipients->next != NULL) {
 			usr->recipients->next->prev = NULL;
@@ -1461,14 +1462,14 @@ int r;
 				Print(usr, "<red>There are no %ss on this BBS <white>(!)\n", PARAM_NAME_SYSOP);
 			else {
 				if (su_passwd->next == NULL)
-					Print(usr, "<yellow>%s is<white>: <yellow>%s\n", PARAM_NAME_SYSOP, su_passwd->key);
+					Print(usr, "<yellow>%s is: %s\n", PARAM_NAME_SYSOP, su_passwd->key);
 				else {
 					KVPair *su;
 
-					Print(usr, "<yellow>%ss are<white>: ", PARAM_NAME_SYSOP);
+					Print(usr, "<yellow>%ss are: ", PARAM_NAME_SYSOP);
 					for(su = su_passwd; su != NULL && su->next != NULL; su = su->next)
-						Print(usr, "<yellow>%s<white>, ", su->key);
-					Print(usr, "<yellow>%s\n", su->key);
+						Print(usr, "%s, ", su->key);
+					Print(usr, "%s\n", su->key);
 				}
 			}
 			RET(usr);
@@ -1974,7 +1975,7 @@ int r;
 			Return;
 		}
 		display_text(usr, feelings_screen);
-		Put(usr, "\n<green>Feeling<yellow>: ");
+		Put(usr, "\n<green>Feeling: <yellow>");
 	}
 	r = edit_number(usr, c);
 
@@ -2163,7 +2164,7 @@ int r;
 
 	if (c == INIT_STATE) {
 		edit_roomname(usr, EDIT_INIT);
-		Put(usr, "<green>Enter room name<yellow>: ");
+		Put(usr, "<green>Enter room name: <yellow>");
 		Return;
 	}
 	r = edit_roomname(usr, c);
@@ -3001,13 +3002,13 @@ StringList *sl;
 
 	if (usr->curr_room->room_aides != NULL) {
 		if (usr->curr_room->room_aides->next != NULL) {
-			print_StringIO(usr->text, "<cyan>%ss are<white>: ", PARAM_NAME_ROOMAIDE);
+			print_StringIO(usr->text, "<cyan>%ss are: <yellow>", PARAM_NAME_ROOMAIDE);
 			for(sl = usr->curr_room->room_aides; sl != NULL && sl->next != NULL; sl = sl->next)
-				print_StringIO(usr->text, "<yellow>%s<green>, ", sl->str);
+				print_StringIO(usr->text, "%s, ", sl->str);
 
-			print_StringIO(usr->text, "<yellow>%s<green>\n", sl->str);
+			print_StringIO(usr->text, "%s\n", sl->str);
 		} else
-			print_StringIO(usr->text, "<cyan>%s is<white>: <cyan>%s\n", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
+			print_StringIO(usr->text, "<cyan>%s is: %s\n", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
 	}
 	if (PARAM_HAVE_CATEGORY && usr->curr_room->category && usr->curr_room->category[0]) {
 		if (!in_Category(usr->curr_room->category)) {
@@ -3398,7 +3399,7 @@ void state_ask_away_reason(User *usr, char c) {
 		Free(usr->away);
 		usr->away = NULL;
 	}
-	change_config(usr, c, &usr->away, "Enter reason<yellow>: ");
+	change_config(usr, c, &usr->away, "Enter reason: <yellow>");
 	Return;
 }
 
@@ -3712,10 +3713,10 @@ StringList *sl;
 		str = RND_STR(Str_enter_chatroom);
 
 	if (usr->runtime_flags & RTF_SYSOP)
-		sprintf(buf, "<yellow>%s<white>: <yellow>%s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
+		sprintf(buf, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			sprintf(buf, "<yellow>%s<white>: <yellow>%s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
+			sprintf(buf, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
 		else
 			sprintf(buf, "<yellow>%s <magenta>%s<white>", usr->name, str);
 
@@ -3743,10 +3744,10 @@ char buf[3 * MAX_LINE], *str;
 		str = RND_STR(Str_leave_chatroom);
 
 	if (usr->runtime_flags & RTF_SYSOP)
-		sprintf(buf, "<yellow>%s<white>: <yellow>%s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
+		sprintf(buf, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			sprintf(buf, "<yellow>%s<white>: <yellow>%s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
+			sprintf(buf, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
 		else
 			sprintf(buf, "<yellow>%s <magenta>%s<white>", usr->name, str);
 
@@ -3773,10 +3774,10 @@ int i;
 		Return;
 	}
 	if (usr->runtime_flags & RTF_SYSOP)
-		sprintf(from, "<yellow>%s<white>: <cyan>%s", PARAM_NAME_SYSOP, usr->name);
+		sprintf(from, "<yellow>%s: <cyan>%s", PARAM_NAME_SYSOP, usr->name);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			sprintf(from, "<yellow>%s<white>: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->name);
+			sprintf(from, "<yellow>%s: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->name);
 		else
 			strcpy(from, usr->name);
 

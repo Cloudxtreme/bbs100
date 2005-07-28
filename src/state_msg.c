@@ -175,7 +175,7 @@ int r;
 		Return;
 	}
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter alias<yellow>: <cyan>");
+		Put(usr, "<green>Enter alias: <cyan>");
 
 	r = edit_name(usr, c);
 	if (r == EDIT_BREAK) {
@@ -523,7 +523,7 @@ void state_save_text(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
-			Put(usr, "<hotkey>A<green>bort, <hotkey>Save, <hotkey>Continue<white>: ");
+			Put(usr, "<hotkey>A<green>bort, <hotkey>Save, <hotkey>Continue: <white>");
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
@@ -537,7 +537,7 @@ void state_save_text(User *usr, char c) {
 
 		case 'c':
 		case 'C':
-			Put(usr, "<white>Continue<green>\n");
+			Put(usr, "<white>Continue<yellow>\n");
 
 			if (usr->total_lines >= PARAM_MAX_MSG_LINES) {
 				Put(usr, "<red>You already have entered too many lines\n\n");
@@ -609,7 +609,7 @@ int r;
 	Enter(state_enter_msg_number);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter message number<yellow>: ");
+		Put(usr, "<green>Enter message number: <yellow>");
 
 	r = edit_number(usr, c);
 
@@ -660,7 +660,7 @@ int r;
 	Enter(state_enter_minus_msg);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter number of messages to read back<yellow>: ");
+		Put(usr, "<green>Enter number of messages to read back: <yellow>");
 
 	r = edit_number(usr, c);
 
@@ -702,7 +702,7 @@ int r;
 	Enter(state_enter_plus_msg);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter number of messages to skip<yellow>: ");
+		Put(usr, "<green>Enter number of messages to skip: <yellow>");
 
 	r = edit_number(usr, c);
 
@@ -1224,9 +1224,9 @@ int from_me = 0;
 	} else {
 		if (msg->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION)) {
 			if (from_me)
-				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to <yellow>%s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
-				sprintf(buf, "<blue>*** <cyan>%s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
+				sprintf(buf, "<blue>***<cyan> %s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
 		}
 	}
 	Return buf;
@@ -1443,7 +1443,7 @@ History_Reply_Code:
 	if (usr->history_p->to != NULL && usr->history_p->to->next != NULL)
 		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
 
-	Print(usr, "\n<green>%s<hotkey>Stop<white>: ", prompt);
+	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
 	Return;
 }
 
@@ -1668,7 +1668,7 @@ Exit_Held_History:
 	if (usr->held_msgp->to != NULL && usr->held_msgp->to->next != NULL)
 		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
 
-	Print(usr, "\n<green>%s<hotkey>Stop<white>: ", prompt);
+	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
 	Return;
 }
 
@@ -1732,7 +1732,7 @@ int r;
 	Enter(state_forward_room);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter room name<yellow>: ");
+		Put(usr, "<green>Enter room name: <yellow>");
 
 	r = edit_roomname(usr, c);
 
@@ -2157,10 +2157,10 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 		sprintf(from, "<cyan>- %s <cyan>-", msg->anon);
 	else
 		if (msg->flags & MSG_FROM_SYSOP)
-			sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_SYSOP, msg->from);
+			sprintf(from, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->from);
 		else
 			if (msg->flags & MSG_FROM_ROOMAIDE)
-				sprintf(from, "<yellow>%s<white>:<yellow> %s", PARAM_NAME_ROOMAIDE, msg->from);
+				sprintf(from, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->from);
 			else
 				sprintf(from, "<yellow>%s", msg->from);
 

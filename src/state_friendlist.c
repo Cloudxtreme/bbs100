@@ -101,7 +101,7 @@ StringList *sl;
 			JMP(usr, STATE_ENEMYLIST_PROMPT);
 			Return;
 	}
-	Put(usr, "\n<hotkey>A<green>dd friend, <hotkey>Remove friend, switch to <hotkey>Enemy list<white>: ");
+	Put(usr, "\n<hotkey>A<green>dd friend, <hotkey>Remove friend, switch to <hotkey>Enemy list: <white>");
 	Return;
 }
 
@@ -268,7 +268,7 @@ StringList *sl;
 			JMP(usr, STATE_FRIENDLIST_PROMPT);
 			Return;
 	}
-	Put(usr, "\n<hotkey>A<green>dd enemy, <hotkey>Remove enemy, switch to <hotkey>Friendlist<white>: ");
+	Put(usr, "\n<hotkey>A<green>dd enemy, <hotkey>Remove enemy, switch to <hotkey>Friendlist: <white>");
 	Return;
 }
 
