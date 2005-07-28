@@ -117,13 +117,13 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 /*
 	for some characters auto-coloring can be straight ugly
-	e.g, the dot, the question mark
+	e.g, the space, dot, question mark
 */
-			if (c != '.' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
+			if (c != ' ' && c != '.' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
 				do_auto_color = 1;
 
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
-				if (*str != ' ') {
+				if (c != ' ') {
 					if (do_auto_color) {
 						auto_color(usr, buf);
 						put_StringIO(dev, buf);
@@ -146,6 +146,8 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				if (max_lines > -1 && *lines >= max_lines)
 					return pos;
 
+				dont_auto_color = force_auto_color_off;
+
 				if (*str)
 					str++;
 				continue;
@@ -166,6 +168,8 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 					(*lines)++;
 					if (max_lines > -1 && *lines >= max_lines)
 						return pos-1;
+
+					dont_auto_color = force_auto_color_off;
 				}
 			}
 		}
