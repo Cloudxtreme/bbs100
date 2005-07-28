@@ -230,3 +230,5 @@ Credits for bug fixes et al after public release
 - Mz Boobala (among others) suggested using the caret ^ for color editing
   and not just Ctrl-V. Although it tends to mess up ASCII art, I eventually
   gave in
+
+- News reported a bug in the profile of an online Guest user

@@ -9,6 +9,7 @@ Changes as of July 28th 2005
 - colored strings all changed to support 'Classic' and 'Modern' coloring
 - tabs in messages are possible; they expand to 4 spaces
 - color editing also possible with the caret: ^  (not just Ctrl-V)
+- formatting bug in the profile of Guest fixed
 
 Changes as of July 27th 2005
 - More prompt no longer resets color to green, but restores the color

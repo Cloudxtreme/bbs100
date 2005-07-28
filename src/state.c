@@ -1479,7 +1479,7 @@ int r;
 			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf));
+				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
 						Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
@@ -1488,8 +1488,6 @@ int r;
 				}
 				if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
 					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, p);
-
-				Put(usr, "\n");
 			}
 			RET(usr);
 			Return;
