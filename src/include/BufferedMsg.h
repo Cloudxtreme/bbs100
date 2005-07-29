@@ -26,16 +26,13 @@
 #include <config.h>
 
 #include "defines.h"
+#include "PList.h"
 #include "StringList.h"
 #include "StringIO.h"
 #include "sys_time.h"
 
-#define add_BufferedMsg(x,y)		(BufferedMsg *)add_List((x), (y))
-#define concat_BufferedMsg(x,y)		(BufferedMsg *)concat_List((x), (y))
-#define remove_BufferedMsg(x,y)		(BufferedMsg *)remove_List((x), (y))
-#define listdestroy_BufferedMsg(x)	listdestroy_List((x), destroy_BufferedMsg)
-#define rewind_BufferedMsg(x)		(BufferedMsg *)rewind_List(x)
-#define unwind_BufferedMsg(x)		(BufferedMsg *)unwind_List(x)
+#define rewind_BufferedMsg(x)		rewind_PList(x)
+#define unwind_BufferedMsg(x)		unwind_PList(x)
 
 #define BUFMSG_ONESHOT		0		/* used for friend notifies and such */
 #define BUFMSG_XMSG			1
@@ -45,22 +42,24 @@
 #define BUFMSG_TYPE			0xff	/* room for 256 message types (how many do you want?) */
 #define BUFMSG_SYSOP		0x100
 
-typedef struct BufferedMsg_tag BufferedMsg;
-
-struct BufferedMsg_tag {
-	List(BufferedMsg);
-
-	int flags;
+typedef struct {
+	int flags, refcount;
 	time_t mtime;
 	char from[MAX_NAME], *xmsg_header;
 	StringList *to;
 	StringIO *msg;
-};
+} BufferedMsg;
 
 BufferedMsg *new_BufferedMsg(void);
 void destroy_BufferedMsg(BufferedMsg *);
 
 BufferedMsg *copy_BufferedMsg(BufferedMsg *);
+BufferedMsg *ref_BufferedMsg(BufferedMsg *);
+
+BufferedMsg *add_BufferedMsg(PList **, BufferedMsg *);
+PList *concat_BufferedMsg(PList **, PList *);
+BufferedMsg *remove_BufferedMsg(PList **, BufferedMsg *);
+void listdestroy_BufferedMsg(PList *);
 
 #endif	/* BUFFEREDMSG_H_WJ99 */
 

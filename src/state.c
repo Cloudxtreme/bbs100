@@ -1854,7 +1854,7 @@ int r;
 		add_BufferedMsg(&usr->history, msg);
 
 		destroy_BufferedMsg(usr->send_msg);
-		usr->send_msg = copy_BufferedMsg(msg);
+		usr->send_msg = ref_BufferedMsg(msg);
 
 /* update stats */
 		if (usr->recipients != NULL
@@ -1938,7 +1938,7 @@ int r;
 		add_BufferedMsg(&usr->history, xmsg);
 
 		destroy_BufferedMsg(usr->send_msg);
-		usr->send_msg = copy_BufferedMsg(xmsg);
+		usr->send_msg = ref_BufferedMsg(xmsg);
 
 /* update stats */
 		if (usr->recipients != NULL
@@ -2057,7 +2057,7 @@ int r;
 		add_BufferedMsg(&usr->history, msg);
 
 		destroy_BufferedMsg(usr->send_msg);
-		usr->send_msg = copy_BufferedMsg(msg);
+		usr->send_msg = ref_BufferedMsg(msg);
 
 /* update stats */
 		if (usr->recipients != NULL
@@ -3028,6 +3028,7 @@ StringList *sl;
 }
 
 void reply_x(User *usr, int all) {
+PList *pl;
 BufferedMsg *m;
 StringList *sl;
 int msgtype;
@@ -3037,16 +3038,17 @@ int msgtype;
 
 	Enter(reply_x);
 
-	m = unwind_BufferedMsg(usr->history);
-	while(m != NULL) {
+	pl = unwind_BufferedMsg(usr->history);
+	while(pl != NULL) {
+		m = (BufferedMsg *)pl->p;
 		msgtype = m->flags & BUFMSG_TYPE;
 		if ((msgtype == BUFMSG_XMSG || msgtype == BUFMSG_EMOTE || msgtype == BUFMSG_FEELING)
 			&& strcmp(m->from, usr->name))
 			break;
 
-		m = m->prev;
+		pl = pl->prev;
 	}
-	if (m == NULL) {
+	if (pl == NULL) {
 		Put(usr, "<red>No last message to reply to\n");
 		CURRENT_STATE(usr);
 		Return;

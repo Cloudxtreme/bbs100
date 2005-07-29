@@ -38,11 +38,16 @@ BufferedMsg *m;
 		destroy_BufferedMsg(m);
 		return NULL;
 	}
+	m->refcount = 1;
 	return m;
 }
 
 void destroy_BufferedMsg(BufferedMsg *m) {
 	if (m == NULL)
+		return;
+
+	m->refcount--;
+	if (m->refcount > 0)
 		return;
 
 	Free(m->xmsg_header);
@@ -72,6 +77,66 @@ BufferedMsg *cp;
 	}
 	copy_StringIO(cp->msg, m->msg);
 	return cp;
+}
+
+BufferedMsg *ref_BufferedMsg(BufferedMsg *m) {
+	if (m != NULL)
+		m->refcount++;
+
+	return m;
+}
+
+
+/*
+	list functions
+	lists of BufferedMsg are really PLists
+*/
+
+BufferedMsg *add_BufferedMsg(PList **root, BufferedMsg *msg) {
+PList *pl;
+
+	if (msg == NULL)
+		return NULL;
+
+	if ((pl = new_PList(msg)) == NULL)
+		return NULL;
+
+	add_PList(root, pl);
+	return msg;
+}
+
+PList *concat_BufferedMsg(PList **root, PList *pl) {
+	return concat_PList(root, pl);
+}
+
+BufferedMsg *remove_BufferedMsg(PList **root, BufferedMsg *msg) {
+PList *pl;
+
+	if (root == NULL || msg == NULL)
+		return NULL;
+
+	if ((pl = in_PList(*root, msg)) == NULL)
+		return NULL;
+
+	pl->p = NULL;
+	remove_PList(root, pl);
+	destroy_PList(pl);
+
+	return msg;
+}
+
+void listdestroy_BufferedMsg(PList *root) {
+PList *pl;
+
+	if (root == NULL)
+		return;
+
+	root = rewind_PList(root);
+	for(pl = root; pl != NULL; pl = pl->next) {
+		destroy_BufferedMsg((BufferedMsg *)pl->p);
+		pl->p = NULL;
+		destroy_PList(pl);
+	}
 }
 
 /* EOB */

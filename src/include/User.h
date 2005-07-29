@@ -166,7 +166,7 @@ struct User_tag {
 
 	Message *message, *new_message;
 	Room *mail, *curr_room;
-	BufferedMsg *history, *history_p, *held_msgs, *held_msgp;
+	PList *history, *history_p, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
 	Timer *timerq, *idle_timer;
 	Timezone *tz;

@@ -1019,7 +1019,7 @@ Rcv_Remove_Recipient:
 				}
 		}
 	}
-	if ((new_msg = copy_BufferedMsg(msg)) == NULL) {
+	if ((new_msg = ref_BufferedMsg(msg)) == NULL) {
 		Perror(from, "Out of memory");
 		Print(from, "<red>%s<red> was not received by <yellow>%s\n", msg_type, usr->name);
 		Return;
@@ -1036,12 +1036,15 @@ Rcv_Remove_Recipient:
 			add_BufferedMsg(&usr->history, new_msg);
 
 	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
-		BufferedMsg *m;
+		PList *pl;
 
-		m = usr->history;						/* remove the head */
+		pl = usr->history;						/* remove the head */
 		usr->history = usr->history->next;
 		usr->history->prev = NULL;
-		destroy_BufferedMsg(m);
+
+		destroy_BufferedMsg((BufferedMsg *)pl->p);
+		pl->p = NULL;
+		destroy_PList(pl);
 	}
 	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
 		if ((usr->runtime_flags & RTF_BUSY_SENDING)
@@ -1089,7 +1092,8 @@ Rcv_Remove_Recipient:
 }
 
 void spew_BufferedMsg(User *usr) {
-BufferedMsg *m, *m_next;
+BufferedMsg *m;
+PList *pl, *pl_next;
 int printed;
 
 	if (usr == NULL)
@@ -1102,8 +1106,10 @@ int printed;
 	for until after you've gone through all the auto-reply Xs
 */
 	printed = 0;
-	for(m = usr->held_msgs; m != NULL; m = m_next) {
-		m_next = m->next;
+	for(pl = usr->held_msgs; pl != NULL; pl = pl_next) {
+		pl_next = pl->next;
+
+		m = (BufferedMsg *)pl->p;
 
 		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {		/* one shot message */
 			display_text(usr, m->msg);
@@ -1116,9 +1122,9 @@ int printed;
 		Put(usr, "<white>");						/* do color correction */
 
 	while(usr->held_msgs != NULL) {
-		m = usr->held_msgs;
+		m = (BufferedMsg *)usr->held_msgs->p;
 		remove_BufferedMsg(&usr->held_msgs, m);
-		add_BufferedMsg(&usr->history, m);		/* remember this message */
+		add_BufferedMsg(&usr->history, m);			/* remember this message */
 
 		Put(usr, "<beep>");
 		print_buffered_msg(usr, m);
@@ -1245,6 +1251,7 @@ char buf[PRINT_BUF];
 }
 
 void state_history_prompt(User *usr, char c) {
+BufferedMsg *m = NULL;
 StringList *sl;
 char prompt[PRINT_BUF];
 
@@ -1258,7 +1265,8 @@ char prompt[PRINT_BUF];
 			usr->history_p = unwind_BufferedMsg(usr->history);
 
 			while(usr->history_p != NULL) {
-				if ((usr->history_p->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
+				m = (BufferedMsg *)usr->history_p->p;
+				if ((m->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
 					break;
 
 				usr->history_p = usr->history_p->prev;
@@ -1268,7 +1276,7 @@ char prompt[PRINT_BUF];
 				RET(usr);
 				Return;
 			}
-			print_buffered_msg(usr, usr->history_p);
+			print_buffered_msg(usr, m);
 
 			usr->runtime_flags |= RTF_BUSY;
 			break;
@@ -1295,7 +1303,9 @@ char prompt[PRINT_BUF];
 				Put(usr, "<red>Can't go further back\n");
 			else
 				usr->history_p = usr->history_p->prev;
-			print_buffered_msg(usr, usr->history_p);
+
+			m = (BufferedMsg *)usr->history_p->p;
+			print_buffered_msg(usr, m);
 			break;
 
 		case 'f':
@@ -1322,7 +1332,8 @@ char prompt[PRINT_BUF];
 				RET(usr);
 				Return;
 			}
-			print_buffered_msg(usr, usr->history_p);
+			m = (BufferedMsg *)usr->history_p->p;
+			print_buffered_msg(usr, m);
 			break;
 
 		case 'r':
@@ -1346,16 +1357,18 @@ History_Reply_Code:
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
 
+			m = (BufferedMsg *)usr->history_p->p;
+
 			if (c == 'R' || c == 'V' || c == 'A' || c == 'a') {
-				if ((usr->recipients = copy_StringList(usr->history_p->to)) == NULL) {
+				if ((usr->recipients = copy_StringList(m->to)) == NULL) {
 					Perror(usr, "Out of memory");
 
 					listdestroy_StringList(usr->recipients);
 					usr->recipients = NULL;
 				}
 			}
-			if ((sl = in_StringList(usr->recipients, usr->history_p->from)) == NULL) {
-				if ((sl = new_StringList(usr->history_p->from)) == NULL) {
+			if ((sl = in_StringList(usr->recipients, m->from)) == NULL) {
+				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
 					concat_StringList(&usr->recipients, sl);
@@ -1373,7 +1386,7 @@ History_Reply_Code:
 
 			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
-			if ((usr->history_p->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
+			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
 			} else {
 				CALL(usr, STATE_EDIT_X);
@@ -1391,12 +1404,13 @@ History_Reply_Code:
 				RET(usr);
 				Return;
 			}
-			if (usr->history_p->to != NULL && usr->history_p->to->next != NULL)
+			m = (BufferedMsg *)usr->history_p->p;
+			if (m->to != NULL && m->to->next != NULL)
 				Put(usr, "<magenta>Recipients are <yellow>");
 			else
 				Put(usr, "<magenta>The recipient is <yellow>");
 
-			for(sl = usr->history_p->to; sl != NULL; sl = sl->next) {
+			for(sl = m->to; sl != NULL; sl = sl->next) {
 				if (sl->next == NULL)
 					Print(usr, "%s\n", sl->str);
 				else
@@ -1429,9 +1443,12 @@ History_Reply_Code:
 		strcat(prompt, "<hotkey>Back, ");
 	if (usr->history_p->next != NULL)
 		strcat(prompt, "<hotkey>Next, ");
-	if (strcmp(usr->history_p->from, usr->name))
+
+	m = (BufferedMsg *)usr->history_p->p;
+
+	if (strcmp(m->from, usr->name))
 		strcat(prompt, "<hotkey>Reply, ");
-	if (usr->history_p->to != NULL && usr->history_p->to->next != NULL)
+	if (m->to != NULL && m->to->next != NULL)
 		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
 
 	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
@@ -1445,7 +1462,8 @@ History_Reply_Code:
 */
 void state_held_history_prompt(User *usr, char c) {
 StringList *sl;
-BufferedMsg *m, *m_next;
+PList *pl, *pl_next;
+BufferedMsg *m;
 char prompt[PRINT_BUF];
 int printed;
 
@@ -1459,8 +1477,10 @@ int printed;
 	it is not as elegant, but you have to deal with them some time
 */
 	printed = 0;
-	for(m = usr->held_msgs; m != NULL; m = m_next) {
-		m_next = m->next;
+	for(pl = usr->held_msgs; pl != NULL; pl = pl_next) {
+		pl_next = pl->next;
+
+		m = (BufferedMsg *)pl->p;
 		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {			/* one shot message */
 			display_text(usr, m->msg);
 			printed++;
@@ -1477,7 +1497,8 @@ int printed;
 				usr->held_msgp = usr->held_msgs;
 
 			while(usr->held_msgp != NULL) {
-				if ((usr->held_msgp->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
+				m = (BufferedMsg *)usr->held_msgp->p;
+				if ((m->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
 					break;
 
 				usr->held_msgp = usr->held_msgp->prev;
@@ -1487,7 +1508,7 @@ int printed;
 				RET(usr);
 				Return;
 			}
-			print_buffered_msg(usr, usr->held_msgp);
+			print_buffered_msg(usr, m);
 
 			usr->runtime_flags |= RTF_BUSY;
 			break;
@@ -1512,7 +1533,8 @@ int printed;
 				Put(usr, "<red>Can't go further back\n");
 			else
 				usr->held_msgp = usr->held_msgp->prev;
-			print_buffered_msg(usr, usr->held_msgp);
+
+			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
 			break;
 
 		case 'f':
@@ -1535,7 +1557,7 @@ int printed;
 			if (usr->held_msgp == NULL)
 				goto Exit_Held_History;
 
-			print_buffered_msg(usr, usr->held_msgp);
+			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
 			break;
 
 		case 'r':
@@ -1557,16 +1579,18 @@ Held_History_Reply:
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
 
+			m = (BufferedMsg *)usr->held_msgp->p;
+
 			if (c == 'R' || c == 'V' || c == 'A' || c == 'a') {
-				if ((usr->recipients = copy_StringList(usr->held_msgp->to)) == NULL) {
+				if ((usr->recipients = copy_StringList(m->to)) == NULL) {
 					Perror(usr, "Out of memory");
 
 					listdestroy_StringList(usr->recipients);
 					usr->recipients = NULL;
 				}
 			}
-			if ((sl = in_StringList(usr->recipients, usr->held_msgp->from)) == NULL) {
-				if ((sl = new_StringList(usr->held_msgp->from)) == NULL) {
+			if ((sl = in_StringList(usr->recipients, m->from)) == NULL) {
+				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
 					concat_StringList(&usr->recipients, sl);
@@ -1584,7 +1608,7 @@ Held_History_Reply:
 
 			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
-			if ((usr->held_msgp->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
+			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
 			} else {
 				CALL(usr, STATE_EDIT_X);
@@ -1600,12 +1624,13 @@ Held_History_Reply:
 				Perror(usr, "Your held messages buffer is gone");
 				goto Exit_Held_History;
 			}
-			if (usr->held_msgp->to != NULL && usr->held_msgp->to->next != NULL)
+			m = (BufferedMsg *)usr->held_msgp->p;
+			if (m->to != NULL && m->to->next != NULL)
 				Put(usr, "<magenta>Recipients are <yellow>");
 			else
 				Put(usr, "<magenta>The recipient is <yellow>");
 
-			for(sl = usr->held_msgp->to; sl != NULL; sl = sl->next) {
+			for(sl = m->to; sl != NULL; sl = sl->next) {
 				if (sl->next == NULL)
 					Print(usr, "%s\n", sl->str);
 				else
@@ -1652,9 +1677,11 @@ Exit_Held_History:
 		strcat(prompt, "<hotkey>Back, ");
 	if (usr->held_msgp->next != NULL)
 		strcat(prompt, "<hotkey>Next, ");
-	if (strcmp(usr->held_msgp->from, usr->name))
+
+	m = (BufferedMsg *)usr->held_msgp->p;
+	if (strcmp(m->from, usr->name))
 		strcat(prompt, "<hotkey>Reply, ");
-	if (usr->held_msgp->to != NULL && usr->held_msgp->to->next != NULL)
+	if (m->to != NULL && m->to->next != NULL)
 		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
 
 	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
