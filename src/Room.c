@@ -51,10 +51,6 @@ Room *r;
 	if ((r = (Room *)Malloc(sizeof(Room), TYPE_ROOM)) == NULL)
 		return NULL;
 
-	if ((r->info = new_StringIO()) == NULL) {
-		destroy_Room(r);
-		return NULL;
-	}
 	r->max_msgs = PARAM_MAX_MESSAGES;
 	return r;
 }
@@ -78,15 +74,15 @@ void destroy_Room(Room *r) {
 }
 
 /* load the RoomData file */
-Room *load_Room(unsigned int number) {
+Room *load_Room(unsigned int number, int flags) {
 char filename[MAX_PATHLEN];
 
 	sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, number);
 	path_strip(filename);
-	return load_RoomData(filename, number);
+	return load_RoomData(filename, number, flags);
 }
 
-Room *load_Mail(char *username) {
+Room *load_Mail(char *username, int flags) {
 Room *r;
 char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
@@ -98,7 +94,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	sprintf(filename, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
-	if ((r = load_RoomData(filename, 1)) == NULL) {
+	if ((r = load_RoomData(filename, 1, flags)) == NULL) {
 		if ((r = new_Room()) == NULL) {
 			Return NULL;
 		}
@@ -120,7 +116,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	Return r;
 }
 
-Room *load_Home(char *username) {
+Room *load_Home(char *username, int flags) {
 Room *r;
 char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
@@ -132,7 +128,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
-	if ((r = load_RoomData(filename, 2)) == NULL) {
+	if ((r = load_RoomData(filename, 2, flags)) == NULL) {
 		if ((r = new_Room()) == NULL) {
 			Return NULL;
 		}
@@ -153,10 +149,10 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	Return r;
 }
 
-Room *load_RoomData(char *filename, unsigned int number) {
+Room *load_RoomData(char *filename, unsigned int number, int flags) {
 Room *r;
 File *f;
-int (*load_func)(File *, Room *) = NULL;
+int (*load_func)(File *, Room *, int) = NULL;
 int version;
 
 	if (filename == NULL || !*filename || (r = new_Room()) == NULL)
@@ -187,7 +183,7 @@ int version;
 		default:
 			log_err("load_RoomData(): don't know how to load version %d of %s", version, filename);
 	}
-	if (load_func != NULL && !load_func(f, r)) {
+	if (load_func != NULL && !load_func(f, r, flags)) {
 		Fclose(f);
 		r->flags &= ROOM_ALL;
 
@@ -204,34 +200,76 @@ int version;
 }
 
 
-int load_RoomData_version1(File *f, Room *r) {
-char buf[MAX_LINE*3], *p;
+int load_RoomData_version1(File *f, Room *r, int flags) {
+char buf[PRINT_BUF], *p;
+int ff1_continue;
 
-	while(Fgets(f, buf, MAX_LINE*3) != NULL) {
+	while(Fgets(f, buf, PRINT_BUF) != NULL) {
 		FF1_PARSE;
 
 		FF1_LOAD_DUP("name", r->name);
-		FF1_LOAD_DUP("category", r->category);
 
-		FF1_LOAD_ULONG("generation", r->generation);
-		FF1_LOAD_HEX("flags", r->flags);
-		FF1_LOAD_UINT("roominfo_changed", r->roominfo_changed);
-		FF1_LOAD_UINT("max_msgs", r->max_msgs);
+		if (flags & LOAD_ROOM_DATA) {
+			FF1_LOAD_DUP("category", r->category);
+			FF1_LOAD_ULONG("generation", r->generation);
+			FF1_LOAD_HEX("flags", r->flags);
+			FF1_LOAD_UINT("roominfo_changed", r->roominfo_changed);
+			FF1_LOAD_UINT("max_msgs", r->max_msgs);
+		} else {
+			FF1_SKIP("category");
+			FF1_SKIP("generation");
+			FF1_SKIP("flags");
+			FF1_SKIP("roominfo_changed");
+			FF1_SKIP("max_msgs");
+		}
+		if (flags & LOAD_ROOM_AIDES)
+			FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
+		else
+			FF1_SKIP("room_aides");
 
-		FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
-		FF1_LOAD_STRINGLIST("invited", r->invited);
-		FF1_LOAD_STRINGLIST("kicked", r->kicked);
-		FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
-		FF1_LOAD_STRINGIO("info", r->info);
+		if (flags & LOAD_ROOM_INVITED)
+			FF1_LOAD_STRINGLIST("invited", r->invited);
+		else
+			FF1_SKIP("invited");
+
+		if (flags & LOAD_ROOM_KICKED)
+			FF1_LOAD_STRINGLIST("kicked", r->kicked);
+		else
+			FF1_SKIP("kicked");
+
+		if (flags & LOAD_ROOM_CHAT_HISTORY)
+			FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
+		else
+			FF1_SKIP("chat_history");
+
+		if (PARAM_HAVE_RESIDENT_INFO || (flags & LOAD_ROOM_INFO))
+			FF1_LOAD_STRINGIO("info", r->info);
+		else
+			FF1_SKIP("info");
 
 		FF1_LOAD_UNKNOWN;
 	}
 	return 0;
 }
 
-int load_RoomData_version0(File *f, Room *r) {
+#define LOAD_ROOM_SKIPLINES(x)								\
+	for(i = 0; i < (x); i++) {								\
+		if (Fgets(f, buf, MAX_LINE) == NULL)				\
+			goto err_load_room;								\
+	}
+
+#define LOAD_ROOM_SKIPLIST									\
+	while(Fgets(f, buf, MAX_LINE) != NULL) {				\
+		cstrip_line(buf);									\
+		if (!*buf)											\
+			break;											\
+	}
+
+
+int load_RoomData_version0(File *f, Room *r, int flags) {
 char buf[MAX_LINE*2];
 StringList *sl;
+int i;
 
 /* name */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -241,83 +279,140 @@ StringList *sl;
 	Free(r->name);
 	r->name = cstrdup(buf);
 
+	if (flags & LOAD_ROOM_DATA) {
 /* generation/creation date */
-	if (Fgets(f, buf, MAX_LINE) == NULL)
-		goto err_load_room;
-	cstrip_line(buf);
-	r->generation = strtoul(buf, NULL, 10);
+		if (Fgets(f, buf, MAX_LINE) == NULL)
+			goto err_load_room;
+		cstrip_line(buf);
+		r->generation = strtoul(buf, NULL, 10);
 
 /* flags */
-	if (Fgets(f, buf, MAX_LINE) == NULL)
-		goto err_load_room;
-	cstrip_line(buf);
-	r->flags = (unsigned int)strtoul(buf, NULL, 16);
-	r->flags &= ROOM_ALL;		/* reset non-existant flags */
+		if (Fgets(f, buf, MAX_LINE) == NULL)
+			goto err_load_room;
+		cstrip_line(buf);
+		r->flags = (unsigned int)strtoul(buf, NULL, 16);
+		r->flags &= ROOM_ALL;		/* reset non-existant flags */
 
 /* roominfo_changed */
-	if (Fgets(f, buf, MAX_LINE) == NULL)
-		goto err_load_room;
-	cstrip_line(buf);
-	r->roominfo_changed = (unsigned int)strtoul(buf, NULL, 10);
+		if (Fgets(f, buf, MAX_LINE) == NULL)
+			goto err_load_room;
+		cstrip_line(buf);
+		r->roominfo_changed = (unsigned int)strtoul(buf, NULL, 10);
+	} else
+		LOAD_ROOM_SKIPLINES(3);
 
 /* info */
-	free_StringIO(r->info);
-	while(Fgets(f, buf, MAX_LINE) != NULL) {
-		if (!*buf)
-			break;
+	destroy_StringIO(r->info);
+	r->info = NULL;
 
-		put_StringIO(r->info, buf);
-		write_StringIO(r->info, "\n", 1);
-	}
+	if (PARAM_HAVE_RESIDENT_INFO || (flags & LOAD_ROOM_INFO)) {
+		while(Fgets(f, buf, MAX_LINE) != NULL) {
+			if (!*buf)
+				break;
+
+			if (r->info == NULL && (r->info = new_StringIO()) == NULL)
+				continue;
+
+			put_StringIO(r->info, buf);
+			write_StringIO(r->info, "\n", 1);
+		}
+	} else
+		LOAD_ROOM_SKIPLIST;
+
 /* room aides */
 	listdestroy_StringList(r->room_aides);
 	r->room_aides = NULL;
 
-	while(Fgets(f, buf, MAX_LINE) != NULL) {
-		cstrip_line(buf);
-		if (!*buf)
-			break;
+	if (flags & LOAD_ROOM_AIDES) {
+		while(Fgets(f, buf, MAX_LINE) != NULL) {
+			cstrip_line(buf);
+			if (!*buf)
+				break;
 
-		if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-			r->room_aides = add_StringList(&r->room_aides, sl);
-	}
-	r->room_aides = rewind_StringList(r->room_aides);
+			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
+				r->room_aides = add_StringList(&r->room_aides, sl);
+		}
+		r->room_aides = rewind_StringList(r->room_aides);
+	} else
+		LOAD_ROOM_SKIPLIST;
 
 /* invited */
 	listdestroy_StringList(r->invited);
 	r->invited = NULL;
 
-	while(Fgets(f, buf, MAX_LINE) != NULL) {
-		cstrip_line(buf);
-		if (!*buf)
-			break;
+	if (flags & LOAD_ROOM_INVITED) {
+		while(Fgets(f, buf, MAX_LINE) != NULL) {
+			cstrip_line(buf);
+			if (!*buf)
+				break;
 
-		if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-			r->invited = add_StringList(&r->invited, sl);
-	}
-	r->invited = rewind_StringList(r->invited);
+			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
+				r->invited = add_StringList(&r->invited, sl);
+		}
+		r->invited = rewind_StringList(r->invited);
+	} else
+		LOAD_ROOM_SKIPLIST;
 
 /* kicked */
 	listdestroy_StringList(r->kicked);
 	r->kicked = NULL;
 
-	while(Fgets(f, buf, MAX_LINE) != NULL) {
-		cstrip_line(buf);
-		if (!*buf)
-			break;
+	if (flags & LOAD_ROOM_KICKED) {
+		while(Fgets(f, buf, MAX_LINE) != NULL) {
+			cstrip_line(buf);
+			if (!*buf)
+				break;
 
-		if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-			r->kicked = add_StringList(&r->kicked, sl);
-	}
-	r->kicked = rewind_StringList(r->kicked);
+			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
+				r->kicked = add_StringList(&r->kicked, sl);
+		}
+		r->kicked = rewind_StringList(r->kicked);
+	} else
+		LOAD_ROOM_SKIPLIST;
 
-	if (r->flags & ROOM_CHATROOM)
+	if ((flags & LOAD_ROOM_CHAT_HISTORY) && (r->flags & ROOM_CHATROOM))
 		r->chat_history = Fgetlist(f);
+	else
+		LOAD_ROOM_SKIPLIST;
 
 	return 0;
 
 err_load_room:
 	return -1;
+}
+
+
+int load_roominfo(Room *r, char *username) {
+Room *tmp;
+
+	if (r == NULL)
+		return -1;
+
+	if (r->number == MAIL_ROOM)				/* don't bother */
+		return 0;
+
+	if (r->info != NULL)					/* already resident */
+		return 0;
+
+	tmp = new_Room();
+
+	if (r->number == MAIL_ROOM)
+		tmp = load_Mail(username, LOAD_ROOM_INFO);
+	else
+		if (r->number == HOME_ROOM)
+			tmp = load_Home(username, LOAD_ROOM_INFO);
+		else
+			tmp = load_Room(r->number, LOAD_ROOM_INFO);
+
+	if (tmp == NULL)
+		return -1;
+
+	destroy_StringIO(r->info);
+	r->info = tmp->info;
+	tmp->info = NULL;
+
+	destroy_Room(tmp);
+	return 0;
 }
 
 
@@ -331,7 +426,18 @@ File *f;
 	if (r == NULL)
 		return -1;
 
-	r->flags &= ROOM_ALL;
+	if (!(r->flags & ROOM_DIRTY)) {
+/*
+	if the room is not dirty, don't save it
+	this is a performance improvement for demand loaded rooms; Home> and Mail>
+*/
+		if (!PARAM_HAVE_RESIDENT_INFO) {
+			destroy_StringIO(r->info);
+			r->info = NULL;
+		}
+		return 0;
+	}
+	r->flags &= ROOM_ALL;			/* this automatically clears ROOM_DIRTY */
 
 	if (r->number == MAIL_ROOM || r->number == HOME_ROOM) {
 		char name[MAX_LINE], *p;
@@ -347,8 +453,12 @@ File *f;
 		else
 			if (r->number == HOME_ROOM)
 				sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
-	} else
+
+		load_roominfo(r, name);
+	} else {
 		sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
+		load_roominfo(r, NULL);
+	}
 	path_strip(filename);
 
 	if ((f = Fcreate(filename)) == NULL)
@@ -356,11 +466,17 @@ File *f;
 
 	ret = save_Room_version1(f, r);
 	Fclose(f);
+
+	if (!PARAM_HAVE_RESIDENT_INFO) {
+		destroy_StringIO(r->info);
+		r->info = NULL;
+	}
 	return ret;
 }
 
 int save_Room_version1(File *f, Room *r) {
 StringList *sl;
+char buf[PRINT_BUF];
 
 	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("name", r->name);
@@ -429,6 +545,7 @@ char filename[MAX_PATHLEN];
 		r->msg_idx = r->max_msgs - 1;
 	}
 	r->msgs[r->msg_idx++] = number;
+	r->flags |= ROOM_DIRTY;
 }
 
 /*
@@ -460,6 +577,7 @@ unsigned long *old_idx, *new_idx;
 			Free(old_idx);
 		}
 	}
+	r->flags |= ROOM_DIRTY;
 }
 
 void room_readdir(Room *r) {
@@ -508,8 +626,12 @@ unsigned long num;
 		}
 	}
 	closedir(dirp);
-
 	qsort(r->msgs, r->msg_idx, sizeof(unsigned long), (int (*)(const void *, const void *))msgs_sort_func);
+
+/*
+	newMsg() sets ROOM_DIRTY, but we're only just loading here
+*/
+	r->flags &= ~ROOM_DIRTY;
 }
 
 unsigned long room_top(Room *r) {
@@ -548,7 +670,12 @@ Room *r;
 					User *u;
 
 					if ((u = is_online(name)) == NULL) {
-						r = load_Mail(name);
+						int load_room_flags = LOAD_ROOM_ALL;
+
+						if (!PARAM_HAVE_RESIDENT_INFO)
+							load_room_flags &= ~LOAD_ROOM_INFO;
+
+						r = load_Mail(name, load_room_flags);
 						*quote = '\'';
 						add_Room(&HomeRooms, r);
 						return r;
@@ -692,6 +819,7 @@ Room *r;
 Room *find_Home(char *username) {
 Room *r;
 char buf[MAX_LINE];
+int load_room_flags;
 
 	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
@@ -702,7 +830,11 @@ char buf[MAX_LINE];
 		if (!strcmp(r->name, buf))
 			return r;
 
-	if ((r = load_Home(username)) == NULL)
+	load_room_flags = LOAD_ROOM_ALL;
+	if (!PARAM_HAVE_RESIDENT_INFO)
+		load_room_flags &= ~LOAD_ROOM_INFO;
+
+	if ((r = load_Home(username, load_room_flags)) == NULL)
 		return NULL;
 
 	add_Room(&HomeRooms, r);
@@ -894,19 +1026,6 @@ unsigned long number1, number2;
 }
 
 
-int completely_numeric(char *str) {
-	if (str == NULL)
-		return 0;
-
-	while(*str) {
-		if (*str >= '0' && *str <= '9')
-			str++;
-		else
-			return 0;
-	}
-	return 1;
-}
-
 /*
 	load all rooms definitions at startup
 	Note that room #1 and room #2 are 'shadow' rooms for Mail> and Home>
@@ -919,11 +1038,16 @@ struct dirent *direntp;
 struct stat statbuf;
 Room *newroom;
 unsigned int u;
+int load_room_flags;
 
 	printf("\n");
 
 	listdestroy_Room(AllRooms);
 	AllRooms = Lobby_room = NULL;
+
+	load_room_flags = LOAD_ROOM_ALL;
+	if (!PARAM_HAVE_RESIDENT_INFO)
+		load_room_flags &= ~LOAD_ROOM_INFO;
 
 	sprintf(buf, "%s/", PARAM_ROOMDIR);
 	path_strip(buf);
@@ -933,7 +1057,7 @@ unsigned int u;
 		return -1;
 
 	while((direntp = readdir(dirp)) != NULL) {
-		if (completely_numeric(direntp->d_name)) {		/* only do numeric directories */
+		if (is_numeric(direntp->d_name)) {		/* only do numeric directories */
 			strcpy(bufp, direntp->d_name);
 			if (stat(buf, &statbuf))
 				continue;
@@ -944,7 +1068,7 @@ unsigned int u;
 				printf("loading room %3u ... ", u);
 				fflush(stdout);
 
-				if ((newroom = load_Room(u)) != NULL) {
+				if ((newroom = load_Room(u, load_room_flags)) != NULL) {
 					add_Room(&AllRooms, newroom);
 					room_readdir(newroom);
 					printf("%s>\n", newroom->name);

@@ -511,8 +511,11 @@ StringIO *tmp;
 	}
 	usr->info = usr->text;
 	usr->text = tmp;
-
-	usr->runtime_flags |= RTF_CONFIG_EDITED;
+/*
+	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
+*/
+	save_User(usr);
+	usr->runtime_flags &= ~RTF_CONFIG_EDITED;
 	RET(usr);
 	Return;
 }

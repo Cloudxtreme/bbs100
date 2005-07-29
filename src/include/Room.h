@@ -59,6 +59,15 @@
 #define ROOM_CHATROOM			0x40
 #define ROOM_HOME				0x80
 #define ROOM_ALL				0xff	/* ROOM_READONLY | ROOM_SUBJECTS | ... | ROOM_HOME */
+#define ROOM_DIRTY				0x100
+
+#define LOAD_ROOM_DATA			1
+#define LOAD_ROOM_AIDES			2
+#define LOAD_ROOM_INVITED		4
+#define LOAD_ROOM_KICKED		8
+#define LOAD_ROOM_INFO			0x10
+#define LOAD_ROOM_CHAT_HISTORY	0x20
+#define LOAD_ROOM_ALL			0x3f
 
 #ifndef USER_DEFINED
 #define USER_DEFINED 1
@@ -85,12 +94,13 @@ extern Room *Lobby_room;
 Room *new_Room(void);
 void destroy_Room(Room *);
 
-Room *load_Room(unsigned int);
-Room *load_Mail(char *);
-Room *load_Home(char *);
-Room *load_RoomData(char *, unsigned int);
-int load_RoomData_version0(File *, Room *);
-int load_RoomData_version1(File *, Room *);
+Room *load_Room(unsigned int, int);
+Room *load_Mail(char *, int);
+Room *load_Home(char *, int);
+Room *load_RoomData(char *, unsigned int, int);
+int load_RoomData_version0(File *, Room *, int);
+int load_RoomData_version1(File *, Room *, int);
+int load_roominfo(Room *, char *);
 
 int save_Room(Room *);
 int save_Room_version1(File *, Room *);

@@ -147,6 +147,7 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "\n");
 
 			if (usr->runtime_flags & RTF_ROOM_EDITED) {
+				usr->curr_room->flags |= ROOM_DIRTY;		/* make sure it is saved! */
 				save_Room(usr->curr_room);
 				usr->runtime_flags &= ~RTF_ROOM_EDITED;
 			}
@@ -172,13 +173,20 @@ void state_room_config_menu(User *usr, char c) {
 		case 'E':
 			Put(usr, "Edit room info\n");
 
-			if (usr->curr_room->info->buf != NULL) {
-				Put(usr, "<cyan>The room info currently is:\n<green>");
+			load_roominfo(usr->curr_room, usr->name);
+
+			if (usr->curr_room->info != NULL && usr->curr_room->info->buf != NULL) {
+				Put(usr, "<cyan>The current room info is:\n<green>");
 				copy_StringIO(usr->text, usr->curr_room->info);
+
+				if (!PARAM_HAVE_RESIDENT_INFO) {
+					destroy_StringIO(usr->curr_room->info);
+					usr->curr_room->info = NULL;
+				}
 				PUSH(usr, STATE_CHANGE_ROOMINFO);
 				read_text(usr);
 			} else {
-				Put(usr, "<cyan>The room info currently is empty\n<green>");
+				Put(usr, "<cyan>Currently, the room info is empty\n<green>");
 				CALL(usr, STATE_CHANGE_ROOMINFO);
 			}
 			Return;
@@ -541,14 +549,26 @@ StringIO *tmp;
 		RET(usr);
 		Return;
 	}
-	usr->runtime_flags |= RTF_ROOM_EDITED;
+	destroy_StringIO(usr->curr_room->info);
+	usr->curr_room->info = NULL;
 
-	free_StringIO(usr->curr_room->info);
-	tmp = usr->curr_room->info;
+	if ((tmp = new_StringIO()) == NULL) {
+		Perror(usr, "Failed to save room info");
+		RET(usr);
+		Return;
+	}
 	usr->curr_room->info = usr->text;
 	usr->text = tmp;
 
-	usr->curr_room->roominfo_changed++;		/* room info has been updated */
+	usr->curr_room->roominfo_changed++;			/* room info has been updated */
+
+/*
+	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
+*/
+	usr->curr_room->flags |= ROOM_DIRTY;			/* make sure it is saved! */
+	save_Room(usr->curr_room);
+	usr->runtime_flags &= ~RTF_ROOM_EDITED;
+
 	RET(usr);
 	Return;
 }

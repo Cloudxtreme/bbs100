@@ -36,6 +36,7 @@ Joined *j;
 	if ((j = (Joined *)Malloc(sizeof(Joined), TYPE_JOINED)) == NULL)
 		return NULL;
 
+	j->roominfo_read = -1;			/* never read it */
 	return j;
 }
 

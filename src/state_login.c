@@ -444,7 +444,12 @@ int i, new_mail;
 	this is already done by load_User(), but Guests and New users
 */
 	if (usr->mail == NULL) {					/* happens to Guest and New users */
-		if ((usr->mail = load_Mail(usr->name)) == NULL) {
+		int load_room_flags = LOAD_ROOM_ALL;
+
+		if (!PARAM_HAVE_RESIDENT_INFO)
+			load_room_flags &= ~LOAD_ROOM_INFO;
+
+		if ((usr->mail = load_Mail(usr->name, load_room_flags)) == NULL) {
 			Perror(usr, "Out of memory");
 			close_connection(usr, "out of memory");
 			Return;

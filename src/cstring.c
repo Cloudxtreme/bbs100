@@ -220,4 +220,17 @@ int i, l = 0;
 	return buf;
 }
 
+int is_numeric(char *str) {
+	if (str == NULL)
+		return 0;
+
+	while(*str) {
+		if (*str >= '0' && *str <= '9')
+			str++;
+		else
+			return 0;
+	}
+	return 1;
+}
+
 /* EOB */

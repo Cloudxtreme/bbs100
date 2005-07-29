@@ -28,112 +28,173 @@
 /*
 	macros that help when writing file save/load functions
 
-	assumptions:
-	- f is the open file
-	- buf is the keyword
+	- assumes that f is the open file
+	- buf is the keyword and also used for saving StringIO buffers
 	- p is the value
+	- ff1_continue controls continuing from within a 'do { } while(0)' loop
 
 	FF1 is for FileFormat version 1
 */
-#define FF1_ERROR	do {	\
+
+#define FF1_ERROR			\
+	do {					\
 		Fclose(f);			\
 		return -1;			\
 	} while(0)
 
-#define FF1_PARSE	do {						\
+#define FF1_PARSE								\
+	do {										\
+		ff1_continue = 0;						\
 		if ((p = cstrchr(buf, '=')) == NULL)	\
 			FF1_ERROR;							\
 		*p = 0;									\
 		p++;									\
 		if (!*p)								\
-			continue;							\
+			ff1_continue = 1;					\
 	} while(0)
 
-#define FF1_LOAD_LEN(x,y,z)		if (!strcmp(buf, (x))) {	\
-		if (!*p)											\
-			(y)[0] = 0;										\
-		else {												\
-			if (strlen(p) >= (z))							\
-				FF1_ERROR;									\
-			strncpy((y), p, (z)-1);							\
-			(y)[(z)-1] = 0;									\
+#define FF1_LOAD_LEN(x,y,z)					\
+	do {									\
+		if (ff1_continue)					\
+			break;							\
+		if (!strcmp(buf, (x))) {			\
+			if (!*p)						\
+				(y)[0] = 0;					\
+			else {							\
+				if (strlen(p) >= (z))		\
+					FF1_ERROR;				\
+				strncpy((y), p, (z)-1);		\
+				(y)[(z)-1] = 0;				\
+			}								\
+			ff1_continue = 1;				\
+		}									\
+	} while(0)
+
+#define FF1_LOAD_DUP(x,y)							\
+	do {											\
+		if (ff1_continue)							\
+			break;									\
+		if (!strcmp(buf, (x))) {					\
+			if (!*p) {								\
+				Free((y));							\
+				(y) = NULL;							\
+			} else {								\
+				if (strlen(p) > MAX_LINE)			\
+					p[MAX_LINE] = 0;				\
+				Free((y));							\
+				if (((y) = cstrdup(p)) == NULL)		\
+					FF1_ERROR;						\
+			}										\
+			ff1_continue = 1;						\
+		}											\
+	} while(0)
+
+#define FF1_LOAD_ULONG(x,y)						\
+	do {										\
+		if (ff1_continue)						\
+			break;								\
+		if (!strcmp(buf, (x))) {				\
+			if (!*p)							\
+				(y) = 0UL;						\
+			else								\
+				(y) = strtoul(p, NULL, 10);		\
+			ff1_continue = 1;					\
+		}										\
+	} while(0)
+
+#define FF1_LOAD_HEX(x,y)									\
+	do {													\
+		if (ff1_continue)									\
+			break;											\
+		if (!strcmp(buf, (x))) {							\
+			if (!*p)										\
+				(y) = 0;									\
+			else											\
+				(y) = (unsigned int)strtoul(p, NULL, 16);	\
+			ff1_continue = 1;								\
 		}													\
-		continue;											\
-	}
+	} while(0)
 
-#define FF1_LOAD_DUP(x,y)		if (!strcmp(buf, (x))) {	\
-		if (!*p) {											\
-			Free((y));										\
-			(y) = NULL;										\
-		} else {											\
-			if (strlen(p) > MAX_LINE)						\
-				p[MAX_LINE] = 0;							\
-			Free((y));										\
-			if (((y) = cstrdup(p)) == NULL)					\
-				FF1_ERROR;									\
+#define FF1_LOAD_INT(x,y)			\
+	do {							\
+		if (ff1_continue)			\
+			break;					\
+		if (!strcmp(buf, (x))) {	\
+			if (!*p)				\
+				(y) = 0;			\
+			else					\
+				(y) = atoi(p);		\
+			ff1_continue = 1;		\
+		}							\
+	} while(0)
+
+#define FF1_LOAD_UINT(x,y)									\
+	do {													\
+		if (ff1_continue)									\
+			break;											\
+		if (!strcmp(buf, (x))) {							\
+			if (!*p)										\
+				(y) = 0;									\
+			else											\
+				(y) = (unsigned int)strtoul(p, NULL, 10);	\
+			ff1_continue = 1;								\
 		}													\
-		continue;											\
-	}
+	} while(0)
 
-#define FF1_LOAD_ULONG(x,y)		if (!strcmp(buf, (x))) {	\
-		if (!*p)											\
-			(y) = 0UL;										\
-		else												\
-			(y) = strtoul(p, NULL, 10);						\
-		continue;											\
-	}
-
-#define FF1_LOAD_HEX(x,y)		if (!strcmp(buf, (x))) {	\
-		if (!*p)											\
-			(y) = 0;										\
-		else												\
-			(y) = (unsigned int)strtoul(p, NULL, 16);		\
-		continue;											\
-	}
-
-#define FF1_LOAD_INT(x,y)		if (!strcmp(buf, (x))) {	\
-		if (!*p)											\
-			(y) = 0;										\
-		else												\
-			(y) = atoi(p);									\
-		continue;											\
-	}
-
-#define FF1_LOAD_UINT(x,y)		if (!strcmp(buf, (x))) {	\
-		if (!*p)											\
-			(y) = 0;										\
-		else												\
-			(y) = (unsigned int)strtoul(p, NULL, 10);		\
-		continue;											\
-	}
-
-#define FF1_LOAD_STRINGLIST(x,y)	if (!strcmp(buf, (x))) {	\
-		if (*p) {												\
-			(y) = add_StringList(&(y), new_StringList(p));		\
-			(y) = rewind_StringList((y));						\
+#define FF1_LOAD_STRINGLIST(x,y)								\
+	do {														\
+		if (ff1_continue)										\
+			break;												\
+		if (!strcmp(buf, (x))) {								\
+			if (*p) {											\
+				(y) = add_StringList(&(y), new_StringList(p));	\
+				(y) = rewind_StringList((y));					\
+			}													\
+			ff1_continue = 1;									\
 		}														\
-		continue;												\
-	}
+	} while(0)
 
-#define FF1_LOAD_STRINGIO(x,y)		if (!strcmp(buf, (x))) {	\
-		if (*p) {												\
-			if ((y) == NULL && ((y) = new_StringIO()) == NULL)	\
-				continue;										\
-			put_StringIO((y), p);								\
-			write_StringIO((y), "\n", 1);						\
-		}														\
-		continue;												\
-	}
+#define FF1_LOAD_STRINGIO(x,y)										\
+	do {															\
+		if (ff1_continue)											\
+			break;													\
+		if (!strcmp(buf, (x))) {									\
+			if (*p) {												\
+				if ((y) == NULL && ((y) = new_StringIO()) == NULL)	\
+					continue;										\
+				put_StringIO((y), p);								\
+				write_StringIO((y), "\n", 1);						\
+			}														\
+			ff1_continue = 1;										\
+		}															\
+	} while(0)
 
-#define FF1_LOAD_USERLIST(x,y)		if (!strcmp(buf, (x))) {			\
-		if (*p && user_exists(p) && in_StringList((y), p) == NULL) {	\
-			(y) = add_StringList(&(y), new_StringList(p));				\
-			(y) = rewind_StringList((y));								\
-		}																\
-		continue;														\
-	}
+#define FF1_LOAD_USERLIST(x,y)												\
+	do {																	\
+		if (ff1_continue)													\
+			break;															\
+		if (!strcmp(buf, (x))) {											\
+			if (*p && user_exists(p) && in_StringList((y), p) == NULL) {	\
+				(y) = add_StringList(&(y), new_StringList(p));				\
+				(y) = rewind_StringList((y));								\
+			}																\
+			ff1_continue = 1;												\
+		}																	\
+	} while(0)
 
-#define FF1_LOAD_UNKNOWN	log_warn("%s(): unknown keyword '%s', ignored", __FUNCTION__, buf)
+#define FF1_SKIP(x)					\
+	do {							\
+		if (ff1_continue)			\
+			break;					\
+		if (!strcmp(buf, (x)))		\
+			ff1_continue = 1;		\
+	} while(0)
+
+#define FF1_LOAD_UNKNOWN			\
+	if (ff1_continue)				\
+		continue;					\
+	else							\
+		log_warn("%s(): unknown keyword '%s', ignored", __FUNCTION__, buf)
 
 
 /*
@@ -143,22 +204,26 @@
 #define FF1_SAVE_VERSION	Fputs(f, "version=1")
 
 /* this macro only saves non-null values */
-#define FF1_SAVE_STR(x,y)	do {			\
-		if ((y) != NULL && (y)[0])			\
-			Fprintf(f, "%s=%s", (x), (y));	\
+#define FF1_SAVE_STR(x,y)							\
+	do {											\
+		if ((y) != NULL && (y)[0])					\
+			Fprintf(f, "%s=%s", (x), (y));			\
 	} while(0)
 
-#define FF1_SAVE_STRINGLIST(x,y)	do {			\
+#define FF1_SAVE_STRINGLIST(x,y)					\
+	do {											\
 		(y) = rewind_StringList((y));				\
 		for(sl = (y); sl != NULL; sl = sl->next)	\
 			FF1_SAVE_STR((x), sl->str);				\
 	} while(0)
 
-#define FF1_SAVE_STRINGIO(x,y)		do {			\
-		char ff1_save_buf[PRINT_BUF];				\
-		seek_StringIO((y), 0, STRINGIO_SET);		\
-		while(gets_StringIO((y), ff1_save_buf, PRINT_BUF) != NULL)	\
-			FF1_SAVE_STR((x), ff1_save_buf);		\
+#define FF1_SAVE_STRINGIO(x,y)									\
+	do {														\
+		if ((y) != NULL) {										\
+			seek_StringIO((y), 0, STRINGIO_SET);				\
+			while(gets_StringIO((y), buf, PRINT_BUF) != NULL)	\
+				FF1_SAVE_STR((x), buf);							\
+		}														\
 	} while(0)
 
 int fileformat_version(File *);

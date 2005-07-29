@@ -115,6 +115,7 @@ int version;
 
 int load_Message_version1(File *f, Message *m) {
 char buf[PRINT_BUF], *p;
+int ff1_continue;
 
 	while(Fgets(f, buf, PRINT_BUF) != NULL) {
 		FF1_PARSE;
@@ -248,6 +249,7 @@ File *f;
 
 int save_Message_version1(File *f, Message *m) {
 StringList *sl;
+char buf[PRINT_BUF];
 
 	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("from", m->from);

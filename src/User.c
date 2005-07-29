@@ -310,16 +310,21 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 
 
 int load_User_version1(File *f, User *usr, char *username, int flags) {
-char buf[MAX_PATHLEN], *p;
-int term_width, term_height;
+char buf[PRINT_BUF], *p;
+int term_width, term_height, ff1_continue;
 
 	term_width = TERM_WIDTH;
 	term_height = TERM_HEIGHT;
 
-	if (flags & LOAD_USER_ROOMS)
-		usr->mail = load_Mail(username);
+	if (flags & LOAD_USER_ROOMS) {
+		int load_room_flags = LOAD_ROOM_ALL;
 
-	while(Fgets(f, buf, MAX_PATHLEN) != NULL) {
+		if (!PARAM_HAVE_RESIDENT_INFO)
+			load_room_flags &= ~LOAD_ROOM_INFO;
+
+		usr->mail = load_Mail(username, load_room_flags);
+	}
+	while(Fgets(f, buf, PRINT_BUF) != NULL) {
 		FF1_PARSE;
 /*
 	the fun starts here
@@ -331,6 +336,8 @@ int term_width, term_height;
 
 		if (flags & LOAD_USER_PASSWORD)
 			FF1_LOAD_LEN("passwd", usr->passwd, MAX_CRYPTED_PASSWD);
+		else
+			FF1_SKIP("passwd");
 
 		if (flags & LOAD_USER_ADDRESS) {
 			FF1_LOAD_DUP("real_name", usr->real_name);
@@ -348,11 +355,27 @@ int term_width, term_height;
 			FF1_LOAD_DUP("timezone", usr->timezone);
 			FF1_LOAD_DUP("vanity", usr->vanity);
 			FF1_LOAD_DUP("xmsg_header", usr->xmsg_header);
+		} else {
+			FF1_SKIP("real_name");
+			FF1_SKIP("street");
+			FF1_SKIP("zipcode");
+			FF1_SKIP("city");
+			FF1_SKIP("state");
+			FF1_SKIP("country");
+			FF1_SKIP("phone");
+			FF1_SKIP("email");
+			FF1_SKIP("www");
+			FF1_SKIP("doing");
+			FF1_SKIP("reminder");
+			FF1_SKIP("default_anon");
+			FF1_SKIP("timezone");
+			FF1_SKIP("vanity");
+			FF1_SKIP("xmsg_header");
 		}
-		FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
-		FF1_LOAD_DUP("ipnum", usr->tmpbuf[TMP_FROM_IP]);
-
 		if (flags & LOAD_USER_DATA) {
+			FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
+			FF1_LOAD_DUP("ipnum", usr->tmpbuf[TMP_FROM_IP]);
+
 			FF1_LOAD_ULONG("birth", usr->birth);
 			FF1_LOAD_ULONG("last_logout", usr->last_logout);
 			FF1_LOAD_ULONG("last_online_time", usr->last_online_time);
@@ -396,6 +419,26 @@ int term_width, term_height;
 
 				continue;
 			}
+		} else {
+			FF1_SKIP("hostname");
+			FF1_SKIP("ipnum");
+			FF1_SKIP("birth");
+			FF1_SKIP("last_logout");
+			FF1_SKIP("last_online_time");
+			FF1_SKIP("logins");
+			FF1_SKIP("total_time");
+			FF1_SKIP("xsent");
+			FF1_SKIP("xrecv");
+			FF1_SKIP("esent");
+			FF1_SKIP("erecv");
+			FF1_SKIP("fsent");
+			FF1_SKIP("frecv");
+			FF1_SKIP("posted");
+			FF1_SKIP("read");
+			FF1_SKIP("term_width");
+			FF1_SKIP("term_height");
+			FF1_SKIP("flags");
+			FF1_SKIP("colors");
 		}
 /* quicklist */
 		if ((flags & LOAD_USER_QUICKLIST) && !strcmp(buf, "quick")) {
@@ -422,15 +465,23 @@ int term_width, term_height;
 
 			usr->quick[n] = cstrdup(q);
 			continue;
-		}
+		} else
+			FF1_SKIP("quick");
+
 		if (flags & LOAD_USER_FRIENDLIST)
 			FF1_LOAD_USERLIST("friends", usr->friends);
+		else
+			FF1_SKIP("friends");
 
 		if (flags & LOAD_USER_ENEMYLIST)
 			FF1_LOAD_USERLIST("enemies", usr->enemies);
+		else
+			FF1_SKIP("enemies");
 
 		if (flags & LOAD_USER_INFO)
 			FF1_LOAD_STRINGIO("info", usr->info);
+		else
+			FF1_SKIP("info");
 
 /* joined rooms */
 		if ((flags & LOAD_USER_ROOMS) && !strcmp(buf, "rooms")) {
@@ -491,19 +542,17 @@ int term_width, term_height;
 			add_Joined(&usr->rooms, j);
 			unload_Room(r);
 			continue;
-		}
+		} else
+			FF1_SKIP("rooms");
 
 /*
 	add site-specific stuff here
 */
 
-
 /*
-	Too bad, we can't trigger an error here because we get here all the time
-	due to the way we do partial loading with the LOAD_USER_xxx flags
-
-		FF1_LOAD_UNKNOWN;
+	log unknown keywords
 */
+		FF1_LOAD_UNKNOWN;
 	}
 	if (usr->flags & USR_FORCE_TERM) {
 		if (term_width < 1)
@@ -724,13 +773,19 @@ int i;
 		char zapped;
 		unsigned int number, roominfo_read;
 		unsigned long generation, last_read;
+		int load_room_flags;
 
 		listdestroy_Joined(usr->rooms);
 		usr->rooms = NULL;
 
 /* setup the user's mail room */
 		destroy_Room(usr->mail);
-		usr->mail = load_Mail(username);
+
+		load_room_flags = LOAD_ROOM_ALL;
+		if (!PARAM_HAVE_RESIDENT_INFO)
+			load_room_flags &= ~LOAD_ROOM_INFO;
+
+		usr->mail = load_Mail(username, load_room_flags);
 
 /*
 	When loading joined rooms, we have to check whether the room still exists,
@@ -978,6 +1033,7 @@ int save_User_version1(File *f, User *usr) {
 int i;
 Joined *j;
 StringList *sl;
+char buf[PRINT_BUF];
 
 	FF1_SAVE_VERSION;
 	FF1_SAVE_STR("name", usr->name);

@@ -3020,7 +3020,9 @@ StringList *sl;
 	}
 	put_StringIO(usr->text, "<green>\n");
 
-	if (usr->curr_room == NULL || usr->curr_room->info->buf == NULL) {
+	load_roominfo(usr->curr_room, usr->name);
+
+	if (usr->curr_room == NULL || usr->curr_room->info == NULL || usr->curr_room->info->buf == NULL) {
 		if (usr->curr_room != NULL && usr->curr_room->number == MAIL_ROOM)
 			put_StringIO(usr->text, "Here you can leave messages to users that are not online.\n");
 		else
@@ -3028,6 +3030,10 @@ StringList *sl;
 	} else
 		concat_StringIO(usr->text, usr->curr_room->info);
 
+	if (!PARAM_HAVE_RESIDENT_INFO) {
+		destroy_StringIO(usr->curr_room->info);
+		usr->curr_room->info = NULL;
+	}
 	read_text(usr);
 	Return;
 }
@@ -3632,8 +3638,8 @@ Joined *j;
 			add_Joined(&usr->rooms, j);
 		}
 	}
-	if (j != NULL && r->info->buf != NULL) {
-		if (!j->roominfo_read) {
+	if (j != NULL) {
+		if (j->roominfo_read == -1) {
 			room_info(usr);			/* first time here ; read room info */
 			Return;
 		}

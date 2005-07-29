@@ -87,6 +87,7 @@ int version;
 
 int load_Stats_version1(File *f, Stats *st) {
 char buf[MAX_LINE], *p;
+int ff1_continue;
 
 	while(Fgets(f, buf, MAX_LINE) != NULL) {
 		FF1_PARSE;

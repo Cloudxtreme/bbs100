@@ -68,6 +68,8 @@ void cstrip_spaces(char *);
 char **cstrsplit(char *, char);
 char *cstrjoin(char **);
 
+int is_numeric(char *);
+
 #endif /* _CSTRING_H_WJ97 */
 
 /* EOB */
