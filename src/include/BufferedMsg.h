@@ -53,7 +53,6 @@ typedef struct {
 BufferedMsg *new_BufferedMsg(void);
 void destroy_BufferedMsg(BufferedMsg *);
 
-BufferedMsg *copy_BufferedMsg(BufferedMsg *);
 BufferedMsg *ref_BufferedMsg(BufferedMsg *);
 
 BufferedMsg *add_BufferedMsg(PList **, BufferedMsg *);

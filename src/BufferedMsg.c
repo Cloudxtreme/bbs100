@@ -56,29 +56,6 @@ void destroy_BufferedMsg(BufferedMsg *m) {
 	Free(m);
 }
 
-BufferedMsg *copy_BufferedMsg(BufferedMsg *m) {
-BufferedMsg *cp;
-
-	if ((cp = new_BufferedMsg()) == NULL)
-		return NULL;
-
-	if (m->xmsg_header != NULL && m->xmsg_header[0])
-		cp->xmsg_header = cstrdup(m->xmsg_header);
-
-	strcpy(cp->from, m->from);
-	cp->mtime = m->mtime;
-	cp->flags = m->flags;
-
-	if (m->to != NULL) {
-		if ((cp->to = copy_StringList(m->to)) == NULL) {
-			destroy_BufferedMsg(cp);
-			return NULL;
-		}
-	}
-	copy_StringIO(cp->msg, m->msg);
-	return cp;
-}
-
 BufferedMsg *ref_BufferedMsg(BufferedMsg *m) {
 	if (m != NULL)
 		m->refcount++;
