@@ -1873,9 +1873,15 @@ int r;
 	Enter(state_edit_x);
 
 	if (c == INIT_STATE) {
+		char prompt[3];
+
 		edit_x(usr, EDIT_INIT);
 		usr->runtime_flags |= RTF_BUSY_SENDING;
-		Put(usr, "<yellow>>");
+
+		prompt[0] = KEY_CTRL('Q');
+		prompt[1] = '>';
+		prompt[2] = 0;
+		Put(usr, prompt);
 		Return;
 	}
 	if (c == KEY_CTRL('A') && (usr->flags & USR_FOLLOWUP)) {

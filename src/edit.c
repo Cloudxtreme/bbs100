@@ -877,6 +877,7 @@ int i, wrap_len;
 
 int edit_x(User *usr, char c) {
 int color;
+char prompt[4];
 
 	if (usr == NULL)
 		return 0;
@@ -936,7 +937,11 @@ int color;
 				usr->edit_buf[0] = 0;
 
 				if (usr->total_lines < PARAM_MAX_XMSG_LINES) {
-					Put(usr, "\n>");
+					prompt[0] = '\n';
+					prompt[1] = KEY_CTRL('Q');
+					prompt[2] = '>';
+					prompt[3] = 0;
+					Put(usr, prompt);
 					break;
 				}
 			}
@@ -998,7 +1003,10 @@ int color;
 			if (c < ' ' || c > '~')
 				break;
 
-			edit_wrap(usr, c, ">");
+			prompt[0] = KEY_CTRL('Q');
+			prompt[1] = '>';
+			prompt[2] = 0;
+			edit_wrap(usr, c, prompt);
 	}
 	return 0;
 }
@@ -1329,7 +1337,11 @@ char colorbuf[20];
 /* no match, it wasn't a color code after all */
 
 	usr->edit_buf[usr->edit_pos++] = '>';
-	Put(usr, ">");
+
+	colorbuf[0] = KEY_CTRL('Q');
+	colorbuf[1] = '>';
+	colorbuf[2] = 0;
+	Put(usr, colorbuf);
 }
 
 /*

@@ -27,8 +27,6 @@
 
 #define EDIT_INIT		0
 #define EDIT_BREAK		-1
-#define EDIT_CONT		0
-#define EDIT_CONTINUE	EDIT_CONT
 #define EDIT_RETURN		1
 
 #define KEY_CTRL(x)		((x) - 'A' + 1)

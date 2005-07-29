@@ -1893,7 +1893,8 @@ void state_press_any_key(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= RTF_BUSY;
-		Put(usr, "<red> \b-- Press any key to continue --");
+		Put(usr, "<red>");
+		Put(usr, "-- Press any key to continue --");
 	} else {
 		wipe_line(usr);
 		RET(usr);
@@ -2415,7 +2416,8 @@ int l, color;
 	}
 	if (usr->scrollp != NULL) {
 		color = usr->color;
-		Print(usr, "<yellow> \b--More--<cyan> (line %d/%d %d%%)", usr->read_lines, usr->total_lines,
+		Put(usr, "<yellow>");
+		Print(usr, "--More--<cyan> (line %d/%d %d%%)", usr->read_lines, usr->total_lines,
 			100 * usr->read_lines / usr->total_lines);
 		restore_color(usr, color);
 	} else {

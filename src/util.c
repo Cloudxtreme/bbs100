@@ -201,6 +201,10 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				dont_auto_color = force_auto_color_off;
 				break;
 
+			case KEY_CTRL('Q'):								/* don't auto-color this string */
+				dont_auto_color = AUTO_COLOR_FORCED;
+				break;
+
 			case KEY_CTRL('X'):
 				write_StringIO(dev, "\r", 1);
 				*cpos = 0;
@@ -945,7 +949,7 @@ int color;
 			break;
 
 		case RED:
-			color = color_table[RED].key;
+			color = color_table[YELLOW].key;
 			break;
 
 		case GREEN:
