@@ -978,7 +978,7 @@ Rcv_Remove_Recipient:
 			Return;
 		}
 	}
-	if (msg->flags & BUFMSG_XMSG) {
+	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG) {
 		strcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
 
 		if (from != usr) {
@@ -989,7 +989,7 @@ Rcv_Remove_Recipient:
 			}
 		}
 	} else {
-		if (msg->flags & BUFMSG_EMOTE) {
+		if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 			strcpy(msg_type, "Emote");
 
 			if (from != usr) {
@@ -1000,7 +1000,7 @@ Rcv_Remove_Recipient:
 				}
 			}
 		} else {
-			if (msg->flags & BUFMSG_FEELING) {
+			if ((msg->flags & BUFMSG_TYPE) == BUFMSG_FEELING) {
 				strcpy(msg_type, "Feeling");
 
 				if (from != usr) {
@@ -1011,17 +1011,14 @@ Rcv_Remove_Recipient:
 					}
 				}
 			} else
-				if (msg->flags & BUFMSG_QUESTION)
+				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
 					strcpy(msg_type, "Question");
-				else
+				else {
+					log_err("recvMsg(): BUG ! Unknown message type %d", (msg->flags & BUFMSG_TYPE));
 					strcpy(msg_type, "Message");
+				}
 		}
 	}
-	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)))
-		msg->flags &= ~BUFMSG_SEEN;
-	else
-		msg->flags |= BUFMSG_SEEN;
-
 	if ((new_msg = copy_BufferedMsg(msg)) == NULL) {
 		Perror(from, "Out of memory");
 		Print(from, "<red>%s<red> was not received by <yellow>%s\n", msg_type, usr->name);
@@ -1030,15 +1027,9 @@ Rcv_Remove_Recipient:
 /*
 	put the new copy of the message on the correct list
 */
-	if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
-		if (!(msg->flags & ~BUFMSG_SEEN)) {		/* one-shot message */
-			if (usr->runtime_flags & RTF_BUSY)
-				add_BufferedMsg(&usr->held_msgs, new_msg);
-			else
-				add_BufferedMsg(&usr->history, new_msg);
-		} else
-			add_BufferedMsg(&usr->held_msgs, new_msg);
-	} else
+	if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
+		add_BufferedMsg(&usr->held_msgs, new_msg);
+	else
 		if (usr->runtime_flags & RTF_BUSY)
 			add_BufferedMsg(&usr->held_msgs, new_msg);
 		else
@@ -1086,7 +1077,7 @@ Rcv_Remove_Recipient:
 /* auto-reply if FOLLOWUP or if it was a Question */
 
 	if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
-		|| ((msg->flags & BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
+		|| (((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
 		listdestroy_StringList(usr->recipients);
 		if ((usr->recipients = new_StringList(msg->from)) == NULL) {
 			Perror(usr, "Out of memory");
@@ -1105,7 +1096,6 @@ int printed;
 		return;
 
 	Enter(spew_BufferedMsg);
-
 /*
 	one-shot messages are received 'out of order'
 	This is because they are system messages that you do not want to wait
@@ -1115,15 +1105,15 @@ int printed;
 	for(m = usr->held_msgs; m != NULL; m = m_next) {
 		m_next = m->next;
 
-		if (!m->flags) {						/* one shot message */
+		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {		/* one shot message */
 			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
-			destroy_BufferedMsg(m);				/* one-shots are not remembered */
+			destroy_BufferedMsg(m);					/* one-shots are not remembered */
 		}
 	}
 	if (printed)
-		Put(usr, "<white>");					/* do color correction */
+		Put(usr, "<white>");						/* do color correction */
 
 	while(usr->held_msgs != NULL) {
 		m = usr->held_msgs;
@@ -1137,7 +1127,7 @@ int printed;
 /* auto-reply is follow up or question */
 		if (strcmp(m->from, usr->name)
 			&& ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
-			|| ((m->flags & BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND)))) {
+			|| (((m->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND)))) {
 			if (is_online(m->from) != NULL) {
 				listdestroy_StringList(usr->recipients);
 				usr->recipients = NULL;
@@ -1169,13 +1159,13 @@ int from_me = 0;
 
 	Enter(buffered_msg_header);
 
-	if (!msg->flags) {			/* one-shot message */
-		*buf = 0;
+	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {			/* one-shot message; */
+		*buf = 0;												/* no header */
 		Return buf;
 	}
 	tm = user_time(usr, msg->mtime);
 	if ((usr->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
-		tm->tm_hour -= 12;		/* use 12 hour clock, no 'military' time */
+		tm->tm_hour -= 12;				/* use 12 hour clock, no 'military' time */
 
 	if (!strcmp(msg->from, usr->name)) {
 		from_me = 1;
@@ -1195,34 +1185,34 @@ int from_me = 0;
 		if (from_me)
 			sprintf(frombuf, "as %s ", PARAM_NAME_SYSOP);
 		else
-			sprintf(frombuf, "<%s>%s: %s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow",
+			sprintf(frombuf, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
 				PARAM_NAME_SYSOP, msg->from);
 	} else {
 		if (!from_me)
-			sprintf(frombuf, "<%s>%s", (msg->flags & BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
+			sprintf(frombuf, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
 		strcpy(multi, "Multi ");
 
 /* the message type */
 
-	if (msg->flags & BUFMSG_XMSG)
+	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG)
 		strcpy(msgtype, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
 	else
-		if (msg->flags & BUFMSG_EMOTE)
+		if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE)
 			strcpy(msgtype, "Emote");
 		else
-			if (msg->flags & BUFMSG_FEELING)
+			if ((msg->flags & BUFMSG_TYPE) == BUFMSG_FEELING)
 				strcpy(msgtype, "Feeling");
 			else
-				if (msg->flags & BUFMSG_QUESTION)
+				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
 					strcpy(msgtype, "Question");
 
-	if ((msg->flags & BUFMSG_EMOTE) && !from_me) {
+	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me) {
 		sprintf(buf, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
 			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', frombuf);
 	} else {
-		if (msg->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION)) {
+		if (*msgtype) {
 			if (from_me)
 				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
@@ -1268,8 +1258,9 @@ char prompt[PRINT_BUF];
 			usr->history_p = unwind_BufferedMsg(usr->history);
 
 			while(usr->history_p != NULL) {
-				if (usr->history_p->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING | BUFMSG_QUESTION))
+				if ((usr->history_p->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
 					break;
+
 				usr->history_p = usr->history_p->prev;
 			}
 			if (usr->history_p == NULL) {
@@ -1382,7 +1373,7 @@ History_Reply_Code:
 
 			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
-			if (usr->history_p->flags & BUFMSG_EMOTE) {
+			if ((usr->history_p->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
 			} else {
 				CALL(usr, STATE_EDIT_X);
@@ -1470,15 +1461,15 @@ int printed;
 	printed = 0;
 	for(m = usr->held_msgs; m != NULL; m = m_next) {
 		m_next = m->next;
-		if (!m->flags) {					/* one shot message */
+		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {			/* one shot message */
 			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
-			destroy_BufferedMsg(m);			/* one-shots are not remembered */
+			destroy_BufferedMsg(m);				/* one-shots are not remembered */
 		}
 	}
 	if (printed)
-		Put(usr, "<white>");				/* do color correction */
+		Put(usr, "<white>");					/* do color correction */
 
 	switch(c) {
 		case INIT_STATE:
@@ -1486,10 +1477,8 @@ int printed;
 				usr->held_msgp = usr->held_msgs;
 
 			while(usr->held_msgp != NULL) {
-				if (usr->held_msgp->flags & (BUFMSG_XMSG|BUFMSG_EMOTE|BUFMSG_FEELING|BUFMSG_QUESTION))
+				if ((usr->held_msgp->flags & BUFMSG_TYPE) != BUFMSG_ONESHOT)
 					break;
-				else
-					log_err("state_held_history_prompt(): BUG ! Got message with unchecked flags 0x%x", usr->held_msgp->flags);
 
 				usr->held_msgp = usr->held_msgp->prev;
 			}
@@ -1595,7 +1584,7 @@ Held_History_Reply:
 
 			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
 
-			if (usr->held_msgp->flags & BUFMSG_EMOTE) {
+			if ((usr->held_msgp->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
 			} else {
 				CALL(usr, STATE_EDIT_X);

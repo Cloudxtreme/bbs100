@@ -37,20 +37,20 @@
 #define rewind_BufferedMsg(x)		(BufferedMsg *)rewind_List(x)
 #define unwind_BufferedMsg(x)		(BufferedMsg *)unwind_List(x)
 
-#define BUFMSG_SEEN			1
-#define BUFMSG_XMSG			2
-#define BUFMSG_EMOTE		4
-#define BUFMSG_FEELING		8
-#define BUFMSG_QUESTION		0x10
-#define BUFMSG_SYSOP		0x20
-#define BUFMSG_ROOMAIDE		0x40
+#define BUFMSG_ONESHOT		0		/* used for friend notifies and such */
+#define BUFMSG_XMSG			1
+#define BUFMSG_EMOTE		2
+#define BUFMSG_FEELING		3
+#define BUFMSG_QUESTION		4
+#define BUFMSG_TYPE			0xff	/* room for 256 message types (how many do you want?) */
+#define BUFMSG_SYSOP		0x100
 
 typedef struct BufferedMsg_tag BufferedMsg;
 
 struct BufferedMsg_tag {
 	List(BufferedMsg);
 
-	unsigned int flags;
+	int flags;
 	time_t mtime;
 	char from[MAX_NAME], *xmsg_header;
 	StringList *to;

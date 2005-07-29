@@ -198,13 +198,14 @@ char buf[PRINT_BUF];
 	vsprintf(buf, fmt, args);	
 	va_end(args);
 
-	if (usr->runtime_flags & RTF_BUSY) {
+	if (usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) {
 		BufferedMsg *m;
 
 		if ((m = new_BufferedMsg()) == NULL) {
 			Perror(usr, "Out of memory buffering message");
 			return;
 		}
+		m->flags = BUFMSG_ONESHOT;
 		put_StringIO(m->msg, buf);
 		write_StringIO(m->msg, "\n", 1);
 		add_BufferedMsg(&usr->held_msgs, m);

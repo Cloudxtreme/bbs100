@@ -1,3 +1,7 @@
+Changes as of July 29th 2005
+- BUFMSG_SEEN flag no longer exists
+- introduced bitmask BUFMSG_TYPE; can have 256 message types
+
 Changes as of July 28th 2005
 - away reason for locking and hold message mode
 - config option of turning off asking for a reason

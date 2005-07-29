@@ -1724,7 +1724,6 @@ void loop_send_msg(User *usr, char c) {
 						Return;
 					}
 				}
-				usr->send_msg->flags &= ~BUFMSG_SEEN;	/* this is for the recipient */
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
 			}
 		}
@@ -1848,7 +1847,7 @@ int r;
 		strcpy(msg->from, usr->name);
 		msg->mtime = rtc;
 
-		msg->flags |= (BUFMSG_EMOTE | BUFMSG_SEEN);
+		msg->flags = BUFMSG_EMOTE;
 		if (usr->runtime_flags & RTF_SYSOP)
 			msg->flags |= BUFMSG_SYSOP;
 
@@ -1932,7 +1931,7 @@ int r;
 
 		xmsg->mtime = rtc;
 
-		xmsg->flags |= (BUFMSG_XMSG | BUFMSG_SEEN);
+		xmsg->flags = BUFMSG_XMSG;
 		if (usr->runtime_flags & RTF_SYSOP)
 			xmsg->flags |= BUFMSG_SYSOP;
 
@@ -2051,7 +2050,7 @@ int r;
 		strcpy(msg->from, usr->name);
 		msg->mtime = rtc;
 
-		msg->flags |= (BUFMSG_FEELING | BUFMSG_SEEN);
+		msg->flags = BUFMSG_FEELING;
 		if (usr->runtime_flags & RTF_SYSOP)
 			msg->flags |= BUFMSG_SYSOP;
 
@@ -2139,14 +2138,12 @@ int r;
 		strcpy(question->from, usr->name);
 		question->mtime = rtc;
 
-		question->flags |= BUFMSG_QUESTION;
+		question->flags = BUFMSG_QUESTION;
 		if (usr->runtime_flags & RTF_SYSOP)
 			question->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, question);
 		recvMsg(u, usr, question);				/* the question is asked! */
-
-		question->flags |= BUFMSG_SEEN;
 		RET(usr);
 	}
 	Return;
@@ -3033,6 +3030,7 @@ StringList *sl;
 void reply_x(User *usr, int all) {
 BufferedMsg *m;
 StringList *sl;
+int msgtype;
 
 	if (usr == NULL)
 		return;
@@ -3041,9 +3039,11 @@ StringList *sl;
 
 	m = unwind_BufferedMsg(usr->history);
 	while(m != NULL) {
-		if ((m->flags & (BUFMSG_XMSG | BUFMSG_EMOTE | BUFMSG_FEELING))
+		msgtype = m->flags & BUFMSG_TYPE;
+		if ((msgtype == BUFMSG_XMSG || msgtype == BUFMSG_EMOTE || msgtype == BUFMSG_FEELING)
 			&& strcmp(m->from, usr->name))
 			break;
+
 		m = m->prev;
 	}
 	if (m == NULL) {
@@ -3112,7 +3112,7 @@ char many_buf[MAX_LINE*3];
 		usr->runtime_flags &= ~RTF_MULTI;
 		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf));
 
-		if (flags & BUFMSG_EMOTE) {
+		if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 			CALL(usr, STATE_EDIT_EMOTE);
 		} else {
 			CALL(usr, STATE_EDIT_X);
@@ -3121,7 +3121,7 @@ char many_buf[MAX_LINE*3];
 /* replying to <many>, edit the recipient list */
 		Print(usr, "<green>Replying to%s", print_many(usr, many_buf));
 
-		if (flags & BUFMSG_EMOTE) {
+		if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 			PUSH(usr, STATE_EMOTE_PROMPT);
 		} else {
 			PUSH(usr, STATE_X_PROMPT);
