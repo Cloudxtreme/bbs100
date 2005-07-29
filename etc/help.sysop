@@ -21,9 +21,11 @@
 <white>Ctrl-<key>S<green>    Schedule shutdown
      <key>s    Cancel scheduled shutdown
      <key>n    Toggle nologin status; when set, nobody can login
+     <key>$    Drop out of Sysop mode
 
 <white>Note:<green> When a user or room is deleted, it is moved to the <yellow>trash/<green> folder.
       Thus, a system administrator should able to restore the deleted data.
+      There is no way to do this from within the BBS.
 
 Any changes in the <yellow>Parameters<green> subsection are made in real-time. This means
 that changes to parameters come into effect immediately. The parameters are

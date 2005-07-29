@@ -116,6 +116,9 @@ void state_sysop_menu(User *usr, char c) {
 				Put(usr, "Deactivate <hotkey>nologin <white>[!]<magenta>            <hotkey>Help\n");
 			break;
 
+		case '$':
+			drop_sysop_privs(usr);
+
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:

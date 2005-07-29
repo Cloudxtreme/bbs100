@@ -134,6 +134,12 @@ void state_room_config_menu(User *usr, char c) {
 			}
 			break;
 
+		case '$':
+			if (usr->runtime_flags & RTF_SYSOP)
+				drop_sysop_privs(usr);
+			else
+				break;
+
 		case ' ':
 		case KEY_RETURN:
 		case KEY_CTRL('C'):

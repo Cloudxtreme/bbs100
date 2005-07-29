@@ -552,14 +552,8 @@ int i, idx;
 
 		case '$':
 			if (usr->runtime_flags & RTF_SYSOP) {
-				usr->runtime_flags &= ~RTF_SYSOP;
-				Print(usr, "<white>Exiting %s mode\n", PARAM_NAME_SYSOP);
-
-				log_msg("SYSOP %s left %s mode", usr->name, PARAM_NAME_SYSOP);
-
-/* silently disable roomaide mode, if not allowed to be roomaide here */
-				if ((usr->runtime_flags & RTF_ROOMAIDE) && in_StringList(usr->curr_room->room_aides, usr->name) == NULL)
-					usr->runtime_flags &= ~RTF_ROOMAIDE;
+				drop_sysop_privs(usr);
+				Put(usr, "\n");
 				break;
 			}
 			if (get_su_passwd(usr->name) != NULL) {
@@ -4022,6 +4016,19 @@ int i, j, found, printed;
 	else
 		Put(usr, "<green>This looks like an unmodified <yellow>bbs100\n");
 	Return;
+}
+
+void drop_sysop_privs(User *usr) {
+	if (usr->runtime_flags & RTF_SYSOP) {
+		usr->runtime_flags &= ~RTF_SYSOP;
+		Print(usr, "<white>Exiting %s mode", PARAM_NAME_SYSOP);
+
+		log_msg("SYSOP %s left %s mode", usr->name, PARAM_NAME_SYSOP);
+
+/* silently disable roomaide mode, if not allowed to be roomaide here */
+		if ((usr->runtime_flags & RTF_ROOMAIDE) && in_StringList(usr->curr_room->room_aides, usr->name) == NULL)
+			usr->runtime_flags &= ~RTF_ROOMAIDE;
+	}
 }
 
 /* EOB */

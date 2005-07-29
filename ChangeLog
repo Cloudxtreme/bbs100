@@ -2,6 +2,7 @@ Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists
 - introduced bitmask BUFMSG_TYPE; can have 256 message types
 - reference count on BufferedMsg; 1 copy for all references!
+- Sysops can press $ in toplevel menus to drop out of sysop mode
 
 Changes as of July 28th 2005
 - away reason for locking and hold message mode

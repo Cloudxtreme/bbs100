@@ -121,6 +121,7 @@ void chatroom_msg(Room *, char *);
 
 void print_calendar(User *);
 void source_checksums(User *);
+void drop_sysop_privs(User *);
 
 #endif	/* STATE_H_WJ99 */
 
