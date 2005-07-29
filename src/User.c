@@ -73,10 +73,6 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
-	if ((usr->info = new_StringIO()) == NULL) {
-		destroy_User(usr);
-		return NULL;
-	}
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
@@ -250,7 +246,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	listdestroy_StringList(usr->friends);
 	listdestroy_StringList(usr->enemies);
 	usr->friends = usr->enemies = NULL;
-	free_StringIO(usr->info);
+	destroy_StringIO(usr->info);
+	usr->info = NULL;
 
 	listdestroy_Joined(usr->rooms);
 	usr->rooms = NULL;
@@ -352,16 +349,9 @@ int term_width, term_height;
 			FF1_LOAD_DUP("vanity", usr->vanity);
 			FF1_LOAD_DUP("xmsg_header", usr->xmsg_header);
 		}
-		if (!strcmp(buf, "hostname")) {
-			Free(usr->tmpbuf[TMP_FROM_HOST]);
-			usr->tmpbuf[TMP_FROM_HOST] = NULL;
-			FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
-		}
-		if (!strcmp(buf, "ipnum")) {
-			Free(usr->tmpbuf[TMP_FROM_IP]);
-			usr->tmpbuf[TMP_FROM_IP] = NULL;
-			FF1_LOAD_DUP("ipnum", usr->tmpbuf[TMP_FROM_IP]);
-		}
+		FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
+		FF1_LOAD_DUP("ipnum", usr->tmpbuf[TMP_FROM_IP]);
+
 		if (flags & LOAD_USER_DATA) {
 			FF1_LOAD_ULONG("birth", usr->birth);
 			FF1_LOAD_ULONG("last_logout", usr->last_logout);
@@ -568,6 +558,9 @@ int load_User_version0(File *f, User *usr, char *username, int flags) {
 char buf[MAX_PATHLEN];
 StringList *sl;
 int i;
+
+	destroy_StringIO(usr->info);
+	usr->info = NULL;
 
 /* passwd */
 	if (flags & LOAD_USER_PASSWORD) {
@@ -851,10 +844,12 @@ int i;
 
 /* info */
 	if (flags & LOAD_USER_INFO) {
-		free_StringIO(usr->info);
 		while(Fgets(f, buf, MAX_PATHLEN) != NULL) {
 			if (!*buf)
 				break;
+
+			if (usr->info == NULL && (usr->info = new_StringIO()) == NULL)
+				continue;
 
 			put_StringIO(usr->info, buf);
 			write_StringIO(usr->info, "\n", 1);
@@ -919,6 +914,29 @@ char buf[MAX_PATHLEN];
 	return 0;
 }
 
+int load_profile_info(User *usr) {
+User *tmp_user;
+
+	if (usr == NULL)
+		return -1;
+
+	if (usr->info != NULL)
+		return 0;
+
+	tmp_user = new_User();
+
+	if (load_User(tmp_user, usr->name, LOAD_USER_INFO) < 0) {
+		destroy_User(tmp_user);
+		return -1;
+	}
+	destroy_StringIO(usr->info);
+	usr->info = tmp_user->info;
+	tmp_user->info = NULL;
+
+	destroy_User(tmp_user);
+	return 0;
+}
+
 
 int save_User(User *usr) {
 int ret;
@@ -934,6 +952,8 @@ File *f;
 	if (is_guest(usr->name))		/* don't save Guest user */
 		return 0;
 
+	load_profile_info(usr);
+
 	usr->last_online_time = (unsigned long)rtc - (unsigned long)usr->login_time;
 
 	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
@@ -946,6 +966,11 @@ File *f;
 	usr->flags &= USR_ALL;
 	ret = save_User_version1(f, usr);
 	Fclose(f);
+
+	if (!PARAM_HAVE_RESIDENT_INFO) {
+		destroy_StringIO(usr->info);		/* don't keep it resident */
+		usr->info = NULL;
+	}
 	return ret;
 }
 

@@ -109,9 +109,16 @@ void state_config_menu(User *usr, char c) {
 		case 'I':
 			Put(usr, "Profile info\n");
 
-			if (usr->info->buf != NULL) {
+			load_profile_info(usr);
+
+			if (usr->info != NULL && usr->info->buf != NULL) {
 				Put(usr, "<cyan>Your current profile info is:\n<green>");
 				copy_StringIO(usr->text, usr->info);
+
+				if (!PARAM_HAVE_RESIDENT_INFO) {
+					destroy_StringIO(usr->info);		/* don't keep it resident */
+					usr->info = NULL;
+				}
 				PUSH(usr, STATE_CHANGE_PROFILE);
 				read_text(usr);
 			} else {
@@ -494,8 +501,14 @@ StringIO *tmp;
 
 	Enter(save_profile);
 
-	free_StringIO(usr->info);
-	tmp = usr->info;
+	destroy_StringIO(usr->info);
+	usr->info = NULL;
+
+	if ((tmp = new_StringIO()) == NULL) {
+		Perror(usr, "Failed to save profile");
+		RET(usr);
+		Return;
+	}
 	usr->info = usr->text;
 	usr->text = tmp;
 

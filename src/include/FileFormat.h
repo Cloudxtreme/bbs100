@@ -117,6 +117,8 @@
 
 #define FF1_LOAD_STRINGIO(x,y)		if (!strcmp(buf, (x))) {	\
 		if (*p) {												\
+			if ((y) == NULL && ((y) = new_StringIO()) == NULL)	\
+				continue;										\
 			put_StringIO((y), p);								\
 			write_StringIO((y), "\n", 1);						\
 		}														\

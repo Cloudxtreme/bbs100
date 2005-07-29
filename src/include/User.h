@@ -183,6 +183,7 @@ int load_User(User *, char *, int);
 int load_User_version0(File *, User *, char *, int);
 int site_load_User_version0(User *, char *, int);
 int load_User_version1(File *, User *, char *, int);
+int load_profile_info(User *);
 
 int save_User(User *);
 int save_User_version1(File *, User *);

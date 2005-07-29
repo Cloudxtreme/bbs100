@@ -4,6 +4,9 @@ Changes as of July 29th 2005
 - reference count on BufferedMsg; 1 copy for all references!
 - Sysops can press $ in toplevel menus to drop out of sysop mode
 - KEY_CTRL('Q') (hardcoded only) to temporarily force off auto-coloring
+- PARAM_HAVE_RESIDENT_INFO; option of throwing profile info out of core
+  and saving a few Ks of memory. If you enable the filecache, there is
+  always the chance that is cached as well
 
 Changes as of July 28th 2005
 - away reason for locking and hold message mode

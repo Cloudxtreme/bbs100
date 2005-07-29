@@ -257,8 +257,13 @@ int r;
 	if (r == EDIT_RETURN) {
 		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
 			User *u;
+			int load_flags;
 
-			if (load_User(usr, usr->tmpbuf[TMP_NAME], LOAD_USER_ALL)) {
+			load_flags = LOAD_USER_ALL;
+			if (!PARAM_HAVE_RESIDENT_INFO)				/* deferred loading of profile */
+				load_flags &= ~LOAD_USER_INFO;
+
+			if (load_User(usr, usr->tmpbuf[TMP_NAME], load_flags)) {
 				Perror(usr, "failed to load user data");
 				close_connection(usr, "failed to load user file");
 				Return;

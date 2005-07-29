@@ -1522,6 +1522,8 @@ int r;
 /* load the proper hostname */
 			strcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST]);
 		} else {
+			load_profile_info(u);
+
 			listdestroy_StringList(usr->recipients);		/* place entered name in history */
 			usr->recipients = new_StringList(usr->edit_buf);
 		}
@@ -1529,7 +1531,6 @@ int r;
 	make the profile
 */
 		free_StringIO(usr->text);
-
 		put_StringIO(usr->text, "<white>");
 
 		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
@@ -1643,9 +1644,13 @@ int r;
 		if (visible && in_StringList(u->enemies, usr->name) != NULL)
 			print_StringIO(usr->text, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
 
-		if (visible && u->info->buf != NULL) {
+		if (visible && u->info != NULL && u->info->buf != NULL) {
 			put_StringIO(usr->text, "<green>\n");
 			concat_StringIO(usr->text, u->info);
+		}
+		if (!PARAM_HAVE_RESIDENT_INFO) {
+			destroy_StringIO(u->info);
+			u->info = NULL;
 		}
 		if (usr->message != NULL && usr->message->anon[0]
 			&& !strcmp(usr->message->from, u->name)

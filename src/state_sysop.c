@@ -2832,7 +2832,7 @@ void state_features_menu(User *usr, char c) {
 			Print(usr, "\n<magenta>"
 				"e<hotkey>Xpress Messages      <white>%-3s<magenta>      Quic<hotkey>k X messaging       <white>%s<magenta>\n"
 				"<hotkey>Emotes                <white>%-3s<magenta>      <hotkey>Talked To list          <white>%s<magenta>\n"
-				"<hotkey>Feelings              <white>%-3s<magenta>      H<hotkey>old message mode       <white>%s<magenta>\n"
+				"Fee<hotkey>lings              <white>%-3s<magenta>      H<hotkey>old message mode       <white>%s<magenta>\n"
 				"<hotkey>Questions             <white>%-3s<magenta>      Follow-<hotkey>up mode          <white>%s<magenta>\n",
 
 				(PARAM_HAVE_XMSGS == PARAM_FALSE) ? "off" : "on",
@@ -2867,8 +2867,9 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
-				"Mem o<hotkey>bject cache      <white>%-3s<magenta>      F<hotkey>ile cache              <white>%s<magenta>\n"
-				"Wrapper a<hotkey>pply to All  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
+				"Mem o<hotkey>bject cache      <white>%-3s<magenta>      <hotkey>File cache              <white>%s<magenta>\n"
+				"Wrapper a<hotkey>pply to All  <white>%-3s<magenta>      Resident <hotkey>info           <white>%s<magenta>\n"
+				"<hotkey>Display warnings      <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
@@ -2877,6 +2878,8 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_FILECACHE == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "off" : "on",
+
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			break;
@@ -2896,8 +2899,8 @@ void state_features_menu(User *usr, char c) {
 		case 'E':
 			TOGGLE_FEATURE(PARAM_HAVE_EMOTES, "Emotes");
 
-		case 'f':
-		case 'F':
+		case 'l':
+		case 'L':
 			TOGGLE_FEATURE(PARAM_HAVE_FEELINGS, "Feelings");
 
 		case 'q':
@@ -2974,8 +2977,8 @@ void state_features_menu(User *usr, char c) {
 		case 'B':
 			TOGGLE_FEATURE(PARAM_HAVE_MEMCACHE, "Object cache");
 
-		case 'i':
-		case 'I':
+		case 'f':
+		case 'F':
 			TOGGLE_FEAT(PARAM_HAVE_FILECACHE, "File cache");
 			if (PARAM_HAVE_FILECACHE == PARAM_FALSE)
 				deinit_FileCache();
@@ -2986,6 +2989,14 @@ void state_features_menu(User *usr, char c) {
 		case 'p':
 		case 'P':
 			TOGGLE_FEATURE(PARAM_HAVE_WRAPPER_ALL, "Wrapper apply to All");
+
+		case 'i':
+		case 'I':
+			PARAM_HAVE_RESIDENT_INFO ^= PARAM_TRUE;
+			Print(usr, "%s info in core memory\n", (PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "Don't keep" : "Keep");
+			usr->runtime_flags |= RTF_PARAM_EDITED;
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'd':
 		case 'D':
