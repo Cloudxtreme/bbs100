@@ -9,6 +9,7 @@ Changes as of July 30th 2005
 - More prompts in menus using buffer_text()
 - profile_user() using buffer_text()
 - statistics screen using buffer_text()
+- Who list uses buffer_text()
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists

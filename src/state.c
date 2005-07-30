@@ -2539,9 +2539,7 @@ int total;
 	}
 	proot = sort_PList(proot, sort_func);
 
-	free_StringIO(usr->text);
-
-/* make the who list in usr->text */
+	buffer_text(usr);
 
 	total = list_Count(proot);
 	who_list_header(usr, total, format);
@@ -2608,6 +2606,9 @@ User *u;
 		if (u->runtime_flags & RTF_SYSOP)
 			stat = '$';
 
+		if (u->runtime_flags & RTF_HOLD)
+			stat = 'b';
+
 		if (u->flags & USR_X_DISABLED)
 			stat = '*';
 
@@ -2615,8 +2616,7 @@ User *u;
 			stat = '#';
 /*
 	you can see it when someone is X-ing or Mail>-ing you
-	this is after a (good) idea by Richard of MatrixBBS, who implemented
-	lots of flags more on there
+	this is after a (good) idea by Richard of MatrixBBS
 */
 		if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringList(u->recipients, usr->name) != NULL)
 			stat = 'x';
@@ -2648,7 +2648,7 @@ User *u;
 			c++;
 		}
 		buf[l] = 0;
-		print_StringIO(usr->text, "%s <white>%c <yellow>%2d:%02d\n", buf, stat, hrs, mins);
+		Print(usr, "%s <white>%c <yellow>%2d:%02d\n", buf, stat, hrs, mins);
 	}
 	Return 0;
 }
@@ -2733,6 +2733,9 @@ PList *pl_cols[16];
 			if (u->runtime_flags & RTF_SYSOP)
 				stat = '$';
 
+			if (u->runtime_flags & RTF_HOLD)
+				stat = 'b';
+
 			if (u->flags & USR_X_DISABLED)
 				stat = '*';
 
@@ -2754,8 +2757,8 @@ PList *pl_cols[16];
 			}
 			pl_cols[i] = pl_cols[i]->next;
 		}
-		put_StringIO(usr->text, buf);
-		write_StringIO(usr->text, "\n", 1);
+		Put(usr, buf);
+		Put(usr, "\n");
 	}
 	Return 0;
 }
@@ -2771,22 +2774,22 @@ struct tm *tm;
 	sl = NULL;
 	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
 		if (total == 1)
-			print_StringIO(usr->text, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
+			Print(usr, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
 		else
-			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s><magenta> at <yellow>%02d:%02d\n",
+			Print(usr, "<magenta>There %s <yellow>%d<magenta> user%s in <yellow>%s><magenta> at <yellow>%02d:%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				usr->curr_room->name, tm->tm_hour, tm->tm_min);
 	} else {
 		if (total == 1)
-			print_StringIO(usr->text, "<green>You are the only one online right now\n");
+			Put(usr, "<green>You are the only one online right now\n");
 		else
-			print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d:%02d\n",
+			Print(usr, "<magenta>There %s <yellow>%d<magenta> user%s online at <yellow>%02d:%02d\n",
 				(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 				tm->tm_hour, tm->tm_min);
 	}
 /* draw a line across the full screen width */
 	if (drawline)
-		print_StringIO(usr->text, "<white><hline>-\n");
+		Put(usr, "<white><hline>-\n");
 }
 
 
