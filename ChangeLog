@@ -6,6 +6,8 @@ Changes as of July 30th 2005
 - (most) menu's printed with --More-- prompt for small terminal windows
 - buffer_text() for buffering to usr->text (now why didn't I think of this
   earlier..?)   So I changed everything to work with buffer_text()
+- reversed zip code and city in profile (US style)
+- edit_tabname() does find enemies if USR_SHOW_ENEMIES is set
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists
