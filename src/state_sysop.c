@@ -732,8 +732,17 @@ int i;
 
 	Enter(state_add_wrapper);
 
+	if (c == INIT_PROMPT) {
+		Put(usr, "\n"
+			"<green>Enter number: <yellow>");
+
+		edit_number(usr, INIT_STATE);
+		Return;
+	}
 	if (c == INIT_STATE) {
 		char buf[MAX_LINE*3], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
+
+		buffer_text(usr);
 
 		if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
 			Put(usr, "\n<red>WARNING: You are currently locked out yourself\n");
@@ -757,8 +766,8 @@ int i;
 				Print(usr, "%s\n", buf);
 			i++;
 		}
-		Put(usr, "\n"
-			"<green>Enter number: <yellow>");
+		read_menu(usr);
+		Return;
 	}
 	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {
