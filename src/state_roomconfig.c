@@ -443,7 +443,7 @@ StringList *sl;
 
 	Enter(state_choose_category);
 
-	if ((unsigned char)c == INIT_PROMPT) {
+	if (c == INIT_PROMPT) {
 		Put(usr, "\n<green>Choose category: <yellow>");
 		Return;
 	}

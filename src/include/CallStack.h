@@ -30,7 +30,7 @@
 #define listdestroy_CallStack(x)	listdestroy_List((x), destroy_CallStack)
 
 #define INIT_STATE	0
-#define INIT_PROMPT	255
+#define INIT_PROMPT	(char)-1
 #define LOOP_STATE	' '
 
 #define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)

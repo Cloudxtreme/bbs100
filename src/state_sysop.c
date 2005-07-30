@@ -407,8 +407,13 @@ void state_categories_menu(User *usr, char c) {
 	Enter(state_categories_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			if (category != NULL)
 				print_columns(usr, category, FORMAT_MENU_NUMBERED);
@@ -418,7 +423,9 @@ void state_categories_menu(User *usr, char c) {
 			);
 			if (category != NULL)
 				Put(usr, "<hotkey>Remove category\n");
-			break;
+
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -830,6 +837,9 @@ char buf[MAX_LINE];
 		Return;
 	}
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
@@ -857,7 +867,8 @@ char buf[MAX_LINE];
 
 				(w->comment == NULL) ? "" : w->comment
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -1478,47 +1489,59 @@ int r;
 }
 
 void state_malloc_status(User *usr, char c) {
+int i, len = 0, l;
+char num_buf[25], line[PRINT_BUF];
+
 	if (usr == NULL)
 		return;
 
 	Enter(state_malloc_status);
 
-	if (c == INIT_STATE) {
-		int i, len = 0, l;
-		char num_buf[25], line[PRINT_BUF];
+	switch(c) {
+		case INIT_PROMPT:
+			break;
 
-		Print(usr, "\n<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(memory_total, num_buf));
-
-		for(i = 0; i < NUM_TYPES+1; i++) {
-			if (strlen(Types_table[i].type) > len)
-				len = strlen(Types_table[i].type);
-		}
-		l = 0;
-		line[0] = 0;
-		for(i = 0; i < NUM_TYPES+1; i++) {
-			if (i & 1)
-				l += sprintf(line+l, "      ");
-
-			l += sprintf(line+l, "%-*s :<white> %12s<green> ", len, Types_table[i].type, print_number(mem_stats[i], num_buf));
-
-			if (i & 1) {
-				Print(usr, "%s\n", line);
-				l = 0;
-				line[0] = 0;
-			} else {
-				line[l++] = ' ';
-				line[l] = 0;
-			}
-		}
-		if (!(i & 1))
+		case INIT_STATE:
 			Put(usr, "\n");
 
-		Put(usr, "<white>\n"
-			"[Press a key]");
-	} else {
-		wipe_line(usr);
-		RET(usr);
+			buffer_text(usr);
+
+			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(memory_total, num_buf));
+
+			for(i = 0; i < NUM_TYPES+1; i++) {
+				if (strlen(Types_table[i].type) > len)
+					len = strlen(Types_table[i].type);
+			}
+			l = 0;
+			line[0] = 0;
+			for(i = 0; i < NUM_TYPES+1; i++) {
+				if (i & 1)
+					l += sprintf(line+l, "      ");
+
+				l += sprintf(line+l, "%-*s :<white> %12s<green> ", len, Types_table[i].type, print_number(mem_stats[i], num_buf));
+
+				if (i & 1) {
+					Print(usr, "%s\n", line);
+					l = 0;
+					line[0] = 0;
+				} else {
+					line[l++] = ' ';
+					line[l] = 0;
+				}
+			}
+			if (!(i & 1))
+				Put(usr, "\n");
+
+			read_menu(usr);
+			Return;
+
+		default:
+			wipe_line(usr);
+			RET(usr);
+			Return;
 	}
+	Put(usr, "<white>\n"
+		"[Press a key]");
 	Return;
 }
 
@@ -1530,8 +1553,14 @@ void state_parameters_menu(User *usr, char c) {
 	Enter(state_parameters_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Put(usr, "<magenta>\n"
 				"System <hotkey>Configuration\n"
 				"Configure locations of <hotkey>Files\n"
@@ -1544,7 +1573,9 @@ void state_parameters_menu(User *usr, char c) {
 				"<hotkey>Reload screens and help files\n"
 				"\n"
 				"<white>Ctrl-<hotkey>R<magenta>eload param file<white> %s\n", param_file);
-			break;
+
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -1632,11 +1663,16 @@ void state_system_config_menu(User *usr, char c) {
 	Enter(state_system_config_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
 			PARAM_UMASK &= 0777;
 			umask(PARAM_UMASK);
+
+			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
 				"BBS <hotkey>Name            <white>%s<magenta>\n"
@@ -1680,7 +1716,8 @@ void state_system_config_menu(User *usr, char c) {
 				"Default time<hotkey>zone    <white>%s<magenta>\n",
 				PARAM_DEFAULT_TIMEZONE
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -1878,12 +1915,17 @@ void state_config_files_menu(User *usr, char c) {
 
 	Enter(state_config_files_menu);
 
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
 /*
 	I'm hopelessly out of hotkeys here...
 */
-	switch(c) {
-		case INIT_STATE:
-			usr->runtime_flags |= RTF_BUSY;
+			buffer_text(usr);
+
 			Print(usr, "<magenta>\n"
 				"<hotkey>GPL              <white>%-22s<magenta>  <hotkey>0 Local mods     <white>%s<magenta>\n",
 				PARAM_GPL_SCREEN, PARAM_MODS_SCREEN);
@@ -1911,7 +1953,9 @@ void state_config_files_menu(User *usr, char c) {
 				PARAM_HOSTS_ACCESS_FILE, PARAM_SU_PASSWD_FILE);
 			Print(usr, "Host <hotkey>map         <white>%-22s<magenta>  S<hotkey>ymbol table     <white>%s<magenta>\n",
 				PARAM_HOSTMAP_FILE, PARAM_SYMTAB_FILE);
-			break;
+
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -2228,8 +2272,13 @@ void state_reload_files_menu(User *usr, char c) {
 		return;
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			Put(usr, "<magenta>\n"
 				"Reload log<hotkey>in screen             Reload <hotkey>1st login screen\n"
@@ -2246,7 +2295,8 @@ void state_reload_files_menu(User *usr, char c) {
 				"Reload <hotkey>hostmap                  Reload <hotkey>feelings\n"
 				"Reload <hotkey>local mods               Reload <hotkey>GPL\n"
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -2366,8 +2416,14 @@ void state_maximums_menu(User *usr, char c) {
 	Enter(state_maximums_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Print(usr, "<magenta>\n"
 				"Max number of <hotkey>cached files            <white>%6u<magenta>\n"
 				"Max number of messages kept in a <hotkey>Room <white>%6u<magenta>\n"
@@ -2404,7 +2460,8 @@ void state_maximums_menu(User *usr, char c) {
 				"Minimum helper a<hotkey>ge                    <white>%6u %s<magenta>\n",
 				PARAM_HELPER_AGE, (PARAM_HELPER_AGE == 1) ? "day" : "days"
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -2623,8 +2680,14 @@ void state_strings_menu(User *usr, char c) {
 	Enter(state_strings_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Print(usr, "\n"
 				"<magenta>Name <hotkey>Sysop               <white>%s<magenta>\n"
 				"<magenta>Name Room <hotkey>Aide           <white>%s<magenta>\n"
@@ -2668,7 +2731,8 @@ void state_strings_menu(User *usr, char c) {
 				PARAM_NOTIFY_ENTER_CHAT,
 				PARAM_NOTIFY_LEAVE_CHAT
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -2874,8 +2938,14 @@ void state_features_menu(User *usr, char c) {
 	Enter(state_features_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Print(usr, "\n<magenta>"
 				"e<hotkey>Xpress Messages      <white>%-3s<magenta>      Quic<hotkey>k X messaging       <white>%s<magenta>\n"
 				"<hotkey>Emotes                <white>%-3s<magenta>      <hotkey>Talked To list          <white>%s<magenta>\n"
@@ -2929,7 +2999,8 @@ void state_features_menu(User *usr, char c) {
 
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -3067,8 +3138,14 @@ char *new_val;
 	Enter(state_log_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Print(usr, "\n<magenta>"
 				"<hotkey>Syslog              <white>%s<magenta>\n"
 				"<hotkey>Authlog             <white>%s<magenta>\n"
@@ -3086,7 +3163,8 @@ char *new_val;
 				PARAM_ONCRASH,
 				PARAM_CRASHDIR
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
