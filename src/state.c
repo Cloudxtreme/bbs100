@@ -1568,7 +1568,7 @@ int r;
 
 			if (u->zipcode != NULL && u->zipcode[0]) {
 				if (u->city != NULL && u->city[0])
-					Print(usr, "%s<yellow>%s  %s\n", hidden, u->city, u->zipcode);
+					Print(usr, "%s<yellow>%s<yellow>  %s\n", hidden, u->city, u->zipcode);
 				else
 					Print(usr, "%s<yellow>%s\n", hidden, u->zipcode);
 			} else
