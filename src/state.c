@@ -2882,8 +2882,8 @@ int read_it = 1, idx;
 		}
 	}
 	buf2[MAX_LINE-1] = 0;
-	put_StringIO(usr->text, buf2);
-	write_StringIO(usr->text, "\n", 1);
+	Put(usr, buf2);
+	Put(usr, "\n");
 	Return;
 }
 
@@ -2894,7 +2894,7 @@ char *category = NULL;
 
 	Enter(known_rooms);
 
-	free_StringIO(usr->text);
+	buffer_text(usr);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -2918,7 +2918,7 @@ char *category = NULL;
 				continue;
 		}
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
-			print_StringIO(usr->text, "<cyan>\n[%s]\n", r->category);
+			Print(usr, "<cyan>\n[%s]\n", r->category);
 			category = r->category;
 		}
 		print_known_room(usr, r);
@@ -2940,7 +2940,7 @@ char *category = NULL;
 
 	Enter(allknown_rooms);
 
-	free_StringIO(usr->text);
+	buffer_text(usr);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -2956,7 +2956,7 @@ char *category = NULL;
 			continue;
 
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
-			print_StringIO(usr->text, "\n<white>[<cyan>%s<white>]\n", r->category);
+			Print(usr, "\n<white>[<cyan>%s<white>]\n", r->category);
 			category = r->category;
 		}
 		print_known_room(usr, r);
