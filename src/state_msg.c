@@ -2104,7 +2104,7 @@ char buf[PRINT_BUF], c;
 	free_StringIO(usr->text);
 	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
 /*
-	This is the most ugly hack ever; temporarely reset name to get a correct
+	This is the most ugly hack ever; temporarily reset name to get a correct
 	msg header out of buffered_msg_header();
 	I really must rewrite this some day
 */
