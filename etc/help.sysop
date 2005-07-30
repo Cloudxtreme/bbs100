@@ -23,6 +23,8 @@
      <key>n    Toggle nologin status; when set, nobody can login
      <key>$    Drop out of Sysop mode
 
+<white>Ctrl-<key>L<green>    Reprint menu
+
 <white>Note:<green> When a user or room is deleted, it is moved to the <yellow>trash/<green> folder.
       Thus, a system administrator should able to restore the deleted data.
       There is no way to do this from within the BBS.

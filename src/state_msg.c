@@ -2373,6 +2373,7 @@ int l, color;
 			for(; usr->scrollp != NULL && usr->scrollp->next != NULL; usr->scrollp = usr->scrollp->next)
 				usr->read_lines++;
 
+		case KEY_CTRL('L'):				/* reprint page */
 /* go one screen back */
 			l = 0;
 			while(usr->scrollp != NULL && usr->scrollp->prev != NULL && l < usr->display->term_height) {

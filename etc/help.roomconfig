@@ -12,6 +12,8 @@
      <key>n    Change the room name
      <key>c    Change room category
 
+<white>Ctrl-<key>L<green>    Reprint menu
+
 <white>Note: <yellow>Invite<green> and <yellow>uninvite<green> apply to invite-only rooms.
       Also mind that<yellow> 'uninvite'<green> is not the same as<yellow> 'kickout'<green> and<yellow> 'invite'<green>
       is not the same as<yellow> 'undo kickout'<green>.

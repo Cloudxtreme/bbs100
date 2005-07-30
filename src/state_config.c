@@ -71,8 +71,6 @@ void state_config_menu(User *usr, char c) {
 
 			Put(usr, "<hotkey>Terminal settings\n"
 				"<hotkey>Doing                        Customize <hotkey>Who list\n"
-			);
-			Put(usr,
 				"<hotkey>Reminder                     <hotkey>Options\n"
 			);
 			if (PARAM_HAVE_XMSG_HDR)
@@ -107,6 +105,10 @@ void state_config_menu(User *usr, char c) {
 				usr->runtime_flags &= ~RTF_CONFIG_EDITED;
 			}
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'a':
@@ -280,6 +282,10 @@ void state_config_address(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "Config menu\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'r':
@@ -656,6 +662,19 @@ void state_quicklist_prompt(User *usr, char c) {
 			print_quicklist(usr);
 			break;
 
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "Config menu\n");
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case '0':
 		case '1':
 		case '2':
@@ -672,15 +691,6 @@ void state_quicklist_prompt(User *usr, char c) {
 			usr->read_lines = c - '1';		/* a bit of a hack */
 
 			enter_name(usr, STATE_EDIT_QUICKLIST);
-			Return;
-
-		case ' ':
-		case KEY_RETURN:
-		case KEY_CTRL('C'):
-		case KEY_CTRL('D'):
-		case KEY_BS:
-			Put(usr, "Config menu\n");
-			RET(usr);
 			Return;
 	}
 	Put(usr, "\n<green>Enter number: <yellow>");
@@ -798,6 +808,10 @@ void state_config_terminal(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "Config menu\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 't':
@@ -1193,7 +1207,6 @@ void state_config_who(User *usr, char c) {
 				(usr->flags & USR_SORT_BYNAME)     ? "Name"       : "Online time",
 				(usr->flags & USR_SORT_DESCENDING) ? "Descending" : "Ascending"
 			);
-
 			if (PARAM_HAVE_CHATROOMS)
 				Print(usr,
 					"When in a <hotkey>chat room<yellow>...       <white>%s<magenta>\n",
@@ -1218,6 +1231,10 @@ void state_config_who(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "Exit\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'f':
@@ -1336,6 +1353,10 @@ void state_config_options(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'x':
 		case 'X':
 			CONFIG_OPTION(USR_BEEP, "Beep");
@@ -1444,6 +1465,10 @@ char buf[MAX_LINE], *p;
 		case KEY_BS:
 			Put(usr, "Config menu\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'd':

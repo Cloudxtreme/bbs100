@@ -157,6 +157,10 @@ void state_room_config_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'h':
 		case 'H':
 		case '?':

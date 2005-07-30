@@ -75,6 +75,7 @@ On the<yellow> --More--<green> prompt, you can use the following keys:
      <key>-    Previous line
      <key>/    Find text
      <key>?    Find backwards
+<white>Ctrl-<key>L<green>    Reprint page
 
 Users can send you messages, unless you have message receiption disabled.
 Users that are on your friend list can always contact you. You can use

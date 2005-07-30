@@ -127,6 +127,10 @@ void state_sysop_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'h':
 		case 'H':
 		case '?':
@@ -432,6 +436,10 @@ void state_categories_menu(User *usr, char c) {
 				usr->runtime_flags &= ~RTF_CATEGORY_EDITED;
 			}
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'a':
@@ -1542,6 +1550,9 @@ void state_parameters_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'c':
 		case 'C':
@@ -1668,6 +1679,9 @@ void state_system_config_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'n':
 		case 'N':
@@ -1847,7 +1861,6 @@ void state_param_program_resolver(User *usr, char c) {
 }
 
 
-
 void state_config_files_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -1896,6 +1909,9 @@ void state_config_files_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'g':
 		case 'G':
@@ -2176,6 +2192,25 @@ void state_param_def_timezone(User *usr, char c) {
 }
 
 
+#define UNCACHE_FILE(x)								\
+	do {											\
+		remove_Cache_filename(x);					\
+		Print(usr, "File %s uncached\n", (x));		\
+		CURRENT_STATE(usr);							\
+		Return;										\
+	} while(0)
+
+#define RELOAD_FILE(x,y)												\
+	do {																\
+		free_StringIO(y);												\
+		if (load_StringIO((y), (x)) < 0)								\
+			Print(usr, "<red>Failed to load file <white>%s\n", (x));	\
+		else															\
+			Print(usr, "Reloaded file %s\n", (x));						\
+		CURRENT_STATE(usr);												\
+		Return;															\
+	} while(0)
+
 void state_reload_files_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -2208,20 +2243,9 @@ void state_reload_files_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
-#define UNCACHE_FILE(x)								\
-	remove_Cache_filename(x);						\
-	Print(usr, "File %s uncached\n", (x));			\
-	CURRENT_STATE(usr);								\
-	Return
-
-#define RELOAD_FILE(x,y)											\
-	free_StringIO(y);												\
-	if (load_StringIO((y), (x)) < 0)								\
-		Print(usr, "<red>Failed to load file <white>%s\n", (x));	\
-	else															\
-		Print(usr, "Reloaded file %s\n", (x));						\
-	CURRENT_STATE(usr);												\
-	Return
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'i':
 		case 'I':
@@ -2391,6 +2415,10 @@ void state_maximums_menu(User *usr, char c) {
 					add_Timer(&timerq, expire_timer);
 			}
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'c':
@@ -2633,6 +2661,10 @@ void state_strings_menu(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 's':
@@ -2891,6 +2923,10 @@ void state_features_menu(User *usr, char c) {
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'x':
 		case 'X':
 			TOGGLE_FEATURE(PARAM_HAVE_XMSGS, "eXpress Messages");
@@ -3050,6 +3086,9 @@ char *new_val;
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
 
 		case 's':
 		case 'S':

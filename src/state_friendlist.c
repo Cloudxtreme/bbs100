@@ -58,6 +58,10 @@ StringList *sl;
 			RET(usr);
 			Return;
 
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
+			Return;
+
 		case 'A':
 		case 'a':
 		case '+':
@@ -223,6 +227,10 @@ StringList *sl;
 		case KEY_BS:
 			Put(usr, "<white>Exit\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'A':
