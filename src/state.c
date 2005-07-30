@@ -1555,43 +1555,44 @@ int r;
 		if (((u->flags & USR_HIDE_ADDRESS) && in_StringList(u->friends, usr->name) == NULL)
 			|| ((u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)) {
 			if ((usr->runtime_flags & RTF_SYSOP) || u == usr)
-				hidden = "<white>(hidden) ";
+				hidden = "<white>hidden> ";
 			else
 				visible = 0;
 		}
-		if (u->real_name != NULL && u->real_name[0] && visible)
-			Print(usr, "%s<yellow>%s\n", hidden, u->real_name);
+		if (visible) {
+			if (u->real_name != NULL && u->real_name[0])
+				Print(usr, "%s<yellow>%s\n", hidden, u->real_name);
 
-		if (u->street != NULL && u->street[0] && visible)
-			Print(usr, "%s<yellow>%s\n", hidden, u->street);
+			if (u->street != NULL && u->street[0])
+				Print(usr, "%s<yellow>%s\n", hidden, u->street);
 
-		if (u->zipcode != NULL && u->zipcode[0] && visible) {
-			if (u->city != NULL && u->city[0])
-				Print(usr, "%s<yellow>%s %s\n", hidden, u->zipcode, u->city);
-			else
-				Print(usr, "%s<yellow>%s\n", hidden, u->zipcode);
-		} else
-			if (u->city != NULL && u->city[0] && visible)
-				Print(usr, "%s<yellow>%s\n", hidden, u->city);
+			if (u->zipcode != NULL && u->zipcode[0]) {
+				if (u->city != NULL && u->city[0])
+					Print(usr, "%s<yellow>%s  %s\n", hidden, u->city, u->zipcode);
+				else
+					Print(usr, "%s<yellow>%s\n", hidden, u->zipcode);
+			} else
+				if (u->city != NULL && u->city[0])
+					Print(usr, "%s<yellow>%s\n", hidden, u->city);
 
-		if (u->state != NULL && u->state[0] && visible) {
-			if (u->country != NULL && u->country[0])
-				Print(usr, "%s<yellow>%s, %s\n", hidden, u->state, u->country);
-			else
-				Print(usr, "%s<yellow>%s\n", hidden, u->state);
-		} else
-			if (u->country != NULL && u->country[0] && visible)
-				Print(usr, "%s<yellow>%s\n", hidden, u->country);
+			if (u->state != NULL && u->state[0]) {
+				if (u->country != NULL && u->country[0])
+					Print(usr, "%s<yellow>%s, %s\n", hidden, u->state, u->country);
+				else
+					Print(usr, "%s<yellow>%s\n", hidden, u->state);
+			} else
+				if (u->country != NULL && u->country[0])
+					Print(usr, "%s<yellow>%s\n", hidden, u->country);
 
-		if (u->phone != NULL && u->phone[0] && visible)
-			Print(usr, "%s<green>Phone: <yellow>%s\n", hidden, u->phone);
+			if (u->phone != NULL && u->phone[0])
+				Print(usr, "%s<green>Phone: <yellow>%s\n", hidden, u->phone);
 
-		if (u->email != NULL && u->email[0] && visible)
-			Print(usr, "%s<green>E-mail: <cyan>%s\n", hidden, u->email);
+			if (u->email != NULL && u->email[0])
+				Print(usr, "%s<green>E-mail: <cyan>%s\n", hidden, u->email);
 
-		if (u->www != NULL && u->www[0] && visible)
-			Print(usr, "%s<green>WWW: <cyan>%s\n", hidden, u->www);
-
+			if (u->www != NULL && u->www[0])
+				Print(usr, "%s<green>WWW: <cyan>%s\n", hidden, u->www);
+		}
 		if (u->doing != NULL && u->doing[0]) {
 			if (allocated)
 				Print(usr, "<green>Was doing: <yellow>%s <cyan>%s\n", u->name, u->doing);

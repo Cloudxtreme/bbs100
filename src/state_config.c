@@ -268,30 +268,35 @@ void state_config_address(User *usr, char c) {
 		case INIT_STATE:
 			buffer_text(usr);
 
-			Print(usr, "\n"
-				"<hotkey>R<magenta>eal name: <yellow>%s\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
+			Print(usr, "<magenta>\n"
+				"<hotkey>Real name :<yellow> %s<magenta>\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
 
 			Print(usr, 
-				"<hotkey>A<magenta>ddress  : <yellow>%s\n"
-				"           %s  %s\n"
-				"           %s, %s\n",
+				"<hotkey>Address   :<yellow> %s\n"
+				"<yellow>            %s<yellow>  %s\n"
+				"<yellow>            %s,<yellow> %s<magenta>\n",
 
 				(usr->street == NULL  || !usr->street[0])  ? "<white><unknown street><yellow>"  : usr->street,
-				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
 				(usr->city == NULL    || !usr->city[0])    ? "<white><unknown city><yellow>"    : usr->city,
+				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
 				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state>"			: usr->state,
 				(usr->country == NULL || !usr->country[0]) ? "<white><unknown country><yellow>" : usr->country);
 
 			Print(usr,
-				"<hotkey>P<magenta>hone    : <yellow>%s\n"
+				"<hotkey>Phone     :<yellow> %s<magenta>\n"
 				"\n"
-				"<hotkey>E<magenta>-mail   : <yellow>%s\n"
-				"<hotkey>W<magenta>WW      : <yellow>%s\n",
+				"<hotkey>E-mail    :<yellow> %s<magenta>\n"
+				"<hotkey>WWW       :<yellow> %s<magenta>\n",
 
 				(usr->phone == NULL || !usr->phone[0]) ? "<white><unknown phone number><yellow>"   : usr->phone,
 				(usr->email == NULL || !usr->email[0]) ? "<white><unknown e-mail address><yellow>" : usr->email,
 				(usr->www == NULL   || !usr->www[0])   ? "<white><unknown WWW address><yellow>"    : usr->www);
 
+			Print(usr, "\n"
+				"<hotkey>Hide address from non-friends   <white>%s<magenta>\n",
+
+				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No"
+			);
 			read_menu(usr);
 			Return;
 
@@ -338,6 +343,10 @@ void state_config_address(User *usr, char c) {
 			Put(usr, "WWW address\n");
 			CALL(usr, STATE_CHANGE_WWW);
 			Return;
+
+		case 'h':
+		case 'H':
+			CONFIG_OPTION(USR_HIDE_ADDRESS, "Hide address information");
 	}
 	Print(usr, "<yellow>\n[Config] Address%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -358,8 +367,8 @@ void state_change_address(User *usr, char c) {
 	POP(usr);
 	PUSH(usr, STATE_CHANGE_COUNTRY);
 	PUSH(usr, STATE_CHANGE_STATE);
-	PUSH(usr, STATE_CHANGE_CITY);
 	PUSH(usr, STATE_CHANGE_ZIPCODE);
+	PUSH(usr, STATE_CHANGE_CITY);
 	CALL(usr, STATE_CHANGE_STREET);
 
 	Return;
@@ -368,49 +377,49 @@ void state_change_address(User *usr, char c) {
 
 void state_change_street(User *usr, char c) {
 	Enter(state_change_street);
-	change_config(usr, c, &usr->street, "<green>Enter your street and number: <yellow>");
+	change_config(usr, c, &usr->street,		"<green>Enter your street and number  :<yellow> ");
 	Return;
 }
 
 void state_change_zipcode(User *usr, char c) {
 	Enter(state_change_zipcode);
-	change_config(usr, c, &usr->zipcode, "<green>Enter your ZIP or postal code: <yellow>");
+	change_config(usr, c, &usr->zipcode,	"<green>Enter your ZIP or postal code :<yellow> ");
 	Return;
 }
 
 void state_change_city(User *usr, char c) {
 	Enter(state_change_city);
-	change_config(usr, c, &usr->city, "<green>Enter the city you live in: <yellow>");
+	change_config(usr, c, &usr->city,		"<green>Enter the city you live in    :<yellow> ");
 	Return;
 }
 
 void state_change_state(User *usr, char c) {
 	Enter(state_change_state);
-	change_config(usr, c, &usr->state, "<green>Enter the state you are from: <yellow>");
+	change_config(usr, c, &usr->state,		"<green>Enter the state you are from  :<yellow> ");
 	Return;
 }
 
 void state_change_country(User *usr, char c) {
 	Enter(state_change_country);
-	change_config(usr, c, &usr->country, "<green>Enter your country: <yellow>");
+	change_config(usr, c, &usr->country,	"<green>Enter your country            :<yellow> ");
 	Return;
 }
 
 void state_change_phone(User *usr, char c) {
 	Enter(state_change_phone);
-	change_config(usr, c, &usr->phone, "<green>Enter your phone number: <yellow>");
+	change_config(usr, c, &usr->phone, "<green>Enter your phone number:<yellow> ");
 	Return;
 }
 
 void state_change_email(User *usr, char c) {
 	Enter(state_change_email);
-	change_config(usr, c, &usr->email, "<green>Enter your e-mail address: <yellow>");
+	change_config(usr, c, &usr->email, "<green>Enter your e-mail address:<yellow> ");
 	Return;
 }
 
 void state_change_www(User *usr, char c) {
 	Enter(state_change_www);
-	change_config(usr, c, &usr->www, "<green>Enter your WWW address: <yellow>");
+	change_config(usr, c, &usr->www, "<green>Enter your WWW address:<yellow> ");
 	Return;
 }
 
@@ -421,7 +430,7 @@ void state_config_vanity(User *usr, char c) {
 	if (c == INIT_STATE && usr->vanity != NULL && usr->vanity[0])
 		Print(usr, "<green>Your current vanity flag:<cyan> %s\n", usr->vanity);
 
-	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag: <yellow>");
+	change_config(usr, c, &usr->vanity, "<green>Enter new vanity flag:<yellow> ");
 	Return;
 }
 
@@ -431,7 +440,7 @@ void state_config_doing(User *usr, char c) {
 	if (c == INIT_STATE && usr->doing != NULL && usr->doing[0])
 		Print(usr, "<green>You are currently doing:<cyan> %s\n", usr->doing);
 
-	change_config(usr, c, &usr->doing, "<green>Enter new Doing: <yellow>");
+	change_config(usr, c, &usr->doing, "<green>Enter new Doing:<yellow> ");
 	Return;
 }
 
@@ -441,7 +450,7 @@ void state_config_xmsg_header(User *usr, char c) {
 	if (c == INIT_STATE && usr->xmsg_header != NULL && usr->xmsg_header[0])
 		Print(usr, "<green>Your current eXpress Message header:<cyan> %s\n", usr->xmsg_header);
 
-	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header: <yellow>");
+	change_config(usr, c, &usr->xmsg_header, "<green>Enter new eXpress Message header:<yellow> ");
 	Return;
 }
 
@@ -451,7 +460,7 @@ void state_config_reminder(User *usr, char c) {
 	if (c == INIT_STATE && usr->reminder != NULL && usr->reminder[0])
 		Print(usr, "<green>Current reminder:<cyan> %s\n", usr->reminder);
 
-	change_config(usr, c, &usr->reminder, "<green>Enter new reminder: <yellow>");
+	change_config(usr, c, &usr->reminder, "<green>Enter new reminder:<yellow> ");
 	Return;
 }
 
@@ -462,8 +471,8 @@ int r;
 
 	if (c == INIT_STATE) {
 		if (usr->default_anon != NULL && usr->default_anon[0])
-			Print(usr, "<green>Your current default anonymous alias is: <cyan>%s\n", usr->default_anon);
-		Put(usr, "<green>Enter new alias: <yellow>");
+			Print(usr, "<green>Your current default anonymous alias is:<cyan> %s\n", usr->default_anon);
+		Put(usr, "<green>Enter new alias:<yellow> ");
 	}
 	r = edit_name(usr, c);
 
@@ -489,7 +498,7 @@ int r;
 				Free(usr->default_anon);
 				usr->default_anon = s;
 				cstrlwr(usr->default_anon);
-				Print(usr, "<green>Default anonymous alias set to: <cyan>%s\n", usr->default_anon);
+				Print(usr, "<green>Default anonymous alias set to:<cyan> %s\n", usr->default_anon);
 			}
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 		} else
@@ -578,7 +587,7 @@ int r;
 	Enter(state_config_password);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter old password: <yellow>");
+		Put(usr, "<green>Enter old password:<yellow> ");
 
 	r = edit_password(usr, c);
 
@@ -611,7 +620,7 @@ int r;
 	Enter(state_change_password);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<green>Enter new password: <yellow>");
+		Put(usr, "<green>Enter new password:<yellow> ");
 
 		Free(usr->tmpbuf[TMP_PASSWD]);
 		usr->tmpbuf[TMP_PASSWD] = NULL;
@@ -634,7 +643,7 @@ int r;
 				CURRENT_STATE(usr);
 				Return;
 			}
-			Put(usr, "<green>Enter it again (for verification): <yellow>");
+			Put(usr, "<green>Enter it again (for verification):<yellow> ");
 
 			if ((usr->tmpbuf[TMP_PASSWD] = cstrdup(usr->edit_buf)) == NULL) {
 				Perror(usr, "Out of memory");
@@ -1383,12 +1392,10 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
 			);
 			Print(usr, "\n"
-				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
 				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
 				"\n"
 				"Hackerz m<hotkey>0de                         <white>%s<magenta>\n",
 
-				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No",
 				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No",
 				(usr->flags & USR_HACKERZ) ? "Oh Yeah" : "Off"
 			);
@@ -1460,10 +1467,6 @@ void state_config_options(User *usr, char c) {
 		case 'n':
 		case 'N':
 			CONFIG_OPTION(USR_ROOMNUMBERS, "Show room number");
-
-		case 'a':
-		case 'A':
-			CONFIG_OPTION(USR_HIDE_ADDRESS, "Hide address information");
 
 		case 'p':
 		case 'P':

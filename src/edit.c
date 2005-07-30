@@ -1629,7 +1629,7 @@ User *u;
 		return;
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (!u->name[0] || in_StringList(usr->enemies, u->name) != NULL)
+		if (!u->name[0] || (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL))
 			continue;
 
 		if (!usr->edit_pos || !strncmp(u->name, usr->edit_buf, usr->edit_pos))

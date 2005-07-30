@@ -346,6 +346,10 @@ int r;
 
 	Enter(state_remove_enemy);
 
+/*
+	edit_tabname() is used, but Tab will only work for enemies if
+	USR_SHOW_ENEMIES is set
+*/
 	r = edit_tabname(usr, c);
 	if (r == EDIT_BREAK) {
 		RET(usr);
