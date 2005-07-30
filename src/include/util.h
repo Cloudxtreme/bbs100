@@ -118,7 +118,9 @@ char *print_md5_digest(unsigned char sum[], char *);
 
 StringList *StringIO_to_StringList(StringIO *);
 int StringList_to_StringIO(StringList *sl, StringIO *);
-void format_menu(StringIO *, StringList *, int, int);
+void print_columns(User *usr, StringList *raw_list, int numbered);
+void buffer_text(User *);
+void clear_buffer(User *);
 
 extern ColorTable color_table[NUM_COLORS];
 

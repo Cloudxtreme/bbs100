@@ -69,16 +69,14 @@ void state_sysop_menu(User *usr, char c) {
 	Enter(state_sysop_menu);
 
 	switch(c) {
-		case INIT_STATE:
-/* I had to put the save_Wrapper() code here due to needed strange construction.. :P */
-			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
-				if (save_Wrapper(AllWrappers, PARAM_HOSTS_ACCESS_FILE))
-					Perror(usr, "failed to save wrappers");
+		case INIT_PROMPT:
+			break;
 
-				log_msg("SYSOP %s edited wrappers", usr->name);
-				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
-			}
+		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Put(usr, "<magenta>\n"
 				"Create new <hotkey>Room");
 
@@ -114,7 +112,9 @@ void state_sysop_menu(User *usr, char c) {
 				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
 			else
 				Put(usr, "Deactivate <hotkey>nologin <white>[!]<magenta>            <hotkey>Help\n");
-			break;
+
+			read_menu(usr);
+			Return;
 
 		case '$':
 			drop_sysop_privs(usr);
@@ -128,6 +128,7 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -409,15 +410,9 @@ void state_categories_menu(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			if (category != NULL) {
-				free_StringIO(usr->text);
-				format_menu(usr->text, category, usr->display->term_width, FORMAT_MENU_NUMBERED);
+			if (category != NULL)
+				print_columns(usr, category, FORMAT_MENU_NUMBERED);
 
-				Put(usr, "\n");
-				display_text(usr, usr->text);
-
-				free_StringIO(usr->text);
-			}
 			Print(usr, "<magenta>\n"
 				"<hotkey>Add category\n"
 			);
@@ -439,6 +434,7 @@ void state_categories_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -867,7 +863,20 @@ char buf[MAX_LINE];
 		case KEY_RETURN:
 		case KEY_BS:
 			Put(usr, "\n");
+
+			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
+				if (save_Wrapper(AllWrappers, PARAM_HOSTS_ACCESS_FILE))
+					Perror(usr, "failed to save wrappers");
+
+				log_msg("SYSOP %s edited wrappers", usr->name);
+				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
+			}
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'a':
@@ -1551,6 +1560,7 @@ void state_parameters_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1680,6 +1690,7 @@ void state_system_config_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1910,6 +1921,7 @@ void state_config_files_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -2244,6 +2256,7 @@ void state_reload_files_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -2418,6 +2431,7 @@ void state_maximums_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -2664,6 +2678,7 @@ void state_strings_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -2924,6 +2939,7 @@ void state_features_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -3087,6 +3103,7 @@ char *new_val;
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 

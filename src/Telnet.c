@@ -179,21 +179,21 @@ char buf[20];
 				height |= ((unsigned int)t->in_sub_buf[4] & 0xff);
 
 				t->term_width = width;
-				if (t->term_width < 1)
+				if (t->term_width <= 1)
 					t->term_width = TERM_WIDTH;
 				if (t->term_width > MAX_TERM)
 					t->term_width = MAX_TERM;
 
-				t->term_height = height-1;
-				if (t->term_height < 1)
+				t->term_height = height;
+				if (t->term_height <= 2)		/* --More-- prompt stops working properly on <= 2 */
 					t->term_height = TERM_HEIGHT;
 				if (t->term_height > MAX_TERM)
 					t->term_height = MAX_TERM;
 
 				t->in_sub = 0;
-				t->state = TS_IAC;			/* expect SE */
+				t->state = TS_IAC;				/* expect SE */
 
-				if (window_event != NULL)
+				if (window_event != NULL)		/* notify window resize */
 					window_event(conn, t);
 			}
 			Return -1;

@@ -70,6 +70,12 @@ int Out(User *usr, char *str) {
 	if (usr->display == NULL && (usr->display = new_Display()) == NULL)
 		return 0;
 
+	if (usr->text == NULL && (usr->text = new_StringIO()) == NULL)
+		return 0;
+
+	if (usr->runtime_flags & RTF_BUFFER_TEXT)
+		return put_StringIO(usr->text, str);
+
 	return Out_text(usr->conn->output, usr, str, &usr->display->cpos, &usr->display->line, -1, 0);
 }
 
@@ -1652,16 +1658,20 @@ int StringList_to_StringIO(StringList *sl, StringIO *s) {
 }
 
 /*
-	writes the entries in raw_list to StringIO s to create the time zone menu
+	prints the entries in raw_list to create a menu in columns
 	this routine looks a lot like the one that formats the wide who-list
 
 	- numbered is a flag saying if you want a numbered list or not
 */
-void format_menu(StringIO *s, StringList *raw_list, int term_width, int numbered) {
-int total, cols, rows, i, j, buflen, len, max_width, idx;
+void print_columns(User *usr, StringList *raw_list, int numbered) {
+int term_width, total, cols, rows, i, j, buflen, len, max_width, idx;
 StringList *sl, *sl_cols[16];
 char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 
+	if (usr == NULL || raw_list == NULL)
+		return;
+
+	term_width = usr->display->term_width;
 	if (term_width >= MAX_LINE*3)
 		term_width = MAX_LINE*3;
 
@@ -1736,8 +1746,33 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 		}
 		buf[buflen++] = '\n';
 		buf[buflen] = 0;
-		put_StringIO(s, buf);
+		Put(usr, buf);
 	}
+}
+
+/*
+	set a flag that tells Out() to write output to usr->text rather than
+	to the connection device
+
+	this is convenient for setting up read_text() and read_menu()
+*/
+void buffer_text(User *usr) {
+	if (usr == NULL)
+		return;
+
+	if (usr->runtime_flags & RTF_BUFFER_TEXT)
+		return;
+
+	free_StringIO(usr->text);
+	usr->runtime_flags |= RTF_BUFFER_TEXT;
+}
+
+void clear_buffer(User *usr) {
+	if (usr == NULL)
+		return;
+
+	free_StringIO(usr->text);
+	usr->runtime_flags &= ~RTF_BUFFER_TEXT;
 }
 
 /* EOB */

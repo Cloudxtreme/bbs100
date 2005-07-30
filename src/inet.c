@@ -281,7 +281,7 @@ char input_char[2];
 
 				if ((c->state & CONN_LOOPING) && !c->loop_counter) {
 					c->state &= ~CONN_LOOPING;
-					Ret(c);
+					Retx(c, INIT_STATE);
 				}
 				continue;
 			}

@@ -2236,7 +2236,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 static void display_page(User *usr, int start) {
 int l;
 
-	for(l = start; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
+	for(l = start; l < usr->display->term_height-1 && usr->scrollp != NULL; usr->scrollp = usr->scrollp->next) {
 		usr->display->cpos = usr->display->line = 0;
 		Out_text(usr->conn->output, usr, (char *)usr->scrollp->p, &usr->display->cpos, &usr->display->line, 1, 0);
 		usr->read_lines++;
@@ -2250,7 +2250,7 @@ int l;
 static void goto_page_start(User *usr) {
 int l;
 
-	for(l = 0; l < usr->display->term_height && usr->scrollp != NULL; usr->scrollp = usr->scrollp->prev) {
+	for(l = 0; l < usr->display->term_height-1 && usr->scrollp != NULL; usr->scrollp = usr->scrollp->prev) {
 		l++;
 		usr->read_lines--;
 	}
@@ -2258,10 +2258,15 @@ int l;
 		usr->scrollp = usr->scroll;
 }
 
-void read_text(User *usr) {
+/*
+	make a PList of pointers to the beginning of sentences in usr->text
+	The function that has to print the --More-- prompt will use this
+	list of pointers to scroll text
+*/
+int setup_read_text(User *usr) {
 int pos, len;
 
-	Enter(read_text);
+	Enter(setup_read_text);
 
 	pos = 0;
 	seek_StringIO(usr->text, 0, STRINGIO_END);
@@ -2270,9 +2275,9 @@ int pos, len;
 	listdestroy_PList(usr->scroll);
 	usr->scroll = usr->scrollp = new_PList(usr->text->buf);
 	if (usr->scroll == NULL) {
+		usr->runtime_flags &= ~RTF_BUFFER_TEXT;
 		Perror(usr, "Out of memory");
-		RET(usr);
-		Return;
+		Return -1;
 	}
 	while(pos < len) {
 		usr->display->cpos = 0;
@@ -2284,6 +2289,18 @@ int pos, len;
 	usr->read_lines = 0;
 	usr->total_lines = list_Count(usr->scroll) - 1;
 
+/* going to display usr->text, so don't buffer it */
+	usr->runtime_flags &= ~RTF_BUFFER_TEXT;
+	Return 0;
+}
+
+void read_text(User *usr) {
+	Enter(read_text);
+
+	if (setup_read_text(usr)) {				/* error occurred */
+		RET(usr);
+		Return;
+	}
 	Put(usr, "\n");
 	display_page(usr, 2);
 
@@ -2314,7 +2331,7 @@ int l, color;
 		case 'B':
 		case 'u':
 		case 'U':
-			for(l = 1; l < usr->display->term_height * 2; l++) {
+			for(l = 1; l < (usr->display->term_height-1) * 2; l++) {
 				if (usr->scrollp->prev != NULL) {
 					usr->scrollp = usr->scrollp->prev;
 					if (usr->read_lines)
@@ -2348,7 +2365,7 @@ int l, color;
 		case KEY_BS:
 		case '-':
 		case '_':
-			for(l = 0; l < (usr->display->term_height+1); l++) {
+			for(l = 0; l < usr->display->term_height; l++) {
 				if (usr->scrollp->prev != NULL) {
 					usr->scrollp = usr->scrollp->prev;
 					if (usr->read_lines > 0)
@@ -2376,7 +2393,7 @@ int l, color;
 		case KEY_CTRL('L'):				/* reprint page */
 /* go one screen back */
 			l = 0;
-			while(usr->scrollp != NULL && usr->scrollp->prev != NULL && l < usr->display->term_height) {
+			while(usr->scrollp != NULL && usr->scrollp->prev != NULL && l < usr->display->term_height-1) {
 				usr->scrollp = usr->scrollp->prev;
 				l++;
 			}
@@ -2504,7 +2521,7 @@ int r, l;
 	if on the last page, keep the --More-- prompt active
 	this means we have to go back to the beginning of the last page
 */
-				if (usr->read_lines > usr->total_lines - usr->display->term_height) {
+				if (usr->read_lines > usr->total_lines - (usr->display->term_height-1)) {
 					for(pl = usr->scrollp; pl != NULL && pl->next != NULL; pl = pl->next);
 					usr->scrollp = pl;
 					usr->read_lines = usr->total_lines;
@@ -2597,6 +2614,40 @@ void state_scroll_text_notfound(User *usr, char c) {
 		Put(usr, "<beep>");
 
 	Return;
+}
+
+/*
+	practically the same as read_text(), but it prints no extra return
+	and it inserts a special state for returning to the menu
+
+	You can't use RET() to return to a menu, because it would call INIT_STATE
+	again, which is the state generally used to print the menu in the first
+	place(!)
+	Therefore a special state is inserted in between, that forces a return
+	with INIT_PROMPT, that then reprints the prompt
+*/
+void read_menu(User *usr) {
+	Enter(read_menu);
+
+	if (setup_read_text(usr)) {			/* error occurred */
+		RETX(usr, INIT_PROMPT);
+		Return;
+	}
+	display_page(usr, 1);
+
+	PUSH(usr, STATE_RETURN_MENU);
+	CALL(usr, STATE_SCROLL_TEXT);
+	Return;
+}
+
+/*
+	this state forces the printing the of the prompt in a menu
+*/
+void state_return_menu(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	RETX(usr, INIT_PROMPT);
 }
 
 /* EOB */

@@ -49,6 +49,9 @@ void state_room_config_menu(User *usr, char c) {
 	Enter(state_room_config_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
@@ -58,6 +61,8 @@ void state_room_config_menu(User *usr, char c) {
 
 				usr->runtime_flags &= ~RTF_ROOM_RESIZED;
 			}
+			buffer_text(usr);
+
 			Put(usr, "\n"
 				"<hotkey>E<magenta>dit room info                 <hotkey>Help\n");
 
@@ -96,43 +101,45 @@ void state_room_config_menu(User *usr, char c) {
 				if (usr->runtime_flags & RTF_SYSOP) {
 					if (!(usr->curr_room->flags & ROOM_CHATROOM))
 						Print(usr,
-						"<hotkey>Maximum amount of messages     <white>%d<magenta>\n", usr->curr_room->max_msgs);
+							"<hotkey>Maximum amount of messages     <white>%d<magenta>\n", usr->curr_room->max_msgs);
 
 					Put(usr, "\n"
 						"<hotkey>Reset creation date            (all users unjoin)\n"
 						"<white>Ctrl-<hotkey>R<magenta>emove all posts          <white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
 				}
-				Print(usr, "\n"
-					"<hotkey>1 <magenta>Room has subject lines       <white>%s\n"
-					"<hotkey>2 <magenta>Allow anonymous posts        <white>%s\n",
+				Print(usr, "<magenta>\n"
+					"<hotkey>1 Room has subject lines       <white>%s<magenta>\n"
+					"<hotkey>2 Allow anonymous posts        <white>%s<magenta>\n",
 
 					(usr->curr_room->flags & ROOM_SUBJECTS)  ? "Yes" : "No",
 					(usr->curr_room->flags & ROOM_ANONYMOUS) ? "Yes" : "No"
 				);
 				if (usr->runtime_flags & RTF_SYSOP) {
 					Print(usr,
-						"<hotkey>3 <magenta>Room is invite-only          <white>%s\n"
-						"<hotkey>4 <magenta>Room is read-only            <white>%s\n",
+						"<hotkey>3 Room is invite-only          <white>%s<magenta>\n"
+						"<hotkey>4 Room is read-only            <white>%s<magenta>\n",
 
 						(usr->curr_room->flags & ROOM_INVITE_ONLY) ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_READONLY)    ? "Yes" : "No"
 					);
 					Print(usr,
-						"<hotkey>5 <magenta>Room is not zappable         <white>%s\n"
-						"<hotkey>6 <magenta>Room is hidden               <white>%s\n",
+						"<hotkey>5 Room is not zappable         <white>%s<magenta>\n"
+						"<hotkey>6 Room is hidden               <white>%s<magenta>\n",
 
 						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
 						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No"
 					);
 					if (PARAM_HAVE_CHATROOMS)
 						Print(usr,
-							"<hotkey>7 <magenta>Room is a chat room          <white>%s\n",
+							"<hotkey>7 Room is a chat room          <white>%s<magenta>\n",
+
 							(usr->curr_room->flags & ROOM_CHATROOM) ? "Yes" : "No"
 						);
 				}
 			}
-			break;
+			read_menu(usr);
+			Return;
 
 		case '$':
 			if (usr->runtime_flags & RTF_SYSOP)
@@ -158,6 +165,7 @@ void state_room_config_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -435,19 +443,22 @@ StringList *sl;
 
 	Enter(state_choose_category);
 
+	if ((unsigned char)c == INIT_PROMPT) {
+		Put(usr, "\n<green>Choose category: <yellow>");
+		Return;
+	}
 	if (c == INIT_STATE) {
+		buffer_text(usr);
 		Put(usr, "\n<green>  0<yellow> (none)\n");
 
-		free_StringIO(usr->text);
-		format_menu(usr->text, category, usr->display->term_width, FORMAT_MENU_NUMBERED);
-		display_text(usr, usr->text);
-		free_StringIO(usr->text);
+		print_columns(usr, category, FORMAT_MENU_NUMBERED);
 
 		Put(usr, "\n");
 		if (usr->curr_room->category != NULL)
 			Print(usr, "<cyan>The current category is: <white>%s\n", usr->curr_room->category);
 
-		Put(usr, "<green>Choose category: <yellow>");
+		read_menu(usr);
+		Return;
 	}
 	r = edit_number(usr, c);
 	if (r == EDIT_BREAK) {

@@ -108,6 +108,7 @@
 #define RTF_WAS_HH				0x80000		/* X-disabled, user was Helping Hand */
 #define RTF_CATEGORY_EDITED		0x100000	/* categories changed in sysop menu */
 #define RTF_ROOM_RESIZED		0x200000	/* max amount of messages changed in roomconfig menu */
+#define RTF_BUFFER_TEXT			0x400000	/* output is buffered to usr->text */
 
 /* load_User() flags (for faster loading) */
 #define LOAD_USER_ADDRESS		1

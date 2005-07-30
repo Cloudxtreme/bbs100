@@ -159,6 +159,7 @@ int i, idx;
 */
 	switch(c) {
 		case INIT_STATE:
+		case INIT_PROMPT:
 			break;
 
 		case '`':
@@ -168,7 +169,10 @@ int i, idx;
 		case KEY_CTRL('Q'):
 			if (PARAM_HAVE_QUICK_X) {
 				Put(usr, "<white>Quicklist\n");
+				buffer_text(usr);
 				print_quicklist(usr);
+				read_menu(usr);
+				Return;
 			} else
 				if (PARAM_HAVE_DISABLED_MSG)
 					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
@@ -569,8 +573,10 @@ int i, idx;
 		case 't':
 		case 'T':
 			Put(usr, "<white>Time\n");
+			buffer_text(usr);
 			print_calendar(usr);
-			break;
+			read_menu(usr);
+			Return;
 
 		case 'd':
 		case 'D':
@@ -3554,27 +3560,26 @@ int i;
 
 	for(i = 1; i < 5; i++) {
 		if (usr->quick[i-1] == NULL)
-			Print(usr, "<hotkey>%d <red>%-26s ", i, "<empty>");
+			Print(usr, "<hotkey>%d<red> %-26s ", i, "<empty>");
 		else
-			Print(usr, "<hotkey>%d <white>%-26s ", i, usr->quick[i-1]);
+			Print(usr, "<hotkey>%d<white> %-26s ", i, usr->quick[i-1]);
 
 		i += 5;
 		if (usr->quick[i-1] == NULL)
-			Print(usr, "<hotkey>%d <red>%s\n", i, "<empty>");
+			Print(usr, "<hotkey>%d<red> %s\n", i, "<empty>");
 		else
-			Print(usr, "<hotkey>%d <white>%s\n", i, usr->quick[i-1]);
+			Print(usr, "<hotkey>%d<white> %s\n", i, usr->quick[i-1]);
 		i -= 5;
 	}
 	if (usr->quick[i-1] == NULL)
-		Print(usr, "<hotkey>%d <red>%-26s ", i, "<empty>");
+		Print(usr, "<hotkey>%d<red> %-26s ", i, "<empty>");
 	else
-		Print(usr, "<hotkey>%d <white>%-26s ", i, usr->quick[i-1]);
+		Print(usr, "<hotkey>%d<white> %-26s ", i, usr->quick[i-1]);
 
 	if (usr->quick[9] == NULL)
-		Print(usr, "<hotkey>%d <red>%s\n", 0, "<empty>");
+		Print(usr, "<hotkey>0<red> %s\n", "<empty>");
 	else
-		Print(usr, "<hotkey>%d <white>%s\n", 0, usr->quick[9]);
-
+		Print(usr, "<hotkey>0<white> %s\n", usr->quick[i-1]);
 	Return;
 }
 

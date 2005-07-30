@@ -29,18 +29,19 @@
 #define pop_CallStack(x)			(CallStack *)pop_List(x)
 #define listdestroy_CallStack(x)	listdestroy_List((x), destroy_CallStack)
 
+#define INIT_STATE	0
+#define INIT_PROMPT	255
+#define LOOP_STATE	' '
+
+#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)
+
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
 #define CALL(x,y)					Call((x)->conn,(void (*)(void *, char))(y))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
 #define MOV(x,y)					Move((x)->conn,(void (*)(void *, char))(y))
-#define RET(x)						Ret((x)->conn)
-
-#define INIT_STATE	0
-#define LOOP_STATE	' '
-
-#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)
-#define CURRENT_INPUT(x,y)			(x)->conn->callstack->ip((x)->conn->data, (y))
+#define RET(x)						Retx((x)->conn, INIT_STATE)
+#define RETX(x,y)					Retx((x)->conn, (y))
 
 
 #ifndef CONN_DEFINED
@@ -63,7 +64,7 @@ void Push(Conn *, void (*)(void *, char));
 void Call(Conn *, void (*)(void *, char));
 void Move(Conn *, void (*)(void *, char));
 void Jump(Conn *, void (*)(void *, char));
-void Ret(Conn *);
+void Retx(Conn *, char);
 
 #endif	/* CALLSTACK_H_WJ99 */
 

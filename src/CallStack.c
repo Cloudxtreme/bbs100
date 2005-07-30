@@ -96,17 +96,20 @@ void Jump(Conn *conn, void (*state)(void *, char)) {
 }
 
 /*
-	Ret() : Pops off the level and calls INIT in the previous level
-	        (for reprinting prompts, initializing vars, etc)
+	Pops off the level and calls cmd in the previous level
+	(for reprinting prompts, initializing vars, etc)
+
+	cmd is usually INIT_STATE, but Retx() can be used to immediately
+	activate other functions too
 */
-void Ret(Conn *conn) {
+void Retx(Conn *conn, char cmd) {
 	if (conn == NULL)
 		return;
 
 	destroy_CallStack(pop_CallStack(&conn->callstack));
 
 	if (conn->callstack != NULL && conn->callstack->ip != NULL)
-		conn->callstack->ip(conn->data, INIT_STATE);
+		conn->callstack->ip(conn->data, cmd);
 }
 
 /* EOB */

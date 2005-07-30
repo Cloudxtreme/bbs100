@@ -46,6 +46,7 @@
 #define STATE_SCROLL_FIND_PROMPT		state_scroll_find_prompt
 #define STATE_SCROLL_FINDBACK_PROMPT	state_scroll_findback_prompt
 #define STATE_SCROLL_TEXT_NOTFOUND		state_scroll_text_notfound
+#define STATE_RETURN_MENU				state_return_menu
 
 void state_post_as_anon(User *, char);
 void state_enter_anonymous(User *, char);
@@ -84,11 +85,14 @@ Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
 void msg_header(User *, Message *);
+int setup_read_text(User *);
 void read_text(User *);
 void state_scroll_text(User *, char);
 void state_scroll_find_prompt(User *, char);
 void state_scroll_findback_prompt(User *, char);
 void state_scroll_text_notfound(User *, char);
+void read_menu(User *);
+void state_return_menu(User *, char);
 
 #endif	/* STATE_MSG_H_WJ99 */
 

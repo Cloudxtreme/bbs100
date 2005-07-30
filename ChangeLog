@@ -2,6 +2,10 @@ Changes as of July 30th 2005
 - seperate config menu for customizing colors
 - config option: hotkeys can be printed as bold or not
 - Ctrl-L reprints menus and reprints page on --More-- prompt
+- bugfix in terminal height being off by one
+- (most) menu's printed with --More-- prompt for small terminal windows
+- buffer_text() for buffering to usr->text (now why didn't I think of this
+  earlier..?)
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists

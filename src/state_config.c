@@ -43,9 +43,9 @@
 
 #define CONFIG_OPTION(x, y)							\
 	do {											\
-		Print(usr, "%s\n", (y));					\
 		usr->flags ^= (x);							\
 		usr->runtime_flags |= RTF_CONFIG_EDITED;	\
+		Print(usr, "%s\n", (y));					\
 		CURRENT_STATE(usr);							\
 		Return;										\
 	} while(0)
@@ -58,8 +58,14 @@ void state_config_menu(User *usr, char c) {
 	Enter(state_config_menu);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Help\n"
 				"Profile <hotkey>info                 "
@@ -86,7 +92,8 @@ void state_config_menu(User *usr, char c) {
 				"Anon<hotkey>ymous alias              <hotkey>Friends and <hotkey>Enemies\n"
 				"<hotkey>Password                     Time <hotkey>zone\n"
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case '$':
 			if (usr->runtime_flags & RTF_SYSOP)
@@ -108,6 +115,7 @@ void state_config_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -254,26 +262,38 @@ void state_config_address(User *usr, char c) {
 	Enter(state_config_address);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
-			Print(usr, "\n<hotkey>R<magenta>eal name: <yellow>%s\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
+			buffer_text(usr);
+
+			Print(usr, "\n"
+				"<hotkey>R<magenta>eal name: <yellow>%s\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
+
 			Print(usr, 
 				"<hotkey>A<magenta>ddress  : <yellow>%s\n"
 				"           %s  %s\n"
 				"           %s, %s\n",
+
 				(usr->street == NULL  || !usr->street[0])  ? "<white><unknown street><yellow>"  : usr->street,
 				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
 				(usr->city == NULL    || !usr->city[0])    ? "<white><unknown city><yellow>"    : usr->city,
 				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state>"			: usr->state,
 				(usr->country == NULL || !usr->country[0]) ? "<white><unknown country><yellow>" : usr->country);
+
 			Print(usr,
 				"<hotkey>P<magenta>hone    : <yellow>%s\n"
 				"\n"
 				"<hotkey>E<magenta>-mail   : <yellow>%s\n"
 				"<hotkey>W<magenta>WW      : <yellow>%s\n",
+
 				(usr->phone == NULL || !usr->phone[0]) ? "<white><unknown phone number><yellow>"   : usr->phone,
 				(usr->email == NULL || !usr->email[0]) ? "<white><unknown e-mail address><yellow>" : usr->email,
 				(usr->www == NULL   || !usr->www[0])   ? "<white><unknown WWW address><yellow>"    : usr->www);
-			break;
+
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -285,6 +305,7 @@ void state_config_address(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -655,23 +676,29 @@ void state_quicklist_prompt(User *usr, char c) {
 	Enter(state_quicklist_prompt);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
 			Put(usr, "<white>Quicklist\n\n");
+			buffer_text(usr);
 			print_quicklist(usr);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_BS:
-			Put(usr, "Config menu\n");
+			Put(usr, "<white>Config menu\n");
 			RET(usr);
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -747,8 +774,13 @@ void state_config_terminal(User *usr, char c) {
 	Enter(state_config_terminal);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
 				"<hotkey>Terminal emulation                   <white>%s<magenta>\n"
@@ -779,7 +811,7 @@ void state_config_terminal(User *usr, char c) {
 
 			Print(usr,
 				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n"
-				"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n",
+				"Show angle brac<hotkey>kets around hotkeys   <white>%s<magenta>\n",
 
 				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No",
 				(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No"
@@ -799,7 +831,8 @@ void state_config_terminal(User *usr, char c) {
 					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
 				);
 
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -811,6 +844,7 @@ void state_config_terminal(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -988,7 +1022,12 @@ void state_config_colors(User *usr, char c) {
 	Enter(state_config_colors);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
+			buffer_text(usr);
+
 			Print(usr, "<magenta>\n"
 				"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
 				"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
@@ -1010,7 +1049,8 @@ void state_config_colors(User *usr, char c) {
 				color_table[usr->colors[HOTKEY]].key,	color_table[usr->colors[HOTKEY]].name,
 				color_table[usr->colors[BACKGROUND]].key, color_table[usr->colors[BACKGROUND]].name
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -1019,6 +1059,11 @@ void state_config_colors(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "Config Terminal\n");
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
 			Return;
 
 		case 'w':
@@ -1188,16 +1233,13 @@ void state_config_who(User *usr, char c) {
 	Enter(state_config_who);
 
 	switch(c) {
-		case KEY_RETURN:			/* convenience for sysops that use Ctrl-W/W ... */
-			if (!(usr->runtime_flags & RTF_SYSOP)) {
-				Put(usr, "Exit\n");
-				RET(usr);
-				Return;
-			} else
-				Put(usr, "\n");
+		case INIT_PROMPT:
+			break;
 
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			Print(usr, "\n<magenta>"
 				"Default who list <hotkey>format      <white>%s<magenta>\n"
@@ -1214,26 +1256,29 @@ void state_config_who(User *usr, char c) {
 				);
 
 			Print(usr,
-				"Show online <hotkey>enemies          <white>%s\n",
+				"Show online <hotkey>enemies          <white>%s<magenta>\n",
 				(usr->flags & USR_SHOW_ENEMIES)    ? "Yes"        : "No"
 			);
 			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "\n"
-					"<magenta><hotkey>Who is in this room         <white> (for %ss only)\n", PARAM_NAME_SYSOP
+					"<magenta><hotkey>Who is in this room         <white> (for %ss only)<magenta>\n", PARAM_NAME_SYSOP
 				);
 
-			break;
+			read_menu(usr);
+			Return;
 
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 		case KEY_ESC:
 		case ' ':
 		case KEY_BS:
+		case KEY_RETURN:
 			Put(usr, "Exit\n");
 			RET(usr);
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1301,8 +1346,13 @@ void state_config_options(User *usr, char c) {
 	Enter(state_config_options);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			Print(usr, "\n<magenta>"
 				"Beep on e<hotkey>Xpress message arrival      <white>%s<magenta>\n"
@@ -1342,7 +1392,8 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No",
 				(usr->flags & USR_HACKERZ) ? "Oh Yeah" : "Off"
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case ' ':
 		case KEY_RETURN:
@@ -1354,6 +1405,7 @@ void state_config_options(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1434,8 +1486,13 @@ char buf[MAX_LINE], *p;
 	Enter(state_config_timezone);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
 
 			print_calendar(usr);
 
@@ -1451,11 +1508,12 @@ char buf[MAX_LINE], *p;
 			}
 			Print(usr, "<magenta>\n"
 				"<hotkey>Display time as          <white>%s<magenta>\n"
-				"<hotkey>Select time zone         <white>%s (%s)\n",
+				"<hotkey>Select time zone         <white>%s (%s)<magenta>\n",
 				(usr->flags & USR_12HRCLOCK) ? "12 hour clock (AM/PM)" : "24 hour clock",
 				buf, name_Timezone(usr->tz)
 			);
-			break;
+			read_menu(usr);
+			Return;
 
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
@@ -1468,6 +1526,7 @@ char buf[MAX_LINE], *p;
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -1516,10 +1575,9 @@ char filename[MAX_PATHLEN];
 	}
 	Fclose(f);
 
-	Put(usr, "<magenta>Time zone regions\n");
-
-	free_StringIO(usr->text);
-	format_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width, FORMAT_MENU_NUMBERED);
+	buffer_text(usr);
+	Put(usr, "<magenta>Time zone regions\n\n");
+	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_MENU_NUMBERED);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_text(usr);
 	Return;
@@ -1594,7 +1652,8 @@ int r;
 		while((p = cstrchr(p, '_')) != NULL)
 			*p = ' ';
 
-		Print(usr, "\n<green>Cities, countries, regions, and zones in category <yellow>%s:\n", filename);
+		buffer_text(usr);				/* start buffering already, we got the category..! */
+		Print(usr, "<green>Cities, countries, regions, and zones in category <yellow>%s:\n\n", filename);
 		select_tz_city(usr);
 		Return;
 	}
@@ -1608,9 +1667,14 @@ char filename[MAX_PATHLEN];
 	if (usr == NULL)
 		return;
 
+/*
+	note: we're already buffering upon enter ... (see above)
+*/
+
 	Enter(select_tz_city);
 
 	if (usr->tmpbuf[0] == NULL) {
+		clear_buffer(usr);
 		log_err("select_tz_city(): this is bad: usr->tmpbuf[0] == NULL");
 		Put(usr, "<red>Sorry, something is not working. Please try again later\n\n");
 		Return;
@@ -1619,6 +1683,7 @@ char filename[MAX_PATHLEN];
 	path_strip(filename);
 
 	if (usr->tmpbuf[1] != NULL) {
+		clear_buffer(usr);
 		log_err("select_tz_city(): this is bad: usr->tmpbuf[1] != NULL, freeing it");
 		Free(usr->tmpbuf[1]);
 	}
@@ -1626,6 +1691,7 @@ char filename[MAX_PATHLEN];
 	usr->tmpbuf[0] = NULL;
 
 	if ((f = Fopen(filename)) == NULL) {
+		clear_buffer(usr);
 		log_err("select_tz_city(): failed to open %s", filename);
 		Put(usr, "\n<red>Sorry, the time zone system appears to be offline\n\n");
 
@@ -1642,6 +1708,7 @@ char filename[MAX_PATHLEN];
 		Free(usr->tmpbuf[0]);
 	}
 	if ((usr->tmpbuf[0] = (char *)Fgetlist(f)) == NULL) {
+		clear_buffer(usr);
 		log_err("select_tz_city(): out of memory buffering tz_index file");
 		Put(usr, "\n<red>Out of memory error, please retry later\n\n");
 
@@ -1652,8 +1719,7 @@ char filename[MAX_PATHLEN];
 	}
 	Fclose(f);
 
-	free_StringIO(usr->text);
-	format_menu(usr->text, (StringList *)usr->tmpbuf[0], usr->display->term_width, FORMAT_MENU_NUMBERED);
+	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_MENU_NUMBERED);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_text(usr);
