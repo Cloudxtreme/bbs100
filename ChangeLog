@@ -6,6 +6,9 @@ Changes as of July 30th 2005
 - (most) menu's printed with --More-- prompt for small terminal windows
 - buffer_text() for buffering to usr->text (now why didn't I think of this
   earlier..?)
+- More prompts in menus using buffer_text()
+- profile_user() using buffer_text()
+- statistics screen using buffer_text()
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists
