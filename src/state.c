@@ -3461,8 +3461,8 @@ int total;
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d:%02d\n",
+	buffer_text(usr);
+	Print(usr, "<magenta>There %s <yellow>%d<magenta> friend%s online at <yellow>%02d:%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
@@ -3519,8 +3519,8 @@ int total;
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d:%02d\n",
+	buffer_text(usr);
+	Print(usr, "<magenta>There %s <yellow>%d<magenta> %s you talked to online at <yellow>%02d:%02d\n",
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 

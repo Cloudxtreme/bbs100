@@ -279,7 +279,7 @@ void enter_the_message(User *usr) {
 			(usr->curr_room == usr->mail) ? "mail " : "");
 
 	msg_header(usr, usr->new_message);
-	display_text(usr, usr->text);			/* show the message header */
+
 	edit_text(usr, save_message, abort_message);
 	Return;
 }
@@ -774,14 +774,14 @@ unsigned long msg_number;
 		RET(usr);
 		Return;
 	}
-	free_StringIO(usr->text);
+	buffer_text(usr);
 	msg_header(usr, usr->message);
 
 	if (usr->message->deleted != (time_t)0UL) {
-		put_StringIO(usr->text, "\n");
+		Put(usr, "\n");
 
 		if (usr->message->flags & MSG_DELETED_BY_ANON)
-			print_StringIO(usr->text, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]\n",
+			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]\n",
 				print_date(usr, usr->message->deleted, date_buf), usr->message->anon);
 		else {
 			char deleted_by[MAX_LINE];
@@ -797,19 +797,19 @@ unsigned long msg_number;
 				strcat(deleted_by, ": ");
 			strcat(deleted_by, usr->message->deleted_by);
 
-			print_StringIO(usr->text, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
+			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
 				print_date(usr, usr->message->deleted, date_buf), deleted_by);
 		}
 	} else {
 		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
 			if (usr->message->subject[0]) {
 				if (usr->message->flags & MSG_FORWARDED)
-					print_StringIO(usr->text, "<cyan>Subject: <white>Fwd:<yellow> %s\n", usr->message->subject);
+					Print(usr, "<cyan>Subject: <white>Fwd:<yellow> %s\n", usr->message->subject);
 				else
 					if (usr->message->flags & MSG_REPLY)
-						print_StringIO(usr->text, "<cyan>Subject: <white>Re:<yellow> %s\n", usr->message->subject);
+						Print(usr, "<cyan>Subject: <white>Re:<yellow> %s\n", usr->message->subject);
 					else
-						print_StringIO(usr->text, "<cyan>Subject:<yellow> %s\n", usr->message->subject);
+						Print(usr, "<cyan>Subject:<yellow> %s\n", usr->message->subject);
 			} else {
 /*
 	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
@@ -817,22 +817,22 @@ unsigned long msg_number;
 	recipient of the Mail> message
 */
 				if (usr->message->flags & MSG_REPLY && usr->message->reply_number)
-					print_StringIO(usr->text, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", usr->message->reply_number);
+					Print(usr, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", usr->message->reply_number);
 			}
 		} else {
 			if ((usr->message->flags & MSG_FORWARDED) && usr->message->subject[0])
-				print_StringIO(usr->text, "<white>Fwd:<yellow> %s\n", usr->message->subject);
+				Print(usr, "<white>Fwd:<yellow> %s\n", usr->message->subject);
 			else {
 				if (usr->message->flags & MSG_REPLY) {			/* room without subject lines */
 					if (usr->message->subject[0])
-						print_StringIO(usr->text, "<white>Re:<yellow> %s\n", usr->message->subject);
+						Print(usr, "<white>Re:<yellow> %s\n", usr->message->subject);
 					else
 						if (usr->message->reply_number)
-							print_StringIO(usr->text, "<white>Re:<yellow> <message #%lu>\n", usr->message->reply_number);
+							Print(usr, "<white>Re:<yellow> <message #%lu>\n", usr->message->reply_number);
 				}
 			}
 		}
-		put_StringIO(usr->text, "<green>\n");
+		Put(usr, "<green>\n");
 		concat_StringIO(usr->text, usr->message->msg);
 
 		usr->read++;						/* update stats */
@@ -2162,8 +2162,6 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 
 	Enter(msg_header);
 
-	free_StringIO(usr->text);
-
 	if (msg == NULL) {
 		Perror(usr, "I have a problem with this");
 		Return;
@@ -2197,16 +2195,16 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 				if ((dl + strlen(sl->str)+2) < max_dl)
 					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
 				else {
-					put_StringIO(usr->text, buf);
-					write_StringIO(usr->text, "\n", 1);
+					Put(usr, buf);
+					Put(usr, "\n");
 					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
 				}
 				dl = color_strlen(buf);
 			}
-			print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
+			Print(usr, "%s<yellow>%s<green>\n", buf, sl->str);
 		} else {
 			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
-				print_StringIO(usr->text, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 			else {
 				l = sprintf(buf, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf), from);
 				dl = color_strlen(buf);
@@ -2215,17 +2213,17 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 					if ((dl + strlen(sl->str)+2) < MAX_LINE)
 						l += sprintf(buf+strlen(buf), "<yellow>%s<green>, ", sl->str);
 					else {
-						put_StringIO(usr->text, buf);
-						put_StringIO(usr->text, "\n");
+						Put(usr, buf);
+						Put(usr, "\n");
 						l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
 					}
 					dl = color_strlen(buf);
 				}
-				print_StringIO(usr->text, "%s<yellow>%s<green>\n", buf, sl->str);
+				Print(usr, "%s<yellow>%s<green>\n", buf, sl->str);
 			}
 		}
 	} else
-		print_StringIO(usr->text, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+		Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
 	Return;
 }
 
