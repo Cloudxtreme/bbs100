@@ -5,11 +5,7 @@ Changes as of July 30th 2005
 - bugfix in terminal height being off by one
 - (most) menu's printed with --More-- prompt for small terminal windows
 - buffer_text() for buffering to usr->text (now why didn't I think of this
-  earlier..?)
-- More prompts in menus using buffer_text()
-- profile_user() using buffer_text()
-- statistics screen using buffer_text()
-- Who list uses buffer_text()
+  earlier..?)   So I changed everything to work with buffer_text()
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists
