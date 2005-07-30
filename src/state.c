@@ -2987,14 +2987,15 @@ StringList *sl;
 	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
 		j->roominfo_read = usr->curr_room->roominfo_changed;		/* now we've read it */
 
-	free_StringIO(usr->text);
-	print_StringIO(usr->text, "<white>Room info of <yellow>%s><white> (room #%u)\n",
+	buffer_text(usr);
+
+	Print(usr, "<white>Room info of <yellow>%s><white> (room #%u)\n",
 		usr->curr_room->name, usr->curr_room->number);
 
 	if (usr->curr_room->generation) {
 		char date_buf[80];
 
-		print_StringIO(usr->text, "<green>Created on <yellow>%s\n", print_date(usr, usr->curr_room->generation, date_buf));
+		Print(usr, "<green>Created on <yellow>%s\n", print_date(usr, usr->curr_room->generation, date_buf));
 	}
 	*buf = 0;
 	if (usr->curr_room->flags & ROOM_READONLY)
@@ -3008,34 +3009,30 @@ StringList *sl;
 	if ((usr->curr_room->flags & ROOM_HIDDEN) && (usr->runtime_flags & RTF_SYSOP))
 		strcat(buf, ", hidden");
 	if (*buf)
-		print_StringIO(usr->text, "\n<green>This room is %s\n", buf+2);
+		Print(usr, "\n<green>This room is %s\n", buf+2);
 
 	if (usr->curr_room->room_aides != NULL) {
 		if (usr->curr_room->room_aides->next != NULL) {
-			print_StringIO(usr->text, "<cyan>%ss are: <yellow>", PARAM_NAME_ROOMAIDE);
+			Print(usr, "<cyan>%ss are: <yellow>", PARAM_NAME_ROOMAIDE);
 			for(sl = usr->curr_room->room_aides; sl != NULL && sl->next != NULL; sl = sl->next)
-				print_StringIO(usr->text, "%s, ", sl->str);
+				Print(usr, "%s, ", sl->str);
 
-			print_StringIO(usr->text, "%s\n", sl->str);
+			Print(usr, "%s\n", sl->str);
 		} else
-			print_StringIO(usr->text, "<cyan>%s is: %s\n", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
+			Print(usr, "<cyan>%s is: %s\n", PARAM_NAME_ROOMAIDE, usr->curr_room->room_aides->str);
 	}
-	if (PARAM_HAVE_CATEGORY && usr->curr_room->category && usr->curr_room->category[0]) {
-		if (!in_Category(usr->curr_room->category)) {
-			Free(usr->curr_room->category);
-			usr->curr_room->category = NULL;
-		} else
-			print_StringIO(usr->text, "<cyan>Category:<yellow> %s\n", usr->curr_room->category);
-	}
-	put_StringIO(usr->text, "<green>\n");
+	if (PARAM_HAVE_CATEGORY && usr->curr_room->category && usr->curr_room->category[0])
+		Print(usr, "<cyan>Category:<yellow> %s\n", usr->curr_room->category);
+
+	Put(usr, "<green>\n");
 
 	load_roominfo(usr->curr_room, usr->name);
 
 	if (usr->curr_room == NULL || usr->curr_room->info == NULL || usr->curr_room->info->buf == NULL) {
 		if (usr->curr_room != NULL && usr->curr_room->number == MAIL_ROOM)
-			put_StringIO(usr->text, "Here you can leave messages to users that are not online.\n");
+			Put(usr, "Here you can leave messages to users that are not online.\n");
 		else
-			put_StringIO(usr->text, "<red>This room has no room info\n");
+			Put(usr, "<red>This room has no room info\n");
 	} else
 		concat_StringIO(usr->text, usr->curr_room->info);
 

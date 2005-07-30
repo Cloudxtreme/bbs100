@@ -499,7 +499,7 @@ int r;
 }
 
 void state_remove_category(User *usr, char c) {
-int r;
+int n;
 
 	if (usr == NULL)
 		return;
@@ -509,34 +509,52 @@ int r;
 	if (c == INIT_STATE)
 		Put(usr, "<green>Enter number of category to remove: <yellow>");
 
-	r = edit_number(usr, c);
-	if (r == EDIT_BREAK) {
+	n = edit_number(usr, c);
+	if (n == EDIT_BREAK) {
 		RET(usr);
 		Return;
 	}
-	if (r == EDIT_RETURN) {
-		int n;
+	if (n == EDIT_RETURN) {
+		int i;
 		StringList *sl;
+		Room *r;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
-		n = atoi(usr->edit_buf) - 1;
-		if (n < 0) {
+		i = atoi(usr->edit_buf) - 1;
+		if (i < 0) {
 			Put(usr, "<red>No such category\n");
 			RET(usr);
 			Return;
 		}
 		for(sl = category; sl != NULL; sl = sl->next) {
-			if (n <= 0)
+			if (i <= 0)
 				break;
-			n--;
+			i--;
 		}
 		if (sl == NULL) {
 			Put(usr, "<red>No such category\n");
 			RET(usr);
 			Return;
+		}
+/*
+	remove this category from the rooms
+*/
+		for(r = AllRooms; r != NULL; r = r->next) {
+			if (r->category != NULL && !strcmp(r->category, sl->str)) {
+				Free(r->category);
+				r->category = NULL;
+				r->flags |= ROOM_DIRTY;
+			}
+		}
+		for(r = HomeRooms; r != NULL; r = r->next) {
+			if (r->category != NULL && !strcmp(r->category, sl->str)) {
+				Free(r->category);
+				r->category = NULL;
+				r->flags |= ROOM_DIRTY;
+			}
 		}
 		remove_StringList(&category, sl);
 		destroy_StringList(sl);
