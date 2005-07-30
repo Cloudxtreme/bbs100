@@ -293,7 +293,7 @@ void state_config_address(User *usr, char c) {
 				(usr->www == NULL   || !usr->www[0])   ? "<white><unknown WWW address><yellow>"    : usr->www);
 
 			Print(usr, "\n"
-				"<hotkey>Hide address from non-friends   <white>%s<magenta>\n",
+				"<hotkey>Hide address from non-friends...  <white>%s<magenta>\n",
 
 				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No"
 			);
@@ -1252,7 +1252,7 @@ void state_config_who(User *usr, char c) {
 
 			Print(usr, "\n<magenta>"
 				"Default who list <hotkey>format      <white>%s<magenta>\n"
-				"Sort <hotkey>by<yellow>...                   <white>%s<magenta>\n"
+				"Sort <hotkey>by...                   <white>%s<magenta>\n"
 				"Sort <hotkey>order                   <white>%s<magenta>\n",
 				(usr->flags & USR_SHORT_WHO)       ? "Short"      : "Long",
 				(usr->flags & USR_SORT_BYNAME)     ? "Name"       : "Online time",
@@ -1260,7 +1260,7 @@ void state_config_who(User *usr, char c) {
 			);
 			if (PARAM_HAVE_CHATROOMS)
 				Print(usr,
-					"When in a <hotkey>chat room<yellow>...       <white>%s<magenta>\n",
+					"When in a <hotkey>chat room...       <white>%s<magenta>\n",
 					(usr->flags & USR_SHOW_ALL)        ? "Show All"   : "Show Inside"
 				);
 
