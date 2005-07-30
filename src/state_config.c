@@ -41,6 +41,16 @@
 #include <stdlib.h>
 
 
+#define CONFIG_OPTION(x, y)							\
+	do {											\
+		Print(usr, "%s\n", (y));					\
+		usr->flags ^= (x);							\
+		usr->runtime_flags |= RTF_CONFIG_EDITED;	\
+		CURRENT_STATE(usr);							\
+		Return;										\
+	} while(0)
+
+
 void state_config_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -737,38 +747,24 @@ void state_config_terminal(User *usr, char c) {
 				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
 				(usr->flags & USR_BOLD) ? "Yes"  : "No"
 			);
+			if (usr->flags & USR_ANSI)
+				Print(usr,
+					"Color <hotkey>scheme                         <white>%s<magenta>\n",
+
+					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
+				);
+
 			Print(usr, "\n"
 				"<hotkey>Force screen width and height        <white>%s<magenta>\n"
-				"<hotkey>Screen dimensions                    <white>%dx%d<magenta>\n",
+				"Screen <hotkey>dimensions                    <white>%dx%d<magenta>\n",
 
 				(usr->flags & USR_FORCE_TERM) ? "Yes" : "No",
 				usr->display->term_width, usr->display->term_height
 			);
-			if (usr->flags & USR_ANSI) {
-				Print(usr, "\n"
-					"<white>Customize colors<magenta>\n"
-					"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
-					"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
-
-					color_table[usr->colors[WHITE]].key,	color_table[usr->colors[WHITE]].name,
-					color_table[usr->colors[CYAN]].key,		color_table[usr->colors[CYAN]].name,
-					color_table[usr->colors[YELLOW]].key,	color_table[usr->colors[YELLOW]].name,
-					color_table[usr->colors[BLUE]].key,		color_table[usr->colors[BLUE]].name
+			if (usr->flags & USR_ANSI)
+				Put(usr, "\n"
+					"Customize <hotkey>colors\n"
 				);
-				Print(usr,
-					"<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
-					"<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>\n"
-					"\n"
-					"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         <hotkey>Defaults for all colors\n",
-
-					color_table[usr->colors[RED]].key,		color_table[usr->colors[RED]].name,
-					color_table[usr->colors[MAGENTA]].key,	color_table[usr->colors[MAGENTA]].name,
-					color_table[usr->colors[GREEN]].key,	color_table[usr->colors[GREEN]].name,
-					color_table[usr->colors[HOTKEY]].key,	color_table[usr->colors[HOTKEY]].name,
-					color_table[usr->colors[BACKGROUND]].key, color_table[usr->colors[BACKGROUND]].name
-				);
-			}
-			Put(usr, "<white>");
 			break;
 
 		case ' ':
@@ -797,11 +793,14 @@ void state_config_terminal(User *usr, char c) {
 
 		case 'a':
 		case 'A':
-			usr->flags ^= USR_BOLD;
-			Put(usr, "Attribute bold/bright<default><normal>\n");
-			usr->runtime_flags |= RTF_CONFIG_EDITED;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_BOLD, "Attribute bold/bright<default><normal>");
+
+		case 's':
+		case 'S':
+			if (!(usr->flags & USR_ANSI))
+				break;
+
+			CONFIG_OPTION(USR_DONT_AUTO_COLOR, "Color scheme");
 
 		case 'f':
 		case 'F':
@@ -816,110 +815,20 @@ void state_config_terminal(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
-		case 's':
-		case 'S':
+		case 'd':
+		case 'D':
 			Put(usr, "Screen dimensions\n");
 			CALL(usr, STATE_CONFIG_WIDTH);
 			Return;
 
-		case 'w':
-		case 'W':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = WHITE;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'y':
-		case 'Y':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = YELLOW;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'r':
-		case 'R':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = RED;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'g':
-		case 'G':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = GREEN;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
 		case 'c':
 		case 'C':
 			if (usr->flags & USR_ANSI) {
-				usr->read_lines = CYAN;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
+				Put(usr, "Customize colors\n");
+				CALL(usr, STATE_CONFIG_COLORS);
 				Return;
 			}
 			break;
-
-		case 'b':
-		case 'B':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = BLUE;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'm':
-		case 'M':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = MAGENTA;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'o':
-		case 'O':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = HOTKEY;
-				Print(usr, "Customize %s\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'k':
-		case 'K':
-			if (usr->flags & USR_ANSI) {
-				usr->read_lines = BACKGROUND;
-				Print(usr, "Customize background\n", color_table[usr->read_lines].name);
-				CALL(usr, STATE_CUSTOM_COLORS);
-				Return;
-			}
-			break;
-
-		case 'd':
-		case 'D':
-			if (usr->flags & USR_ANSI) {
-				default_colors(usr);
-				Put(usr, "Defaults<normal>\n");
-			}
-			CURRENT_STATE(usr);
-			Return;
 	}
 	Print(usr, "<yellow>\n[Config] Terminal%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -999,6 +908,104 @@ int r;
 		}
 		RET(usr);
 	}
+	Return;
+}
+
+
+#define CUSTOM_COLOR(x)														\
+	do {																	\
+		usr->read_lines = (x);												\
+		Print(usr, "Customize %s\n", color_table[usr->read_lines].name);	\
+		CALL(usr, STATE_CUSTOM_COLORS);										\
+		Return;																\
+	} while(0)
+
+void state_config_colors(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_colors);
+
+	switch(c) {
+		case INIT_STATE:
+			Print(usr, "<magenta>\n"
+				"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
+				"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
+
+				color_table[usr->colors[WHITE]].key,	color_table[usr->colors[WHITE]].name,
+				color_table[usr->colors[CYAN]].key,		color_table[usr->colors[CYAN]].name,
+				color_table[usr->colors[YELLOW]].key,	color_table[usr->colors[YELLOW]].name,
+				color_table[usr->colors[BLUE]].key,		color_table[usr->colors[BLUE]].name
+			);
+			Print(usr,
+				"<hotkey>Red        <white>[%c%-7s<white>]<magenta>         <hotkey>Magenta    <white>[%c%-7s<white>]<magenta>\n"
+				"<hotkey>Green      <white>[%c%-7s<white>]<magenta>         H<hotkey>otkey     <white>[%c%-7s<white>]<magenta>\n"
+				"\n"
+				"<magenta>Bac<hotkey>kground <white>[%c%-7s<white>]<magenta>         <hotkey>Defaults for all colors\n",
+
+				color_table[usr->colors[RED]].key,		color_table[usr->colors[RED]].name,
+				color_table[usr->colors[MAGENTA]].key,	color_table[usr->colors[MAGENTA]].name,
+				color_table[usr->colors[GREEN]].key,	color_table[usr->colors[GREEN]].name,
+				color_table[usr->colors[HOTKEY]].key,	color_table[usr->colors[HOTKEY]].name,
+				color_table[usr->colors[BACKGROUND]].key, color_table[usr->colors[BACKGROUND]].name
+			);
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "Config Terminal\n");
+			RET(usr);
+			Return;
+
+		case 'w':
+		case 'W':
+			CUSTOM_COLOR(WHITE);
+
+		case 'y':
+		case 'Y':
+			CUSTOM_COLOR(YELLOW);
+
+		case 'r':
+		case 'R':
+			CUSTOM_COLOR(RED);
+
+		case 'g':
+		case 'G':
+			CUSTOM_COLOR(GREEN);
+
+		case 'c':
+		case 'C':
+			CUSTOM_COLOR(CYAN);
+
+		case 'b':
+		case 'B':
+			CUSTOM_COLOR(BLUE);
+
+		case 'm':
+		case 'M':
+			CUSTOM_COLOR(MAGENTA);
+
+		case 'o':
+		case 'O':
+			CUSTOM_COLOR(HOTKEY);
+
+		case 'k':
+		case 'K':
+			CUSTOM_COLOR(BACKGROUND);
+
+		case 'd':
+		case 'D':
+			if (usr->flags & USR_ANSI) {
+				default_colors(usr);
+				Put(usr, "Defaults<normal>\n");
+			}
+			CURRENT_STATE(usr);
+			Return;
+	}
+	Print(usr, "<yellow>\n[Config] Colors%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -1168,33 +1175,21 @@ void state_config_who(User *usr, char c) {
 
 		case 'f':
 		case 'F':
-			Put(usr, "Format\n");
-			usr->flags ^= USR_SHORT_WHO;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_SHORT_WHO, "Format");
 
 		case 'b':
 		case 'B':
-			Put(usr, "Sort by\n");
-			usr->flags ^= USR_SORT_BYNAME;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_SORT_BYNAME, "Sort by");
 
 		case 'o':
 		case 'O':
-			Put(usr, "Sort order\n");
-			usr->flags ^= USR_SORT_DESCENDING;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_SORT_DESCENDING, "Sort order");
 
 		case 'c':
 		case 'C':
-			if (PARAM_HAVE_CHATROOMS) {
-				Put(usr, "In a chat room...\n");
-				usr->flags ^= USR_SHOW_ALL;
-				CURRENT_STATE(usr);
-				Return;
-			}
+			if (PARAM_HAVE_CHATROOMS)
+				CONFIG_OPTION(USR_SHOW_ALL, "In a chat room...");
+
 			break;
 
 		case 'e':
@@ -1234,14 +1229,6 @@ void state_config_who_sysop(User *usr, char c) {
 	Print(usr, "<yellow>\n[Config] Who%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 }
 
-
-#define CONFIG_OPTION(x, y)		do {				\
-		Print(usr, "%s\n", (y));					\
-		usr->flags ^= (x);							\
-		usr->runtime_flags |= RTF_CONFIG_EDITED;	\
-		CURRENT_STATE(usr);							\
-		Return;										\
-	} while(0)
 
 void state_config_options(User *usr, char c) {
 	if (usr == NULL)
@@ -1285,11 +1272,9 @@ void state_config_options(User *usr, char c) {
 			);
 			if (usr->flags & USR_ANSI)
 				Print(usr,
-					"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n"
-					"<hotkey>Color scheme                         <white>%s<magenta>\n",
+					"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n",
 
-					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No",
-					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
+					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No"
 				);
 
 			Print(usr, "\n"
@@ -1376,13 +1361,6 @@ void state_config_options(User *usr, char c) {
 
 			CONFIG_OPTION(USR_HOTKEY_BRACKETS, "Angle brackets around hotkeys");
 
-		case 'c':
-		case 'C':
-			if (!(usr->flags & USR_ANSI))
-				break;
-
-			CONFIG_OPTION(USR_DONT_AUTO_COLOR, "Color scheme");
-
 		case 'a':
 		case 'A':
 			CONFIG_OPTION(USR_HIDE_ADDRESS, "Hide address information");
@@ -1443,10 +1421,7 @@ char buf[MAX_LINE], *p;
 
 		case 'd':
 		case 'D':
-			Put(usr, "Display time\n");
-			usr->flags ^= USR_12HRCLOCK;
-			CURRENT_STATE(usr);
-			Return;
+			CONFIG_OPTION(USR_12HRCLOCK, "Display time");
 
 		case 's':
 		case 'S':

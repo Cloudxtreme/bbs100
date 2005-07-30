@@ -47,6 +47,7 @@
 #define STATE_CONFIG_TERMINAL			state_config_terminal
 #define STATE_CONFIG_WIDTH				state_config_width
 #define STATE_CONFIG_HEIGHT				state_config_height
+#define STATE_CONFIG_COLORS				state_config_colors
 #define STATE_CUSTOM_COLORS				state_custom_colors
 #define STATE_CONFIG_PASSWORD			state_config_password
 #define STATE_CHANGE_PASSWORD			state_change_password
@@ -83,6 +84,7 @@ void state_config_terminal(User *, char);
 void state_config_width(User *, char);
 void state_config_height(User *, char);
 void config_dimensions(User *, char, int *, void (*)(User *, char));
+void state_config_colors(User *, char);
 void state_custom_colors(User *, char);
 void state_config_password(User *, char);
 void state_change_password(User *, char);

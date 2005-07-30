@@ -1,3 +1,6 @@
+Changes as of July 30th 2005
+- seperate config menu for customizing colors
+
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists
 - introduced bitmask BUFMSG_TYPE; can have 256 message types
