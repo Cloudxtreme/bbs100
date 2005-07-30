@@ -1536,19 +1536,19 @@ int r;
 /*
 	make the profile
 */
-		free_StringIO(usr->text);
-		put_StringIO(usr->text, "<white>");
+		buffer_text(usr);
+		Put(usr, "<white>");
 
 		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
 			char fmt[16];
 
 			sprintf(fmt, "%%-%ds", MAX_NAME + 10);
-			print_StringIO(usr->text, fmt, u->name);
-			print_StringIO(usr->text, "<magenta>* <white>%s <magenta>*", u->vanity);
+			Print(usr, fmt, u->name);
+			Print(usr, "<magenta>* <white>%s <magenta>*", u->vanity);
 		} else
-			put_StringIO(usr->text, u->name);
+			Put(usr, u->name);
 
-		put_StringIO(usr->text, "\n");
+		Put(usr, "\n");
 
 		visible = 1;
 		hidden = "";
@@ -1560,43 +1560,43 @@ int r;
 				visible = 0;
 		}
 		if (u->real_name != NULL && u->real_name[0] && visible)
-			print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->real_name);
+			Print(usr, "%s<yellow>%s\n", hidden, u->real_name);
 
 		if (u->street != NULL && u->street[0] && visible)
-			print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->street);
+			Print(usr, "%s<yellow>%s\n", hidden, u->street);
 
 		if (u->zipcode != NULL && u->zipcode[0] && visible) {
 			if (u->city != NULL && u->city[0])
-				print_StringIO(usr->text, "%s<yellow>%s %s\n", hidden, u->zipcode, u->city);
+				Print(usr, "%s<yellow>%s %s\n", hidden, u->zipcode, u->city);
 			else
-				print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->zipcode);
+				Print(usr, "%s<yellow>%s\n", hidden, u->zipcode);
 		} else
 			if (u->city != NULL && u->city[0] && visible)
-				print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->city);
+				Print(usr, "%s<yellow>%s\n", hidden, u->city);
 
 		if (u->state != NULL && u->state[0] && visible) {
 			if (u->country != NULL && u->country[0])
-				print_StringIO(usr->text, "%s<yellow>%s, %s\n", hidden, u->state, u->country);
+				Print(usr, "%s<yellow>%s, %s\n", hidden, u->state, u->country);
 			else
-				print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->state);
+				Print(usr, "%s<yellow>%s\n", hidden, u->state);
 		} else
 			if (u->country != NULL && u->country[0] && visible)
-				print_StringIO(usr->text, "%s<yellow>%s\n", hidden, u->country);
+				Print(usr, "%s<yellow>%s\n", hidden, u->country);
 
 		if (u->phone != NULL && u->phone[0] && visible)
-			print_StringIO(usr->text, "%s<green>Phone: <yellow>%s\n", hidden, u->phone);
+			Print(usr, "%s<green>Phone: <yellow>%s\n", hidden, u->phone);
 
 		if (u->email != NULL && u->email[0] && visible)
-			print_StringIO(usr->text, "%s<green>E-mail: <cyan>%s\n", hidden, u->email);
+			Print(usr, "%s<green>E-mail: <cyan>%s\n", hidden, u->email);
 
 		if (u->www != NULL && u->www[0] && visible)
-			print_StringIO(usr->text, "%s<green>WWW: <cyan>%s\n", hidden, u->www);
+			Print(usr, "%s<green>WWW: <cyan>%s\n", hidden, u->www);
 
 		if (u->doing != NULL && u->doing[0]) {
 			if (allocated)
-				print_StringIO(usr->text, "<green>Was doing: <yellow>%s <cyan>%s\n", u->name, u->doing);
+				Print(usr, "<green>Was doing: <yellow>%s <cyan>%s\n", u->name, u->doing);
 			else
-				print_StringIO(usr->text, "<green>Doing: <yellow>%s <cyan>%s\n", u->name, u->doing);
+				Print(usr, "<green>Doing: <yellow>%s <cyan>%s\n", u->name, u->doing);
 		}
 		if (allocated) {
 			char date_buf[MAX_LINE], online_for[MAX_LINE+10];
@@ -1609,38 +1609,38 @@ int r;
 			} else
 				online_for[0] = 0;
 
-			print_StringIO(usr->text, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf), online_for);
+			Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf), online_for);
 			if (usr->runtime_flags & RTF_SYSOP)
-				print_StringIO(usr->text, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
+				Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
 			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
-				print_StringIO(usr->text, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, p);
+				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, p);
 		} else {
 /*
 	display for how long someone is online
 */
-			print_StringIO(usr->text, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf));
+			Print(usr, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf));
 			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
-					print_StringIO(usr->text, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
+					Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
 				else
-					print_StringIO(usr->text, "<green>From host: <yellow>%s\n", u->conn->hostname);
+					Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 			}
 			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
-				print_StringIO(usr->text, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, p);
+				Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, p);
 		}
 		if (!allocated)
 			update_stats(u);
-		print_StringIO(usr->text, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf));
+		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf));
 
 		if (u->flags & USR_X_DISABLED)
-			print_StringIO(usr->text, "<red>%s has message reception turned off\n", u->name);
+			Print(usr, "<red>%s has message reception turned off\n", u->name);
 
 		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
 
 			sprintf(namebuf, "<yellow>%s<green>", u->name);
-			print_StringIO(usr->text, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf));
+			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf));
 		}
 		visible = 1;
 		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
@@ -1648,10 +1648,10 @@ int r;
 			visible = 0;
 
 		if (visible && in_StringList(u->enemies, usr->name) != NULL)
-			print_StringIO(usr->text, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
+			Print(usr, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
 
 		if (visible && u->info != NULL && u->info->buf != NULL) {
-			put_StringIO(usr->text, "<green>\n");
+			Put(usr, "<green>\n");
 			concat_StringIO(usr->text, u->info);
 		}
 		if (!PARAM_HAVE_RESIDENT_INFO) {
