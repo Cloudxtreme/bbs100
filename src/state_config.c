@@ -740,20 +740,40 @@ void state_config_terminal(User *usr, char c) {
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 
-			Print(usr, "<normal><magenta>\n"
+			Print(usr, "<magenta>\n"
 				"<hotkey>Terminal emulation                   <white>%s<magenta>\n"
-				"Make use of bold/bright <hotkey>attribute    <white>%-3s<magenta>\n",
+				"Make use of bold/bright <hotkey>attribute    <white>%s<magenta>\n",
 
 				(usr->flags & USR_ANSI) ? "ANSI" : "dumb",
 				(usr->flags & USR_BOLD) ? "Yes"  : "No"
 			);
-			if (usr->flags & USR_ANSI)
-				Print(usr,
-					"Color <hotkey>scheme                         <white>%s<magenta>\n",
+/*
+	USR_BOLD_HOTKEYS has a complex meaning;
+	if USR_BOLD is set, then BOLD_HOTKEYS means we want faint hotkeys,
+	if BOLD is NOT set, then BOLD_HOTKEYS means we want bold hotkeys
 
-					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
+	see also print_hotkey() in util.c
+*/
+			if (usr->flags & USR_BOLD)
+				Print(usr,
+					"Show hotkeys in <hotkey>bold/bright          <white>%s<magenta>\n",
+
+					(usr->flags & USR_BOLD_HOTKEYS) ? "No" : "Yes"
+				);
+			else
+				Print(usr,
+					"Show hotkeys in <hotkey>bold/bright          <white>%s<magenta>\n",
+
+					(usr->flags & USR_BOLD_HOTKEYS) ? "Yes" : "No"
 				);
 
+			Print(usr,
+				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n"
+				"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n",
+
+				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No",
+				(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No"
+			);
 			Print(usr, "\n"
 				"<hotkey>Force screen width and height        <white>%s<magenta>\n"
 				"Screen <hotkey>dimensions                    <white>%dx%d<magenta>\n",
@@ -762,9 +782,13 @@ void state_config_terminal(User *usr, char c) {
 				usr->display->term_width, usr->display->term_height
 			);
 			if (usr->flags & USR_ANSI)
-				Put(usr, "\n"
-					"Customize <hotkey>colors\n"
+				Print(usr, "\n"
+					"Color <hotkey>scheme                         <white>%s<magenta>\n"
+					"Customize <hotkey>colors\n",
+
+					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
 				);
+
 			break;
 
 		case ' ':
@@ -782,18 +806,41 @@ void state_config_terminal(User *usr, char c) {
 
 			usr->flags ^= USR_ANSI;
 
-			if (usr->flags & USR_ANSI)			/* assume bold/non-bold */
+			if (usr->flags & USR_ANSI) {			/* assume bold/non-bold */
 				usr->flags |= USR_BOLD;
-			else
-				usr->flags &= ~USR_BOLD;
-
+				usr->flags &= ~(USR_HOTKEY_BRACKETS|USR_BOLD_HOTKEYS);
+			} else {
+				usr->flags &= ~(USR_BOLD|USR_BOLD_HOTKEYS);
+				usr->flags |= USR_HOTKEY_BRACKETS;
+			}
+			Put(usr, "<normal>");
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);
 			Return;
 
 		case 'a':
 		case 'A':
-			CONFIG_OPTION(USR_BOLD, "Attribute bold/bright<default><normal>");
+			Put(usr, "<default>");
+
+			usr->flags ^= USR_BOLD;
+			usr->flags &= ~USR_BOLD_HOTKEYS;
+			
+			Put(usr, "<normal>Attribute bold/bright\n");
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+			CONFIG_OPTION(USR_BOLD_HOTKEYS, "Bold/bright hotkeys");
+
+		case 'u':
+		case 'U':
+			CONFIG_OPTION(USR_UPPERCASE_HOTKEYS, "Uppercase hotkeys");
+
+		case 'k':
+		case 'K':
+			CONFIG_OPTION(USR_HOTKEY_BRACKETS, "Angle brackets around hotkeys");
 
 		case 's':
 		case 'S':
@@ -1262,21 +1309,12 @@ void state_config_options(User *usr, char c) {
 				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
 				"\n"
 				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
-				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n",
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
 
 				(usr->flags & USR_FRIEND_NOTIFY) ? "On" : "Off",
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
-				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No"
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
 			);
-			if (usr->flags & USR_ANSI)
-				Print(usr,
-					"Show angle brackets around hot<hotkey>keys   <white>%s<magenta>\n",
-
-					(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No"
-				);
-
 			Print(usr, "\n"
 				"Hide <hotkey>address info from non-friends   <white>%s<magenta>\n"
 				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
@@ -1349,17 +1387,6 @@ void state_config_options(User *usr, char c) {
 		case 'n':
 		case 'N':
 			CONFIG_OPTION(USR_ROOMNUMBERS, "Show room number");
-
-		case 'u':
-		case 'U':
-			CONFIG_OPTION(USR_UPPERCASE_HOTKEYS, "Uppercase hotkeys");
-
-		case 'k':
-		case 'K':
-			if (!(usr->flags & USR_ANSI))
-				break;
-
-			CONFIG_OPTION(USR_HOTKEY_BRACKETS, "Angle brackets around hotkeys");
 
 		case 'a':
 		case 'A':

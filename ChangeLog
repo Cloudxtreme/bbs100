@@ -1,5 +1,6 @@
 Changes as of July 30th 2005
 - seperate config menu for customizing colors
+- config option: hotkeys can be printed as bold or not
 
 Changes as of July 29th 2005
 - BUFMSG_SEEN flag no longer exists

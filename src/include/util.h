@@ -81,6 +81,7 @@ int word_len(char *);
 int hackerz_mode(int);
 int color_by_name(char *);
 int long_color_code(StringIO *, User *, char *, int *, int *, int, int);
+void print_hotkey(User *, char, char *, int *);
 void expand_hline(char *, char *, int, int);
 void expand_center(char *, char *, int, int);
 int skip_long_color_code(char *);

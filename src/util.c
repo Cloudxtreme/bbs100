@@ -245,29 +245,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				if (!*str)
 					break;
 
-				if (usr->flags & USR_UPPERCASE_HOTKEYS)
-					c = ctoupper(*str);
-				else
-					c = *str;
-
-				if (usr->flags & USR_ANSI) {
-					if (usr->flags & USR_HOTKEY_BRACKETS) {
-						if (usr->flags & USR_BOLD)
-							sprintf(buf, "\x1b[1;%dm<%c>\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-						else
-							sprintf(buf, "\x1b[%dm<%c>\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-						(*cpos) += 3;
-					} else {
-						if (usr->flags & USR_BOLD)
-							sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-						else
-							sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-						(*cpos)++;
-					}
-				} else {
-					sprintf(buf, "<%c>", c);
-					*cpos += 3;
-				}
+				print_hotkey(usr, *str, buf, cpos);
 				put_StringIO(dev, buf);
 
 				dont_auto_color = force_auto_color_off;
@@ -290,7 +268,6 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 			case KEY_CTRL('D'):
 				if (usr->flags & (USR_ANSI | USR_BOLD))
 					put_StringIO(dev, "\x1b[0m");
-				usr->color = c;
 
 				dont_auto_color = force_auto_color_off;
 				break;
@@ -542,28 +519,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		if (!c)
 			return 7;
 
-		if (usr->flags & USR_UPPERCASE_HOTKEYS)
-			c = ctoupper(c);
-
-		if (usr->flags & USR_ANSI) {
-			if (usr->flags & USR_HOTKEY_BRACKETS) {
-				if (usr->flags & USR_BOLD)
-					sprintf(buf, "\x1b[1;%dm<%c>\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-				else
-					sprintf(buf, "\x1b[%dm<%c>\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-				(*cpos) += 3;
-			} else {
-				if (usr->flags & USR_BOLD)
-					sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-				else
-					sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
-
-				(*cpos)++;
-			}
-		} else {
-			sprintf(buf, "<%c>", c);
-			*cpos += 3;
-		}
+		print_hotkey(usr, c, buf, cpos);
 		put_StringIO(dev, buf);
 		return 8;
 	}
@@ -611,7 +567,6 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	if (!cstrnicmp(code, "<default>", 9)) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))
 			put_StringIO(dev, "\x1b[0m");
-		usr->color = KEY_CTRL('D');
 		return 8;
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
@@ -720,6 +675,73 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		put_StringIO(dev, colorbuf);
 	}
 	return 0;
+}
+
+/*
+	construct hotkey string into buf
+	buf must be large enough (20 chars should do)
+
+	cpos is the cursor position on the display
+
+	USR_BOLD_HOTKEYS has a complex meaning;
+	if USR_BOLD is set, then BOLD_HOTKEYS means we want faint hotkeys,
+	if BOLD is NOT set, then BOLD_HOTKEYS means we want bold hotkeys
+
+	(This is mainly due to backward compatibility with existing users;
+	their BOLD_HOTKEYS flag will be clear, but you will want them to have
+	bold hotkeys if they log in anyway [The other way to solve this is
+	to use 2 flags {one for ANSI terminals and one for dumb terminals},
+	I use just 1 and link it to BOLD])
+*/
+void print_hotkey(User *usr, char c, char *buf, int *cpos) {
+int len;
+
+	if (usr == NULL)
+		return;
+
+	if (usr->flags & USR_UPPERCASE_HOTKEYS)
+		c = ctoupper(c);
+
+	buf[0] = 0;
+	len = 0;
+	if (usr->flags & (USR_ANSI|USR_BOLD_HOTKEYS)) {
+		buf[len++] = '\x1b';
+		buf[len++] = '[';
+
+		if (usr->flags & USR_BOLD)
+			buf[len++] = (usr->flags & USR_BOLD_HOTKEYS) ? '0' : '1';
+		else
+			buf[len++] = (usr->flags & USR_BOLD_HOTKEYS) ? '1' : '0';
+
+		if (usr->flags & USR_ANSI)
+			len += sprintf(buf+len, ";%dm", color_table[usr->colors[HOTKEY]].value);
+		else
+			buf[len++] = 'm';
+	}
+	if (usr->flags & USR_HOTKEY_BRACKETS) {
+		buf[len++] = '<';
+		buf[len++] = c;
+		buf[len++] = '>';
+		(*cpos) += 3;
+	} else {
+		buf[len++] = c;
+		(*cpos)++;
+	}
+	if (usr->flags & (USR_ANSI|USR_BOLD_HOTKEYS)) {
+		buf[len++] = '\x1b';
+		buf[len++] = '[';
+
+		if (usr->flags & USR_BOLD)
+			buf[len++] = '1';
+		else
+			buf[len++] = '0';
+
+		if (usr->flags & USR_ANSI)
+			len += sprintf(buf+len, ";%dm", Ansi_Color(usr, usr->color));
+		else
+			buf[len++] = 'm';
+	}
+	buf[len] = 0;
 }
 
 /*
