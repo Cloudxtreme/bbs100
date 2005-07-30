@@ -1028,25 +1028,25 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'r':
 		case 'R':
-			Put(usr, "<red>Red\n\n");
 			usr->colors[usr->read_lines] = RED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<red>Red\n");
 			RET(usr);
 			Return;
 
 		case 'g':
 		case 'G':
-			Put(usr, "<green>Green\n\n");
 			usr->colors[usr->read_lines] = GREEN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<green>Green\n");
 			RET(usr);
 			Return;
 
 		case 'y':
 		case 'Y':
-			Put(usr, "<yellow>Yellow\n\n");
 			usr->colors[usr->read_lines] = YELLOW;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<yellow>Yellow\n");
 			RET(usr);
 			Return;
 
@@ -1054,59 +1054,59 @@ void state_custom_colors(User *usr, char c) {
 		case 'B':
 		case 'u':
 		case 'U':
-			Put(usr, "<blue>Blue\n\n");
 			usr->colors[usr->read_lines] = BLUE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<blue>Blue\n");
 			RET(usr);
 			Return;
 
 		case 'm':
 		case 'M':
-			Put(usr, "<magenta>Magenta\n\n");
 			usr->colors[usr->read_lines] = MAGENTA;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<magenta>Magenta\n");
 			RET(usr);
 			Return;
 
 		case 'c':
 		case 'C':
-			Put(usr, "<cyan>Cyan\n\n");
 			usr->colors[usr->read_lines] = CYAN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<cyan>Cyan\n");
 			RET(usr);
 			Return;
 
 		case 'w':
 		case 'W':
-			Put(usr, "White\n\n");
 			usr->colors[usr->read_lines] = WHITE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<white>White\n");
 			RET(usr);
 			Return;
 
 		case 'k':
 		case 'K':
-			Put(usr, "Black\n\n");
 			usr->colors[usr->read_lines] = BLACK;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<white>Black\n");
 			RET(usr);
 			Return;
 
 		case 'd':
 		case 'D':
-			Put(usr, "Default\n\n");
 			if (usr->read_lines == HOTKEY)
 				usr->colors[usr->read_lines] = YELLOW;
 			else
 				usr->colors[usr->read_lines] = usr->read_lines;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<white>Default\n");
 			RET(usr);
 			Return;
 	}
 	if (usr->read_lines == BACKGROUND)
-		Put(usr, "\n<cyan>Change the background color to: <white>");
+		Put(usr, "\n<cyan>Change the background color to: ");
 	else
-		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to: <white>", 
+		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to: ", 
 			color_table[usr->read_lines].key,
 			color_table[usr->read_lines].name);
 	Return;
