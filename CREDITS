@@ -166,7 +166,7 @@ Credits for bug fixes et al after public release
 - Ove <ove@swedishchef.org> reported problems with building on Solaris
 
 - Stephan van Beerschoten <stephanb@whacky.net> did testing of
-  version 1.2.2 (development version) on Solaris 8
+  version 1.3.0 (development version) on Solaris 8
 
 - Shannon Prickett <binder@manjusri.org> suggested disabling certain
   features. Implemented through parameters in 1.2.3 (development version)
@@ -180,6 +180,8 @@ Credits for bug fixes et al after public release
 - Jeremy Stock <jstock@speedymail.org> for reporting problems on Mac OS X
   and providing me with a login on his Mac OS X machine
 
+Version 3.0:
+
 - Blastah of MatrixBBS reported a bug in color_strlen()
 
 - The Ruiner of MatrixBBS reported a bug in forwarding messages to another
@@ -189,7 +191,6 @@ Credits for bug fixes et al after public release
 
 - Berlin of MatrixBBS suggested that empty rooms be 'cycled' when there
   are no new messages
-  new in version 2.2
 
 - Richard of MatrixBBS suggested (ages ago) that the BBS name be shown
   when locked
@@ -198,24 +199,19 @@ Credits for bug fixes et al after public release
   recipient list editing (this was already available with Ctrl-R)
 
 - Lord Lerkista reported a bug in restartable timers
-  fixed in 2.2
 
 - Christophe Devine provided GPLed MD5 code
 
 - Mz Boobala requested that the room aide flag always be reset when entering
   a room. I guess it's more logical that way
-  changed in 2.2
 
 - Martin Bethlehem provided a patch for supporting cygwin on Win32
-  included in 2.2
 
 - WHYz' comments led to the implementation of parameter helper_age
 
 - Customizable eXpress Message header as implemented by Richard
-  finally included in 2.2
 
 - vanity flag in profile info like implemented by Richard or Myth
-  included in 2.2
 
 - disable reception of multi messages like implemented by Richard
 
