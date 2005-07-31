@@ -3476,14 +3476,17 @@ int total;
 }
 
 /*
-	talked-to list, donated by Richard of MatrixBBS
-	basically the same as online_friends_list(), but now
-	with usr->talked_to
+	originally implemented by Richard of MatrixBBS
+	(basically the same as the online friendslist)
+
+	Note how I use make_talked_to() ... the people we talked to
+	are stored in the X history buffer, so use that to construct
+	a talked_to list
 */
 void talked_list(User *usr) {
 User *u;
 struct tm *tm;
-StringList *sl;
+StringList *talked_to, *sl;
 PList *pl = NULL;
 int total;
 
@@ -3492,18 +3495,15 @@ int total;
 
 	Enter(talked_list);
 
-	if (usr->talked_to == NULL) {
+	if (usr->history == NULL || (talked_to = make_talked_to(usr)) == NULL) {
 		Put(usr, "<red>You haven't talked to anyone yet\n");
 		CURRENT_STATE(usr);
 		Return;
 	}
-	for(sl = usr->talked_to; sl != NULL; sl = sl->next) {
+	for(sl = talked_to; sl != NULL; sl = sl->next) {
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
-/*
-		if (in_StringList(usr->enemies, u->name) != NULL)
-			continue;
-*/
+
 		pl = add_PList(&pl, new_PList(u));
 	}
 	if (pl == NULL) {
@@ -3528,6 +3528,7 @@ int total;
 	short_who_list(usr, pl, total);
 
 	listdestroy_PList(pl);
+	listdestroy_StringList(talked_to);
 
 	read_text(usr);
 	Return;

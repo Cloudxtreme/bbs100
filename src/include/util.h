@@ -121,6 +121,7 @@ int StringList_to_StringIO(StringList *sl, StringIO *);
 void print_columns(User *usr, StringList *raw_list, int numbered);
 void buffer_text(User *);
 void clear_buffer(User *);
+StringList *make_talked_to(User *);
 
 extern ColorTable color_table[NUM_COLORS];
 

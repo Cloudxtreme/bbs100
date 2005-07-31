@@ -123,7 +123,6 @@ int i;
 	listdestroy_StringList(usr->enemies);
 	listdestroy_StringList(usr->recipients);
 	listdestroy_StringList(usr->tablist);
-	listdestroy_StringList(usr->talked_to);
 	listdestroy_StringList(usr->chat_history);
 
 	listdestroy_Joined(usr->rooms);

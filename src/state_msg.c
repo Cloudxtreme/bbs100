@@ -1074,9 +1074,6 @@ Rcv_Remove_Recipient:
 
 	Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
 
-	if (in_StringList(from->talked_to, usr->name) == NULL)
-		add_StringList(&from->talked_to, new_StringList(usr->name));
-
 /* auto-reply if FOLLOWUP or if it was a Question */
 
 	if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
@@ -1235,14 +1232,6 @@ char buf[PRINT_BUF];
 		return;
 
 	Enter(print_buffered_msg);
-/*
-	update talked-to list
-	we do it this late because you haven't really talked to anyone until you
-	see the message they sent you
-	(think about users that are in hold message mode)
-*/
-	if (msg->from[0] && strcmp(usr->name, msg->from) && in_StringList(usr->talked_to, msg->from) == NULL)
-		add_StringList(&usr->talked_to, new_StringList(msg->from));
 
 	Put(usr, "\n");
 	Put(usr, buffered_msg_header(usr, msg, buf));

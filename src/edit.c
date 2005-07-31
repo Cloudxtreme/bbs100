@@ -131,32 +131,34 @@ char many_buf[MAX_LINE*3];
 			}
 			Put(usr, print_many(usr, many_buf));
 			break;
-/*
-	talked-to list: donated by Richard of MatrixBBS
-	(same as for the friendlist, but now with usr->talked_to)
-*/
-		case KEY_CTRL('T'):
-			if (!PARAM_HAVE_TALKEDTO || usr->talked_to == NULL)
-				break;
 
-			erase_name(usr);
-			erase_many(usr);
-			Put(usr, "\b\b");
+		case KEY_CTRL('T'):						/* Multi to talked-to list by Richard */
+			if (PARAM_HAVE_TALKEDTO) {
+				StringList *talked_to;
 
-			if (!(usr->runtime_flags & RTF_MULTI)) {
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
-				usr->runtime_flags |= RTF_MULTI;
-			}
-			for(sl = usr->talked_to; sl != NULL; sl = sl->next)
-				if (in_StringList(usr->recipients, sl->str) == NULL) {
+				if ((talked_to = make_talked_to(usr)) == NULL)
+					break;
+
+				erase_name(usr);
+				erase_many(usr);
+				Put(usr, "\b\b");
+
+				if (!(usr->runtime_flags & RTF_MULTI)) {
+					listdestroy_StringList(usr->recipients);
+					usr->recipients = NULL;
+					usr->runtime_flags |= RTF_MULTI;
+				}
+				for(sl = talked_to; sl != NULL; sl = sl->next)
+					if (in_StringList(usr->recipients, sl->str) == NULL) {
 /* this is a kind of hack; you may multi-mail to ppl you've talked with */
-					if (access_func != multi_mail_access && is_online(sl->str) == NULL)
-						continue;
+						if (access_func != multi_mail_access && is_online(sl->str) == NULL)
+							continue;
 
-					add_StringList(&usr->recipients, new_StringList(sl->str));
+						add_StringList(&usr->recipients, new_StringList(sl->str));
+				}
+				listdestroy_StringList(talked_to);
+				Put(usr, print_many(usr, many_buf));
 			}
-			Put(usr, print_many(usr, many_buf));
 			break;
 
 		case KEY_CTRL('W'):

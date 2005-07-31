@@ -1775,4 +1775,37 @@ void clear_buffer(User *usr) {
 	usr->runtime_flags &= ~RTF_BUFFER_TEXT;
 }
 
+/*
+	return an allocated list to names we've talked with
+
+	the caller must listdestroy_StringList(talked_to)
+*/
+StringList *make_talked_to(User *usr) {
+PList *pl;
+StringList *talked_to, *sl;
+BufferedMsg *m;
+
+	if (usr == NULL || usr->history == NULL)
+		return NULL;
+
+	talked_to = NULL;
+
+	for(pl = rewind_PList(usr->history); pl != NULL; pl = pl->next) {
+		m = (BufferedMsg *)pl->p;
+		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT)
+			continue;
+
+		if (m->from[0] && strcmp(usr->name, m->from) && !in_StringList(usr->enemies, m->from)
+			&& !in_StringList(talked_to, m->from))
+			add_StringList(&talked_to, new_StringList(m->from));
+
+		for(sl = m->to; sl != NULL; sl = sl->next)
+			if (sl->str != NULL && sl->str[0] && strcmp(usr->name, sl->str)
+				&& !in_StringList(usr->enemies, sl->str)
+				&& !in_StringList(talked_to, sl->str))
+				add_StringList(&talked_to, new_StringList(sl->str));
+	}
+	return talked_to;
+}
+
 /* EOB */
