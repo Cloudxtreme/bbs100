@@ -20,13 +20,24 @@
 	CachedFile.c	WJ100
 
 	- works with a hash for fast searches
-	- data is synced on write (close_file())
+	- data is synced on write (Fclose())
 
 	The cache is 'list-hash' of cached file objects, which also have pointers
 	to make a FIFO for the LRU algorithm.
 
-	In this implementation, files are properly copied from and to the cache,
-	and thus the user only sees the local copy of the File object
+	In this implementation, files are references of the cached object, which means
+	that multiple users can NOT read from nor write to the same file simultaneously.
+	Usually this is no problem as the bbs never keeps files open across states.
+
+	(Note that even if there were a refcount on the File, it would be impossible
+	to have multiple readers, since the read pointer is kept in the StringIO object
+	that is part of the File)
+
+	Basically the cache works like this:
+	- Fopen/Fcreate => check cache, else allocate File object
+	- Fclose => do not deallocate File object, but keep in cache
+	- cache hit => move file to beginning of FIFO
+	- cache expiration => deallocate oldest Files on end of FIFO
 */
 
 #include "config.h"
@@ -46,7 +57,8 @@
 #include <unistd.h>
 
 
-CachedFile **file_cache = NULL, *fifo_head = NULL, *fifo_tail = NULL;
+static CachedFile **file_cache = NULL, *fifo_head = NULL, *fifo_tail = NULL;
+
 int cache_size = 0, num_cached = 0;
 Timer *expire_timer = NULL;
 
@@ -119,6 +131,10 @@ void destroy_File(File *f) {
 	if (f == NULL)
 		return;
 
+	if (f->flags & FILE_OPEN) {
+		log_warn("destroy_File(): BUG ! Attempt to destroy OPEN file '%s'", f->filename);
+		return;
+	}
 	Free(f->filename);
 	destroy_StringIO(f->data);
 	Free(f);
@@ -150,10 +166,20 @@ int addr;
 
 File *Fopen(char *filename) {
 File *f;
+CachedFile *cf;
 
 	path_strip(filename);
 
-	if ((f = copy_from_cache(filename)) != NULL) {
+	if ((cf = in_Cache(filename)) != NULL) {
+		f = cf->f;
+
+		if (f->flags & FILE_OPEN)
+			log_warn("Fopen(): BUG ! File '%s' was OPEN in the cache", filename);
+
+		if (f->flags & FILE_DIRTY)
+			log_warn("Fopen(): BUG ! File '%s' was DIRTY in the cache", filename);
+
+		f->flags |= FILE_OPEN;
 		Frewind(f);
 		return f;
 	}
@@ -165,8 +191,9 @@ File *f;
 		destroy_File(f);
 		return NULL;
 	}
+	f->flags |= FILE_OPEN;
 	Frewind(f);
-	add_Cache(f);
+	add_Cache(f);			/* any file is always put into the cache */
 	return f;
 }
 
@@ -176,57 +203,44 @@ void Fclose(File *f) {
 
 	if ((f->flags & FILE_DIRTY) && f->filename != NULL && f->filename[0]) {
 		save_StringIO(f->data, f->filename);		/* sync to disk */
-		copy_to_cache(f);
+		f->flags &= ~FILE_DIRTY;
 	}
-	destroy_File(f);
-}
-
-
-File *copy_from_cache(char *filename) {
-File *f = NULL;
-CachedFile *cf;
-
-	if ((cf = in_Cache(filename)) == NULL)
-		return NULL;
-
-	if ((f = new_File()) == NULL)
-		return NULL;
-
-	if ((f->filename = cstrdup(filename)) == NULL
-		|| copy_StringIO(f->data, cf->f->data) < 0) {
-		destroy_File(f);
-		return NULL;
-	}
-	return f;
-}
-
-void copy_to_cache(File *f) {
-CachedFile *cf;
-
-	if (f == NULL || f->filename == NULL || !f->filename[0])
-		return;
-
-	if ((cf = in_Cache(f->filename)) != NULL)
-		copy_StringIO(cf->f->data, f->data);
-	else
-		add_Cache(f);
+	f->flags &= ~FILE_OPEN;
 }
 
 
 /*
-	Note: new files are not cached until they are closed
+	special case of Fopen(): do not load any data
 */
 File *Fcreate(char *filename) {
 File *f;
+CachedFile *cf;
 
 	path_strip(filename);
 
-	if ((f = new_File()) == NULL
-		|| (f->filename = cstrdup(filename)) == NULL) {
+	if ((cf = in_Cache(filename)) != NULL) {
+		f = cf->f;
+
+		if (f->flags & FILE_OPEN)
+			log_warn("Fcreate(): BUG ! File '%s' was OPEN in the cache", filename);
+
+		if (f->flags & FILE_DIRTY)
+			log_warn("Fcreate(): BUG ! File '%s' was DIRTY in the cache", filename);
+
+		f->flags |= (FILE_OPEN|FILE_DIRTY);
+		free_StringIO(f->data);				/* truncate */
+		return f;
+	}
+	if ((f = new_File()) == NULL)
+		return NULL;
+
+	if ((f->filename = cstrdup(filename)) == NULL) {
 		destroy_File(f);
 		return NULL;
 	}
-	f->flags |= FILE_DIRTY;			/* ensure that it will be cached */
+	f->flags |= FILE_OPEN;
+	Frewind(f);
+	add_Cache(f);			/* any file is always put into the cache */
 	return f;
 }
 
@@ -384,7 +398,6 @@ int l, i;
 			cf_next = cf->hash.next;
 
 			if (cf->f != NULL && !strncmp(cf->f->filename, buf, l)) {
-
 /*
 	Note: rename_dir() is used only for two things:
 	1. when users are nuked, they are moved to trash/
@@ -413,8 +426,8 @@ int addr;
 	while(cf != NULL) {
 		if (!strcmp(cf->f->filename, filename)) {
 			stats.cache_hit++;
-			fifo_remove(cf);		/* hit; move to beginning of FIFO */
-			fifo_add(cf);
+			fifo_remove_Cache(cf);		/* hit; move to beginning of FIFO */
+			fifo_add_Cache(cf);
 			return cf;
 		}
 		cf = cf->hash.next;
@@ -433,18 +446,14 @@ CachedFile *cf;
 		|| (cf = new_CachedFile()) == NULL)
 		return;
 
-	if ((cf->f = new_File()) == NULL
-		|| (cf->f->filename = cstrdup(f->filename)) == NULL
-		|| copy_StringIO(cf->f->data, f->data) < 0) {
-		destroy_CachedFile(cf);
-		return;
-	}
+	cf->f = f;
+
 	if (file_cache[addr] != NULL) {
 		file_cache[addr]->hash.prev = cf;		/* add cf to hash list element */
 		cf->hash.next = file_cache[addr];
 	}
 	file_cache[addr] = cf;
-	fifo_add(cf);								/* add to beginning of FIFO */
+	fifo_add_Cache(cf);							/* add to beginning of FIFO */
 	num_cached++;
 
 	if (num_cached > cache_size)				/* is the cache full enough? */
@@ -486,7 +495,7 @@ int addr;
 		if (cf->hash.next != NULL)
 			cf->hash.next->hash.prev = cf->hash.prev;
 	}
-	fifo_remove(cf);
+	fifo_remove_Cache(cf);
 	destroy_CachedFile(cf);
 	num_cached--;
 }
@@ -525,7 +534,7 @@ int old_size, i, addr, n;
 				}
 				n++;
 			} else {										/* cache was downsized */
-				fifo_remove(cf);
+				fifo_remove_Cache(cf);
 				destroy_CachedFile(cf);
 			}
 		}
@@ -542,7 +551,7 @@ int old_size, i, addr, n;
 /*
 	put CachedFile at beginning of FIFO
 */
-void fifo_add(CachedFile *cf) {
+void fifo_add_Cache(CachedFile *cf) {
 	if (cf == NULL)
 		return;
 
@@ -560,7 +569,7 @@ void fifo_add(CachedFile *cf) {
 	cf->timestamp = rtc;
 }
 
-void fifo_remove(CachedFile *cf) {
+void fifo_remove_Cache(CachedFile *cf) {
 	if (cf == NULL)
 		return;
 
@@ -588,7 +597,7 @@ void fifo_remove(CachedFile *cf) {
 void cache_expire_timerfunc(void *dummy) {
 time_t expire_time;
 
-	expire_time = rtc - PARAM_CACHE_TIMEOUT;
+	expire_time = rtc - PARAM_CACHE_TIMEOUT * SECS_IN_MIN;
 	while(fifo_tail != NULL && fifo_tail->f != NULL && fifo_tail->timestamp < expire_time)
 		remove_Cache_filename(fifo_tail->f->filename);
 }

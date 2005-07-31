@@ -30,7 +30,8 @@
 #include <stdarg.h>
 #include <time.h>
 
-#define FILE_DIRTY		1
+#define FILE_OPEN		1		/* file is open */
+#define FILE_DIRTY		2		/* file is dirty and should be synced */
 
 #define FSEEK_SET		0
 #define FSEEK_CUR		1
@@ -39,7 +40,7 @@
 typedef struct File_tag File;
 
 struct File_tag {
-	unsigned int flags;
+	int flags;
 	char *filename;
 	StringIO *data;
 };
@@ -86,14 +87,12 @@ int Fput_StringIO(File *, StringIO *);
 int unlink_file(char *);
 int rename_dir(char *, char *);
 
-File *copy_from_cache(char *);
-void copy_to_cache(File *);
 CachedFile *in_Cache(char *);
 void add_Cache(File *);
 void remove_Cache_filename(char *);
 int resize_Cache(void);
-void fifo_remove(CachedFile *);
-void fifo_add(CachedFile *);
+void fifo_remove_Cache(CachedFile *);
+void fifo_add_Cache(CachedFile *);
 
 void cache_expire_timerfunc(void *);
 
