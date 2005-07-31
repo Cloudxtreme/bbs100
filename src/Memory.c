@@ -42,7 +42,7 @@ int init_Memory(void) {
 
 	if ((free_list = (MemFreeList *)malloc(NUM_TYPES * sizeof(MemFreeList))) == NULL)
 		return -1;
-		
+
 	memset(free_list, 0, NUM_TYPES * sizeof(MemFreeList));
 	return 0;
 }
@@ -77,7 +77,7 @@ int n;
 	for(n = 0; n < NUM_FREELIST; n++) {
 		if (free_list[memtype].free[n] == NULL) {
 			free_list[memtype].free[n] = mem;
-			memset(mem, 0, Types_table[memtype].size + 2*sizeof(unsigned long));	/* zero it out */
+			memset(mem, 0, Types_table[memtype].size + 2*sizeof(int));	/* zero it out */
 			return 0;
 		}
 	}
@@ -106,17 +106,17 @@ void *mem;
 */
 	if (size == Types_table[memtype].size) {
 		if ((mem = get_freelist(memtype)) != NULL) {
-			((unsigned long *)mem)[0] = 1UL;
-			((unsigned long *)mem)[1] = ('A' << 16) | memtype;
-			return (void *)((char *)mem + 2*sizeof(unsigned long));
+			((int *)mem)[0] = 1UL;
+			((int *)mem)[1] = ('A' << 8) | memtype;
+			return (void *)((char *)mem + 2*sizeof(int));
 		}
 	}
-	if ((mem = (char *)malloc(size + 2*sizeof(unsigned long))) == NULL) {
-		log_err("Malloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(unsigned long), Types_table[memtype].type);
+	if ((mem = (char *)malloc(size + 2*sizeof(int))) == NULL) {
+		log_err("Malloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(int), Types_table[memtype].type);
 		return NULL;
 	}
-	memset(mem, 0, size + 2*sizeof(unsigned long));		/* malloc() sets it to 0, yeah right! :P */
-	memory_total += (size + 2*sizeof(unsigned long));
+	memset(mem, 0, size + 2*sizeof(int));		/* malloc() sets it to 0, yeah right! :P */
+	memory_total += (size + 2*sizeof(int));
 
 	if (memtype < NUM_TYPES) {
 		size /= Types_table[memtype].size;
@@ -124,27 +124,27 @@ void *mem;
 	} else
 		mem_stats[NUM_TYPES]++;		/* unknown type */
 
-	((unsigned long *)mem)[0] = size;
-	((unsigned long *)mem)[1] = ('A' << 16) | memtype;
+	((int *)mem)[0] = (int)size;
+	((int *)mem)[1] = ('A' << 8) | memtype;
 
-	return (void *)((char *)mem + 2*sizeof(unsigned long));
+	return (void *)((char *)mem + 2*sizeof(int));
 }
 
 void Free(void *ptr) {
-unsigned long *mem, size;
+int *mem, size;
 
 	if (ptr == NULL)
 		return;
 
-	mem = (unsigned long *)((char *)ptr - 2*sizeof(unsigned long));
+	mem = (int *)((char *)ptr - 2*sizeof(int));
 
-	if ((mem[1] >> 16) != 'A') {		/* crude sanity check */
+	if ((mem[1] >> 8) != 'A') {		/* crude sanity check */
 		log_err("Free(): sanity check failed");
 		return;
 	}
 	mem[1] &= 0xff;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
-		if (mem[0] == 1UL && !put_freelist(mem, (int)mem[1]))
+		if (mem[0] == 1UL && !put_freelist(mem, mem[1]))
 			return;
 
 		size = mem[0] * Types_table[mem[1]].size;
@@ -155,7 +155,7 @@ unsigned long *mem, size;
 	}
 	mem[1] = 0UL;
 
-	memory_total -= (size + 2*sizeof(unsigned long));
+	memory_total -= (size + 2*sizeof(int));
 	free(mem);
 }
 
