@@ -445,7 +445,7 @@ StringList *sl;
 
 	if (c == INIT_PROMPT) {
 		Put(usr, "<green>Choose category: <yellow>");
-		edit_number(usr, INIT_STATE);
+		edit_number(usr, EDIT_INIT);
 		Return;
 	}
 	if (c == INIT_STATE) {

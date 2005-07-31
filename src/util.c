@@ -1769,6 +1769,24 @@ void clear_buffer(User *usr) {
 	usr->runtime_flags &= ~RTF_BUFFER_TEXT;
 }
 
+void clear_screen(User *usr) {
+char cls[2];
+
+	if (usr == NULL)
+		return;
+
+	if (usr->runtime_flags & RTF_BUFFER_TEXT)
+		return;
+
+	if (!(usr->flags & (USR_ANSI|USR_BOLD)))
+		return;
+
+	cls[0] = KEY_CTRL('L');
+	cls[1] = 0;
+
+	Put(usr, cls);
+}
+
 /*
 	return an allocated list to names we've talked with
 

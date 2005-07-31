@@ -9,6 +9,7 @@ Changes as of July 31th 2005
 - questions counted in statistics
 - extended statistics screen for sysop with stats since boot time
 - removed md5 source checksums
+- clear_screen in More prompt for color terms, makes it look better
 
 Changes as of July 30th 2005
 - seperate config menu for customizing colors

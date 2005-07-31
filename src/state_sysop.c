@@ -754,7 +754,7 @@ int i;
 		Put(usr, "\n"
 			"<green>Enter number: <yellow>");
 
-		edit_number(usr, INIT_STATE);
+		edit_number(usr, EDIT_INIT);
 		Return;
 	}
 	if (c == INIT_STATE) {

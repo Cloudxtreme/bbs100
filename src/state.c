@@ -3263,8 +3263,7 @@ int r;
 	Enter(state_lock_password);
 
 	if (c == INIT_STATE) {
-		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
-			Print(usr, "%c", KEY_CTRL('L'));
+		clear_screen(usr);
 
 		Print(usr, "\n<white>%s terminal locked", PARAM_BBS_NAME);
 		if (usr->away != NULL && usr->away[0])
@@ -3378,9 +3377,10 @@ int r;
 			usr->flags &= ~USR_HELPING_HAND;
 			usr->runtime_flags |= RTF_WAS_HH;
 		}
-		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
-			Print(usr, "%c%c", KEY_CTRL('L'), KEY_CTRL('D'));
-		else
+		if (usr->flags & (USR_ANSI|USR_BOLD)) {
+			clear_screen(usr);
+			Print(usr, "%c", KEY_CTRL('D'));
+		} else
 			Put(usr, "\n\n");
 
 		usr->read_lines = (unsigned int)usr->flags;

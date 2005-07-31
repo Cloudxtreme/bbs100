@@ -2341,7 +2341,14 @@ int l, color;
 					break;
 				}
 			}
-			display_page(usr, 0);
+/*
+	clear_screen is not really needed here, but looks better for when the user is
+	scrolling back in his terminal window
+*/
+			if (usr->scrollp != NULL) {
+				clear_screen(usr);
+				display_page(usr, 0);
+			}
 			break;
 
 		case ' ':
@@ -2372,12 +2379,14 @@ int l, color;
 				} else
 					break;
 			}
+			clear_screen(usr);
 			display_page(usr, 0);
 			break;
 
 		case 'g':						/* goto beginning */
 			usr->scrollp = usr->scroll;
 			usr->read_lines = 0;
+			clear_screen(usr);
 			display_page(usr, 0);
 			break;
 
@@ -2389,7 +2398,11 @@ int l, color;
 			for(; usr->scrollp != NULL && usr->scrollp->next != NULL; usr->scrollp = usr->scrollp->next)
 				usr->read_lines++;
 
+/* fall through */
+
 		case KEY_CTRL('L'):				/* reprint page */
+			clear_screen(usr);
+
 /* go one screen back */
 			l = 0;
 			while(usr->scrollp != NULL && usr->scrollp->prev != NULL && l < usr->display->term_height-1) {
@@ -2493,13 +2506,8 @@ int r, l;
 	r = edit_line(usr, c);
 
 	if (r == EDIT_BREAK) {
-		wipe_line(usr);
-		goto_page_start(usr);
-
-		Put(usr, "<green>");
-		display_page(usr, 0);
-		RET(usr);
-		Return;
+		usr->edit_buf[0] = 0;
+		r = EDIT_RETURN;
 	}
 	if (r == EDIT_RETURN) {
 		wipe_line(usr);
@@ -2507,6 +2515,7 @@ int r, l;
 
 		if (!usr->edit_buf[0]) {
 			Put(usr, "<green>");
+			clear_screen(usr);
 			display_page(usr, 0);
 			RET(usr);
 			Return;
@@ -2528,6 +2537,7 @@ int r, l;
 					goto_page_start(usr);
 				}
 				Put(usr, "<green>");
+				clear_screen(usr);
 				display_page(usr, 0);
 				RET(usr);
 				Return;
@@ -2555,13 +2565,8 @@ int r, l;
 	r = edit_line(usr, c);
 
 	if (r == EDIT_BREAK) {
-		wipe_line(usr);
-		goto_page_start(usr);
-
-		Put(usr, "<green>");
-		display_page(usr, 0);
-		RET(usr);
-		Return;
+		usr->edit_buf[0] = 0;
+		r = EDIT_RETURN;
 	}
 	if (r == EDIT_RETURN) {
 		wipe_line(usr);
@@ -2569,6 +2574,7 @@ int r, l;
 
 		if (!usr->edit_buf[0]) {
 			Put(usr, "<green>");
+			clear_screen(usr);
 			display_page(usr, 0);
 			RET(usr);
 			Return;
@@ -2581,6 +2587,7 @@ int r, l;
 				usr->read_lines = l;
 
 				Put(usr, "<green>");
+				clear_screen(usr);
 				display_page(usr, 0);
 				RET(usr);
 				Return;
