@@ -101,6 +101,8 @@ int ff1_continue;
 		FF1_LOAD_LEN("most_erecv", st->most_erecv, MAX_NAME);
 		FF1_LOAD_LEN("most_fsent", st->most_fsent, MAX_NAME);
 		FF1_LOAD_LEN("most_frecv", st->most_frecv, MAX_NAME);
+		FF1_LOAD_LEN("most_qsent", st->most_qsent, MAX_NAME);
+		FF1_LOAD_LEN("most_qansw", st->most_qansw, MAX_NAME);
 		FF1_LOAD_LEN("most_posted", st->most_posted, MAX_NAME);
 		FF1_LOAD_LEN("most_read", st->most_read, MAX_NAME);
 
@@ -114,6 +116,8 @@ int ff1_continue;
 		FF1_LOAD_ULONG("erecv", st->erecv);
 		FF1_LOAD_ULONG("fsent", st->fsent);
 		FF1_LOAD_ULONG("frecv", st->frecv);
+		FF1_LOAD_ULONG("qsent", st->qsent);
+		FF1_LOAD_ULONG("qansw", st->qansw);
 		FF1_LOAD_ULONG("posted", st->posted);
 		FF1_LOAD_ULONG("read", st->read);
 
@@ -335,6 +339,8 @@ int save_Stats_version1(File *f, Stats *st) {
 	FF1_SAVE_STR("most_erecv", st->most_erecv);
 	FF1_SAVE_STR("most_fsent", st->most_fsent);
 	FF1_SAVE_STR("most_frecv", st->most_frecv);
+	FF1_SAVE_STR("most_qsent", st->most_qsent);
+	FF1_SAVE_STR("most_qansw", st->most_qansw);
 	FF1_SAVE_STR("most_posted", st->most_posted);
 	FF1_SAVE_STR("most_read", st->most_read);
 
@@ -348,42 +354,13 @@ int save_Stats_version1(File *f, Stats *st) {
 	Fprintf(f, "erecv=%lu", st->erecv);
 	Fprintf(f, "fsent=%lu", st->fsent);
 	Fprintf(f, "frecv=%lu", st->frecv);
+	Fprintf(f, "qsent=%lu", st->qsent);
+	Fprintf(f, "qansw=%lu", st->qansw);
 	Fprintf(f, "posted=%lu", st->posted);
 	Fprintf(f, "read=%lu", st->read);
 
 	return 0;
 }
-
-int save_Stats_version0(File *f, Stats *st) {
-	Fputs(f, st->oldest);
-	Fputs(f, st->youngest);
-	Fputs(f, st->most_logins);
-	Fputs(f, st->most_xsent);
-	Fputs(f, st->most_xrecv);
-	Fputs(f, st->most_esent);
-	Fputs(f, st->most_erecv);
-	Fputs(f, st->most_posted);
-	Fputs(f, st->most_read);
-
-	Fprintf(f, "%lu", (unsigned long)st->oldest_birth);
-	Fprintf(f, "%lu", (unsigned long)st->youngest_birth);
-	Fprintf(f, "%lu", st->logins);
-	Fprintf(f, "%lu", st->xsent);
-	Fprintf(f, "%lu", st->xrecv);
-	Fprintf(f, "%lu", st->esent);
-	Fprintf(f, "%lu", st->erecv);
-	Fprintf(f, "%lu", st->posted);
-	Fprintf(f, "%lu", st->read);
-	Fprintf(f, "%lu", st->oldest_age);
-
-	Fputs(f, st->most_fsent);
-	Fputs(f, st->most_frecv);
-
-	Fprintf(f, "%lu", st->fsent);
-	Fprintf(f, "%lu", st->frecv);
-	return 0;
-}
-
 
 void update_stats(User *usr) {
 int updated = 0;
@@ -402,7 +379,7 @@ int updated = 0;
 
 	if (usr->total_time >= stats.oldest_age) {
 		stats.oldest_age = usr->total_time;
-		stats.oldest_birth = usr->birth;
+		stats.oldest_birth = usr->birth;			/* oldest birth is not really used for anything */
 		strcpy(stats.oldest, usr->name);
 		updated++;
 	}
@@ -439,6 +416,16 @@ int updated = 0;
 	if (usr->frecv >= stats.frecv) {
 		stats.frecv = usr->frecv;
 		strcpy(stats.most_frecv, usr->name);
+		updated++;
+	}
+	if (usr->qsent >= stats.qsent) {
+		stats.qsent = usr->qsent;
+		strcpy(stats.most_qsent, usr->name);
+		updated++;
+	}
+	if (usr->qansw >= stats.qansw) {
+		stats.qansw = usr->qansw;
+		strcpy(stats.most_qansw, usr->name);
 		updated++;
 	}
 	if (usr->posted >= stats.posted) {
@@ -522,6 +509,10 @@ unsigned long num;
 		w = l;
 	if ((l = strlen(stats.most_frecv)) > w)
 		w = l;
+	if ((l = strlen(stats.most_qsent)) > w)
+		w = l;
+	if ((l = strlen(stats.most_qansw)) > w)
+		w = l;
 	if ((l = strlen(stats.most_posted)) > w)
 		w = l;
 	if ((l = strlen(stats.most_read)) > w)
@@ -529,32 +520,61 @@ unsigned long num;
 
 	Print(usr, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(stats.logins, date_buf));
 	if (PARAM_HAVE_XMSGS) {
-		if (stats.most_xsent[0])
+		if (stats.xsent > 0 && stats.most_xsent[0])
 			Print(usr, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf));
 
-		if (stats.most_xrecv[0])
+		if (stats.xrecv > 0 && stats.most_xrecv[0])
 			Print(usr, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf));
 	}
 	if (PARAM_HAVE_EMOTES) {
-		if (stats.most_esent[0])
+		if (stats.esent > 0 && stats.most_esent[0])
 			Print(usr, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf));
 
-		if (stats.most_erecv[0])
+		if (stats.erecv > 0 && stats.most_erecv[0])
 			Print(usr, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf));
 	}
 	if (PARAM_HAVE_FEELINGS) {
-		if (stats.most_fsent[0])
+		if (stats.fsent > 0 && stats.most_fsent[0])
 			Print(usr, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf));
 
-		if (stats.most_frecv[0])
+		if (stats.frecv > 0 && stats.most_frecv[0])
 			Print(usr, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf));
 	}
-	if (stats.most_posted[0])
+	if (PARAM_HAVE_QUESTIONS) {
+		if (stats.qsent > 0 && stats.most_qsent[0])
+			Print(usr, "<green>Most Questions were asked by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_qsent, print_number(stats.qsent, date_buf));
+
+		if (stats.qansw > 0 && stats.most_qansw[0])
+			Print(usr, "<green>Most Answers were given by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_qansw, print_number(stats.qansw, date_buf));
+	}
+	if (stats.posted > 0 && stats.most_posted[0])
 		Print(usr, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf));
 
-	if (stats.most_read[0])
+	if (stats.read > 0 && stats.most_read[0])
 		Print(usr, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf));
 
+	if (usr->runtime_flags & RTF_SYSOP) {
+		Put(usr, "\n<yellow>Since boot time\n");
+
+		if (PARAM_HAVE_XMSGS) {
+			Print(usr, "<green>eXpress Messages sent: <yellow>%-15s", print_number(stats.xsent_boot, date_buf));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.xrecv_boot, date_buf));
+		}
+		if (PARAM_HAVE_EMOTES) {
+			Print(usr, "<green>Emotes sent          : <yellow>%-15s", print_number(stats.esent_boot, date_buf));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.erecv_boot, date_buf));
+		}
+		if (PARAM_HAVE_FEELINGS) {
+			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(stats.fsent_boot, date_buf));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.frecv_boot, date_buf));
+		}
+		if (PARAM_HAVE_QUESTIONS) {
+			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(stats.qsent_boot, date_buf));
+			Print(usr, "<green> answered: <yellow>%s\n", print_number(stats.qansw_boot, date_buf));
+		}
+		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(stats.posted_boot, date_buf));
+		Print(usr, "<green> read    : <yellow>%s\n", print_number(stats.read_boot, date_buf));
+	}
 	if (!is_guest(usr->name)) {
 		Put(usr, "\n<yellow>Your statistics\n");
 
@@ -569,6 +589,10 @@ unsigned long num;
 		if (PARAM_HAVE_FEELINGS) {
 			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf));
 			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->frecv, date_buf));
+		}
+		if (PARAM_HAVE_QUESTIONS) {
+			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(usr->qsent, date_buf));
+			Print(usr, "<green> answered: <yellow>%s\n", print_number(usr->qansw, date_buf));
 		}
 		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(usr->posted, date_buf));
 		Print(usr, "<green> read    : <yellow>%s\n", print_number(usr->read, date_buf));

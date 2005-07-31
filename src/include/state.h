@@ -43,6 +43,7 @@
 #define STATE_EDIT_EMOTE				state_edit_emote
 #define STATE_EDIT_X					state_edit_x
 #define STATE_EDIT_QUESTION				state_edit_question
+#define STATE_EDIT_ANSWER				state_edit_answer
 #define STATE_CHOOSE_FEELING			state_choose_feeling
 #define STATE_MAIL_SEND_MSG				state_mail_send_msg
 #define STATE_JUMP_ROOM					state_jump_room
@@ -61,6 +62,7 @@ void state_x_prompt(User *, char);
 void state_recipients_err(User *, char);
 void state_edit_x(User *, char);
 void state_edit_question(User *, char);
+void state_edit_answer(User *, char);
 void state_edit_emote(User *, char);
 void state_choose_feeling(User *, char);
 void state_mail_send_msg(User *, char);

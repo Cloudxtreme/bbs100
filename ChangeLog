@@ -5,6 +5,9 @@ Changes as of July 31th 2005
 - room invites/kickouts in sorted columns
 - filecache works with references: big memory saver
 - bugfix in filecache expiration
+- Questions have corresponding Answers
+- questions counted in statistics
+- extended statistics screen for sysop with stats since boot time
 
 Changes as of July 30th 2005
 - seperate config menu for customizing colors

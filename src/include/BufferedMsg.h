@@ -39,6 +39,7 @@
 #define BUFMSG_EMOTE		2
 #define BUFMSG_FEELING		3
 #define BUFMSG_QUESTION		4
+#define BUFMSG_ANSWER		5
 #define BUFMSG_TYPE			0xff	/* room for 256 message types (how many do you want?) */
 #define BUFMSG_SYSOP		0x100
 

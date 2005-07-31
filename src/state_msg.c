@@ -446,6 +446,7 @@ StringIO *tmp;
 			stats.posted = usr->posted;
 			strcpy(stats.most_posted, usr->name);
 		}
+		stats.posted_boot++;
 	}
 	RET(usr);
 	Return;
@@ -840,6 +841,7 @@ unsigned long msg_number;
 			stats.read = usr->read;
 			strcpy(stats.most_read, usr->name);
 		}
+		stats.read_boot++;
 	}
 	POP(usr);
 	read_text(usr);
@@ -987,6 +989,7 @@ Rcv_Remove_Recipient:
 				stats.xrecv = usr->xrecv;
 				strcpy(stats.most_xrecv, usr->name);
 			}
+			stats.xrecv_boot++;
 		}
 	} else {
 		if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
@@ -998,6 +1001,7 @@ Rcv_Remove_Recipient:
 					stats.erecv = usr->erecv;
 					strcpy(stats.most_erecv, usr->name);
 				}
+				stats.erecv_boot++;
 			}
 		} else {
 			if ((msg->flags & BUFMSG_TYPE) == BUFMSG_FEELING) {
@@ -1009,13 +1013,18 @@ Rcv_Remove_Recipient:
 						stats.frecv = usr->frecv;
 						strcpy(stats.most_frecv, usr->name);
 					}
+					stats.frecv_boot++;
 				}
 			} else
 				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
 					strcpy(msg_type, "Question");
 				else {
-					log_err("recvMsg(): BUG ! Unknown message type %d", (msg->flags & BUFMSG_TYPE));
-					strcpy(msg_type, "Message");
+					if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ANSWER)
+						strcpy(msg_type, "Answer");
+					else {
+						log_err("recvMsg(): BUG ! Unknown message type %d", (msg->flags & BUFMSG_TYPE));
+						strcpy(msg_type, "Message");
+					}
 				}
 		}
 	}
@@ -1210,11 +1219,14 @@ int from_me = 0;
 			else
 				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
 					strcpy(msgtype, "Question");
+				else
+					if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ANSWER)
+						strcpy(msgtype, "Answer");
 
-	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me) {
+	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me)
 		sprintf(buf, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
 			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', frombuf);
-	} else {
+	else {
 		if (*msgtype) {
 			if (from_me)
 				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);

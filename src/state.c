@@ -1870,6 +1870,7 @@ int r;
 				stats.esent = usr->esent;
 				strcpy(stats.most_esent, usr->name);
 			}
+			stats.esent_boot++;
 		}
 		JMP(usr, LOOP_SEND_MSG);
 	}
@@ -1960,6 +1961,7 @@ int r;
 				stats.xsent = usr->xsent;
 				strcpy(stats.most_xsent, usr->name);
 			}
+			stats.xsent_boot++;
 		}
 		JMP(usr, LOOP_SEND_MSG);
 	}
@@ -2079,6 +2081,7 @@ int r;
 				stats.fsent = usr->fsent;
 				strcpy(stats.most_fsent, usr->name);
 			}
+			stats.fsent_boot++;
 		}
 		JMP(usr, LOOP_SEND_MSG);
 	}
@@ -2156,10 +2159,111 @@ int r;
 
 		add_BufferedMsg(&usr->history, question);
 		recvMsg(u, usr, question);				/* the question is asked! */
+		stats.qsent_boot++;
+
+		usr->qsent++;
+		if (usr->qsent > stats.qsent) {
+			stats.qsent = usr->qsent;
+			strcpy(stats.most_qsent, usr->name);
+		}
 		RET(usr);
 	}
 	Return;
 }
+
+/*
+	just the same as state_edit_x(), but with subtle change
+*/
+void state_edit_answer(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_edit_answer);
+
+	if (c == INIT_STATE) {
+		char prompt[3];
+
+		edit_x(usr, EDIT_INIT);
+		usr->runtime_flags |= RTF_BUSY_SENDING;
+
+		prompt[0] = KEY_CTRL('Q');
+		prompt[1] = '>';
+		prompt[2] = 0;
+		Put(usr, prompt);
+		Return;
+	}
+	if (c == KEY_CTRL('A') && (usr->flags & USR_FOLLOWUP)) {
+		usr->flags &= ~USR_FOLLOWUP;
+		Put(usr, "\n<magenta>Follow up mode aborted\n");
+		c = KEY_CTRL('C');
+	}
+	r = edit_x(usr, c);
+
+	if (r == EDIT_BREAK) {
+		free_StringIO(usr->text);
+
+		Put(usr, "<red>Question not answered\n");
+		usr->runtime_flags &= ~RTF_BUSY_SENDING;
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		BufferedMsg *xmsg;
+
+		usr->runtime_flags &= ~RTF_BUSY_SENDING;
+
+		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
+			Put(usr, "<red>Nothing entered, so no answer given\n");
+			RET(usr);
+			Return;
+		}
+
+/* send X */
+
+		if ((xmsg = new_BufferedMsg()) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		if ((xmsg->to = copy_StringList(usr->recipients)) == NULL) {
+			destroy_BufferedMsg(xmsg);
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		copy_StringIO(xmsg->msg, usr->text);
+
+		strcpy(xmsg->from, usr->name);
+
+/* Note: no custom X headers here */
+
+		xmsg->mtime = rtc;
+
+		xmsg->flags = BUFMSG_ANSWER;
+		if (usr->runtime_flags & RTF_SYSOP)
+			xmsg->flags |= BUFMSG_SYSOP;
+
+		add_BufferedMsg(&usr->history, xmsg);
+
+		destroy_BufferedMsg(usr->send_msg);
+		usr->send_msg = ref_BufferedMsg(xmsg);
+
+		if (usr->recipients != NULL
+			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+			usr->qansw++;
+			if (usr->qansw > stats.qansw) {
+				stats.qansw = usr->qansw;
+				strcpy(stats.most_qansw, usr->name);
+			}
+			stats.qansw_boot++;
+		}
+		JMP(usr, LOOP_SEND_MSG);
+	}
+	Return;
+}
+
 
 
 void state_jump_room(User *usr, char c) {
@@ -3132,10 +3236,14 @@ char many_buf[MAX_LINE*3];
 		usr->runtime_flags &= ~RTF_MULTI;
 		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf));
 
-		if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
-			CALL(usr, STATE_EDIT_EMOTE);
+		if ((flags & BUFMSG_TYPE) == BUFMSG_QUESTION) {
+			CALL(usr, STATE_EDIT_ANSWER);
 		} else {
-			CALL(usr, STATE_EDIT_X);
+			if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
+				CALL(usr, STATE_EDIT_EMOTE);
+			} else {
+				CALL(usr, STATE_EDIT_X);
+			}
 		}
 	} else {
 /* replying to <many>, edit the recipient list */
