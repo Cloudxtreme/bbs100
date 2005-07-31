@@ -1,5 +1,8 @@
 Changes as of July 31th 2005
 - talked_to list generated from X history rather than always resident
+- friend/enemy list menu in same style as Config menu
+- friend/enemy list in sorted columns
+- room invites/kickouts in sorted columns
 
 Changes as of July 30th 2005
 - seperate config menu for customizing colors

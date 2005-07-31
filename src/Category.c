@@ -68,7 +68,7 @@ int save_Category(void) {
 void add_Category(char *c) {
 	if (!in_Category(c)) {
 		add_StringList(&category, new_StringList(c));
-		category = sort_StringList(category, sort_category);
+		category = sort_StringList(category, alphasort_StringList);
 	}
 }
 
@@ -83,24 +83,6 @@ StringList *sl;
 
 int in_Category(char *c) {
 	return (in_StringList(category, c) != NULL);
-}
-
-int sort_category(void *v1, void *v2) {
-StringList *s1, *s2;
-
-	if (v1 == NULL || v2 == NULL)
-		return 0;
-
-	s1 = *(StringList **)v1;
-	s2 = *(StringList **)v2;
-
-	if (s1 == NULL || s2 == NULL)
-		return 0;
-
-	if (s1->str == NULL || s2->str == NULL)
-		return 0;
-
-	return strcmp(s1->str, s2->str);
 }
 
 /* EOB */

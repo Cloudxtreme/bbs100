@@ -52,6 +52,7 @@ int save_StringList(StringList *, char *);
 StringList *copy_StringList(StringList *);
 StringList *vadd_String(StringList **, char *, va_list);
 StringList *add_String(StringList **, char *, ...);
+int alphasort_StringList(void *, void *);
 
 #endif	/* STRINGLIST_H_WJ98 */
 

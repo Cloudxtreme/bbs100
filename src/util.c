@@ -1686,7 +1686,7 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 	if (numbered)
 		sprintf(format, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
 	else
-		sprintf(format, "%c%%-%ds", (char)color_by_name("green"), max_width);
+		sprintf(format, "%c%%-%ds", (char)color_by_name("yellow"), max_width);
 
 	cols = term_width / (max_width+6);
 	if (cols < 1)

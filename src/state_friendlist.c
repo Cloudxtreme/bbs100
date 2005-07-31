@@ -24,6 +24,7 @@
 #include "defines.h"
 #include "state_friendlist.h"
 #include "state.h"
+#include "state_msg.h"
 #include "edit.h"
 #include "util.h"
 #include "log.h"
@@ -43,10 +44,28 @@ StringList *sl;
 	Enter(state_friendlist_prompt);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
-			show_namelist(usr, usr->friends);
-			break;
+
+			buffer_text(usr);
+
+			if (usr->friends == NULL)
+				Put(usr, "<cyan>\nYour friends list is empty\n");
+			else
+				show_namelist(usr, usr->friends);
+
+			Put(usr, "<magenta>\n"
+				"<hotkey>Add friend\n");
+
+			if (usr->friends != NULL)
+				Put(usr, "<hotkey>Remove friend\n");
+
+			Put(usr, "Switch to <hotkey>enemy list\n");
+			read_menu(usr);
+			Return;
 
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
@@ -54,11 +73,12 @@ StringList *sl;
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "<white>Exit\n");
+			Put(usr, "Exit\n");
 			RET(usr);
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -66,7 +86,7 @@ StringList *sl;
 		case 'a':
 		case '+':
 		case '=':
-			Put(usr, "<white>Add friend\n");
+			Put(usr, "Add friend\n");
 			if (list_Count(usr->friends) >= PARAM_MAX_FRIEND) {
 				Print(usr, "<red>You already have %d friends defined\n", PARAM_MAX_FRIEND);
 				break;
@@ -85,12 +105,13 @@ StringList *sl;
 		case 'r':
 		case '-':
 		case '_':
-			Put(usr, "<white>Remove friend\n");
-			if (usr->friends == NULL) {
-				Put(usr, "<red>Your friend list already is empty\n");
+			if (usr->friends == NULL)
 				break;
-			}
+
+			Put(usr, "Remove friend\n");
+
 /* remove myself from the recipient list */
+
 			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
 				remove_StringList(&usr->recipients, sl);
 				destroy_StringList(sl);
@@ -101,11 +122,11 @@ StringList *sl;
 		case '<':
 		case 'e':
 		case 'E':
-			Put(usr, "<white>Enemies\n");
+			Put(usr, "Enemies\n");
 			JMP(usr, STATE_ENEMYLIST_PROMPT);
 			Return;
 	}
-	Put(usr, "\n<hotkey>A<green>dd friend, <hotkey>Remove friend, switch to <hotkey>Enemy list: <white>");
+	Print(usr, "<yellow>\n[Config] Friends%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -150,6 +171,7 @@ int r;
 		if ((new_friend = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->enemies, new_friend);
 			add_StringList(&usr->friends, new_friend);
+			usr->friends = sort_StringList(usr->friends, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your enemy to friend list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -160,7 +182,7 @@ int r;
 			Return;
 		}
 		add_StringList(&(usr->friends), new_friend);
-		Print(usr, "<yellow>%s<green> added to your friend list\n", usr->edit_buf);
+		usr->friends = sort_StringList(usr->friends, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -195,7 +217,6 @@ int r;
 			if ((rm_friend = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
 				remove_StringList(&usr->friends, rm_friend);
 				destroy_StringList(rm_friend);
-				Print(usr, "<yellow>%s<green> removed from your friend list\n", usr->edit_buf);
 			} else
 				Put(usr, "<red>There is no such person on your friend list\n");
 		}
@@ -214,10 +235,28 @@ StringList *sl;
 	Enter(state_enemylist_prompt);
 
 	switch(c) {
+		case INIT_PROMPT:
+			break;
+
 		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
-			show_namelist(usr, usr->enemies);
-			break;
+			
+			buffer_text(usr);
+
+			if (usr->enemies == NULL)
+				Put(usr, "<cyan>\nYour enemy list is empty\n");
+			else
+				show_namelist(usr, usr->enemies);
+
+			Put(usr, "<magenta>\n"
+				"<hotkey>Add enemy\n");
+
+			if (usr->enemies != NULL)
+				Put(usr, "<hotkey>Remove enemy\n");
+
+			Put(usr, "Switch to <hotkey>friend list\n");
+			read_menu(usr);
+			Return;
 
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
@@ -225,11 +264,12 @@ StringList *sl;
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "<white>Exit\n");
+			Put(usr, "Exit\n");
 			RET(usr);
 			Return;
 
 		case KEY_CTRL('L'):
+			Put(usr, "\n");
 			CURRENT_STATE(usr);
 			Return;
 
@@ -237,12 +277,14 @@ StringList *sl;
 		case 'a':
 		case '+':
 		case '=':
-			Put(usr, "<white>Add enemy\n");
+			Put(usr, "Add enemy\n");
 			if (list_Count(usr->enemies) >= PARAM_MAX_ENEMY) {
 				Print(usr, "<red>You already have %d enemies defined\n", PARAM_MAX_ENEMY);
 				break;
 			}
+
 /* remove myself from the recipient list */
+
 			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
 				remove_StringList(&usr->recipients, sl);
 				destroy_StringList(sl);
@@ -256,12 +298,13 @@ StringList *sl;
 		case 'D':
 		case '-':
 		case '_':
-			Put(usr, "<white>Remove enemy\n");
-			if (usr->enemies == NULL) {
-				Put(usr, "<red>Your enemy list already is empty\n");
+			if (usr->enemies == NULL)
 				break;
-			}
+
+			Put(usr, "Remove enemy\n");
+
 /* remove myself from the recipient list */
+
 			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
 				remove_StringList(&usr->recipients, sl);
 				destroy_StringList(sl);
@@ -272,11 +315,11 @@ StringList *sl;
 		case '>':
 		case 'f':
 		case 'F':
-			Put(usr, "<white>Friends\n");
+			Put(usr, "Friends\n");
 			JMP(usr, STATE_FRIENDLIST_PROMPT);
 			Return;
 	}
-	Put(usr, "\n<hotkey>A<green>dd enemy, <hotkey>Remove enemy, switch to <hotkey>Friendlist: <white>");
+	Print(usr, "<yellow>\n[Config] Enemies%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
@@ -321,6 +364,7 @@ int r;
 		if ((new_enemy = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->friends, new_enemy);
 			add_StringList(&usr->enemies, new_enemy);
+			usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your friend to enemy list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -331,7 +375,7 @@ int r;
 			Return;
 		}
 		add_StringList(&(usr->enemies), new_enemy);
-		Print(usr, "<yellow>%s<green> added to your enemy list\n", usr->edit_buf);
+		usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -371,7 +415,6 @@ int r;
 			if ((rm_enemy = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
 				remove_StringList(&usr->enemies, rm_enemy);
 				destroy_StringList(rm_enemy);
-				Print(usr, "<yellow>%s<green> removed from your enemy list\n", usr->edit_buf);
 			} else
 				Put(usr, "<red>There is no such person on your enemy list\n");
 		}

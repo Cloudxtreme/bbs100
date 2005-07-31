@@ -156,4 +156,25 @@ va_list ap;
 	return vadd_String(slp, fmt, ap);
 }
 
+/*
+	sortfunc for sort_StringList()
+*/
+int alphasort_StringList(void *v1, void *v2) {
+StringList *s1, *s2;
+
+	if (v1 == NULL || v2 == NULL)
+		return 0;
+
+	s1 = *(StringList **)v1;
+	s2 = *(StringList **)v2;
+
+	if (s1 == NULL || s2 == NULL)
+		return 0;
+
+	if (s1->str == NULL || s2->str == NULL)
+		return 0;
+
+	return strcmp(s1->str, s2->str);
+}
+
 /* EOB */

@@ -35,7 +35,6 @@ int save_Category(void);
 void add_Category(char *);
 void remove_Category(char *);
 int in_Category(char *);
-int sort_category(void *, void *);
 
 #endif	/* CATEGORY_H_WJ105 */
 

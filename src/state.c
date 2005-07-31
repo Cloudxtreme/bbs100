@@ -2655,7 +2655,7 @@ User *u;
 }
 
 /*
-	construct a short format who list
+	construct a short format who list with sorted columns
 
 	total should equal list_Count(pl)
 */
@@ -3535,23 +3535,13 @@ int total;
 }
 
 void show_namelist(User *usr, StringList *names) {
-StringList *sl;
-int i = 0;
-
 	if (usr == NULL || names == NULL)
 		return;
 
 	Enter(show_namelist);
 
-	Put(usr, "\n<yellow>");
-	for(sl = names; sl != NULL; sl = sl->next) {
-		Print(usr, "%-18s ", sl->str);
-		if (++i >= 4 && sl->next != NULL) {
-			i = 0;
-			Put(usr, "\n");
-		}
-	}
 	Put(usr, "\n");
+	print_columns(usr, names, 0);
 	Return;
 }
 
