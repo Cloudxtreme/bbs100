@@ -452,7 +452,7 @@ StringList *sl;
 		buffer_text(usr);
 		Put(usr, "\n<green>  0<yellow> (none)\n");
 
-		print_columns(usr, category, FORMAT_MENU_NUMBERED);
+		print_columns(usr, category, FORMAT_NUMBERED);
 
 		Put(usr, "\n");
 		if (usr->curr_room->category != NULL)

@@ -417,7 +417,7 @@ void state_categories_menu(User *usr, char c) {
 
 			if (category != NULL) {
 				Put(usr, "\n");
-				print_columns(usr, category, FORMAT_MENU_NUMBERED);
+				print_columns(usr, category, FORMAT_NUMBERED);
 			}
 			Print(usr, "<magenta>\n"
 				"<hotkey>Add category\n"

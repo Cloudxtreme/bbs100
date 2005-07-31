@@ -200,8 +200,6 @@ Version 3.0:
 
 - Lord Lerkista reported a bug in restartable timers
 
-- Christophe Devine provided GPLed MD5 code
-
 - Mz Boobala requested that the room aide flag always be reset when entering
   a room. I guess it's more logical that way
 

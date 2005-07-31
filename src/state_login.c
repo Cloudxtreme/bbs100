@@ -414,7 +414,6 @@ File *f;
 	if ((f = Fopen(PARAM_MOTD_SCREEN)) != NULL) {
 		Fget_StringIO(f, usr->text);
 		Fclose(f);
-		Put(usr, "\n");
 
 		PUSH(usr, STATE_GO_ONLINE);
 		read_text(usr);						/* read with --More-- prompt */

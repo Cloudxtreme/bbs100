@@ -35,7 +35,6 @@
 #include "OnlineUser.h"
 #include "locale_system.h"
 #include "mkdir.h"
-#include "source_sum.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -223,6 +222,11 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 					write_StringIO(dev, "\a", 1);
 
 				dont_auto_color = force_auto_color_off;
+				break;
+
+			case KEY_CTRL('L'):				/* clear screen */
+				if (usr->flags & (USR_ANSI|USR_BOLD))
+					write_StringIO(dev, "\x1b[1;1H\x1b[2J", 10);
 				break;
 
 			case KEY_CTRL('Z'):
@@ -1616,18 +1620,6 @@ int c, i;
 	return l;
 }
 
-char *print_md5_digest(unsigned char sum[MD5_DIGITS], char *digest) {
-int i;
-
-	if (digest == NULL)
-		return NULL;
-
-	for(i = 0; i < MD5_DIGITS; i++)
-		sprintf(digest+i*2, "%02x", sum[i] & 0xff);
-
-	return digest;
-}
-
 StringList *StringIO_to_StringList(StringIO *s) {
 StringList *sl;
 char buf[PRINT_BUF];
@@ -1661,9 +1653,9 @@ int StringList_to_StringIO(StringList *sl, StringIO *s) {
 	prints the entries in raw_list to create a menu in columns
 	this routine looks a lot like the one that formats the wide who-list
 
-	- numbered is a flag saying if you want a numbered list or not
+	flags is FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES
 */
-void print_columns(User *usr, StringList *raw_list, int numbered) {
+void print_columns(User *usr, StringList *raw_list, int flags) {
 int term_width, total, cols, rows, i, j, buflen, len, max_width, idx;
 StringList *sl, *sl_cols[16];
 char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
@@ -1683,7 +1675,7 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 			max_width = len;
 		total++;
 	}
-	if (numbered)
+	if (flags & FORMAT_NUMBERED)
 		sprintf(format, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
 	else
 		sprintf(format, "%c%%-%ds", (char)color_by_name("yellow"), max_width);
@@ -1727,11 +1719,13 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 				continue;
 
 			strcpy(filename, sl_cols[i]->str);
-			p = filename;
-			while((p = cstrchr(p, '_')) != NULL)
-				*p = ' ';
 
-			if (numbered)
+			if (flags & FORMAT_NO_UNDERSCORES) {
+				p = filename;
+				while((p = cstrchr(p, '_')) != NULL)
+					*p = ' ';
+			}
+			if (flags & FORMAT_NUMBERED)
 				buflen += sprintf(buf+buflen, format, idx, filename);
 			else
 				buflen += sprintf(buf+buflen, format, filename);

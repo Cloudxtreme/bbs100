@@ -56,7 +56,6 @@
 #include "Worldclock.h"
 #include "Category.h"
 #include "Memory.h"
-#include "source_sum.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -222,6 +221,7 @@ int i, idx;
 			Return;
 
 		case '{':
+		case '}':
 			Put(usr, "<white>Credits\n");
 
 			if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
@@ -237,11 +237,6 @@ int i, idx;
 			read_text(usr);
 			Return;
 			
-		case '}':
-			Put(usr, "<white>Source checksums\n");
-			source_checksums(usr);
-			break;
-
 		case 'w':
 			Put(usr, "<white>Who\n");
 			if (usr->flags & USR_SHORT_WHO)
@@ -3269,7 +3264,7 @@ int r;
 
 	if (c == INIT_STATE) {
 		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
-			put_StringIO(usr->conn->output, "\x1b[1;1H\x1b[2J");		/* bypass auto-coloring (!) */
+			Print(usr, "%c", KEY_CTRL('L'));
 
 		Print(usr, "\n<white>%s terminal locked", PARAM_BBS_NAME);
 		if (usr->away != NULL && usr->away[0])
@@ -3384,9 +3379,12 @@ int r;
 			usr->runtime_flags |= RTF_WAS_HH;
 		}
 		if (usr->flags & (USR_ANSI | USR_BOLD))		/* clear screen */
-			Print(usr, "%c[1;1H%c[2J%c[0m", KEY_ESC, KEY_ESC, KEY_ESC);
+			Print(usr, "%c%c", KEY_CTRL('L'), KEY_CTRL('D'));
 		else
-			Put(usr, "\n");
+			Put(usr, "\n\n");
+
+		usr->read_lines = (unsigned int)usr->flags;
+		usr->flags &= ~(USR_ANSI|USR_BOLD);			/* turn off colors */
 
 		if (load_screen(usr->text, PARAM_BOSS_SCREEN) >= 0) {
 			char buf[PRINT_BUF];
@@ -3417,9 +3415,8 @@ int r;
 					cmd_line(usr, "uptime");
 					break;
 			}
-			Put(usr, "\n");
 		}
-		Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "# " : "$ ");
+		Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "\n# " : "\n$ ");
 	}
 	r = edit_line(usr, c);
 
@@ -3429,7 +3426,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (!usr->edit_buf[0]) {
-			Put(usr, "$ ");
+			Put(usr, (usr->runtime_flags & RTF_SYSOP) ? "# " : "$ ");
 			edit_line(usr, EDIT_INIT);
 			Return;
 		}
@@ -3450,6 +3447,7 @@ int r;
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
 			}
+			usr->flags = (unsigned int)usr->read_lines;		/* restore color flags */
 			RET(usr);
 			Return;
 		}
@@ -3479,18 +3477,87 @@ char buf[MAX_LINE*3], *p;
 		*p = 0;
 
 	if (!strcmp(cmd, "ls")) {
+		unsigned int flags;
+		StringList *ls = NULL;
+
+		char *sourcefiles[] = {
+			"List.c",
+			"PList.c",
+			"Hash.c",
+			"StringList.c",
+			"cstring.c",
+			"CallStack.c",
+			"log.c",
+			"inet.c",
+			"util.c",
+			"screens.c",
+			"edit.c",
+			"edit_param.c",
+			"access.c",
+			"User.c",
+			"OnlineUser.c",
+			"Wrapper.c",
+			"Process.c",
+			"CachedFile.c",
+			"AtomicFile.c",
+			"Signal.c",
+			"SignalVector.c",
+			"Timer.c",
+			"timeout.c",
+			"Feeling.c",
+			"state.c",
+			"state_login.c",
+			"state_msg.c",
+			"state_friendlist.c",
+			"state_config.c",
+			"state_roomconfig.c",
+			"state_sysop.c",
+			"Message.c",
+			"Room.c",
+			"Joined.c",
+			"Stats.c",
+			"BufferedMsg.c",
+			"passwd.c",
+			"SU_Passwd.c",
+			"Param.c",
+			"copyright.c",
+			"Memory.c",
+			"debug.c",
+			"SymbolTable.c",
+			"Types.c",
+			"HostMap.c",
+			"FileFormat.c",
+			"Timezone.c",
+			"Worldclock.c",
+			"locale_system.c",
+			"locales.c",
+			"Category.c",
+			"crc32.c",
+			"Conn.c",
+			"ConnUser.c",
+			"ConnResolv.c",
+			"Telnet.c",
+			"KVPair.c",
+			"StringIO.c",
+			"Display.c",
+			"patchlist.c",
+			"main.c",
+			NULL
+		};
+
 		pos = 0;
-		for(i = 0; build_sums[i].filename != NULL; i++) {
-			if (pos + 20 > usr->display->term_width) {
-				Put(usr, "\n");
-				pos = 0;
-			}
-			strcpy(buf, build_sums[i].filename);
-			strcat(buf, ".c");
-			Print(usr, "%-20s", buf);
-			pos += 20;
-		}
-		Put(usr, "\n");
+		for(i = 0; sourcefiles[i] != NULL; i++)
+			ls = add_StringList(&ls, new_StringList(sourcefiles[i]));
+
+		ls = sort_StringList(rewind_StringList(ls), alphasort_StringList);
+
+		flags = usr->flags;
+		usr->flags &= ~(USR_ANSI|USR_BOLD);
+
+		print_columns(usr, ls, 0);
+		
+		usr->flags = flags;
+		listdestroy_StringList(ls);
 		Return 0;
 	}
 	if (!strcmp(cmd, "uptime")) {
@@ -4099,44 +4166,6 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 		line[0] = 0;
 		l = 0;
 	}
-	Return;
-}
-
-void source_checksums(User *usr) {
-int i, j, found, printed;
-
-	if (usr == NULL)
-		return;
-
-	Enter(source_checksums);
-
-	i = printed = 0;
-	while (orig_sums[i].filename != NULL) {
-		j = found = 0;
-		while (build_sums[j].filename != NULL) {
-			if (!strcmp(orig_sums[i].filename, build_sums[j].filename)) {
-				found = 1;
-				if (memcmp(orig_sums[i].sum, build_sums[j].sum, MD5_DIGITS)) {
-					if (!printed) {
-						printed++;
-						Put(usr, "<yellow>There are changes in the following components:<green>\n");
-					}
-					Print(usr, " %s", build_sums[j].filename);
-				}
-				break;
-			}
-			j++;
-		}
-		if (!found) {
-			Print(usr, " <red>missing:<yellow>%s<green>", orig_sums[i].filename);
-			printed++;
-		}
-		i++;
-	}
-	if (printed)
-		Put(usr, "\n");
-	else
-		Put(usr, "<green>This looks like an unmodified <yellow>bbs100\n");
 	Return;
 }
 

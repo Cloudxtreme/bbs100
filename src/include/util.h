@@ -67,7 +67,8 @@
 
 #define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color */
 
-#define FORMAT_MENU_NUMBERED	1	/* number the entries in format_menu() */
+#define FORMAT_NUMBERED			1	/* number the entries in print_columns() */
+#define FORMAT_NO_UNDERSCORES	2	/* convert underscores to spaces */
 
 typedef struct {
 	char *name;
@@ -114,11 +115,10 @@ int rm_rf_trashdir(char *);
 int mkdir_p(char *);
 char *path_strip(char *);
 long fread_int32(FILE *);
-char *print_md5_digest(unsigned char sum[], char *);
 
 StringList *StringIO_to_StringList(StringIO *);
 int StringList_to_StringIO(StringList *sl, StringIO *);
-void print_columns(User *usr, StringList *raw_list, int numbered);
+void print_columns(User *usr, StringList *raw_list, int flags);
 void buffer_text(User *);
 void clear_buffer(User *);
 StringList *make_talked_to(User *);

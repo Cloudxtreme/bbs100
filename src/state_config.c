@@ -1580,7 +1580,7 @@ char filename[MAX_PATHLEN];
 
 	buffer_text(usr);
 	Put(usr, "<magenta>Time zone regions\n\n");
-	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_MENU_NUMBERED);
+	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES);
 	PUSH(usr, STATE_SELECT_TZ_CONTINENT);
 	read_text(usr);
 	Return;
@@ -1722,7 +1722,7 @@ char filename[MAX_PATHLEN];
 	}
 	Fclose(f);
 
-	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_MENU_NUMBERED);
+	print_columns(usr, (StringList *)usr->tmpbuf[0], FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES);
 	POP(usr);
 	PUSH(usr, STATE_SELECT_TZ_CITY);
 	read_text(usr);
