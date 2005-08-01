@@ -1145,16 +1145,24 @@ void PrintPrompt(User *usr) {
 
 			if (usr->curr_msg >= 0) {
 				int remaining = -1;
-				char num_buf[25];
+				char num_buf1[25], num_buf2[25];
 
 				remaining = usr->curr_room->msg_idx - 1 - usr->curr_msg;
 
 				if (usr->flags & USR_ROOMNUMBERS)
-					Print(usr, "<yellow>\n[%u %s]<green> msg #%s (%d remaining) %c ",
-						usr->curr_room->number, roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+					Print(usr, "<yellow>\n[%u %s]<green> msg #%s (%s remaining) %c ",
+						usr->curr_room->number, roomname,
+						print_number(usr->curr_room->msgs[usr->curr_msg], num_buf1),
+						print_number(remaining, num_buf2),
+						(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
+					);
 				else
-					Print(usr, "<yellow>\n[%s]<green> msg #%s (%d remaining) %c ",
-						roomname, print_number(usr->curr_room->msgs[usr->curr_msg], num_buf), remaining, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+					Print(usr, "<yellow>\n[%s]<green> msg #%s (%s remaining) %c ",
+						roomname,
+						print_number(usr->curr_room->msgs[usr->curr_msg], num_buf1),
+						print_number(remaining, num_buf2),
+						(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
+					);
 			} else {
 				destroy_Message(usr->message);
 				usr->message = NULL;

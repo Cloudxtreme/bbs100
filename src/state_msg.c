@@ -1254,7 +1254,9 @@ char buf[PRINT_BUF];
 void state_history_prompt(User *usr, char c) {
 BufferedMsg *m = NULL;
 StringList *sl;
-char prompt[PRINT_BUF];
+PList *pl;
+int n, remaining;
+char num_buf1[25], num_buf2[25], printbuf[256];
 
 	if (usr == NULL)
 		return;
@@ -1300,10 +1302,9 @@ char prompt[PRINT_BUF];
 				RET(usr);
 				Return;
 			}
-			if (usr->history_p->prev == NULL)
-				Put(usr, "<red>Can't go further back\n");
-			else
-				usr->history_p = usr->history_p->prev;
+			usr->history_p = usr->history_p->prev;
+			if (usr->history_p == NULL)
+				break;
 
 			m = (BufferedMsg *)usr->history_p->p;
 			print_buffered_msg(usr, m);
@@ -1385,7 +1386,7 @@ History_Reply_Code:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, printbuf));
 
 			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
@@ -1439,20 +1440,33 @@ History_Reply_Code:
 		RET(usr);
 		Return;
 	}
-	prompt[0] = 0;
-	if (usr->history_p->prev != NULL)
-		strcat(prompt, "<hotkey>Back, ");
-	if (usr->history_p->next != NULL)
-		strcat(prompt, "<hotkey>Next, ");
+	printbuf[0] = 0;
 
 	m = (BufferedMsg *)usr->history_p->p;
-
-	if (strcmp(m->from, usr->name))
-		strcat(prompt, "<hotkey>Reply, ");
 	if (m->to != NULL && m->to->next != NULL)
-		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
+		strcat(printbuf, "Reply <hotkey>all, <hotkey>List recipients ");
 
-	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
+	n = 1;
+	for(pl = rewind_BufferedMsg(usr->history); pl != NULL; pl = pl->next) {
+		if (pl == usr->history_p)
+			break;
+
+		n++;
+	}
+	remaining = 0;
+	while(pl != NULL) {
+		pl = pl->next;
+		remaining++;
+	}
+	if (remaining > 0)
+		remaining--;
+
+	Print(usr, "<yellow>\n[History]<magenta> %s#%s (%s remaining) %c<white> ",
+		printbuf,
+		print_number(n, num_buf1),
+		print_number(remaining, num_buf2),
+		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
+	);
 	Return;
 }
 
@@ -1465,8 +1479,8 @@ void state_held_history_prompt(User *usr, char c) {
 StringList *sl;
 PList *pl, *pl_next;
 BufferedMsg *m;
-char prompt[PRINT_BUF];
-int printed;
+int printed, n, remaining;
+char num_buf1[25], num_buf2[25], printbuf[256];
 
 	if (usr == NULL)
 		return;
@@ -1530,10 +1544,9 @@ int printed;
 				Perror(usr, "Your held messages buffer is gone");
 				goto Exit_Held_History;
 			}
-			if (usr->held_msgp->prev == NULL)
-				Put(usr, "<red>Can't go further back\n");
-			else
-				usr->held_msgp = usr->held_msgp->prev;
+			usr->held_msgp = usr->held_msgp->prev;
+			if (usr->held_msgp == NULL)
+				goto Exit_Held_History;
 
 			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
 			break;
@@ -1607,7 +1620,7 @@ Held_History_Reply:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, prompt));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, printbuf));
 
 			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
@@ -1673,19 +1686,26 @@ Exit_Held_History:
 		RET(usr);
 		Return;
 	}
-	prompt[0] = 0;
-	if (usr->held_msgp->prev != NULL)
-		strcat(prompt, "<hotkey>Back, ");
-	if (usr->held_msgp->next != NULL)
-		strcat(prompt, "<hotkey>Next, ");
+	n = 1;
+	for(pl = rewind_BufferedMsg(usr->held_msgs); pl != NULL; pl = pl->next) {
+		if (pl == usr->held_msgp)
+			break;
 
-	m = (BufferedMsg *)usr->held_msgp->p;
-	if (strcmp(m->from, usr->name))
-		strcat(prompt, "<hotkey>Reply, ");
-	if (m->to != NULL && m->to->next != NULL)
-		strcat(prompt, "reply <hotkey>All, <hotkey>List recipients, ");
+		n++;
+	}
+	remaining = 0;
+	while(pl != NULL) {
+		pl = pl->next;
+		remaining++;
+	}
+	if (remaining > 0)
+		remaining--;
 
-	Print(usr, "\n<green>%s<hotkey>Stop: <white>", prompt);
+	Print(usr, "<yellow>\n[Held Messages]<magenta> #%s (%s remaining) %c<white> ",
+		print_number(n, num_buf1),
+		print_number(remaining, num_buf2),
+		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
+	);
 	Return;
 }
 
