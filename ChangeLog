@@ -2,6 +2,7 @@ Changes as of August 2nd 2005
 - when in Held Message Mode, the user is unable to send messages
 - splitted state.c to state.c and state_room.c
 - "# 0" or "# 1" takes you to the first message in the room
+- state_history.c, '#', '+', '-' commands on history prompts
 
 Changes as of August 1st 2005
 - X History and Held Messages prompt have a new look

@@ -27,6 +27,7 @@
 #include "state_msg.h"
 #include "state_login.h"
 #include "state_config.h"
+#include "state_history.h"
 #include "state_friendlist.h"
 #include "state_roomconfig.h"
 #include "state_sysop.h"
@@ -601,7 +602,9 @@ int i, idx;
 		case KEY_CTRL('X'):
 			if (PARAM_HAVE_XMSGS) {
 				Put(usr, "<white>Message history\n");
-				CALL(usr, STATE_HISTORY_PROMPT);
+				if (!history_prompt(usr))
+					break;
+
 				Return;
 			} else
 				if (PARAM_HAVE_DISABLED_MSG)
@@ -631,7 +634,7 @@ int i, idx;
 					Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
 
 					if (usr->held_msgs != NULL) {
-						CALL(usr, STATE_HELD_HISTORY_PROMPT);
+						held_history_prompt(usr);
 						Return;
 					} else {
 						Free(usr->away);
@@ -670,6 +673,7 @@ int i, idx;
 			Return;
 
 		case '#':
+			Put(usr, "<white>Message number\n");
 			CALL(usr, STATE_ENTER_MSG_NUMBER);
 			Return;
 
@@ -1728,8 +1732,6 @@ int r;
 	Return;
 }
 
-
-
 /*
 	Stop reading: pretend last message has been read
 */
@@ -2005,6 +2007,5 @@ User *u;
 	}
 	Return;
 }
-
 
 /* EOB */

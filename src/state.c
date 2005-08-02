@@ -37,6 +37,7 @@
 #include "state_config.h"
 #include "state_roomconfig.h"
 #include "state_friendlist.h"
+#include "state_history.h"
 #include "inet.h"
 #include "passwd.h"
 #include "patchlist.h"

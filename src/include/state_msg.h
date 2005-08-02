@@ -34,8 +34,6 @@
 #define STATE_SAVE_TEXT					state_save_text
 #define STATE_ABORT_TEXT				state_abort_text
 #define STATE_DEL_MSG_PROMPT			state_del_msg_prompt
-#define STATE_HISTORY_PROMPT			state_history_prompt
-#define STATE_HELD_HISTORY_PROMPT		state_held_history_prompt
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
 #define STATE_PRESS_ANY_KEY				state_press_any_key
@@ -53,8 +51,6 @@ void state_edit_text(User *, char);
 void state_save_text(User *, char);
 void state_abort_text(User *, char);
 void state_del_msg_prompt(User *, char);
-void state_history_prompt(User *, char);
-void state_held_history_prompt(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
 void state_press_any_key(User *, char);
