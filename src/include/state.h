@@ -33,7 +33,6 @@
 #define WHO_LIST_ROOM	2
 
 #define STATE_DUMMY						state_dummy
-#define STATE_ROOM_PROMPT				state_room_prompt
 #define STATE_X_PROMPT					state_x_prompt
 #define STATE_RECIPIENTS_ERR			state_recipients_err
 #define STATE_EMOTE_PROMPT				state_emote_prompt
@@ -46,9 +45,6 @@
 #define STATE_EDIT_ANSWER				state_edit_answer
 #define STATE_CHOOSE_FEELING			state_choose_feeling
 #define STATE_MAIL_SEND_MSG				state_mail_send_msg
-#define STATE_JUMP_ROOM					state_jump_room
-#define STATE_ZAP_PROMPT				state_zap_prompt
-#define STATE_ZAPALL_PROMPT				state_zapall_prompt
 #define STATE_SU_PROMPT					state_su_prompt
 #define STATE_LOCK_PASSWORD				state_lock_password
 #define STATE_BOSS						state_boss
@@ -66,14 +62,10 @@ void state_edit_answer(User *, char);
 void state_edit_emote(User *, char);
 void state_choose_feeling(User *, char);
 void state_mail_send_msg(User *, char);
-void state_room_prompt(User *, char);
 void state_ansi_prompt(User *, char);
 void state_emote_prompt(User *, char);
 void state_feelings_prompt(User *, char);
 void state_ping_prompt(User *, char);
-void state_jump_room(User *, char);
-void state_zap_prompt(User *, char);
-void state_zapall_prompt(User *, char);
 void state_profile_user(User *, char);
 void state_su_prompt(User *, char);
 void state_lock_password(User *, char);
@@ -84,7 +76,6 @@ void state_ask_away_reason(User *, char);
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);
 
-void PrintPrompt(User *);
 void print_version_info(User *);
 void enter_recipients(User *, void (*)(User *, char));
 void enter_name(User *, void (*)(User *, char));
@@ -99,30 +90,15 @@ int long_who_list(User *, PList *);
 int short_who_list(User *, PList *, int);
 void who_list_header(User *, int, int);
 
-void print_known_room(User *, Room *);
-void known_rooms(User *);
-void allknown_rooms(User *);
-void room_info(User *);
 void reply_x(User *, int);
 void do_reply_x(User *, int);
+
 void online_friends_list(User *);
 void talked_list(User *);
-void show_namelist(User *, StringList *);
 void print_quicklist(User *);
-void stop_reading(User *);
-
-void goto_room(User *, Room *);
-void enter_room(User *, Room *);
-void leave_room(User *);
-void enter_chatroom(User *);
-void leave_chatroom(User *);
-
-void chatroom_say(User *, char *);
-void chatroom_tell(Room *, char *);
-void chatroom_msg(Room *, char *);
 
 void print_calendar(User *);
-void source_checksums(User *);
+
 void drop_sysop_privs(User *);
 
 #endif	/* STATE_H_WJ99 */

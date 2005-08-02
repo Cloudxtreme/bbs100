@@ -32,7 +32,7 @@
 #include "inet.h"
 #include "Process.h"
 #include "main.h"
-#include "state.h"
+#include "state_room.h"
 #include "Timer.h"
 #include "timeout.h"
 #include "Param.h"

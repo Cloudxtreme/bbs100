@@ -24,6 +24,7 @@
 #include "defines.h"
 #include "debug.h"
 #include "state_login.h"
+#include "state_room.h"
 #include "state.h"
 #include "state_msg.h"
 #include "state_sysop.h"

@@ -29,6 +29,7 @@
 #include "log.h"
 #include "edit.h"
 #include "state.h"
+#include "state_room.h"
 #include "inet.h"
 #include "cstring.h"
 #include "Room.h"

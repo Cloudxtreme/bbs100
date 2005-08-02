@@ -25,6 +25,7 @@
 #include "config.h"
 #include "debug.h"
 #include "state_roomconfig.h"
+#include "state_room.h"
 #include "state_msg.h"
 #include "state.h"
 #include "edit.h"
@@ -216,8 +217,10 @@ void state_room_config_menu(User *usr, char c) {
 				Put(usr, "Show Invited\n");
 				if (usr->curr_room->invited == NULL)
 					Put(usr, "<red>No one is invited here\n");
-				else
-					show_namelist(usr, usr->curr_room->invited);
+				else {
+					Put(usr, "\n");
+					print_columns(usr, usr->curr_room->invited, 0);
+				}
 			}
 			break;
 
@@ -241,8 +244,9 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "Show kicked\n");
 			if (usr->curr_room->kicked == NULL)
 				Put(usr, "<red>No one has been kicked out\n");
-			else
-				show_namelist(usr, usr->curr_room->kicked);
+			else {
+				print_columns(usr, usr->curr_room->kicked, 0);
+			}
 			break;
 
 		case 'a':

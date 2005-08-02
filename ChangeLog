@@ -1,5 +1,6 @@
 Changes as of August 2nd 2005
 - when in Held Message Mode, the user is unable to send messages
+- splitted state.c to state.c and state_room.c
 
 Changes as of August 1st 2005
 - X History and Held Messages prompt have a new look

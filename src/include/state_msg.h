@@ -33,9 +33,6 @@
 #define STATE_EDIT_TEXT					state_edit_text
 #define STATE_SAVE_TEXT					state_save_text
 #define STATE_ABORT_TEXT				state_abort_text
-#define STATE_ENTER_MSG_NUMBER			state_enter_msg_number
-#define STATE_ENTER_MINUS_MSG			state_enter_minus_msg
-#define STATE_ENTER_PLUS_MSG			state_enter_plus_msg
 #define STATE_DEL_MSG_PROMPT			state_del_msg_prompt
 #define STATE_HISTORY_PROMPT			state_history_prompt
 #define STATE_HELD_HISTORY_PROMPT		state_held_history_prompt
@@ -55,9 +52,6 @@ void state_enter_subject(User *, char);
 void state_edit_text(User *, char);
 void state_save_text(User *, char);
 void state_abort_text(User *, char);
-void state_enter_msg_number(User *, char);
-void state_enter_minus_msg(User *, char);
-void state_enter_plus_msg(User *, char);
 void state_del_msg_prompt(User *, char);
 void state_history_prompt(User *, char);
 void state_held_history_prompt(User *, char);

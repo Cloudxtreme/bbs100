@@ -690,8 +690,8 @@ int r;
 	if (c == INIT_STATE) {
 		if (banished != NULL) {
 			if (banished->next != NULL) {
-				Put(usr, "\n<magenta>Banished are:\n");
-				show_namelist(usr, banished);
+				Put(usr, "\n<magenta>Banished are:\n\n");
+				print_columns(usr, banished, 0);
 			} else
 				Print(usr, "\n<magenta>Banished is: <yellow>%s\n", banished->str);
 		}

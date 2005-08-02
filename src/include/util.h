@@ -30,10 +30,12 @@
 #include "log.h"
 #include "sys_time.h"
 
+#include <stdlib.h>
 #include <stdarg.h>
 #include <time.h>
 
 #define RND_STR(x)			((x)[rtc % (sizeof(x)/sizeof(char *))])
+#define STRING_CHANCE		((rand() % 20) < 4)
 
 #define UserError(a,b,c,d,e,f)	do {											\
 		Put((a), "<red>ERROR: <yellow>" b "\n\n");								\

@@ -60,7 +60,7 @@ OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
 	log.o inet.o util.o screens.o edit.o edit_param.o access.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
-	state.o state_login.o state_msg.o state_friendlist.o \
+	state.o state_room.o state_login.o state_msg.o state_friendlist.o \
 	state_config.o state_roomconfig.o state_sysop.o \
 	Message.o Room.o Joined.o Stats.o BufferedMsg.o \
 	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \

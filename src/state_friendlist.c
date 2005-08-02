@@ -54,9 +54,10 @@ StringList *sl;
 
 			if (usr->friends == NULL)
 				Put(usr, "<cyan>\nYour friends list is empty\n");
-			else
-				show_namelist(usr, usr->friends);
-
+			else {
+				Put(usr, "\n");
+				print_columns(usr, usr->friends, 0);
+			}
 			Put(usr, "<magenta>\n"
 				"<hotkey>Add friend\n");
 
@@ -245,9 +246,10 @@ StringList *sl;
 
 			if (usr->enemies == NULL)
 				Put(usr, "<cyan>\nYour enemy list is empty\n");
-			else
-				show_namelist(usr, usr->enemies);
-
+			else {
+				Put(usr, "\n");
+				print_columns(usr, usr->enemies, 0);
+			}
 			Put(usr, "<magenta>\n"
 				"<hotkey>Add enemy\n");
 

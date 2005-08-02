@@ -23,6 +23,7 @@
 #include "config.h"
 #include "defines.h"
 #include "state_msg.h"
+#include "state_room.h"
 #include "state.h"
 #include "edit.h"
 #include "access.h"
@@ -198,7 +199,6 @@ int r;
 	}
 	Return;
 }
-
 
 void state_enter_mail_recipients(User *usr, char c) {
 	if (usr == NULL)
@@ -599,143 +599,6 @@ void (*abort_func)(void *, char);
 	}
 	Return;
 }
-
-
-void state_enter_msg_number(User *usr, char c) {
-int r;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_enter_msg_number);
-
-	if (c == INIT_STATE)
-		Put(usr, "<green>Enter message number: <yellow>");
-
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		unsigned long num;
-		int idx;
-
-		num = strtoul(usr->edit_buf, NULL, 10);
-		if (num <= 0) {
-			Put(usr, "<red>No such message\n");
-			RET(usr);
-			Return;
-		}
-		if (usr->curr_room->msgs == NULL)
-			idx = usr->curr_room->msg_idx;
-		else {
-			for(idx = 0; idx < usr->curr_room->msg_idx; idx++) {
-				if (usr->curr_room->msgs[idx] == num)
-					break;
-
-				if (usr->curr_room->msgs[idx] > num) {	/* we're not getting there anymore */
-					idx = usr->curr_room->msg_idx;
-					break;
-				}
-			}
-		}
-		if (idx >= usr->curr_room->msg_idx) {
-			Put(usr, "<red>No such message\n");
-			RET(usr);
-			Return;
-		}
-		usr->curr_msg = idx;
-		readMsg(usr);
-	}
-	Return;
-}
-
-void state_enter_minus_msg(User *usr, char c) {
-int r;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_enter_minus_msg);
-
-	if (c == INIT_STATE)
-		Put(usr, "<green>Enter number of messages to read back: <yellow>");
-
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		int i;
-
-		i = atoi(usr->edit_buf);
-		if (i <= 0) {
-			RET(usr);
-			Return;
-		}
-		if (usr->curr_msg < 0) {
-			usr->curr_msg = usr->curr_room->msg_idx - 1;
-			if (usr->curr_msg < 0) {
-				Put(usr, "<red>No messages\n");
-				RET(usr);
-				Return;
-			}
-		}
-		usr->curr_msg -= i;
-		if (usr->curr_msg < 0)
-			usr->curr_msg = 0;
-
-		readMsg(usr);			/* readMsg() RET()s for us :P */
-	}
-	Return;
-}
-
-void state_enter_plus_msg(User *usr, char c) {
-int r;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_enter_plus_msg);
-
-	if (c == INIT_STATE)
-		Put(usr, "<green>Enter number of messages to skip: <yellow>");
-
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		int i;
-
-		i = atoi(usr->edit_buf);
-		if (i <= 0) {
-			RET(usr);
-			Return;
-		}
-		if (usr->curr_msg < 0) {
-			usr->curr_msg = usr->curr_room->msg_idx - 1;
-			if (usr->curr_msg < 0) {
-				Put(usr, "<red>No messages\n");
-				RET(usr);
-				Return;
-			}
-		}
-		usr->curr_msg += i;
-		if (usr->curr_msg >= usr->curr_room->msg_idx)
-			usr->curr_msg = usr->curr_room->msg_idx - 1;
-
-		readMsg(usr);			/* readMsg() RET()s for us :P */
-	}
-	Return;
-}
-
 
 void readMsg(User *usr) {
 char filename[MAX_PATHLEN], date_buf[MAX_LINE];
@@ -1914,7 +1777,7 @@ int r;
 }
 
 /*
-	generally used after state_more_prompt()
+	generally used after read_text()
 */
 void state_press_any_key(User *usr, char c) {
 	if (usr == NULL)
