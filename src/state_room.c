@@ -374,16 +374,6 @@ int i, idx;
 					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
-		case KEY_CTRL('X'):
-			if (PARAM_HAVE_XMSGS) {
-				Put(usr, "<white>Message history\n");
-				CALL(usr, STATE_HISTORY_PROMPT);
-				Return;
-			} else
-				if (PARAM_HAVE_DISABLED_MSG)
-					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
-			break;
-
 		case ':':
 		case ';':
 			if (PARAM_HAVE_EMOTES) {
@@ -593,10 +583,30 @@ int i, idx;
 				"<magenta>Messages will %s beep on arrival\n", (usr->flags & USR_BEEP) ? "now" : "<yellow>not<magenta>");
 			break;
 
+		case 'F':
+			if (PARAM_HAVE_FOLLOWUP) {
+				usr->flags ^= USR_FOLLOWUP;
+				Print(usr, "<white>Toggle follow-up mode\n"
+					"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
+			} else
+				if (PARAM_HAVE_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Follow-up mode<red> is not enabled on this server\n");
+			break;
+
 		case 'S':
 			Put(usr, "<white>Statistics\n<green>");
 			print_stats(usr);
 			Return;
+
+		case KEY_CTRL('X'):
+			if (PARAM_HAVE_XMSGS) {
+				Put(usr, "<white>Message history\n");
+				CALL(usr, STATE_HISTORY_PROMPT);
+				Return;
+			} else
+				if (PARAM_HAVE_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>eXpress Messages<red> are not enabled on this server\n");
+			break;
 
 		case KEY_CTRL('B'):
 			if (PARAM_HAVE_HOLD) {
@@ -872,27 +882,6 @@ int i, idx;
 			undelete_msg(usr);
 			break;
 
-		case 'A':
-		case KEY_CTRL('A'):
-			if (usr->curr_room->number != MAIL_ROOM) {
-				if (!(usr->runtime_flags & RTF_ROOMAIDE)
-					&& in_StringList(usr->curr_room->room_aides, usr->name) != NULL) {
-					if (is_guest(usr->name)) {
-						Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_ROOMAIDE);
-						break;
-					}
-					Print(usr, "<magenta>Auto-enabling %s functions\n\n", PARAM_NAME_ROOMAIDE);
-					usr->runtime_flags |= RTF_ROOMAIDE;
-				}
-				if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)) {
-					Put(usr, "<white>Room Config menu\n");
-					CALL(usr, STATE_ROOM_CONFIG_MENU);
-					Return;
-				}
-				break;
-			}
-			break;
-
 		case 'r':
 		case 'R':
 		case KEY_CTRL('R'):
@@ -1009,16 +998,6 @@ int i, idx;
 			Put(usr, "<red>No message to forward\n");
 			break;
 
-		case 'F':
-			if (PARAM_HAVE_FOLLOWUP) {
-				usr->flags ^= USR_FOLLOWUP;
-				Print(usr, "<white>Toggle follow-up mode\n"
-					"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
-			} else
-				if (PARAM_HAVE_DISABLED_MSG)
-					Put(usr, "<red>Sorry, but <yellow>Follow-up mode<red> is not enabled on this server\n");
-			break;
-
 		case 'k':
 			Put(usr, "<white>Known rooms\n");
 			known_rooms(usr);
@@ -1056,6 +1035,27 @@ int i, idx;
 			Put(usr, "<white>Config menu\n");
 			CALL(usr, STATE_CONFIG_MENU);
 			Return;
+
+		case 'A':
+		case KEY_CTRL('A'):
+			if (usr->curr_room->number != MAIL_ROOM) {
+				if (!(usr->runtime_flags & RTF_ROOMAIDE)
+					&& in_StringList(usr->curr_room->room_aides, usr->name) != NULL) {
+					if (is_guest(usr->name)) {
+						Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_ROOMAIDE);
+						break;
+					}
+					Print(usr, "<magenta>Auto-enabling %s functions\n\n", PARAM_NAME_ROOMAIDE);
+					usr->runtime_flags |= RTF_ROOMAIDE;
+				}
+				if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)) {
+					Put(usr, "<white>Room Config menu\n");
+					CALL(usr, STATE_ROOM_CONFIG_MENU);
+					Return;
+				}
+				break;
+			}
+			break;
 
 		case KEY_CTRL('S'):
 			if (usr->runtime_flags & RTF_SYSOP) {
