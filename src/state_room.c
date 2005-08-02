@@ -88,39 +88,36 @@ int i, idx;
 /*
 	First check for chat rooms (they're a rather special case)
 */
-	if (usr->curr_room != NULL) {
-		if (usr->curr_room->flags & ROOM_CHATROOM) {
-			if (!(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
-				switch(c) {
-					case INIT_STATE:
-						edit_line(usr, EDIT_INIT);
-						usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
-						PrintPrompt(usr);
-						break;
+	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)
+		&& !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
+		switch(c) {
+			case INIT_STATE:
+				edit_line(usr, EDIT_INIT);
+				usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
+				PrintPrompt(usr);
+				break;
 
-					case '/':
-						if (!usr->edit_pos) {
-							Put(usr, "<white>/");
-							usr->runtime_flags |= RTF_CHAT_ESCAPE;
-							Return;
-						}
-
-					default:
-						i = edit_line(usr, c);
-
-						if (i == EDIT_RETURN)
-							chatroom_say(usr, usr->edit_buf);
-
-						if (i == EDIT_RETURN || i == EDIT_BREAK) {
-							edit_line(usr, EDIT_INIT);
-							usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
-							PrintPrompt(usr);
-						} else
-							usr->runtime_flags |= RTF_BUSY;
+			case '/':
+				if (!usr->edit_pos) {
+					Put(usr, "<white>/");
+					usr->runtime_flags |= RTF_CHAT_ESCAPE;
+					Return;
 				}
-				Return;
-			}
+
+			default:
+				i = edit_line(usr, c);
+
+				if (i == EDIT_RETURN)
+					chatroom_say(usr, usr->edit_buf);
+
+				if (i == EDIT_RETURN || i == EDIT_BREAK) {
+					edit_line(usr, EDIT_INIT);
+					usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
+					PrintPrompt(usr);
+				} else
+					usr->runtime_flags |= RTF_BUSY;
 		}
+		Return;
 	}
 /*
 	Now handle the more 'normal' DOC-style rooms
