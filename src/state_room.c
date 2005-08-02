@@ -1611,7 +1611,7 @@ int r;
 		int idx;
 
 		num = strtoul(usr->edit_buf, NULL, 10);
-		if (num <= 0) {
+		if (num < 0) {
 			Put(usr, "<red>No such message\n");
 			RET(usr);
 			Return;
@@ -1620,9 +1620,11 @@ int r;
 			idx = usr->curr_room->msg_idx;
 		else {
 			for(idx = 0; idx < usr->curr_room->msg_idx; idx++) {
-				if (usr->curr_room->msgs[idx] == num)
-					break;
-
+				if (usr->curr_room->msgs[idx] == num) {
+					usr->curr_msg = idx;
+					readMsg(usr);
+					Return;
+				}
 				if (usr->curr_room->msgs[idx] > num) {	/* we're not getting there anymore */
 					idx = usr->curr_room->msg_idx;
 					break;
@@ -1630,12 +1632,14 @@ int r;
 			}
 		}
 		if (idx >= usr->curr_room->msg_idx) {
-			Put(usr, "<red>No such message\n");
-			RET(usr);
-			Return;
+			if (num <= 1 && usr->curr_room->msg_idx >= 1) {		/* goto first */
+				usr->curr_msg = 0;
+				readMsg(usr);
+				Return;
+			}
 		}
-		usr->curr_msg = idx;
-		readMsg(usr);
+		Put(usr, "<red>No such message\n");
+		RET(usr);
 	}
 	Return;
 }
