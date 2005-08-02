@@ -1351,6 +1351,10 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			Put(usr, "Reply to All\n");
 
 History_Reply_Code:
+			if (usr->runtime_flags & RTF_HOLD) {
+				Put(usr, "<magenta>You have put messages on hold\n");
+				break;
+			}
 			if (usr->history_p == NULL) {
 				Put(usr, "<red>No message to reply to\n");
 				usr->runtime_flags &= ~RTF_BUSY;
@@ -1588,6 +1592,10 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			Put(usr, "Reply to All\n");
 
 Held_History_Reply:
+			if (usr->runtime_flags & RTF_HOLD) {			/* this would normally never happen ... */
+				Put(usr, "<magenta>You have put messages on hold\n");
+				break;
+			}
 			if (usr->held_msgp == NULL) {
 				Put(usr, "<red>No message to reply to\n");
 				goto Exit_Held_History;

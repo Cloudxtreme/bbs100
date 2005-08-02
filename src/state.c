@@ -236,7 +236,7 @@ int i, idx;
 			Put(usr, "<green>");
 			read_text(usr);
 			Return;
-			
+
 		case 'w':
 			Put(usr, "<white>Who\n");
 			if (usr->flags & USR_SHORT_WHO)
@@ -361,6 +361,10 @@ int i, idx;
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send eXpress Messages\n", PARAM_NAME_GUEST);
 					break;
 				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
+					break;
+				}
 				enter_recipients(usr, STATE_X_PROMPT);
 				Return;
 			} else
@@ -383,6 +387,10 @@ int i, idx;
 				Put(usr, "<white>Quick X\n");
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send Quick eXpress Messages\n", PARAM_NAME_GUEST);
+					break;
+				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
 				if (usr->quick[c - '1'] != NULL) {
@@ -422,6 +430,10 @@ int i, idx;
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send emotes\n", PARAM_NAME_GUEST);
 					break;
 				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
+					break;
+				}
 				Put(usr, "<green>");
 				enter_recipients(usr, STATE_EMOTE_PROMPT);
 				Return;
@@ -435,6 +447,10 @@ int i, idx;
 				Put(usr, "<white>Feelings\n");
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send feelings\n", PARAM_NAME_GUEST);
+					break;
+				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
 				Put(usr, "<green>");
@@ -457,6 +473,10 @@ int i, idx;
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
 					break;
 				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
+					break;
+				}
 				reply_x(usr, REPLY_X_ONE);
 				Return;
 			} else
@@ -469,6 +489,10 @@ int i, idx;
 				Put(usr, "<white>Reply to all\n");
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
+					break;
+				}
+				if (usr->runtime_flags & RTF_HOLD) {
+					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
 				reply_x(usr, REPLY_X_ALL);
@@ -647,7 +671,6 @@ int i, idx;
 					Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
 
 					if (usr->held_msgs != NULL) {
-						usr->runtime_flags |= RTF_HOLD;			/* keep it on hold for a little longer */
 						CALL(usr, STATE_HELD_HISTORY_PROMPT);
 						Return;
 					} else {
