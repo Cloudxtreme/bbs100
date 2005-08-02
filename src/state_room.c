@@ -130,22 +130,6 @@ int i, idx;
 		case INIT_PROMPT:
 			break;
 
-		case '`':
-			CALL(usr, STATE_BOSS);
-			Return;
-
-		case KEY_CTRL('Q'):
-			if (PARAM_HAVE_QUICK_X) {
-				Put(usr, "<white>Quicklist\n");
-				buffer_text(usr);
-				print_quicklist(usr);
-				read_menu(usr);
-				Return;
-			} else
-				if (PARAM_HAVE_DISABLED_MSG)
-					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
-			break;
-
 		case KEY_ESC:
 			Put(usr, "<white>Escape\n");
 			if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM))
@@ -381,6 +365,18 @@ int i, idx;
 					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
 			break;
 
+		case KEY_CTRL('Q'):
+			if (PARAM_HAVE_QUICK_X) {
+				Put(usr, "<white>Quicklist\n");
+				buffer_text(usr);
+				print_quicklist(usr);
+				read_menu(usr);
+				Return;
+			} else
+				if (PARAM_HAVE_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Quick X<red> is not enabled on this server\n");
+			break;
+
 		case KEY_CTRL('X'):
 			if (PARAM_HAVE_XMSGS) {
 				Put(usr, "<white>Message history\n");
@@ -566,45 +562,28 @@ int i, idx;
 			read_menu(usr);
 			Return;
 
-		case 'd':
-		case 'D':
-			Put(usr, "<white>Delete\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot delete messages\n", PARAM_NAME_GUEST);
-				break;
-			}
-			if (usr->message != NULL && usr->message->from[0]) {
-/* delete message */
-				if (usr->message->deleted != (time_t)0UL) {
-					Put(usr, "<red>Message already has been deleted<yellow>..!\n\n");
-					break;
-				}
-				if (((usr->message->flags & MSG_FROM_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
-					|| ((usr->message->flags & MSG_FROM_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
-					|| (usr->curr_room != usr->mail && strcmp(usr->name, usr->message->from) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
-					Put(usr, "<red>You are not allowed to delete this message\n\n");
-					break;
-				}
-				CALL(usr, STATE_DEL_MSG_PROMPT);
-				Return;
-			} else
-				Put(usr, "<red>No message to delete\n");
-			break;
-
 		case KEY_CTRL('D'):
 			Put(usr, "<white>Doing\n");
 			CALL(usr, STATE_CONFIG_DOING);
 			Return;
 
-		case 'u':
-		case 'U':
-			Put(usr, "<white>Undelete\n");
+		case KEY_CTRL('L'):
+			Put(usr, "<white>Lock\n");
 			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot undelete messages\n", PARAM_NAME_GUEST);
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot lock the terminal\n", PARAM_NAME_GUEST);
 				break;
 			}
-			undelete_msg(usr);
-			break;
+			if (!(usr->flags & USR_DONT_ASK_REASON)) {
+				PUSH(usr, STATE_LOCK_PASSWORD);
+				Put(usr, "<green>");
+				CALL(usr, STATE_ASK_AWAY_REASON);
+			} else
+				CALL(usr, STATE_LOCK_PASSWORD);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
 
 		case 'B':
 			usr->flags ^= USR_BEEP;
@@ -616,6 +595,11 @@ int i, idx;
 			Print(usr, "<white>Toggle beeping\n"
 				"<magenta>Messages will %s beep on arrival\n", (usr->flags & USR_BEEP) ? "now" : "<yellow>not<magenta>");
 			break;
+
+		case 'S':
+			Put(usr, "<white>Statistics\n<green>");
+			print_stats(usr);
+			Return;
 
 		case KEY_CTRL('B'):
 			if (PARAM_HAVE_HOLD) {
@@ -720,11 +704,6 @@ int i, idx;
 				stop_reading(usr);
 			}
 			break;
-
-		case 'S':
-			Put(usr, "<white>Statistics\n<green>");
-			print_stats(usr);
-			Return;
 
 /*
 	read again
@@ -859,6 +838,41 @@ int i, idx;
 				}
 			}
 			Put(usr, "<red>No new messages");
+			break;
+
+		case 'd':
+		case 'D':
+			Put(usr, "<white>Delete\n");
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot delete messages\n", PARAM_NAME_GUEST);
+				break;
+			}
+			if (usr->message != NULL && usr->message->from[0]) {
+/* delete message */
+				if (usr->message->deleted != (time_t)0UL) {
+					Put(usr, "<red>Message already has been deleted<yellow>..!\n\n");
+					break;
+				}
+				if (((usr->message->flags & MSG_FROM_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
+					|| ((usr->message->flags & MSG_FROM_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
+					|| (usr->curr_room != usr->mail && strcmp(usr->name, usr->message->from) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
+					Put(usr, "<red>You are not allowed to delete this message\n\n");
+					break;
+				}
+				CALL(usr, STATE_DEL_MSG_PROMPT);
+				Return;
+			} else
+				Put(usr, "<red>No message to delete\n");
+			break;
+
+		case 'u':
+		case 'U':
+			Put(usr, "<white>Undelete\n");
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot undelete messages\n", PARAM_NAME_GUEST);
+				break;
+			}
+			undelete_msg(usr);
 			break;
 
 		case 'A':
@@ -1033,20 +1047,6 @@ int i, idx;
 		case '<':
 			Put(usr, "<white>Enemies\n");
 			CALL(usr, STATE_ENEMYLIST_PROMPT);
-			Return;
-
-		case KEY_CTRL('L'):
-			Put(usr, "<white>Lock\n");
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot lock the terminal\n", PARAM_NAME_GUEST);
-				break;
-			}
-			if (!(usr->flags & USR_DONT_ASK_REASON)) {
-				PUSH(usr, STATE_LOCK_PASSWORD);
-				Put(usr, "<green>");
-				CALL(usr, STATE_ASK_AWAY_REASON);
-			} else
-				CALL(usr, STATE_LOCK_PASSWORD);
 			Return;
 
 		case 'c':
