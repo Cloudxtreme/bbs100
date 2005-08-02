@@ -1344,6 +1344,7 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			goto History_Reply_Code;
 
 		case 'R':
+		case KEY_CTRL('R'):
 		case 'V':
 		case 'A':
 		case 'a':
@@ -1580,6 +1581,7 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			goto Held_History_Reply;
 
 		case 'R':
+		case KEY_CTRL('R'):
 		case 'V':
 		case 'A':
 		case 'a':
