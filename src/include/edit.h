@@ -71,6 +71,9 @@ void tab_list(User *, void (*)(User *));
 void backtab_list(User *, void (*)(User *));
 void reset_tablist(User *, char);
 
+extern char *Wrap_Charset1;
+extern char *Wrap_Charset2;
+
 #endif	/* EDIT_H_WJ99 */
 
 /* EOB */

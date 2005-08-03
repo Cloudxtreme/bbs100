@@ -48,11 +48,11 @@
   #define Perror(x,y)		UserError((x), y, __LINE__, __FILE__, "", "")
 #endif
 
-
 #define YESNO_YES		1
 #define YESNO_NO		0
 #define YESNO_UNDEF		-1
 
+/* 'busy' overrule flag for system_broadcast() */
 #define OVERRULE		1
 
 #define BLACK			0
@@ -66,6 +66,12 @@
 #define WHITE			7
 #define HOTKEY			8
 #define NUM_COLORS		9
+
+/*
+	default symbols for auto-coloring
+	no '_', no '#', no '?' because they look ugly
+*/
+#define DEFAULT_SYMBOLS			"!@$%^&*-+=()[]{}<>.,:;/'\"`\\|"
 
 #define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color */
 
@@ -97,6 +103,7 @@ int Ansi_Color(User *, int);
 int Color_Ansi(User *, int);
 int color_key_index(int);
 void default_colors(User *);
+void default_symbol_colors(User *);
 void wipe_line(User *);
 int yesno(User *, char, char);
 int user_exists(char *);
@@ -127,6 +134,7 @@ void clear_screen(User *);
 StringList *make_talked_to(User *);
 
 extern ColorTable color_table[NUM_COLORS];
+extern char *Default_Symbols;
 
 #endif	/* UTIL_H_WJ99 */
 

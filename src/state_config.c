@@ -844,14 +844,16 @@ void state_config_terminal(User *usr, char c) {
 				(usr->flags & USR_FORCE_TERM) ? "Yes" : "No",
 				usr->display->term_width, usr->display->term_height
 			);
-			if (usr->flags & USR_ANSI)
+			if (usr->flags & USR_ANSI) {
 				Print(usr, "\n"
 					"Color <hotkey>scheme                         <white>%s<magenta>\n"
 					"Customize <hotkey>colors\n",
 
 					(usr->flags & USR_DONT_AUTO_COLOR) ? "Classic" : "Modern"
 				);
-
+				if (!(usr->flags & USR_DONT_AUTO_COLOR))
+					Print(usr, "Customize colors of s<hotkey>ymbols\n");
+			}
 			read_menu(usr);
 			Return;
 
@@ -946,6 +948,15 @@ void state_config_terminal(User *usr, char c) {
 			if (usr->flags & USR_ANSI) {
 				Put(usr, "Customize colors\n");
 				CALL(usr, STATE_CONFIG_COLORS);
+				Return;
+			}
+			break;
+
+		case 'y':
+		case 'Y':
+			if ((usr->flags & (USR_ANSI|USR_DONT_AUTO_COLOR)) == USR_ANSI) {
+				Put(usr, "Customize colors of symbols\n");
+				CALL(usr, STATE_CONFIG_SYMBOLS);
 				Return;
 			}
 			break;
@@ -1194,8 +1205,6 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-		case 'u':
-		case 'U':
 			usr->colors[usr->read_lines] = BLUE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<blue>Blue\n");
@@ -1254,6 +1263,252 @@ void state_custom_colors(User *usr, char c) {
 	Return;
 }
 
+
+#define CUSTOM_SYMBOL_COLOR(x)						\
+	do {											\
+		usr->read_lines = (x);						\
+		Put(usr, "Symbol color\n");					\
+		CALL(usr, STATE_CUSTOM_SYMBOL_COLORS);		\
+		Return;										\
+	} while(0)
+
+void state_config_symbols(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_config_symbols);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			buffer_text(usr);
+
+			Print(usr, "<magenta>\n"
+				"Symbols in <hotkey>White text appear in ...   %c%-16s<white> [sample..!]<magenta>\n"
+				"Symbols in <hotkey>Yellow text appear in ...  %c%-16s<yellow> [sample..!]<magenta>\n"
+				"Symbols in <hotkey>Red text appear in ...     %c%-16s<red> [sample..!]<magenta>\n"
+				"Symbols in <hotkey>Green text appear in ...   %c%-16s<green> [sample..!]<magenta>\n",
+
+				color_table[usr->symbol_colors[WHITE]].key, color_table[usr->symbol_colors[WHITE]].name,
+				color_table[usr->symbol_colors[YELLOW]].key, color_table[usr->symbol_colors[YELLOW]].name,
+				color_table[usr->symbol_colors[RED]].key, color_table[usr->symbol_colors[RED]].name,
+				color_table[usr->symbol_colors[GREEN]].key, color_table[usr->symbol_colors[GREEN]].name
+			);
+			Print(usr,
+				"Symbols in <hotkey>Cyan text appear in ...    %c%-16s<cyan> [sample..!]<magenta>\n"
+				"Symbols in <hotkey>Blue text appear in ...    %c%-16s<blue> [sample..!]<magenta>\n"
+				"Symbols in <hotkey>Magenta text appear in ... %c%-16s<magenta> [sample..!]<magenta>\n",
+
+				color_table[usr->symbol_colors[CYAN]].key, color_table[usr->symbol_colors[CYAN]].name,
+				color_table[usr->symbol_colors[BLUE]].key, color_table[usr->symbol_colors[BLUE]].name,
+				color_table[usr->symbol_colors[MAGENTA]].key, color_table[usr->symbol_colors[MAGENTA]].name
+			);
+/* print the symbol string in white */
+			usr->flags |= USR_DONT_AUTO_COLOR;
+
+			Print(usr,
+				"\n"
+				"<hotkey>Defaults for all colors\n"
+				"\n"
+				"Automatically color these <hotkey>symbols    <white> %s<magenta>\n",
+
+				(usr->symbols == NULL) ? Default_Symbols : usr->symbols);
+
+/* we can safely do this, because you can't have this flag set and be in this menu */
+			usr->flags &= ~USR_DONT_AUTO_COLOR;
+
+			if (usr->symbols != NULL && strcmp(usr->symbols, Default_Symbols))
+				Print(usr, "<hotkey>Use default symbol string\n");
+
+			read_menu(usr);
+			Return;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "Config Terminal\n");
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'w':
+		case 'W':
+			CUSTOM_SYMBOL_COLOR(WHITE);
+
+		case 'y':
+		case 'Y':
+			CUSTOM_SYMBOL_COLOR(YELLOW);
+
+		case 'r':
+		case 'R':
+			CUSTOM_SYMBOL_COLOR(RED);
+
+		case 'g':
+		case 'G':
+			CUSTOM_SYMBOL_COLOR(GREEN);
+
+		case 'c':
+		case 'C':
+			CUSTOM_SYMBOL_COLOR(CYAN);
+
+		case 'b':
+		case 'B':
+			CUSTOM_SYMBOL_COLOR(BLUE);
+
+		case 'm':
+		case 'M':
+			CUSTOM_SYMBOL_COLOR(MAGENTA);
+
+		case 'd':
+		case 'D':
+			Put(usr, "Default colors\n");
+			default_symbol_colors(usr);
+
+			CURRENT_STATE(usr);
+			Return;
+
+		case 's':
+		case 'S':
+			Put(usr, "Symbols\n");
+			CALL(usr, STATE_CHANGE_SYMBOLS);
+			Return;
+
+		case 'u':
+		case 'U':
+			if (usr->symbols != NULL && strcmp(usr->symbols, Default_Symbols)) {
+				Put(usr, "Use default symbols\n");
+				Free(usr->symbols);
+				usr->symbols = NULL;
+
+				CURRENT_STATE(usr);
+				Return;
+			}
+			break;
+	}
+	Print(usr, "<yellow>\n[Config] Symbols%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+/*
+	Customize symbol colors
+	almost the same as state_custom_colors(), but with small changes ...
+
+	Note: usr->read_lines = index of color to change
+*/
+void state_custom_symbol_colors(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_custom_symbol_colors);
+
+	switch(c) {
+		case INIT_STATE:
+			Put(usr, "\n<green>Colors are: <hotkey>R<red>ed <hotkey>G<green>reen <hotkey>Y<yellow>ellow <hotkey>B<blue>lue <hotkey>M<magenta>agenta <hotkey>C<cyan>yan <hotkey>W<white>hite <black>Blac<hotkey>k");
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+			Put(usr, "\n");
+			RET(usr);
+			Return;
+
+		case 'r':
+		case 'R':
+			usr->symbol_colors[usr->read_lines] = RED;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<red>Red\n");
+			RET(usr);
+			Return;
+
+		case 'g':
+		case 'G':
+			usr->symbol_colors[usr->read_lines] = GREEN;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<green>Green\n");
+			RET(usr);
+			Return;
+
+		case 'y':
+		case 'Y':
+			usr->symbol_colors[usr->read_lines] = YELLOW;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<yellow>Yellow\n");
+			RET(usr);
+			Return;
+
+		case 'b':
+		case 'B':
+			usr->symbol_colors[usr->read_lines] = BLUE;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<blue>Blue\n");
+			RET(usr);
+			Return;
+
+		case 'm':
+		case 'M':
+			usr->symbol_colors[usr->read_lines] = MAGENTA;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<magenta>Magenta\n");
+			RET(usr);
+			Return;
+
+		case 'c':
+		case 'C':
+			usr->symbol_colors[usr->read_lines] = CYAN;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<cyan>Cyan\n");
+			RET(usr);
+			Return;
+
+		case 'w':
+		case 'W':
+			usr->symbol_colors[usr->read_lines] = WHITE;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<white>White\n");
+			RET(usr);
+			Return;
+
+		case 'k':
+		case 'K':
+			usr->symbol_colors[usr->read_lines] = BLACK;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Put(usr, "<white>Black\n");
+			RET(usr);
+			Return;
+	}
+	Print(usr, "\n<cyan>Have symbols on %c%s<cyan> text appear in: ",
+		color_table[usr->read_lines].key,
+		color_table[usr->read_lines].name);
+	Return;
+}
+
+void state_change_symbols(User *usr, char c) {
+	Enter(state_change_symbols);
+
+	if (c == INIT_STATE)
+		usr->flags |= USR_DONT_AUTO_COLOR;
+	else
+		if (c == EDIT_BREAK || c == EDIT_RETURN)
+			usr->flags &= ~USR_DONT_AUTO_COLOR;
+
+	change_config(usr, c, &usr->symbols, "<green>Enter symbols that will be automatically colored: <yellow>");
+	Return;
+}
 
 void state_config_who(User *usr, char c) {
 	if (usr == NULL)

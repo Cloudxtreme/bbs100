@@ -59,6 +59,8 @@ ColorTable color_table[NUM_COLORS] = {
 	{ "Hotkeys",	33, KEY_CTRL('K')	}
 };
 
+char *Default_Symbols = DEFAULT_SYMBOLS;
+
 static char last_helping_hand[MAX_NAME] = "";
 
 
@@ -109,41 +111,38 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
 			c = hackerz_mode(c);
 
-/*
-	word-wrap in display function
-	CHARSET1 contains characters that break the line
+/* user-defined auto-coloring symbols */
 
-	we also like auto-coloring symbols
-*/
-		if (cstrchr(WRAP_CHARSET1, c) != NULL) {
-			if (c != ' ')
+		if ((usr->flags & (USR_ANSI|USR_DONT_AUTO_COLOR)) == USR_ANSI) {
+			char *symbol_str;
+
+			symbol_str = (usr->symbols == NULL) ? Default_Symbols : usr->symbols;
+			if (cstrchr(symbol_str, c) != NULL) {
 				is_symbol = 1;
-
-/*
-	for some characters auto-coloring can be straight ugly
-	e.g, the space, dot, question mark
-*/
-			if (c != ' ' && c != '?' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-				if (c == '.') {
 /*
 	auto-coloring a single dot is ugly, but multiple ones is fun
 */
-					if (str[1] == '.' || (pos > 0 && str[-1] == '.'))
-						do_auto_color = 1;
-					else
-						do_auto_color = 0;
-				} else
-					do_auto_color = 1;
+				if (c == '.' && str[1] != '.' && (pos > 0 && str[-1] != '.'))
+					is_symbol = 0;
+
+				if (dont_auto_color)
+					is_symbol = 0;
 			}
+		}
+/*
+	word-wrap in display function
+	Charset1 contains characters that break the line
+*/
+		if (cstrchr(Wrap_Charset1, c) != NULL) {
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
 				if (c != ' ') {
-					if (do_auto_color) {
+					if (is_symbol) {
 						auto_color(usr, buf);
 						put_StringIO(dev, buf);
 					}
 					write_StringIO(dev, str, 1);
 
-					if (do_auto_color) {
+					if (is_symbol) {
 						restore_colorbuf(usr, usr->color, buf);
 						put_StringIO(dev, buf);
 						do_auto_color = 0;
@@ -167,14 +166,10 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 			}
 		} else {
 /*
-	pretty word-wrap: CHARSET2 contains characters that wrap along with the line
+	pretty word-wrap: Charset2 contains characters that wrap along with the line
 	mind that the < character is also used for long color codes
 */
-			if (c == '@' || (c != '<' && cstrchr(WRAP_CHARSET2, c) != NULL)) {
-				is_symbol = 1;
-				if (c != '#' && (usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color)
-					do_auto_color = 1;
-
+			if (c != '<' && cstrchr(Wrap_Charset2, c) != NULL) {
 				if (*cpos + word_len(str+1) >= usr->display->term_width) {
 					write_StringIO(dev, "\r\n", 2);
 					*cpos = 0;
@@ -295,7 +290,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				break;
 
 			default:
-				if (do_auto_color) {
+				if (is_symbol) {
 					auto_color(usr, buf);
 					put_StringIO(dev, buf);
 				}
@@ -305,7 +300,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 				if (dont_auto_color != AUTO_COLOR_FORCED || !is_symbol)
 					dont_auto_color = force_auto_color_off;
 
-				if (do_auto_color) {
+				if (is_symbol) {
 					restore_colorbuf(usr, usr->color, buf);
 					put_StringIO(dev, buf);
 					do_auto_color = 0;
@@ -347,7 +342,7 @@ int len;
 				return len;
 
 			default:
-				if (cstrchr(WRAP_CHARSET1, *str) != NULL || cstrchr(WRAP_CHARSET2, *str) != NULL)
+				if (cstrchr(Wrap_Charset1, *str) != NULL || cstrchr(Wrap_Charset2, *str) != NULL)
 					return len;
 
 /* count as printable character (this is NOT always the case, however) */
@@ -977,42 +972,19 @@ int color;
 	color = color_key_index(usr->color);
 	switch(color) {
 		case BLACK:
-			color = color_table[BLUE].key;
-			break;
-
 		case RED:
-			color = color_table[YELLOW].key;
-			break;
-
 		case GREEN:
-			color = color_table[YELLOW].key;
-			break;
-
 		case YELLOW:
-			color = color_table[WHITE].key;
-			break;
-
 		case BLUE:
-			color = color_table[CYAN].key;
-			break;
-
 		case MAGENTA:
-			color = color_table[YELLOW].key;
-			break;
-
 		case CYAN:
-			color = color_table[WHITE].key;
-			break;
-
 		case WHITE:
-			color = color_table[WHITE].key;
+			color = color_table[usr->symbol_colors[color]].value;
 			break;
 
 		default:
-			color = color_table[WHITE].key;
+			color = color_table[usr->symbol_colors[WHITE]].value;
 	}
-	color = Ansi_Color(usr, color);
-
 	if (usr->flags & USR_BOLD)
 		sprintf(colorbuf, "\x1b[1;%dm", color);
 	else
@@ -1158,6 +1130,20 @@ void default_colors(User *usr) {
 	usr->colors[CYAN] = CYAN;
 	usr->colors[WHITE] = WHITE;
 	usr->colors[HOTKEY] = YELLOW;
+}
+
+void default_symbol_colors(User *usr) {
+	if (usr == NULL)
+		return;
+
+	usr->symbol_colors[BLACK] = BLUE;
+	usr->symbol_colors[RED] = YELLOW;
+	usr->symbol_colors[GREEN] = YELLOW;
+	usr->symbol_colors[YELLOW] = WHITE;
+	usr->symbol_colors[BLUE] = CYAN;
+	usr->symbol_colors[MAGENTA] = YELLOW;
+	usr->symbol_colors[CYAN] = WHITE;
+	usr->symbol_colors[WHITE] = YELLOW;
 }
 
 void wipe_line(User *usr) {

@@ -35,6 +35,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+char *Wrap_Charset1 = WRAP_CHARSET1;
+char *Wrap_Charset2 = WRAP_CHARSET2;
+
 /*
 	Returns:
 		-1 on Ctrl-C or Ctrl-D
@@ -843,11 +846,11 @@ int i, wrap_len;
 	erase[0] = wrap[0] = 0;
 	wrap_len = usr->display->term_width / 3;
 	for(i = usr->edit_pos - 1; i > wrap_len; i--) {
-		if (cstrchr(WRAP_CHARSET1, usr->edit_buf[i]) != NULL) {
+		if (cstrchr(Wrap_Charset1, usr->edit_buf[i]) != NULL) {
 			i++;
 			break;
 		}
-		if (cstrchr(WRAP_CHARSET2, usr->edit_buf[i]) != NULL) {
+		if (cstrchr(Wrap_Charset2, usr->edit_buf[i]) != NULL) {
 			strcat(erase, "\b \b");
 			break;
 		}

@@ -49,6 +49,9 @@
 #define STATE_CONFIG_HEIGHT				state_config_height
 #define STATE_CONFIG_COLORS				state_config_colors
 #define STATE_CUSTOM_COLORS				state_custom_colors
+#define STATE_CONFIG_SYMBOLS			state_config_symbols
+#define STATE_CUSTOM_SYMBOL_COLORS		state_custom_symbol_colors
+#define STATE_CHANGE_SYMBOLS			state_change_symbols
 #define STATE_CONFIG_PASSWORD			state_config_password
 #define STATE_CHANGE_PASSWORD			state_change_password
 #define STATE_CONFIG_ANON				state_config_anon
@@ -86,6 +89,9 @@ void state_config_height(User *, char);
 void config_dimensions(User *, char, int *, void (*)(User *, char));
 void state_config_colors(User *, char);
 void state_custom_colors(User *, char);
+void state_config_symbols(User *, char);
+void state_custom_symbol_colors(User *, char);
+void state_change_symbols(User *, char);
 void state_config_password(User *, char);
 void state_change_password(User *, char);
 void state_config_anon(User *, char);

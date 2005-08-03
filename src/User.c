@@ -80,6 +80,7 @@ User *usr;
 /* set sane defaults */
 	usr->flags = USR_HIDE_ADDRESS|USR_HIDE_INFO;
 	default_colors(usr);
+	default_symbol_colors(usr);
 
 	usr->curr_msg = -1;
 	return usr;
@@ -111,6 +112,7 @@ int i;
 	Free(usr->vanity);
 	Free(usr->xmsg_header);
 	Free(usr->away);
+	Free(usr->symbols);
 
 	for(i = 0; i < NUM_QUICK; i++)
 		Free(usr->quick[i]);
@@ -355,6 +357,7 @@ int term_width, term_height, ff1_continue;
 			FF1_LOAD_DUP("timezone", usr->timezone);
 			FF1_LOAD_DUP("vanity", usr->vanity);
 			FF1_LOAD_DUP("xmsg_header", usr->xmsg_header);
+			FF1_LOAD_DUP("symbols", usr->symbols);
 		} else {
 			FF1_SKIP("real_name");
 			FF1_SKIP("street");
@@ -371,6 +374,7 @@ int term_width, term_height, ff1_continue;
 			FF1_SKIP("timezone");
 			FF1_SKIP("vanity");
 			FF1_SKIP("xmsg_header");
+			FF1_SKIP("symbols");
 		}
 		if (flags & LOAD_USER_DATA) {
 			FF1_LOAD_DUP("hostname", usr->tmpbuf[TMP_FROM_HOST]);
@@ -421,6 +425,27 @@ int term_width, term_height, ff1_continue;
 
 				continue;
 			}
+			if (!strcmp(buf, "symbol_colors")) {
+				int i;
+
+				sscanf(p, "%d %d %d %d %d %d %d %d",
+					&usr->symbol_colors[BLACK],
+					&usr->symbol_colors[RED],
+					&usr->symbol_colors[GREEN],
+					&usr->symbol_colors[YELLOW],
+					&usr->symbol_colors[BLUE],
+					&usr->symbol_colors[MAGENTA],
+					&usr->symbol_colors[CYAN],
+					&usr->symbol_colors[WHITE]
+				);
+
+/* check for valid values */
+				for(i = 0; i < 8; i++)
+					if (usr->symbol_colors[i] < 0 || usr->symbol_colors[i] > 7)
+						usr->symbol_colors[i] = i;
+
+				continue;
+			}
 		} else {
 			FF1_SKIP("hostname");
 			FF1_SKIP("ipnum");
@@ -443,6 +468,7 @@ int term_width, term_height, ff1_continue;
 			FF1_SKIP("term_height");
 			FF1_SKIP("flags");
 			FF1_SKIP("colors");
+			FF1_SKIP("symbol_colors");
 		}
 /* quicklist */
 		if ((flags & LOAD_USER_QUICKLIST) && !strcmp(buf, "quick")) {
@@ -1057,6 +1083,7 @@ char buf[PRINT_BUF];
 	FF1_SAVE_STR("timezone", usr->timezone);
 	FF1_SAVE_STR("vanity", usr->vanity);
 	FF1_SAVE_STR("xmsg_header", usr->xmsg_header);
+	FF1_SAVE_STR("symbols", usr->symbols);
 
 	FF1_SAVE_STR("hostname", usr->conn->hostname);
 	FF1_SAVE_STR("ipnum", usr->conn->ipnum);
@@ -1091,8 +1118,18 @@ char buf[PRINT_BUF];
 		usr->colors[MAGENTA],
 		usr->colors[CYAN],
 		usr->colors[WHITE],
-		usr->colors[HOTKEY]);
-
+		usr->colors[HOTKEY]
+	);
+	Fprintf(f, "symbol_colors=%d %d %d %d %d %d %d %d",
+		usr->symbol_colors[BLACK],
+		usr->symbol_colors[RED],
+		usr->symbol_colors[GREEN],
+		usr->symbol_colors[YELLOW],
+		usr->symbol_colors[BLUE],
+		usr->symbol_colors[MAGENTA],
+		usr->symbol_colors[CYAN],
+		usr->symbol_colors[WHITE]
+	);
 	for(i = 0; i < 10; i++)
 		if (usr->quick[i] != NULL)
 			Fprintf(f, "quick=%d %s", i, usr->quick[i]);
