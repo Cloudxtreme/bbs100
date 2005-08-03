@@ -1065,7 +1065,9 @@ void state_config_colors(User *usr, char c) {
 		case INIT_STATE:
 			buffer_text(usr);
 
-			Print(usr, "<magenta>\n"
+/* the <normal> tag here resets the background color, if needed */
+
+			Print(usr, "<normal><magenta>\n"
 				"<hotkey>White      <white>[%c%-7s<white>]<magenta>         <hotkey>Cyan       <white>[%c%-7s<white>]<magenta>\n"
 				"<hotkey>Yellow     <white>[%c%-7s<white>]<magenta>         <hotkey>Blue       <white>[%c%-7s<white>]<magenta>\n",
 
