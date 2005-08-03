@@ -259,7 +259,17 @@ void state_config_menu(User *usr, char c) {
 }
 
 
+static char *print_address(char *value, char *alt, char *buf) {
+	if (value != NULL && *value)
+		sprintf(buf, "<yellow> %s", value);
+	else
+		sprintf(buf, "<white> <unknown%s>", alt);
+	return buf;
+}
+
 void state_config_address(User *usr, char c) {
+char buf[MAX_LINE*2];
+
 	if (usr == NULL)
 		return;
 
@@ -273,28 +283,19 @@ void state_config_address(User *usr, char c) {
 			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
-				"<hotkey>Real name :<yellow> %s<magenta>\n", (usr->real_name == NULL || !usr->real_name[0]) ? "<white><unknown><yellow>" : usr->real_name);
+				"<hotkey>Real name :%s<magenta>\n", print_address(usr->real_name, "", buf));
 
-			Print(usr, 
-				"<hotkey>Address   :<yellow> %s\n"
-				"<yellow>            %s<yellow>  %s\n"
-				"<yellow>            %s,<yellow> %s<magenta>\n",
+			Print(usr, "<hotkey>Address   :%s\n", print_address(usr->street, " street", buf));
 
-				(usr->street == NULL  || !usr->street[0])  ? "<white><unknown street><yellow>"  : usr->street,
-				(usr->city == NULL    || !usr->city[0])    ? "<white><unknown city><yellow>"    : usr->city,
-				(usr->zipcode == NULL || !usr->zipcode[0]) ? "<white><unknown zipcode><yellow>" : usr->zipcode,
-				(usr->state == NULL   || !usr->state[0])   ? "<white><unknown state>"			: usr->state,
-				(usr->country == NULL || !usr->country[0]) ? "<white><unknown country><yellow>" : usr->country);
+			Print(usr, "           %s",		print_address(usr->city, " city", buf));
+			Print(usr, " %s\n",				print_address(usr->zipcode, " ZIP code", buf));
+			Print(usr, "           %s,",	print_address(usr->state, " state", buf));
+			Print(usr, "%s<magenta>\n",		print_address(usr->country, " country", buf));
 
-			Print(usr,
-				"<hotkey>Phone     :<yellow> %s<magenta>\n"
-				"\n"
-				"<hotkey>E-mail    :<yellow> %s<magenta>\n"
-				"<hotkey>WWW       :<yellow> %s<magenta>\n",
-
-				(usr->phone == NULL || !usr->phone[0]) ? "<white><unknown phone number><yellow>"   : usr->phone,
-				(usr->email == NULL || !usr->email[0]) ? "<white><unknown e-mail address><yellow>" : usr->email,
-				(usr->www == NULL   || !usr->www[0])   ? "<white><unknown WWW address><yellow>"    : usr->www);
+			Print(usr, "<hotkey>Phone     :%s<magenta>\n",	print_address(usr->phone, " phone number", buf));
+			Print(usr, "\n"
+				"<hotkey>E-mail    :%s<magenta>\n",			print_address(usr->email, " e-mail address", buf));
+			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf));
 
 			Print(usr, "\n"
 				"<hotkey>Hide address from non-friends...  <white>%s<magenta>\n",
