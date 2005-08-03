@@ -65,6 +65,261 @@
 #include <sys/types.h>
 #include <ctype.h>
 
+/*
+	run the 'common' functions, these are all functions but no eXpress Messages and
+	no message reading functions
+
+	Be advised: This function calls other states, and may reset the RTF_BUSY flag
+*/
+int fun_common(User *usr, char c) {
+	if (usr == NULL)
+		return 1;
+
+	Enter(fun_common);
+
+	switch(c) {
+		case KEY_CTRL('G'):
+			Put(usr, "<white>GNU General Public License\n");
+			if (load_screen(usr->text, PARAM_GPL_SCREEN) < 0) {
+				Put(usr, "<red>The GPL file is missing\n");		/* or out of memory! */
+				break;
+			}
+			read_text(usr);
+			Return 1;
+
+		case '[':
+			Put(usr, "<white>bbs100 version information\n");
+			print_version_info(usr);
+			break;
+
+		case ']':
+			Put(usr, "<white>Local modifications made to bbs100");
+			if (load_screen(usr->text, PARAM_MODS_SCREEN) < 0) {
+				Put(usr, "\n<red>The local mods file is missing\n");		/* or out of memory! */
+				break;
+			}
+			Put(usr, "<green>");
+			read_text(usr);
+			Return 1;
+
+		case '{':
+		case '}':
+			Put(usr, "<white>Credits\n");
+
+			if (usr->text == NULL && (usr->text = new_StringIO()) == NULL) {
+				Perror(usr, "Out of memory");
+				break;
+			}
+			free_StringIO(usr->text);
+			if (load_StringIO(usr->text, PARAM_CREDITS_SCREEN) < 0) {
+				Put(usr, "<red>The credits file is missing\n");		/* or out of memory! */
+				break;
+			}
+			Put(usr, "<green>");
+			read_text(usr);
+			Return 1;
+
+		case 'w':
+			Put(usr, "<white>Who\n");
+			if (usr->flags & USR_SHORT_WHO)
+				who_list(usr, WHO_LIST_SHORT);
+			else
+				who_list(usr, WHO_LIST_LONG);
+			Return 1;
+
+		case 'W':
+			Put(usr, "<white>Who\n");
+			if (usr->flags & USR_SHORT_WHO)
+				who_list(usr, WHO_LIST_LONG);
+			else
+				who_list(usr, WHO_LIST_SHORT);
+			Return 1;
+
+		case KEY_CTRL('W'):
+			Put(usr, "<white>Customize Who list\n");
+			CALL(usr, STATE_CONFIG_WHO);
+			Return 1;
+
+		case KEY_CTRL('F'):
+			Put(usr, "<white>Online friends\n");
+			online_friends_list(usr);
+			Return 1;
+
+		case KEY_CTRL('T'):
+			if (PARAM_HAVE_TALKEDTO) {
+				Put(usr, "<white>Talked to list\n");
+				talked_list(usr);
+				Return 1;
+			} else
+				if (PARAM_HAVE_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Talked To lists<red> are not enabled on this server\n");
+			break;
+
+		case KEY_CTRL('P'):
+			Put(usr, "<white>Ping\n");
+			enter_recipients(usr, STATE_PING_PROMPT);
+			Return 1;
+
+		case 'p':
+		case 'P':
+			Put(usr, "<white>Profile\n");
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the anonymous <yellow>%s<red> user cannot profile anyone\n", PARAM_NAME_GUEST);
+				break;
+			}
+			if (usr->message != NULL) {
+				listdestroy_StringList(usr->recipients);
+				if (usr->message->anon[0]) {
+					if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))
+						usr->recipients = new_StringList(usr->message->from);
+					else
+						usr->recipients = NULL;
+				} else
+					usr->recipients = new_StringList(usr->message->from);
+			}
+			enter_name(usr, STATE_PROFILE_USER);
+			Return 1;
+
+		case 'X':
+			Put(usr, "<white>Toggle message reception\n");
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot enable message reception\n", PARAM_NAME_GUEST);
+				break;
+			}
+			usr->flags ^= USR_X_DISABLED;
+			Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
+
+			if (usr->flags & USR_X_DISABLED) {
+				if (usr->flags & USR_HELPING_HAND) {
+					usr->flags &= ~USR_HELPING_HAND;
+					Put(usr, "<magenta>You are no longer available to help others\n");
+					usr->runtime_flags |= RTF_WAS_HH;
+				}
+			} else {
+				if (usr->runtime_flags & RTF_WAS_HH) {
+					usr->flags |= USR_HELPING_HAND;
+					usr->runtime_flags &= ~RTF_WAS_HH;
+					Put(usr, "<magenta>You are now available to help others\n");
+				}
+			}
+			break;
+
+		case '$':
+			if (usr->runtime_flags & RTF_SYSOP) {
+				drop_sysop_privs(usr);
+				Put(usr, "\n");
+				break;
+			}
+			if (get_su_passwd(usr->name) != NULL) {
+				Print(usr, "<white>%s mode\n", PARAM_NAME_SYSOP);
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_SYSOP);
+					break;
+				}
+				CALL(usr, STATE_SU_PROMPT);
+				Return 1;
+			}
+
+		case 't':
+		case 'T':
+			Put(usr, "<white>Time");
+			buffer_text(usr);
+			print_calendar(usr);
+			read_text(usr);
+			Return 1;
+
+		case KEY_CTRL('D'):
+			Put(usr, "<white>Doing\n");
+			CALL(usr, STATE_CONFIG_DOING);
+			Return 1;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return 1;
+
+		case 'B':
+			usr->flags ^= USR_BEEP;
+			if (usr->flags & USR_BEEP)
+				usr->flags |= USR_ROOMBEEP;
+			else
+				usr->flags &= ~USR_ROOMBEEP;
+
+			Print(usr, "<white>Toggle beeping\n"
+				"<magenta>Messages will %s beep on arrival\n", (usr->flags & USR_BEEP) ? "now" : "<yellow>not<magenta>");
+			break;
+
+		case 'F':
+			if (PARAM_HAVE_FOLLOWUP) {
+				usr->flags ^= USR_FOLLOWUP;
+				Print(usr, "<white>Toggle follow-up mode\n"
+					"<magenta>Follow up mode is now <yellow>%s\n", (usr->flags & USR_FOLLOWUP) ? "enabled" : "disabled");
+			} else
+				if (PARAM_HAVE_DISABLED_MSG)
+					Put(usr, "<red>Sorry, but <yellow>Follow-up mode<red> is not enabled on this server\n");
+			break;
+
+		case 'S':
+			Put(usr, "<white>Statistics\n<green>");
+			print_stats(usr);
+			Return 1;
+
+		case '>':
+			Put(usr, "<white>Friends\n");
+			CALL(usr, STATE_FRIENDLIST_PROMPT);
+			Return 1;
+
+		case '<':
+			Put(usr, "<white>Enemies\n");
+			CALL(usr, STATE_ENEMYLIST_PROMPT);
+			Return 1;
+
+		case 'c':
+		case 'C':
+			Put(usr, "<red>Press<yellow> <Ctrl-C><red> or<yellow> <Ctrl-O><red> to access the Config menu\n");
+			break;
+
+		case KEY_CTRL('C'):				/* this don't work for some people (?) */
+		case KEY_CTRL('O'):				/* so I added Ctrl-O by special request */
+			Put(usr, "<white>Config menu\n");
+			CALL(usr, STATE_CONFIG_MENU);
+			Return 1;
+
+		case 'A':
+		case KEY_CTRL('A'):
+			if (usr->curr_room->number != MAIL_ROOM) {
+				if (!(usr->runtime_flags & RTF_ROOMAIDE)
+					&& in_StringList(usr->curr_room->room_aides, usr->name) != NULL) {
+					if (is_guest(usr->name)) {
+						Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_ROOMAIDE);
+						break;
+					}
+					Print(usr, "<magenta>Auto-enabling %s functions\n\n", PARAM_NAME_ROOMAIDE);
+					usr->runtime_flags |= RTF_ROOMAIDE;
+				}
+				if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)) {
+					Put(usr, "<white>Room Config menu\n");
+					CALL(usr, STATE_ROOM_CONFIG_MENU);
+					Return 1;
+				}
+				break;
+			}
+			break;
+
+		case KEY_CTRL('S'):
+			if (usr->runtime_flags & RTF_SYSOP) {
+				Print(usr, "<white>%s menu\n", PARAM_NAME_SYSOP);
+				if (is_guest(usr->name)) {
+					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_SYSOP);
+					break;
+				}
+				CALL(usr, STATE_SYSOP_MENU);
+				Return 1;
+			}
+			break;
+	}
+	Return 0;
+}
+
 
 void state_dummy(User *usr, char c) {
 	if (usr == NULL)
@@ -783,15 +1038,9 @@ int r;
 	Enter(state_edit_x);
 
 	if (c == INIT_STATE) {
-		char prompt[3];
-
 		edit_x(usr, EDIT_INIT);
 		usr->runtime_flags |= RTF_BUSY_SENDING;
-
-		prompt[0] = KEY_CTRL('Q');
-		prompt[1] = '>';
-		prompt[2] = 0;
-		Put(usr, prompt);
+		Put(usr, "<yellow>>");
 		Return;
 	}
 	if (c == KEY_CTRL('A') && (usr->flags & USR_FOLLOWUP)) {
@@ -1815,12 +2064,6 @@ int r;
 	if (c == INIT_STATE) {
 		edit_line(usr, EDIT_INIT);
 
-		if (PARAM_HAVE_HOLD) {
-			if (usr->runtime_flags & RTF_HOLD)
-				usr->runtime_flags |= RTF_WAS_HOLDING;
-			else
-				usr->runtime_flags |= RTF_HOLD;
-		}
 		if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
 			usr->flags &= ~USR_HELPING_HAND;
 			usr->runtime_flags |= RTF_WAS_HH;
@@ -1879,18 +2122,7 @@ int r;
 			Return;
 		}
 		if (!strcmp(usr->edit_buf, "exit") || !strcmp(usr->edit_buf, "logout")) {
-			if (usr->runtime_flags & RTF_WAS_HOLDING) {
-/* was on hold, so still on hold now, but not busy anymore */
-				usr->runtime_flags &= ~(RTF_WAS_HOLDING|RTF_BUSY);
-				RET(usr);
-				Return;
-			}
-/* no longer on hold */
-			if (usr->held_msgs != NULL) {
-				JMP(usr, STATE_HELD_HISTORY_PROMPT);
-				Return;
-			}
-			usr->runtime_flags &= ~(RTF_BUSY|RTF_HOLD);
+			usr->runtime_flags &= ~RTF_BUSY;
 			if (usr->runtime_flags & RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;

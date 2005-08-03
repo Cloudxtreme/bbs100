@@ -70,6 +70,17 @@ void Call(Conn *conn, void (*state)(void *, char)) {
 }
 
 /*
+	Call directly into a specific substate of state
+*/
+void Callx(Conn *conn, void (*state)(void *, char), char arg) {
+	if (conn == NULL || state == NULL)
+		return;
+
+	Push(conn, state);
+	state(conn->data, arg);
+}
+
+/*
 	Move() : Replace current level by a new level, don't call init
 */
 void Move(Conn *conn, void (*state)(void *, char)) {

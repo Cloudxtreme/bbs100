@@ -30,8 +30,23 @@
 #include "util.h"
 #include "access.h"
 #include "screens.h"
+#include "cstring.h"
 #include "Param.h"
 #include "Memory.h"
+
+
+static void generic_print_history(User *usr, BufferedMsg *m) {
+	if (usr == NULL || m == NULL)
+		return;
+
+	print_buffered_msg(usr, m);
+
+	listdestroy_StringList(usr->recipients);
+	if (!strcmp(m->from, usr->name))
+		usr->recipients = copy_StringList(m->to);
+	else
+		usr->recipients = new_StringList(m->from);
+}
 
 
 int history_prompt(User *usr) {
@@ -55,7 +70,7 @@ BufferedMsg *m;
 		Put(usr, "<red>No messages have been sent yet\n");
 		Return 0;
 	}
-	CALL(usr, STATE_HISTORY_PROMPT);
+	CALLX(usr, STATE_HISTORY_PROMPT, INIT_PROMPT);
 	Return 1;
 }
 
@@ -72,27 +87,27 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 	Enter(state_history_prompt);
 
 	switch(c) {
+/*
+	it's confusing, but I've reversed INIT_PROMPT and INIT_STATE here to make
+	things look better; it will only reprint the message when explicitly asked
+	for, and just the plain prompt on INIT_STATE
+*/
 		case INIT_PROMPT:
+			if (usr->history_p == NULL)
+				break;
+
+			generic_print_history(usr, (BufferedMsg *)usr->history_p->p);
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
 		case INIT_STATE:
-			if (usr->history_p == NULL)
-				break;
-
-			print_buffered_msg(usr, (BufferedMsg *)usr->history_p->p);
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
 		case 'b':
 		case 'B':
-		case 'p':
-		case 'P':
 		case KEY_BS:
-			if (c == 'p' || c == 'P')
-				Put(usr, "Previous\n");
-			else
-				Put(usr, "Back\n");
+			Put(usr, "Back\n");
 
 			if (usr->history_p == NULL) {
 				Perror(usr, "Your history buffer is gone");
@@ -104,18 +119,13 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			if (usr->history_p == NULL)
 				break;
 
-			print_buffered_msg(usr, (BufferedMsg *)usr->history_p->p);
+			generic_print_history(usr, (BufferedMsg *)usr->history_p->p);
 			break;
 
-		case 'f':
-		case 'F':
 		case 'n':
 		case 'N':
 		case ' ':
-			if (c == 'f' || c == 'F')
-				Put(usr, "Forward\n");
-			else
-				Put(usr, "Next\n");
+			Put(usr, "Next\n");
 
 			if (usr->history_p == NULL) {
 				Perror(usr, "Your history buffer is gone");
@@ -129,7 +139,19 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 				RET(usr);
 				Return;
 			}
-			print_buffered_msg(usr, (BufferedMsg *)usr->history_p->p);
+			generic_print_history(usr, (BufferedMsg *)usr->history_p->p);
+			break;
+
+		case 'a':
+			Put(usr, "Again\n");
+
+			if (usr->history_p == NULL) {
+				Perror(usr, "Your history buffer is gone");
+				usr->runtime_flags &= ~RTF_BUSY;
+				RET(usr);
+				Return;
+			}
+			generic_print_history(usr, (BufferedMsg *)usr->history_p->p);
 			break;
 
 		case '-':
@@ -157,8 +179,6 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 		case 'R':
 		case KEY_CTRL('R'):
 		case 'V':
-		case 'A':
-		case 'a':
 			Put(usr, "Reply to All\n");
 
 History_Reply_Code:
@@ -250,12 +270,19 @@ History_Reply_Code:
 			usr->runtime_flags &= ~RTF_BUSY;
 			RET(usr);
 			Return;
+
+		default:
+			if (fun_common(usr, c)) {				/* Note: may reset RTF_BUSY flag(!) */
+				Return;
+			}
 	}
 	if (usr->history_p == NULL) {
 		usr->runtime_flags &= ~RTF_BUSY;
 		RET(usr);
 		Return;
 	}
+	usr->runtime_flags |= RTF_BUSY;
+
 	n = 1;
 	for(pl = rewind_BufferedMsg(usr->history); pl != NULL; pl = pl->next) {
 		if (pl == usr->history_p)
@@ -302,7 +329,7 @@ int r;
 	r = edit_number(usr, c);
 
 	if (r == EDIT_BREAK) {
-		RETX(usr, INIT_PROMPT);
+		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
@@ -324,7 +351,7 @@ int r;
 		else
 			*pointer = pl;
 
-		RET(usr);
+		RETX(usr, INIT_PROMPT);
 	}
 	Return;
 }
@@ -343,7 +370,7 @@ int r;
 	r = edit_number(usr, c);
 
 	if (r == EDIT_BREAK) {
-		RETX(usr, INIT_PROMPT);
+		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
@@ -352,7 +379,7 @@ int r;
 
 		i = atoi(usr->edit_buf);
 		if (i <= 0) {
-			RETX(usr, INIT_PROMPT);
+			RET(usr);
 			Return;
 		}
 		for(pl = *pointer; pl != NULL && pl->prev != NULL && i > 0; pl = pl->prev)
@@ -363,7 +390,7 @@ int r;
 		else
 			*pointer = pl;
 
-		RET(usr);
+		RETX(usr, INIT_PROMPT);
 	}
 	Return;
 }
@@ -382,7 +409,7 @@ int r;
 	r = edit_number(usr, c);
 
 	if (r == EDIT_BREAK) {
-		RETX(usr, INIT_PROMPT);
+		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
@@ -391,7 +418,7 @@ int r;
 
 		i = atoi(usr->edit_buf);
 		if (i <= 0) {
-			RETX(usr, INIT_PROMPT);
+			RET(usr);
 			Return;
 		}
 		for(pl = *pointer; pl != NULL && pl->next != NULL && i > 0; pl = pl->next)
@@ -402,7 +429,7 @@ int r;
 		else
 			*pointer = pl;
 
-		RET(usr);
+		RETX(usr, INIT_PROMPT);
 	}
 	Return;
 }
@@ -447,7 +474,7 @@ BufferedMsg *m;
 
 		usr->held_msgp = usr->held_msgp->prev;
 	}
-	CALL(usr, STATE_HELD_HISTORY_PROMPT);
+	CALLX(usr, STATE_HELD_HISTORY_PROMPT, INIT_PROMPT);
 	Return 1;
 }
 
@@ -484,28 +511,23 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 
 	switch(c) {
 		case INIT_PROMPT:
-			usr->runtime_flags |= RTF_BUSY;
-			break;
-
-		case INIT_STATE:
 			if (usr->held_msgp == NULL) {
 				usr->runtime_flags &= ~RTF_BUSY;
 				RET(usr);
 				Return;
 			}
-			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
+			generic_print_history(usr, (BufferedMsg *)usr->held_msgp->p);
+			usr->runtime_flags |= RTF_BUSY;
+			break;
+
+		case INIT_STATE:
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
 		case 'b':
 		case 'B':
-		case 'p':
-		case 'P':
 		case KEY_BS:
-			if (c == 'p' || c == 'P')
-				Put(usr, "Previous\n");
-			else
-				Put(usr, "Back\n");
+			Put(usr, "Back\n");
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your held messages buffer is gone");
@@ -515,18 +537,13 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			if (usr->held_msgp == NULL)
 				goto Exit_Held_History;
 
-			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
+			generic_print_history(usr, (BufferedMsg *)usr->held_msgp->p);
 			break;
 
-		case 'f':
-		case 'F':
 		case 'n':
 		case 'N':
 		case ' ':
-			if (c == 'f' || c == 'F')
-				Put(usr, "Forward\n");
-			else
-				Put(usr, "Next\n");
+			Put(usr, "Next\n");
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your held messages buffer is gone");
@@ -536,7 +553,19 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			if (usr->held_msgp == NULL)
 				goto Exit_Held_History;
 
-			print_buffered_msg(usr, (BufferedMsg *)usr->held_msgp->p);
+			generic_print_history(usr, (BufferedMsg *)usr->held_msgp->p);
+			break;
+
+		case 'a':
+			Put(usr, "Again\n");
+
+			if (usr->held_msgp == NULL) {
+				Perror(usr, "Your history buffer is gone");
+				usr->runtime_flags &= ~RTF_BUSY;
+				RET(usr);
+				Return;
+			}
+			generic_print_history(usr, (BufferedMsg *)usr->held_msgp->p);
 			break;
 
 		case '-':
@@ -565,7 +594,6 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 		case KEY_CTRL('R'):
 		case 'V':
 		case 'A':
-		case 'a':
 			Put(usr, "Reply to All\n");
 
 Held_History_Reply:
@@ -577,10 +605,10 @@ Held_History_Reply:
 				Put(usr, "<red>No message to reply to\n");
 				goto Exit_Held_History;
 			}
+			m = (BufferedMsg *)usr->held_msgp->p;
+
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
-
-			m = (BufferedMsg *)usr->held_msgp->p;
 
 			if (c == 'R' || c == 'V' || c == 'A' || c == 'a') {
 				if ((usr->recipients = copy_StringList(m->to)) == NULL) {
@@ -667,12 +695,19 @@ Exit_Held_History:
 
 			RET(usr);
 			Return;
+
+		default:
+			if (fun_common(usr, c)) {			/* Note: may reset RTF_BUSY flag(!) */
+				Return;
+			}
 	}
 	if (usr->held_msgp == NULL) {
 		usr->runtime_flags &= ~RTF_BUSY;
 		RET(usr);
 		Return;
 	}
+	usr->runtime_flags |= RTF_BUSY;
+
 	n = 1;
 	for(pl = rewind_BufferedMsg(usr->held_msgs); pl != NULL; pl = pl->next) {
 		if (pl == usr->held_msgp)

@@ -104,11 +104,10 @@
 #define RTF_BUSY_MAILING		0x8000		/* busy mailing a message */
 #define RTF_CHAT_ESCAPE			0x10000		/* user pressed '/' in a chat room */
 #define RTF_HOLD				0x20000		/* user has messages put on hold */
-#define RTF_WAS_HOLDING			0x40000		/* user was in hold message mode when ... */
-#define RTF_WAS_HH				0x80000		/* X-disabled, user was Helping Hand */
-#define RTF_CATEGORY_EDITED		0x100000	/* categories changed in sysop menu */
-#define RTF_ROOM_RESIZED		0x200000	/* max amount of messages changed in roomconfig menu */
-#define RTF_BUFFER_TEXT			0x400000	/* output is buffered to usr->text */
+#define RTF_WAS_HH				0x40000		/* X-disabled, user was Helping Hand */
+#define RTF_CATEGORY_EDITED		0x80000		/* categories changed in sysop menu */
+#define RTF_ROOM_RESIZED		0x100000	/* max amount of messages changed in roomconfig menu */
+#define RTF_BUFFER_TEXT			0x200000	/* output is buffered to usr->text */
 
 /* load_User() flags (for faster loading) */
 #define LOAD_USER_ADDRESS		1

@@ -53,6 +53,7 @@
 #define LOOP_PING						loop_ping
 #define LOOP_SEND_MSG					loop_send_msg
 
+int fun_common(User *, char);
 void state_dummy(User *, char);
 void state_x_prompt(User *, char);
 void state_recipients_err(User *, char);

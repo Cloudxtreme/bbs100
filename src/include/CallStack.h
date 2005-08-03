@@ -38,6 +38,7 @@
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
 #define CALL(x,y)					Call((x)->conn,(void (*)(void *, char))(y))
+#define CALLX(x,y,z)				Callx((x)->conn,(void (*)(void *, char))(y), (z))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
 #define MOV(x,y)					Move((x)->conn,(void (*)(void *, char))(y))
 #define RET(x)						Retx((x)->conn, INIT_STATE)
@@ -62,6 +63,7 @@ void destroy_CallStack(CallStack *);
 
 void Push(Conn *, void (*)(void *, char));
 void Call(Conn *, void (*)(void *, char));
+void Callx(Conn *, void (*)(void *, char), char);
 void Move(Conn *, void (*)(void *, char));
 void Jump(Conn *, void (*)(void *, char));
 void Retx(Conn *, char);
