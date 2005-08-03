@@ -143,7 +143,10 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			break;
 
 		case 'a':
-			Put(usr, "Again\n");
+		case 'A':
+			Put(usr, "Again");
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
 
 			if (usr->history_p == NULL) {
 				Perror(usr, "Your history buffer is gone");
@@ -233,7 +236,6 @@ History_Reply_Code:
 
 		case 'l':
 		case 'L':
-		case KEY_CTRL('L'):
 			Put(usr, "List recipients\n");
 
 			if (usr->history_p == NULL) {
@@ -557,7 +559,10 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 			break;
 
 		case 'a':
-			Put(usr, "Again\n");
+		case 'A':
+			Put(usr, "Again");
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
 
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your history buffer is gone");
@@ -593,7 +598,6 @@ char num_buf1[25], num_buf2[25], printbuf[256];
 		case 'R':
 		case KEY_CTRL('R'):
 		case 'V':
-		case 'A':
 			Put(usr, "Reply to All\n");
 
 Held_History_Reply:
@@ -646,7 +650,6 @@ Held_History_Reply:
 
 		case 'l':
 		case 'L':
-		case KEY_CTRL('L'):
 			Put(usr, "List recipients\n");
 
 			if (usr->held_msgp == NULL) {
