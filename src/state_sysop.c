@@ -132,6 +132,10 @@ void state_sysop_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'h':
 		case 'H':
 		case '?':
@@ -444,6 +448,10 @@ void state_categories_menu(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'a':
@@ -916,6 +924,10 @@ char buf[MAX_LINE];
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'a':
@@ -1623,6 +1635,10 @@ void state_parameters_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'c':
 		case 'C':
 			Put(usr, "System configuration\n");
@@ -1757,6 +1773,10 @@ void state_system_config_menu(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'n':
@@ -1995,6 +2015,10 @@ void state_config_files_menu(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'g':
@@ -2338,6 +2362,10 @@ void state_reload_files_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'i':
 		case 'I':
 			Put(usr, "Reload login screen\n");
@@ -2518,6 +2546,10 @@ void state_maximums_menu(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'c':
@@ -2772,6 +2804,10 @@ void state_strings_menu(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 's':
@@ -3042,6 +3078,10 @@ void state_features_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'x':
 		case 'X':
 			TOGGLE_FEATURE(PARAM_HAVE_XMSGS, "eXpress Messages");
@@ -3211,6 +3251,10 @@ char *new_val;
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 's':

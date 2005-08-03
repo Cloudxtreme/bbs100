@@ -83,6 +83,10 @@ StringList *sl;
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'A':
 		case 'a':
 		case '+':
@@ -273,6 +277,10 @@ StringList *sl;
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'A':

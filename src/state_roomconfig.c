@@ -170,6 +170,10 @@ void state_room_config_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'h':
 		case 'H':
 		case '?':

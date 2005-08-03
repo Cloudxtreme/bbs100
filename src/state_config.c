@@ -119,6 +119,10 @@ void state_config_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'a':
 		case 'A':
 			Put(usr, "Address\n");
@@ -312,6 +316,10 @@ void state_config_address(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'r':
@@ -711,6 +719,10 @@ void state_quicklist_prompt(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case '0':
 		case '1':
 		case '2':
@@ -855,6 +867,10 @@ void state_config_terminal(User *usr, char c) {
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 't':
@@ -1075,6 +1091,10 @@ void state_config_colors(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'w':
 		case 'W':
 			CUSTOM_COLOR(WHITE);
@@ -1291,6 +1311,10 @@ void state_config_who(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'f':
 		case 'F':
 			CONFIG_OPTION(USR_SHORT_WHO, "Format");
@@ -1416,6 +1440,10 @@ void state_config_options(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'x':
 		case 'X':
 			CONFIG_OPTION(USR_BEEP, "Beep");
@@ -1531,6 +1559,10 @@ char buf[MAX_LINE], *p;
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
 			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'd':
