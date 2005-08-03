@@ -817,25 +817,26 @@ void state_config_terminal(User *usr, char c) {
 
 	see also print_hotkey() in util.c
 */
-			if (usr->flags & USR_BOLD)
-				Print(usr,
-					"Show hotkeys in <hotkey>bold/bright          <white>%s<magenta>\n",
+			Print(usr,
+				"Show hotkeys in <hotkey>bold/bright          <white>%s<magenta>\n",
 
-					(usr->flags & USR_BOLD_HOTKEYS) ? "No" : "Yes"
-				);
-			else
-				Print(usr,
-					"Show hotkeys in <hotkey>bold/bright          <white>%s<magenta>\n",
+				((usr->flags & (USR_BOLD|USR_BOLD_HOTKEYS)) == (USR_BOLD|USR_BOLD_HOTKEYS)
+					|| (usr->flags & (USR_BOLD|USR_BOLD_HOTKEYS)) == 0) ? "No" : "Yes"
+			);
+/*
+	USR_HOTKEY_BRACKETS has a weird inverted meaning;
+	if USR_ANSI is set, HOTKEY_BRACKETS means we want brackets
+	if ANSI is not set, HOTKEY_BRACKETS means we don't want them
 
-					(usr->flags & USR_BOLD_HOTKEYS) ? "Yes" : "No"
-				);
-
+	see also print_hotkey() in util.c
+*/
 			Print(usr,
 				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n"
 				"Show angle brac<hotkey>kets around hotkeys   <white>%s<magenta>\n",
 
 				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No",
-				(usr->flags & USR_HOTKEY_BRACKETS) ? "Yes" : "No"
+				(((usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == (USR_ANSI|USR_HOTKEY_BRACKETS))
+					|| (usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == 0) ? "Yes" : "No"
 			);
 			Print(usr, "\n"
 				"<hotkey>Force screen width and height        <white>%s<magenta>\n"
@@ -884,10 +885,9 @@ void state_config_terminal(User *usr, char c) {
 			if (usr->flags & USR_ANSI) {			/* assume bold/non-bold */
 				usr->flags |= USR_BOLD;
 				usr->flags &= ~(USR_HOTKEY_BRACKETS|USR_BOLD_HOTKEYS);
-			} else {
-				usr->flags &= ~(USR_BOLD|USR_BOLD_HOTKEYS);
-				usr->flags |= USR_HOTKEY_BRACKETS;
-			}
+			} else
+				usr->flags &= ~(USR_BOLD|USR_BOLD_HOTKEYS|USR_HOTKEY_BRACKETS);
+
 			Put(usr, "<normal>");
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			CURRENT_STATE(usr);

@@ -475,7 +475,7 @@ int i, new_mail;
 
 	Put(usr, "\n");
 	if (usr->logins <= 1) {
-		Put(usr, "This is your <yellow>1st<green> login\n");
+		Put(usr, "<green>This is your <yellow>1st<green> login\n");
 
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE*3];

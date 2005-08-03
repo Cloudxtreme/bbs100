@@ -692,6 +692,10 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	if USR_BOLD is set, then BOLD_HOTKEYS means we want faint hotkeys,
 	if BOLD is NOT set, then BOLD_HOTKEYS means we want bold hotkeys
 
+	Same goes for USR_HOTKEY_BRACKETS;
+	if USR_ANSI is set, then HOTKEY_BRACKETS means we want em
+	if ANSI is not set, then HOTKEY_BRACKETS means we don't want em
+
 	(This is mainly due to backward compatibility with existing users;
 	their BOLD_HOTKEYS flag will be clear, but you will want them to have
 	bold hotkeys if they log in anyway [The other way to solve this is
@@ -723,7 +727,8 @@ int len;
 		else
 			buf[len++] = 'm';
 	}
-	if (usr->flags & USR_HOTKEY_BRACKETS) {
+	if (((usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == (USR_ANSI|USR_HOTKEY_BRACKETS))
+		|| ((usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == 0)) {
 		buf[len++] = '<';
 		buf[len++] = c;
 		buf[len++] = '>';
