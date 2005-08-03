@@ -634,7 +634,7 @@ int r;
 				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
-						Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
+						Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
 					else
 						Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 				}
@@ -764,7 +764,7 @@ int r;
 
 			Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf), online_for);
 			if (usr->runtime_flags & RTF_SYSOP)
-				Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
+				Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
 			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
 				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, p);
@@ -775,7 +775,7 @@ int r;
 			Print(usr, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf));
 			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
-					Print(usr, "<green>From host: <yellow>%s <white>[%s]\n", u->conn->hostname, u->conn->ipnum);
+					Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
 				else
 					Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 			}

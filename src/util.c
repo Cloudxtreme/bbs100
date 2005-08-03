@@ -88,12 +88,12 @@ int Out(User *usr, char *str) {
 	- if dev is NULL, it produces no output, but does run the function and update the cursor pos
 	- force_auto_color_off is used for hline tags, that really don't like auto-coloring
 
-	- do_auto_color says if it's OK to auto-color symbols
+	- is_symbol says if it's a symbol that needs auto-coloring
 	- dont_auto_color is for controlling exceptions to the rule of auto-coloring
 */
 int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines, int force_auto_color_off) {
 char buf[20], c;
-int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
+int pos, n, dont_auto_color, color, is_symbol;
 
 	if (usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
 		return 0;
@@ -123,10 +123,7 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 	auto-coloring a single dot is ugly, but multiple ones is fun
 */
 				if (c == '.' && str[1] != '.' && (pos > 0 && str[-1] != '.'))
-					is_symbol = 0;
-
-				if (dont_auto_color)
-					is_symbol = 0;
+					dont_auto_color = AUTO_COLOR_FORCED;
 			}
 		}
 /*
@@ -136,16 +133,15 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 		if (cstrchr(Wrap_Charset1, c) != NULL) {
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
 				if (c != ' ') {
-					if (is_symbol) {
+					if (is_symbol && !dont_auto_color) {
 						auto_color(usr, buf);
 						put_StringIO(dev, buf);
 					}
 					write_StringIO(dev, str, 1);
 
-					if (is_symbol) {
+					if (is_symbol && !dont_auto_color) {
 						restore_colorbuf(usr, usr->color, buf);
 						put_StringIO(dev, buf);
-						do_auto_color = 0;
 					}
 				}
 				if (str[1] == ' ') {
@@ -281,30 +277,26 @@ int pos, n, do_auto_color = 0, dont_auto_color, color, is_symbol;
 
 			case '<':
 				n = long_color_code(dev, usr, str, cpos, lines, max_lines, dont_auto_color);
-				if (n <= 0)
-					dont_auto_color = force_auto_color_off;
-				else
+				if (n > 0)
 					dont_auto_color = AUTO_COLOR_FORCED;
 				str += n;
 				pos += n;
 				break;
 
 			default:
-				if (is_symbol) {
+				if (is_symbol && !dont_auto_color) {
 					auto_color(usr, buf);
 					put_StringIO(dev, buf);
 				}
 				write_StringIO(dev, &c, 1);
 				(*cpos)++;
 
-				if (dont_auto_color != AUTO_COLOR_FORCED || !is_symbol)
-					dont_auto_color = force_auto_color_off;
-
-				if (is_symbol) {
+				if (is_symbol && !dont_auto_color) {
 					restore_colorbuf(usr, usr->color, buf);
 					put_StringIO(dev, buf);
-					do_auto_color = 0;
 				}
+				if (!is_symbol)
+					dont_auto_color = force_auto_color_off;
 		}
 		if (*str)
 			str++;

@@ -1312,7 +1312,7 @@ void state_config_symbols(User *usr, char c) {
 				"\n"
 				"<hotkey>Defaults for all colors\n"
 				"\n"
-				"Automatically color these <hotkey>symbols    <white> %s<magenta>\n",
+				"Automatically color these <hotkey>symbols     <white>%s<magenta>\n",
 
 				(usr->symbols == NULL) ? Default_Symbols : usr->symbols);
 

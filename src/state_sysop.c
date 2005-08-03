@@ -636,8 +636,6 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		User *u;
-		char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
 		KVPair *su;
 
 		if (!user_exists(usr->edit_buf)) {
@@ -652,20 +650,43 @@ int r;
 				Return;
 			}
 		}
-		if ((u = is_online(usr->edit_buf)) != NULL) {
-			Put(u, "<red>\n"
-				"\n"
-				"<yellow>*** <red>Sorry, but you are being disconnected <white>NOW <yellow>***\n"
-				"\n"
-				"<normal>\n"
-			);
-			close_connection(u, "user is being nuked by %s", usr->name);
-			u = NULL;
-		}
-		sprintf(path, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
-		path_strip(path);
-		sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
-		path_strip(newpath);
+		POP(usr);
+		CALL(usr, STATE_NUKE_YESNO);
+	}
+	Return;
+}
+
+void state_nuke_yesno(User *usr, char c) {
+User *u;
+char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
+
+	Enter(state_nuke_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			if (!user_exists(usr->edit_buf)) {
+				Print(usr, "<red>No such user, already nuked by another %s!\n", PARAM_NAME_SYSOP);
+				RET(usr);
+				Return;
+			}
+			if ((u = is_online(usr->edit_buf)) != NULL) {
+				Put(u, "<red>\n"
+					"\n"
+					"<yellow>*** <red>Sorry, but you are being disconnected <white>NOW <yellow>***\n"
+					"\n"
+					"<normal>\n"
+				);
+				close_connection(u, "user is being nuked by %s", usr->name);
+				u = NULL;
+			}
+			sprintf(path, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
+			path_strip(path);
+			sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
+			path_strip(newpath);
 /*
 	Move the user directory
 	Note that this enables nuked users to recreate their account instantly,
@@ -673,16 +694,24 @@ int r;
 
 	Perhaps I should just reset the password to zero or something...
 */
-		rm_rf_trashdir(newpath);		/* make sure trash/newpath does not exist */
+			rm_rf_trashdir(newpath);		/* make sure trash/newpath does not exist */
 
-		if (rename_dir(path, newpath) < 0) {
-			log_err("rename() failed for %s -> %s", path, newpath);
-			Put(usr, "<red>Failed to remove user directory\n");
-		} else
-			Print(usr, "<yellow>%s<red> nuked\n", usr->edit_buf);
+			if (rename_dir(path, newpath) < 0) {
+				log_err("rename() failed for %s -> %s", path, newpath);
+				Put(usr, "<red>Failed to remove user directory\n");
+			} else
+				Print(usr, "<yellow>%s<red> nuked\n", usr->edit_buf);
 
-		log_msg("SYSOP %s nuked user %s", usr->name, usr->edit_buf);
-		RET(usr);
+			log_msg("SYSOP %s nuked user %s", usr->name, usr->edit_buf);
+			RET(usr);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		default:
+			Print(usr, "<cyan>Delete user <white>%s<cyan>? (y/N): ", usr->edit_buf);
 	}
 	Return;
 }

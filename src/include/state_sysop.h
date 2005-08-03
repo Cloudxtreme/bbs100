@@ -31,6 +31,7 @@
 #define STATE_REMOVE_CATEGORY			state_remove_category
 #define STATE_DISCONNECT_USER			state_disconnect_user
 #define STATE_NUKE_USER					state_nuke_user
+#define STATE_NUKE_YESNO				state_nuke_yesno
 #define STATE_BANISH_USER				state_banish_user
 #define STATE_ADD_WRAPPER				state_add_wrapper
 #define STATE_EDIT_WRAPPER				state_edit_wrapper
@@ -142,6 +143,7 @@ void state_add_category(User *, char);
 void state_remove_category(User *, char);
 void state_disconnect_user(User *, char);
 void state_nuke_user(User *, char);
+void state_nuke_yesno(User *, char);
 void state_banish_user(User *, char);
 void state_add_wrapper(User *, char);
 void state_edit_wrapper(User *, char);
