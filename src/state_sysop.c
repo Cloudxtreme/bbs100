@@ -54,6 +54,7 @@
 #include "OnlineUser.h"
 #include "Category.h"
 #include "Wrapper.h"
+#include "Signal.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3248,6 +3249,7 @@ char *new_val;
 				"<hotkey>Authlog             <white>%s<magenta>\n"
 				"<hotkey>Rotate              <white>%s<magenta>\n"
 				"Arch<hotkey>ive directory   <white>%s<magenta>\n",
+
 				PARAM_SYSLOG,
 				PARAM_AUTHLOG,
 				PARAM_LOGROTATE,
@@ -3257,6 +3259,7 @@ char *new_val;
 				"\n"
 				"<hotkey>On crash            <white>%s<magenta>\n"
 				"<hotkey>Core dump directory <white>%s<magenta>\n",
+
 				PARAM_ONCRASH,
 				PARAM_CRASHDIR
 			);
@@ -3336,6 +3339,9 @@ char *new_val;
 
 			Free(PARAM_ONCRASH);
 			PARAM_ONCRASH = cstrdup(new_val);
+			usr->runtime_flags |= RTF_PARAM_EDITED;
+
+			init_Signal();				/* reset sig_fatal handler */
 			CURRENT_STATE(usr);
 			Return;
 

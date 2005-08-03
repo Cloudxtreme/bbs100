@@ -187,7 +187,7 @@ Conn *conn;
 			return -1;
 		}
 		conn->conn_type = conn_type;
-		conn->state |= CONN_LISTEN;
+		conn->state = CONN_LISTEN;
 		conn->sock = sock;
 		add_Conn(&AllConns, conn);
 
@@ -203,7 +203,6 @@ Conn *conn;
 	freeaddrinfo(res);
 	return retval;
 }
-
 
 int unix_sock(char *path) {
 struct sockaddr_un un;
@@ -270,36 +269,36 @@ char input_char[2];
 				destroy_Conn(c);
 				continue;
 			}
-/*
-	looping connections
-*/
-			if (c->state & CONN_LOOPING) {
-				if (c->loop_counter)
-					c->loop_counter--;
+			switch(c->state) {
+				case CONN_LOOPING:
+					if (c->loop_counter)
+						c->loop_counter--;
 
-				c->conn_type->process(c, LOOP_STATE);
+					c->conn_type->process(c, LOOP_STATE);
 
-				if ((c->state & CONN_LOOPING) && !c->loop_counter) {
-					c->state &= ~CONN_LOOPING;
-					Retx(c, INIT_STATE);
-				}
-				continue;
-			}
-			if (c->state & CONN_LISTEN)		/* non-blocking listen, handled below */
-				continue;
+					if ((c->state == CONN_LOOPING) && !c->loop_counter) {
+						c->state = CONN_ESTABLISHED;
+						Retx(c, INIT_STATE);
+					}
+					break;
 
-			if (c->state & CONN_CONNECTING)	/* non-blocking connect, handled below */
-				continue;
-/*
-	connected
-*/
-			if (c->state & CONN_ESTABLISHED) {
-				if (c->input->pos < c->input->len) {
-					if ((err = read_StringIO(c->input, input_char, 1)) == 1)
-						c->conn_type->process(c, input_char[0]);
-					else
-						log_err("mainloop(): failed to read from input buffer");
-				}
+				case CONN_LISTEN:		/* non-blocking listen, handled below */
+					break;
+
+				case CONN_CONNECTING:	/* non-blocking connect, handled below */
+					break;
+
+				case CONN_ESTABLISHED:
+					if (c->input->pos < c->input->len) {
+						if ((err = read_StringIO(c->input, input_char, 1)) == 1)
+							c->conn_type->process(c, input_char[0]);
+						else
+							log_err("mainloop(): failed to read from input buffer");
+					}
+					break;
+
+				case CONN_CLOSED:		/* handled below */
+					break;
 			}
 		}
 /*
@@ -321,60 +320,70 @@ char input_char[2];
 		for(c = AllConns; c != NULL; c = c_next) {
 			c_next = c->next;
 
-/* remove dead connections */
-			if (c->sock <= 0) {
-				remove_Conn(&AllConns, c);
-				destroy_Conn(c);
-				continue;
-			}
-/*
-	someone is looping, keep it flowing
-*/
-			if (c->state & CONN_LOOPING) {
-				wait_for_input = 0;
-				continue;
-			}
-/*
-	non-blocking listen()
-*/
-			if (c->state & CONN_LISTEN) {
-				FD_SET(c->sock, &rfds);
-				if (highest_fd <= c->sock)
-					highest_fd = c->sock + 1;
-				continue;
-			}
-/*
-	non-blocking connect()
-	(untested, because the BBS doesn't use it (yet))
-*/
-			if (c->state & CONN_CONNECTING) {
-				FD_SET(c->sock, &wfds);
-				if (highest_fd <= c->sock)
-					highest_fd = c->sock + 1;
-				continue;
-			}
-			if (c->state & CONN_ESTABLISHED) {
-				if (c->output->len > 0) {				/* got data to write */
-					FD_SET(c->sock, &wfds);
-					if (highest_fd <= c->sock)
-						highest_fd = c->sock + 1;
-					wait_for_input = 0;
-				}
-				if (c->input->pos < c->input->len) {	/* got input ready */
-					wait_for_input = 0;
-					continue;
-				}
+			if (c->sock > 0) {
+				switch(c->state) {
+					case CONN_LOOPING:
+						wait_for_input = 0;
+						break;
+
+					case CONN_LISTEN:
+						FD_SET(c->sock, &rfds);
+						if (highest_fd <= c->sock)
+							highest_fd = c->sock + 1;
+						break;
+
+					case CONN_CONNECTING:
+						FD_SET(c->sock, &wfds);
+						if (highest_fd <= c->sock)
+							highest_fd = c->sock + 1;
+						break;
+
+					case CONN_ESTABLISHED:
+						if (c->output->len > 0) {				/* got data to write */
+							FD_SET(c->sock, &wfds);
+							if (highest_fd <= c->sock)
+								highest_fd = c->sock + 1;
+							wait_for_input = 0;
+						}
+						if (c->input->pos < c->input->len) {	/* got input ready */
+							wait_for_input = 0;
+							break;
+						}
 /*
 	no input ready, mark for request to read()
 */
-				if (c->sock > 0) {
-					shift_StringIO(c->input);
+						if (c->sock > 0) {
+							shift_StringIO(c->input);
 
-					FD_SET(c->sock, &rfds);
-					if (highest_fd <= c->sock)
-						highest_fd = c->sock + 1;
-					continue;
+							FD_SET(c->sock, &rfds);
+							if (highest_fd <= c->sock)
+								highest_fd = c->sock + 1;
+							break;
+						}
+/*
+	a connection may be closed, but still have data to flush
+*/
+						case CONN_CLOSED:
+							if (c->output->len > 0) {				/* got data to write */
+								FD_SET(c->sock, &wfds);
+								if (highest_fd <= c->sock)
+									highest_fd = c->sock + 1;
+								wait_for_input = 0;
+							} else {
+								shutdown(c->sock, 2);
+								close(c->sock);
+								c->sock = -1;
+							}
+							break;
+
+						default:
+							log_err("mainloop(): BUG ! got invalid connection state %d", c->state);
 				}
+			}
+			if (c->sock <= 0) {					/* remove dead connections */
+				remove_Conn(&AllConns, c);
+				destroy_Conn(c);
+				continue;
 			}
 		}
 /*
@@ -401,14 +410,14 @@ char input_char[2];
 
 				isset = 0;
 				if (c->sock > 0 && FD_ISSET(c->sock, &rfds)) {
-					if (c->state & CONN_LISTEN)
+					if (c->state == CONN_LISTEN)
 						c->conn_type->accept(c);
 					else
 						input_Conn(c);
 					isset++;
 				}
 				if (c->sock > 0 && FD_ISSET(c->sock, &wfds)) {
-					if (c->state & CONN_CONNECTING)
+					if (c->state == CONN_CONNECTING)
 						c->conn_type->complete_connect(c);
 					else
 						flush_Conn(c);

@@ -58,18 +58,6 @@ CallStack *cs;
 }
 
 /*
-	Call() : Go to a new level; it is immediately initialized
-	         (for printing prompts, initializing vars, etc)
-*/
-void Call(Conn *conn, void (*state)(void *, char)) {
-	if (conn == NULL || state == NULL)
-		return;
-
-	Push(conn, state);
-	state(conn->data, INIT_STATE);
-}
-
-/*
 	Call directly into a specific substate of state
 */
 void Callx(Conn *conn, void (*state)(void *, char), char arg) {

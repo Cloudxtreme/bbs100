@@ -1187,9 +1187,7 @@ void close_connection(User *usr, char *reason, ...) {
 	if (usr->conn->sock > 0) {
 		Put(usr, "<default>\n");
 		Flush(usr);
-		shutdown(usr->conn->sock, 2);
-		close(usr->conn->sock);
-		usr->conn->sock = -1;
+		close_Conn(usr->conn);
 	}
 	leave_room(usr);
 

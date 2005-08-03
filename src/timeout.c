@@ -116,6 +116,7 @@ StringIO *screen;
 			if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_REBOOT_SCREEN) >= 0) {
 				for(u = AllUsers; u != NULL; u = u->next) {
 					display_text(u, screen);
+					flush_Conn(u->conn);
 					close_connection(u, "reboot");
 				}
 			}
@@ -153,6 +154,7 @@ StringIO *screen;
 			if ((screen = new_StringIO()) != NULL && load_StringList(PARAM_SHUTDOWN_SCREEN) >= 0) {
 				for(u = AllUsers; u != NULL; u = u->next) {
 					display_text(u, screen);
+					flush_Conn(u->conn);
 					close_connection(u, "shutdown");
 				}
 			}

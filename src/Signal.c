@@ -405,6 +405,7 @@ char signame_buf[MAX_LINE];
 	if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_SHUTDOWN_SCREEN) >= 0) {
 		for(u = AllUsers; u != NULL; u = u->next) {
 			display_text(u, screen);
+			flush_Conn(u->conn);
 			close_connection(u, "system shutdown");
 		}
 	}
@@ -539,6 +540,7 @@ User *usr;
 #endif
 		for(u = AllUsers; u != NULL; u = u->next) {
 			display_text(u, crash_screen);
+			flush_Conn(u->conn);
 			close_connection(u, "system crash");
 		}
 		if (!cstricmp(PARAM_ONCRASH, "recover"))

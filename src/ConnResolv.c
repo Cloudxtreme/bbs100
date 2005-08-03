@@ -48,8 +48,8 @@ ConnType ConnResolv = {
 	ConnResolv_process,
 	ConnResolv_accept,
 	dummy_Conn_handler,
-	dummy_Conn_handler,
-	dummy_Conn_handler,
+	close_Conn,
+	ConnResolv_linkdead,
 	ConnResolv_destroy,
 };
 
@@ -174,7 +174,7 @@ char optval;
 		return;
 	}
 	conn_resolver->sock = sock;
-	conn_resolver->state |= CONN_ESTABLISHED;
+	conn_resolver->state = CONN_ESTABLISHED;
 
 	optval = 1;
 	ioctl(conn_resolver->sock, FIONBIO, &optval);		/* set non-blocking */
@@ -184,6 +184,16 @@ char optval;
 		destroy_Conn(conn_resolver);
 	} else
 		add_Conn(&AllConns, conn_resolver);
+}
+
+void ConnResolv_linkdead(Conn *c) {
+	if (c == NULL)
+		return;
+
+	log_warn("lost connection with resolver, continuing without");
+
+	close(c->sock);
+	c->sock = -1;
 }
 
 void ConnResolv_destroy(Conn *c) {

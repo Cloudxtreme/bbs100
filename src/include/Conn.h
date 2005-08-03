@@ -38,10 +38,9 @@
 
 #define CONN_LISTEN			1
 #define CONN_CONNECTING		2
-#define CONN_ESTABLISHED	4
-#define CONN_SELECT			8
-#define CONN_LOOPING		0x10
-
+#define CONN_ESTABLISHED	3
+#define CONN_LOOPING		4
+#define CONN_CLOSED			5
 
 #ifndef CONN_DEFINED
 #define CONN_DEFINED 1
@@ -91,6 +90,9 @@ int putc_Conn(Conn *, char);
 int put_Conn(Conn *, char *);
 int flush_Conn(Conn *);
 int input_Conn(Conn *);
+
+void close_Conn(Conn *);
+void loop_Conn(Conn *, int);
 
 #endif	/* CONN_H_WJ105 */
 

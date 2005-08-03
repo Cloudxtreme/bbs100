@@ -31,6 +31,7 @@ Conn *new_ConnResolv(void);
 
 void ConnResolv_process(Conn *, char);
 void ConnResolv_accept(Conn *);
+void ConnResolv_linkdead(Conn *);
 void ConnResolv_destroy(Conn *);
 void dns_gethostname(char *);
 

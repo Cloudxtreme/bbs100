@@ -41,7 +41,7 @@ ConnType ConnType_default = {
 	dummy_Conn_process,
 	dummy_Conn_handler,
 	dummy_Conn_handler,
-	dummy_Conn_handler,
+	close_Conn,
 	dummy_Conn_handler,
 	dummy_Conn_handler,
 };
@@ -201,6 +201,27 @@ char buf[MAX_PATHLEN];
 
 	rewind_StringIO(conn->input);
 	return err;
+}
+
+/*
+	only flag a connection for closing ... this is so that any pending output
+	is properly flushed
+	It is possible to push it out using flush_Conn(), but you want to be sure
+	that the file descriptor is ready
+*/
+void close_Conn(Conn *conn) {
+	if (conn == NULL)
+		return;
+
+	conn->state = CONN_CLOSED;
+}
+
+void loop_Conn(Conn *conn, int iter) {
+	if (conn == NULL)
+		return;
+
+	conn->loop_counter = iter;
+	conn->state = (iter > 0) ? CONN_LOOPING : CONN_ESTABLISHED;
 }
 
 /* EOB */

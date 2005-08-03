@@ -3,6 +3,7 @@ Changes as of August 3rd 2005
 - boss key works on all menus
 - customizable colors for symbols
 - Are you sure? on Nuke user
+- do proper output flushing of connections that are suddenly closed
 
 Changes as of August 2nd 2005
 - when in Held Message Mode, the user is unable to send messages

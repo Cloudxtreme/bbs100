@@ -81,7 +81,7 @@ ConnType ConnUser = {
 	ConnUser_process,
 	ConnUser_accept,
 	dummy_Conn_handler,
-	dummy_Conn_handler,
+	close_Conn,
 	ConnUser_linkdead,
 	ConnUser_destroy,
 };
@@ -134,7 +134,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	new_user->conn = new_conn;
 	new_conn->data = new_user;
 	new_conn->sock = s;
-	new_conn->state |= CONN_ESTABLISHED;
+	new_conn->state = CONN_ESTABLISHED;
 
 	optval = 1;
 	ioctl(new_conn->sock, FIONBIO, &optval);		/* set non-blocking */

@@ -504,8 +504,7 @@ void loop_ping(User *usr, char c) {
 	Enter(loop_ping);
 
 	if (c == INIT_STATE) {
-		usr->conn->loop_counter = list_Count(usr->recipients);
-		usr->conn->state |= CONN_LOOPING;
+		LOOP(usr, list_Count(usr->recipients));
 	} else {
 		StringList *sl;
 		User *u;
@@ -513,13 +512,15 @@ void loop_ping(User *usr, char c) {
 
 		sl = usr->recipients;
 		if (sl == NULL) {
-			usr->conn->loop_counter = 0UL;
+			LOOP(usr, 0UL);
+			RET(usr);
 			Return;
 		}
 		for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* do the next recipient */
 			sl = sl->next;
 			if (sl == NULL) {
-				usr->conn->loop_counter = 0UL;
+				LOOP(usr, 0UL);
+				RET(usr);
 				Return;
 			}
 		}
@@ -834,8 +835,7 @@ void loop_send_msg(User *usr, char c) {
 	Enter(loop_send_msg);
 
 	if (c == INIT_STATE) {
-		usr->conn->state |= CONN_LOOPING;
-		usr->conn->loop_counter = list_Count(usr->recipients);
+		LOOP(usr, list_Count(usr->recipients));
 /*
 	the message that you send to yourself won't be received... but you do
 	get a copy in your X history buffer
@@ -849,7 +849,8 @@ void loop_send_msg(User *usr, char c) {
 
 		if (usr->send_msg == NULL) {
 			Perror(usr, "The message has disappeared!");
-			usr->conn->loop_counter = 0UL;
+			LOOP(usr, 0UL);
+			RET(usr);
 			Return;
 		}
 		sl = usr->recipients;
@@ -911,7 +912,7 @@ StringList *sl;
 	Enter(state_mail_send_msg);
 
 	if (c == INIT_STATE) {
-		usr->conn->state &= ~CONN_LOOPING;
+		usr->conn->state = CONN_ESTABLISHED;
 		usr->runtime_flags |= RTF_BUSY;
 
 		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): ");
@@ -948,8 +949,8 @@ StringList *sl;
 			destroy_StringList(sl);
 		}
 	}
-	usr->conn->state |= CONN_LOOPING;
 	POP(usr);
+	LOOP(usr, usr->conn->loop_counter);
 	Return;
 }
 
