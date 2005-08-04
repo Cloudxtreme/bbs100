@@ -1749,45 +1749,45 @@ void state_system_config_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
-				"BBS <hotkey>Name            <white>%s<magenta>\n"
-				"P<hotkey>ort number         <white>%s<magenta>\n"
-				"<hotkey>Param file          <white>%s<magenta>\n",
+				"BBS <hotkey>Name           <white> %s<magenta>\n"
+				"P<hotkey>ort number        <white> %s<magenta>\n"
+				"<hotkey>Param file         <white> %s<magenta>\n",
 				PARAM_BBS_NAME,
 				PARAM_PORT_NUMBER,
 				param_file
 			);
 			Print(usr, "\n"
-				"<hotkey>Base directory      <white>%s<magenta>\n"
-				"B<hotkey>inary directory    <white>%s<magenta>\n"
-				"<hotkey>Config directory    <white>%s<magenta>\n"
-				"<hotkey>Feelings directory  <white>%s<magenta>\n",
+				"<hotkey>Base directory     <white> %s<magenta>\n"
+				"B<hotkey>inary directory   <white> %s<magenta>\n"
+				"<hotkey>Config directory   <white> %s<magenta>\n"
+				"<hotkey>Feelings directory <white> %s<magenta>\n",
 				PARAM_BASEDIR,
 				PARAM_BINDIR,
 				PARAM_CONFDIR,
 				PARAM_FEELINGSDIR
 			);
 			Print(usr,
-				"<hotkey>Zoneinfo directory  <white>%s<magenta>\n",
+				"<hotkey>Zoneinfo directory <white> %s<magenta>\n",
 				PARAM_ZONEINFODIR
 			);
 			Print(usr,
-				"<hotkey>User directory      <white>%s<magenta>\n"
-				"<hotkey>Room directory      <white>%s<magenta>\n"
-				"<hotkey>Trash directory     <white>%s<magenta>\n"
-				"umas<hotkey>k               <white>0%02o<magenta>\n",
+				"<hotkey>User directory     <white> %s<magenta>\n"
+				"<hotkey>Room directory     <white> %s<magenta>\n"
+				"<hotkey>Trash directory    <white> %s<magenta>\n"
+				"umas<hotkey>k              <white> 0%02o<magenta>\n",
 				PARAM_USERDIR,
 				PARAM_ROOMDIR,
 				PARAM_TRASHDIR,
 				PARAM_UMASK
 			);
 			Print(usr, "\n"
-				"<hotkey>Main program        <white>%s<magenta>\n"
-				"Resol<hotkey>ver program    <white>%s<magenta>\n",
+				"<hotkey>Main program       <white> %s<magenta>\n"
+				"Resol<hotkey>ver program   <white> %s<magenta>\n",
 				PARAM_PROGRAM_MAIN,
 				PARAM_PROGRAM_RESOLVER
 			);
 			Print(usr, "\n"
-				"Default time<hotkey>zone    <white>%s<magenta>\n",
+				"Default time<hotkey>zone   <white> %s<magenta>\n",
 				PARAM_DEFAULT_TIMEZONE
 			);
 			read_menu(usr);
@@ -2005,31 +2005,31 @@ void state_config_files_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
-				"<hotkey>GPL              <white>%-22s<magenta>  <hotkey>0 Local mods     <white>%s<magenta>\n",
+				"<hotkey>GPL             <white> %-22s<magenta>  <hotkey>0 Local mods    <white> %s<magenta>\n",
 				PARAM_GPL_SCREEN, PARAM_MODS_SCREEN);
-			Print(usr, "<hotkey>Login            <white>%-22s<magenta>  <hotkey>Nologin          <white>%s<magenta>\n",
+			Print(usr, "<hotkey>Login           <white> %-22s<magenta>  <hotkey>Nologin         <white> %s<magenta>\n",
 				PARAM_LOGIN_SCREEN, PARAM_NOLOGIN_SCREEN);
-			Print(usr, "Log<hotkey>out           <white>%-22s<magenta>  <hotkey>Reboot           <white>%s<magenta>\n",
+			Print(usr, "Log<hotkey>out          <white> %-22s<magenta>  <hotkey>Reboot          <white> %s<magenta>\n",
 				PARAM_LOGIN_SCREEN, PARAM_REBOOT_SCREEN);
-			Print(usr, "Mot<hotkey>d             <white>%-22s<magenta>  <hotkey>Z Shutdown       <white>%s<magenta>\n",
+			Print(usr, "Mot<hotkey>d            <white> %-22s<magenta>  <hotkey>Z Shutdown      <white> %s<magenta>\n",
 				PARAM_MOTD_SCREEN, PARAM_SHUTDOWN_SCREEN);
-			Print(usr, "<hotkey>1st login        <white>%-22s<magenta>  <hotkey>K Crash          <white>%s<magenta>\n",
+			Print(usr, "<hotkey>1st login       <white> %-22s<magenta>  <hotkey>K Crash         <white> %s<magenta>\n",
 				PARAM_FIRST_LOGIN, PARAM_CRASH_SCREEN);
 
-			Print(usr, "Cred<hotkey>its          <white>%-22s<magenta>\n"
+			Print(usr, "Cred<hotkey>its         <white> %-22s<magenta>\n"
 				"\n"
-				"Standard <hotkey>help    <white>%-22s<magenta>  Room config h<hotkey>elp <white>%s<magenta>\n",
+				"Standard <hotkey>help   <white> %-22s<magenta>  Room config h<hotkey>elp<white> %s<magenta>\n",
 				PARAM_CREDITS_SCREEN, PARAM_HELP_STD, PARAM_HELP_ROOMCONFIG);
-			Print(usr, "<hotkey>Config menu help <white>%-22s<magenta>  <hotkey>Sysop menu help  <white>%s<magenta>\n",
+			Print(usr, "<hotkey>Config menu help<white> %-22s<magenta>  <hotkey>Sysop menu help <white> %s<magenta>\n",
 				PARAM_HELP_CONFIG, PARAM_HELP_SYSOP);
 
-			Print(usr, "<hotkey>Param file       <white>%-22s<magenta>  Uni<hotkey>x PID file    <white>%s<magenta>\n",
+			Print(usr, "<hotkey>Param file      <white> %-22s<magenta>  Uni<hotkey>x PID file   <white> %s<magenta>\n",
 				param_file, PARAM_PID_FILE);
-			Print(usr, "<hotkey>Banished         <white>%-22s<magenta>  Sta<hotkey>tistics       <white>%s<magenta>\n",
+			Print(usr, "<hotkey>Banished        <white> %-22s<magenta>  Sta<hotkey>tistics      <white> %s<magenta>\n",
 				PARAM_BANISHED_FILE, PARAM_STAT_FILE);
-			Print(usr, "Host <hotkey>access      <white>%-22s<magenta>  S<hotkey>U Passwd        <white>%s<magenta>\n",
+			Print(usr, "Host <hotkey>access     <white> %-22s<magenta>  S<hotkey>U Passwd       <white> %s<magenta>\n",
 				PARAM_HOSTS_ACCESS_FILE, PARAM_SU_PASSWD_FILE);
-			Print(usr, "Host <hotkey>map         <white>%-22s<magenta>  S<hotkey>ymbol table     <white>%s<magenta>\n",
+			Print(usr, "Host <hotkey>map        <white> %-22s<magenta>  S<hotkey>ymbol table    <white> %s<magenta>\n",
 				PARAM_HOSTMAP_FILE, PARAM_SYMTAB_FILE);
 
 			read_menu(usr);
