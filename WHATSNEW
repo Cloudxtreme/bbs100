@@ -1,0 +1,116 @@
+bbs100 by Walter de Jong <walter@heiho.net> (C) 2005
+
+bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
+bbs100 is distributed under terms described in the GNU General Public License.
+
+
+It's finally here, bbs100 version 3.0. I never thought we'd have a version 3,
+but so much has changed internally, that there was no way around it.
+
+What's new to the users?
+There are a lot of new options in the Config menu:
+
+- vanity flag that appears in the user's profile info
+- personal customizable eXpress Message header
+- option of hiding the address information in the profile info
+  from people who are not on the friends list
+  This option is under Config|Address
+- the Terminal Settings menu has a number of new options;
+  - hotkeys can be shown bright/bold
+  - hotkeys can be shown in uppercase
+  - hotkeys can be shown with angle brackets
+  - terminal screen width and height can be adjusted if needed;
+    the BBS detects correct screen width and height
+  - user can choose 'classic' or 'modern' color scheme;
+    the classic color scheme looks more like DOC, while
+    the modern color scheme has a more dynamic look;
+    What it does is automatically color symbols, giving subtle accents
+    to strings
+  - user can customize what characters are automatically colored, and
+    what color they will have
+- the friends/enemies menu now are in the same style as the other
+  Config menus
+- the Options submenu is entirely new;
+  - Hold message mode when busy selects a more modern way of reading
+    held messages after you were busy
+  - users may choose whether they want to give a reason when they
+    lock the terminal or go into Hold message mode
+  - users may choose whether a room generates a beep when someone makes
+    a new post in that room
+  - users may choose to hide their profile info from enemies
+  - 'verbose friend notification' shows even more friend notifications
+
+- when entering colors into a message, the colors are immediately displayed
+- color codes take up only 1 position
+- yet another notation of color codes is possible, using the caret
+- Tab can be used to expand long color codes ...
+- the tab character can be used in messages, it expands to 4 spaces
+- on smaller terminals, the BBS will do correct word-wrapping
+- on smaller terminals, the BBS will display --More-- prompts for menus
+  that would otherwise scroll off the screen
+- the boss key hides what you're doing (for when the boss walks by)
+- X History has a new look and most functions work on that prompt as well
+- Held messages prompt has a new look and most functions work on that
+  prompt as well
+- the known rooms list may show room categories
+- if configured by the sysop, you won't be stuck in the Lobby> when
+  there are no new messages, but be cycled around to urge you to post
+  somewhere
+- print online status after unlocking
+
+
+What's new to the admins?
+- IPv6 wrappers; IPv4 wrappers are also still available
+- option 'wrapper apply to all' or 'wrapper applies to new users only'
+- per-room maximum of messages
+- rooms can be in a category
+- 'since boot' statistics in the Statistics screen
+- nologin shown more clearly in Sysop menu, when active
+- when entering a message as sysop or room aide, it shows it to the posting
+  user in the header
+- param umask controls the umask (usually you don't want to touch it)
+- configurable notification string for when a user uses Hold message mode
+- configurable minimum age for users that want to be a Helping Hand
+- option of keeping room info and profile info resident in memory or not
+- when locked, Sysops must use their Sysop password to unlock
+
+
+What's new internally?
+- IPv6 capable networking code
+- object oriented Conn (connection) class, implemented in standard C
+- new mainloop handles connections flawlessly; it does correct input
+  and output buffering
+- much use of new type StringIO, which are automatically growing buffers
+  rather than lists of strings
+  (less memory fragmentation)
+- much use of new type KVPair (key-value pair)
+- messages in the X History are reference counted rather than copied;
+  (this is fast and saves memory)
+- cached files are referenced rather than copied;
+  (this is fast and saves memory)
+- talked-to list is generated from X history rather than copied
+  (this is not fast, but does save memory)
+- feelings are cached rather than always resident
+  (this saves memory)
+- CRC-32 is used for computing hash keys
+  (far less cache collisions, and it's not all that much slower either)
+- room info and profile info can be 'offline', not permanently resident
+  in memory
+  (this saves memory)
+- ROOM_DIRTY flag prevents unnecessary saving of rooms
+  (this is more efficient)
+- MsgIndex in a room is now an array
+  (less memory fragmentation)
+- Put() now calls Out(), which calls Out_text(), which does word-wrapping
+  and auto-coloring of symbols
+  (it's slow, but it looks cool)
+- output can be buffered temporarily and then be displayed with a --More--
+  prompt by a simple call to buffer_text()
+- CALLX() can directly call into a substate different from INIT_STATE
+- RETX() can return to a substate different from INIT_STATE
+- state_room.c holds room prompt functions; most common functions are
+  done in state.c in fun_common()
+- some bugs fixed ...
+
+
+EOB
