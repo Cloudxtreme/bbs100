@@ -2129,6 +2129,10 @@ int r;
 				usr->flags |= USR_HELPING_HAND;
 			}
 			usr->flags = (unsigned int)usr->read_lines;		/* restore color flags */
+
+			Put(usr, "\n");
+			print_user_status(usr);
+
 			RET(usr);
 			Return;
 		}
