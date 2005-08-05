@@ -53,24 +53,24 @@ extern Wrapper *AllWrappers;
 
 Wrapper *new_Wrapper(void);
 void destroy_Wrapper(Wrapper *);
-Wrapper *set_Wrapper(Wrapper *, int, int [8], int [8], char *);
+Wrapper *set_Wrapper(Wrapper *, int, int *, int *, char *);
 Wrapper *make_Wrapper(char *, char *, char *, char *);
 int load_Wrapper(char *);
 int save_Wrapper(Wrapper *, char *);
 int allow_Wrapper(char *, int);
 int allow_one_Wrapper(Wrapper *w, char *, int);
-int mask_Wrapper(Wrapper *w, int [8]);
+int mask_Wrapper(Wrapper *w, int *);
 
-int read_inet_addr(char *, int [8], int *);
-int read_inet_mask(char *, int [8], int);
+int read_inet_addr(char *, int *, int *);
+int read_inet_mask(char *, int *, int);
 
-char *print_inet_addr(int [8], char *, int);
-char *print_ipv4_addr(int [8], char *);
-char *print_ipv6_addr(int [8], char *, int);
-char *print_inet_mask(int [8], char *, int);
+char *print_inet_addr(int *, char *, int);
+char *print_ipv4_addr(int *, char *);
+char *print_ipv6_addr(int *, char *, int);
+char *print_inet_mask(int *, char *, int);
 
-void ipv4_bitmask(int, int [8]);
-void ipv6_bitmask(int, int [8]);
+void ipv4_bitmask(int, int *);
+void ipv6_bitmask(int, int *);
 
 #endif	/* _WRAPPER_H_WJ99 */
 

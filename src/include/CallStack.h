@@ -33,16 +33,16 @@
 #define INIT_PROMPT	(char)-1
 #define LOOP_STATE	' '
 
-#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, INIT_STATE)
+#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, (char)INIT_STATE)
 
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
-#define CALL(x,y)					Callx((x)->conn,(void (*)(void *, char))(y), INIT_STATE)
-#define CALLX(x,y,z)				Callx((x)->conn,(void (*)(void *, char))(y), (z))
+#define CALL(x,y)					Callx((x)->conn,(void (*)(void *, char))(y), (char)INIT_STATE)
+#define CALLX(x,y,z)				Callx((x)->conn,(void (*)(void *, char))(y), (char)(z))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
 #define MOV(x,y)					Move((x)->conn,(void (*)(void *, char))(y))
-#define RET(x)						Retx((x)->conn, INIT_STATE)
-#define RETX(x,y)					Retx((x)->conn, (y))
+#define RET(x)						Retx((x)->conn, (char)INIT_STATE)
+#define RETX(x,y)					Retx((x)->conn, (char)(y))
 #define LOOP(x,y)					loop_Conn((x)->conn, (y))
 
 #ifndef CONN_DEFINED

@@ -51,7 +51,7 @@ void destroy_Wrapper(Wrapper *w) {
 	Free(w);
 }
 
-Wrapper *set_Wrapper(Wrapper *w, int flags, int addr[8], int mask[8], char *comment) {
+Wrapper *set_Wrapper(Wrapper *w, int flags, int *addr, int *mask, char *comment) {
 	if (w == NULL)
 		return NULL;
 
@@ -281,7 +281,7 @@ int addr[8], flags;
 	see if the mask fits
 	(this doesn't say anything about allowing or denying)
 */
-int mask_Wrapper(Wrapper *w, int addr[8]) {
+int mask_Wrapper(Wrapper *w, int *addr) {
 int i;
 
 	if (w == NULL) {
@@ -309,7 +309,7 @@ int i;
 	but I want to stay away from using the internals of sockaddr_in and
 	sockaddr_in6
 */
-int read_inet_addr(char *ipnum, int ip6[8], int *flags) {
+int read_inet_addr(char *ipnum, int *ip6, int *flags) {
 int a1, a2, a3, a4, l, i, num_colons, abbrev;
 char addr[MAX_LINE], *p, *startp, *endp;
 
@@ -539,7 +539,7 @@ char addr[MAX_LINE], *p, *startp, *endp;
 	return 0;
 }
 
-int read_inet_mask(char *maskbuf, int mask[8], int flags) {
+int read_inet_mask(char *maskbuf, int *mask, int flags) {
 int bits;
 char *endp;
 
@@ -564,7 +564,7 @@ char *endp;
 	return 0;
 }
 
-char *print_inet_addr(int addr[8], char *buf, int flags) {
+char *print_inet_addr(int *addr, char *buf, int flags) {
 	if (addr == NULL || buf == NULL)
 		return NULL;
 
@@ -574,7 +574,7 @@ char *print_inet_addr(int addr[8], char *buf, int flags) {
 	return print_ipv6_addr(addr, buf, flags);
 }
 
-char *print_ipv4_addr(int addr[8], char *buf) {
+char *print_ipv4_addr(int *addr, char *buf) {
 int a1, a2, a3, a4;
 
 	if (addr == NULL || buf == NULL)
@@ -593,7 +593,7 @@ int a1, a2, a3, a4;
 	print IPv6 address into buffer
 	WARNING: buffer must be large enough, NO bounds checking is done
 */
-char *print_ipv6_addr(int addr[8], char *buf, int flags) {
+char *print_ipv6_addr(int *addr, char *buf, int flags) {
 int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
 
 	if (addr == NULL || buf == NULL)
@@ -650,7 +650,7 @@ int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
 	return buf;
 }
 
-char *print_inet_mask(int mask[8], char *buf, int flags) {
+char *print_inet_mask(int *mask, char *buf, int flags) {
 int i, b, bits, num_bits, zeroes, complex_mask;
 
 	if (mask == NULL || buf == NULL)
@@ -682,7 +682,7 @@ int i, b, bits, num_bits, zeroes, complex_mask;
 	return print_inet_addr(mask, buf, flags);
 }
 
-void ipv4_bitmask(int bits, int mask[8]) {
+void ipv4_bitmask(int bits, int *mask) {
 int i, num, rest;
 
 	if (bits < 0)
@@ -704,7 +704,7 @@ int i, num, rest;
 		mask[i++] = 0;
 }
 
-void ipv6_bitmask(int bits, int mask[8]) {
+void ipv6_bitmask(int bits, int *mask) {
 int i, num, rest;
 
 	if (bits < 0)

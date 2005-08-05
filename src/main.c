@@ -56,12 +56,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 
 extern StringList *banished;
 
@@ -89,7 +88,9 @@ struct stat statbuf;
 		struct tm *tm;
 		int i;
 
-		tm = localtime(&statbuf.st_ctime);
+		if ((tm = localtime(&statbuf.st_ctime)) == NULL)
+			return 0;
+
 		sprintf(filename, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 		path_strip(filename);
 		i = 1;

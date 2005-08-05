@@ -39,8 +39,6 @@
 #include "Display.h"
 #include "sys_time.h"
 
-#include <sys/types.h>
-
 #define add_User(x,y)			(User *)add_List((x), (y))
 #define concat_User(x,y)		(User *)concat_List((x), (y))
 #define remove_User(x,y)		(User *)remove_List((x), (y))
