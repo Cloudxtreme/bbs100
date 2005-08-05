@@ -1506,7 +1506,7 @@ void state_change_symbols(User *usr, char c) {
 	if (c == INIT_STATE)
 		usr->flags |= USR_DONT_AUTO_COLOR;
 	else
-		if (c == EDIT_BREAK || c == EDIT_RETURN)
+		if (c == (char)EDIT_BREAK || c == EDIT_RETURN)
 			usr->flags &= ~USR_DONT_AUTO_COLOR;
 
 	change_config(usr, c, &usr->symbols, "<green>Enter symbols that will be automatically colored: <yellow>");

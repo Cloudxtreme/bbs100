@@ -190,12 +190,19 @@
 			ff1_continue = 1;		\
 	} while(0)
 
+#ifdef __FUNCTION__
 #define FF1_LOAD_UNKNOWN			\
 	if (ff1_continue)				\
 		continue;					\
 	else							\
 		log_warn("%s(): unknown keyword '%s', ignored", __FUNCTION__, buf)
-
+#else
+#define FF1_LOAD_UNKNOWN			\
+	if (ff1_continue)				\
+		continue;					\
+	else							\
+		log_warn("unknown keyword '%s', ignored", buf)
+#endif
 
 /*
 	save macros

@@ -1841,14 +1841,12 @@ PList *pl_cols[16];
 }
 
 void who_list_header(User *usr, int total, int drawline) {
-StringList *sl;
 struct tm *tm;
 
 	tm = user_time(usr, (time_t)0UL);
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	sl = NULL;
 	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
 		if (total == 1)
 			Print(usr, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
@@ -2150,7 +2148,7 @@ int r;
 	this is more or less a joke
 */
 int cmd_line(User *usr, char *cmd) {
-int i, pos;
+int i;
 char buf[MAX_LINE*3], *p;
 
 	if (usr == NULL)
@@ -2230,7 +2228,6 @@ char buf[MAX_LINE*3], *p;
 			NULL
 		};
 
-		pos = 0;
 		for(i = 0; sourcefiles[i] != NULL; i++)
 			ls = add_StringList(&ls, new_StringList(sourcefiles[i]));
 

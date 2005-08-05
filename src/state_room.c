@@ -1283,7 +1283,6 @@ char *category = NULL;
 
 void allknown_rooms(User *usr) {
 Room *r, *r_next;
-Joined *j;
 char *category = NULL;
 
 	Enter(allknown_rooms);
@@ -1298,7 +1297,7 @@ char *category = NULL;
 				continue;
 
 		if ((r->flags & ROOM_HIDDEN)
-			&& (j = in_Joined(usr->rooms, r->number)) == NULL
+			&& in_Joined(usr->rooms, r->number) == NULL
 			&& !(usr->runtime_flags & RTF_SYSOP)
 			&& in_StringList(r->room_aides, usr->name) == NULL)
 			continue;
@@ -1413,7 +1412,7 @@ int r;
 		int idx;
 
 		num = strtoul(usr->edit_buf, NULL, 10);
-		if (num < 0) {
+		if (num <= 0UL) {
 			Put(usr, "<red>No such message\n");
 			RET(usr);
 			Return;

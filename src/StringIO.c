@@ -321,12 +321,11 @@ int put_StringIO(StringIO *s, char *str) {
 
 int vprint_StringIO(StringIO *s, char *fmt, va_list args) {
 char buf[PRINT_BUF];
-int l;
 
 	if (s == NULL || fmt == NULL || !*fmt)
 		return 0;
 
-	l = vsprintf(buf, fmt, args);
+	vsprintf(buf, fmt, args);
 	va_end(args);
 
 	return put_StringIO(s, buf);
