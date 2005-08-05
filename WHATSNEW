@@ -110,6 +110,8 @@ What's new internally?
 - RETX() can return to a substate different from INIT_STATE
 - state_room.c holds room prompt functions; most common functions are
   done in state.c in fun_common()
+- bufprintf() and bufvprintf(), which map to snprintf() and vsnprintf(),
+  if HAVE_SNPRINTF and HAVE_VSNPRINTF are defined in config.h
 - some bugs fixed ...
 
 
