@@ -33,6 +33,7 @@
 #include "copyright.h"
 #include "cstring.h"
 #include "strerror.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

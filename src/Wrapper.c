@@ -30,6 +30,7 @@
 #include "log.h"
 #include "cstring.h"
 #include "Memory.h"
+#include "memset.h"
 #include "AtomicFile.h"
 
 #include <stdio.h>

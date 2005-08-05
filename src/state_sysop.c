@@ -55,6 +55,7 @@
 #include "Category.h"
 #include "Wrapper.h"
 #include "Signal.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

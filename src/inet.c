@@ -39,6 +39,7 @@
 #include "log.h"
 #include "User.h"
 #include "Signal.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <unistd.h>

@@ -57,6 +57,7 @@
 #include "Worldclock.h"
 #include "Category.h"
 #include "Memory.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

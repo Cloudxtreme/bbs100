@@ -25,6 +25,7 @@
 #include "passwd.h"
 #include "sys_time.h"
 #include "cstring.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

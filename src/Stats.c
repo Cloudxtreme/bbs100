@@ -36,6 +36,7 @@
 #include "Memory.h"
 #include "CachedFile.h"
 #include "FileFormat.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

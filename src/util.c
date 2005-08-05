@@ -32,6 +32,7 @@
 #include "Param.h"
 #include "access.h"
 #include "Memory.h"
+#include "memset.h"
 #include "OnlineUser.h"
 #include "locale_system.h"
 #include "mkdir.h"

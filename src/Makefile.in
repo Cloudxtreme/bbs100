@@ -48,7 +48,6 @@ LFLAGS = @LDFLAGS@
 LIBCRYPT = @LIBCRYPT@
 LIBXNET = @LIBXNET@
 LIBSOCKET = @LIBSOCKET@
-LIBNSL = @LIBNSL@
 
 INCLUDE = include
 
@@ -109,7 +108,7 @@ cleanlog:
 
 main: $(OBJS)
 	@echo '  BUILD     main'
-	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET)
 
 mkpasswd: mkpasswd.o passwd.o copyright.o
 	@echo '  BUILD     mkpasswd'
@@ -117,7 +116,7 @@ mkpasswd: mkpasswd.o passwd.o copyright.o
 
 resolver: resolver.o copyright.o
 	@echo '  BUILD     resolver'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET) $(LIBNSL)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
 
 ccat: ccat.o copyright.o
 	@echo '  BUILD     ccat'

@@ -28,6 +28,7 @@
 #include "Param.h"
 #include "cstring.h"
 #include "Memory.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>
