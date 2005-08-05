@@ -119,23 +119,8 @@ if test "${result}" = "no" ; then
 	fi
 fi
 
-if test ! -z "${LIBXNET}" ;
-then
-	AC_MSG_CHECKING(for gethostbyaddr in libc)
-	${CAT} >test$$.c <<NSL_EOF
-#include <netdb.h>
-int main(void) { gethostbyaddr((char *)0UL, 0, 0); return 0; }
-NSL_EOF
-	test_library_function
-	if test "${result}" = "no" ; then
-		AC_CHECK_LIB(nsl, main)
-		LIBNSL=${LIBS}
-		LIBS=''
-	fi
-fi
 AC_SUBST(LIBXNET)
 AC_SUBST(LIBSOCKET)
-AC_SUBST(LIBNSL)
 LIBS=''
 
 dnl Checks for header files.
@@ -154,7 +139,7 @@ dnl Checks for library functions.
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([dup2 gethostbyaddr getpass memmove memset mkdir rmdir select socket strerror strrchr strtoul uname])
+AC_CHECK_FUNCS([dup2 memmove memset mkdir rmdir select socket strerror strrchr strtoul uname snprintf vsnprintf])
 
 dnl special compiler options for gcc
 if test "$GCC" = "yes" ;

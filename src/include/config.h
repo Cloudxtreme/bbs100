@@ -36,9 +36,6 @@
 /* Define if you have the dup2 function.  */
 #define HAVE_DUP2 1
 
-/* Define if you have the gethostbyaddr function.  */
-#define HAVE_GETHOSTBYADDR 1
-
 /* Define if you have the memmove function.  */
 #define HAVE_MEMMOVE 1
 
@@ -54,6 +51,9 @@
 /* Define if you have the select function.  */
 #define HAVE_SELECT 1
 
+/* Define if you have the snprintf function.  */
+#define HAVE_SNPRINTF 1
+
 /* Define if you have the socket function.  */
 #define HAVE_SOCKET 1
 
@@ -68,6 +68,9 @@
 
 /* Define if you have the uname function.  */
 #define HAVE_UNAME 1
+
+/* Define if you have the vsnprintf function.  */
+#define HAVE_VSNPRINTF 1
 
 /* Define if you have the <crypt.h> header file.  */
 #define HAVE_CRYPT_H 1
@@ -107,9 +110,6 @@
 
 /* Define if you have the crypt library (-lcrypt).  */
 #define HAVE_LIBCRYPT 1
-
-/* Define if you have the nsl library (-lnsl).  */
-/* #undef HAVE_LIBNSL */
 
 /* Define if you have the socket library (-lsocket).  */
 /* #undef HAVE_LIBSOCKET */

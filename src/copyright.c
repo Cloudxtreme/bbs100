@@ -47,11 +47,15 @@ char *print_copyright(int full, char *progname, char *buf) {
 	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2005\n");
 
 	if (full) {
+#ifdef HAVE_UNAME
 		struct utsname uts;
+#endif
 
 		strcat(buf, "running on ");
+#ifdef HAVE_UNAME
 		if (!uname(&uts))
 			sprintf(buf+strlen(buf), "%s, %s %s %s ", uts.nodename, uts.machine, uts.sysname, uts.release);
+#endif
 		strcat(buf, "[" SYSTEM "]\n");
 	}
 	return buf;

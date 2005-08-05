@@ -2,6 +2,7 @@ Changes as of August 5th 2005
 - mkpasswd displays asterisks when entering a password
 - some minor things that a different compiler found
 - a few things lint came with
+- configure script changes
 
 Changes as of August 3rd 2005
 - most common functions work on history prompts
