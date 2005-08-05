@@ -3,6 +3,7 @@ Changes as of August 5th 2005
 - some minor things that a different compiler found
 - a few things lint came with
 - configure script changes
+- use of bufprintf(), which really maps to snprintf(), ifdef HAVE_SNPRINTF
 
 Changes as of August 3rd 2005
 - most common functions work on history prompts

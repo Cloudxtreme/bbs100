@@ -47,6 +47,7 @@
 #include "FileFormat.h"
 #include "Timezone.h"
 #include "OnlineUser.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -179,7 +180,7 @@ char buf[PRINT_BUF];
 		return;
 
 	va_start(args, fmt);
-	vsprintf(buf, fmt, args);	
+	bufvprintf(buf, PRINT_BUF, fmt, args);	
 	va_end(args);
 
 	Out(usr, buf);
@@ -193,7 +194,7 @@ char buf[PRINT_BUF];
 		return;
 
 	va_start(args, fmt);
-	vsprintf(buf, fmt, args);	
+	bufvprintf(buf, PRINT_BUF, fmt, args);	
 	va_end(args);
 
 	if (usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) {
@@ -1179,7 +1180,7 @@ void close_connection(User *usr, char *reason, ...) {
 			sprintf(buf, "CLOSE (%s): ", usr->conn->hostname);
 
 		va_start(ap, reason);
-		vsprintf(buf+strlen(buf), reason, ap);
+		bufvprintf(buf+strlen(buf), PRINT_BUF, reason, ap);
 		va_end(ap);
 
 		log_auth(buf);

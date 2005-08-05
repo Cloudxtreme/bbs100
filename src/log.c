@@ -36,6 +36,7 @@
 #include "locale_system.h"
 #include "cstring.h"
 #include "sys_time.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +143,7 @@ char buf[4096];
 
 	sprintf(buf, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
-	vsprintf(buf+strlen(buf), msg, ap);
+	bufvprintf(buf+strlen(buf), 4096, msg, ap);
 
 	if (internal_log_len > MAX_INTERNAL_LOG) {
 		StringList *sl;

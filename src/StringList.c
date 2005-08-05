@@ -25,6 +25,7 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,7 +142,7 @@ char buf[PRINT_BUF];
 	if (slp == NULL)
 		return NULL;
 
-	vsprintf(buf, fmt, ap);
+	bufvprintf(buf, PRINT_BUF, fmt, ap);
 	va_end(ap);
 	if ((sl = new_StringList(buf)) == NULL)
 		return *slp;

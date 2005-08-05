@@ -17,41 +17,36 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	cprintf.h	WJ105
+	bufprintf.c	WJ105
+
+	place-holder functions for snprintf() and vsnprintf(), which may not be
+	present everywhere yet
+
+	Do not call these function directly
+	Use the defines bufprintf() and bufvprintf() instead
 */
 
-#ifndef CPRINTF_H_WJ105
-#define CPRINTF_H_WJ105	1
+#include "bufprintf.h"
 
-#include "config.h"
-
-#ifndef HAVE_VPRINTF
-#error This package uses vprintf(), which you don't have
-#endif
+#include <stdio.h>
 
 
-#ifndef HAVE_SNPRINTF
-#define csnprintf	c_snprintf
+int buf_printf(char *buf, int size, char *fmt, ...) {
+va_list args;
 
-int c_snprintf(char *, int, char *, ...);
+	va_start(args, fmt);
+	return buf_vprintf(buf, size, fmt, args);
+}
 
-#else
-#define csnprintf	snprintf
-#endif
+/*
+	Note: the size parameter is not used at all ...
+*/
+int buf_vprintf(char *buf, int size, char *fmt, va_list args) {
+int ret;
 
-
-#ifndef HAVE_VSNPRINTF
-#define cvsnprintf	c_vsnprintf
-
-#include <stdarg.h>
-
-int c_vsnprintf(char *, int, char *, va_list);
-
-#else
-#define cvsnprintf	vsnprintf
-#endif
-
-
-#endif	/* CPRINTF_H_WJ105 */
+	ret = vsprintf(buf, fmt, args);
+	va_end(args);
+	return ret;
+}
 
 /* EOB */

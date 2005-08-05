@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "AtomicFile.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -325,7 +326,7 @@ char buf[PRINT_BUF];
 	if (s == NULL || fmt == NULL || !*fmt)
 		return 0;
 
-	vsprintf(buf, fmt, args);
+	bufvprintf(buf, PRINT_BUF, fmt, args);
 	va_end(args);
 
 	return put_StringIO(s, buf);

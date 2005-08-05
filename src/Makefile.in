@@ -55,17 +55,17 @@ INCLUDE = include
 	@echo '  CC       ' $@
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
-OBJS = List.o PList.o Hash.o StringList.o cstring.o CallStack.o \
-	log.o inet.o util.o screens.o edit.o edit_param.o access.o \
+OBJS = List.o PList.o Hash.o StringList.o CallStack.o \
+	debug.o cstring.o bufprintf.o log.o inet.o util.o crc32.o \
+	screens.o edit.o edit_param.o access.o copyright.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
 	state.o state_room.o state_login.o state_msg.o state_friendlist.o \
 	state_config.o state_roomconfig.o state_sysop.o state_history.o \
-	Message.o Room.o Joined.o Stats.o BufferedMsg.o \
-	passwd.o SU_Passwd.o Param.o copyright.o Memory.o \
-	debug.o SymbolTable.o Types.o HostMap.o FileFormat.o \
-	Timezone.o Worldclock.o locale_system.o locales.o \
-	Category.o crc32.o Conn.o ConnUser.o ConnResolv.o Telnet.o \
+	passwd.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
+	SU_Passwd.o Param.o Types.o Memory.o SymbolTable.o HostMap.o \
+	FileFormat.o Timezone.o Worldclock.o locale_system.o locales.o \
+	Category.o Conn.o ConnUser.o ConnResolv.o Telnet.o \
 	KVPair.o StringIO.o	Display.o patchlist.o \
 	main.o
 
