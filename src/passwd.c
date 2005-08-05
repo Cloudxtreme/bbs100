@@ -105,7 +105,9 @@ char salt[3], *p;
 }
 
 
-/* fill string up to nearest multiply */
+/*
+	fill string up to nearest multiply
+*/
 static void fill(char *str, int mul) {
 int filler, i, len;
 
@@ -198,6 +200,7 @@ pid_t pid;
 			salt[0] = chartab[salt[0] & 255];
 			salt[1] = chartab[salt[1] & 255];
 			strncpy(bufp, crypt(phrase+plen, salt), 13);
+			bufp[13] = 0;
 			bufp += 13;
 
 			plen += 8;
@@ -216,6 +219,8 @@ pid_t pid;
 
 /*
 	verify a crypt_phrase()d pass-phrase
+
+	returns 0 on match, else wrong passphrase
 */
 int verify_phrase(char *phrase, char *crypted) {
 char buf[MAX_CRYPTED], salt[256];
@@ -238,8 +243,8 @@ char buf[MAX_CRYPTED], salt[256];
 		buf[MAX_CRYPTED-1] = 0;
 	} else {
 		char *bufp, phrase_buf[MAX_PASSPHRASE+1];
-		int crypted_len, clen = 0;
-		int phrase_len, plen = 0;
+		int crypted_len, clen;
+		int phrase_len, plen;
 
 		bufp = buf;
 
@@ -260,15 +265,19 @@ char buf[MAX_CRYPTED], salt[256];
 
 		crypted_len = strlen(crypted);
 
+		plen = clen = 0;
 		for(;;) {
 			salt[0] = crypted[clen];
 			salt[1] = crypted[clen+1];
 			strncpy(bufp, crypt(phrase+plen, salt), 13);
+			bufp[13] = 0;
 			bufp += 13;
 			clen += 13;
 			plen += 8;
+
 			if (clen >= crypted_len)
 				break;
+
 			if (plen >= phrase_len)
 				break;
 		}

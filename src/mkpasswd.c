@@ -36,21 +36,55 @@ time_t rtc = (time_t)0UL;
 
 void getpassword(char *prompt, char *buf, int maxlen) {
 struct termios term, saved_term;
+int c, n;
 
-	if (buf == NULL)
+	if (buf == NULL || maxlen <= 1)
 		return;
 
 	tcgetattr(0, &term);
 	tcgetattr(0, &saved_term);
-	term.c_lflag &= ~ECHO;
+
+	term.c_iflag |= ISTRIP;
+	term.c_lflag &= ~(ICANON|ECHO|ECHOE|ECHOK|ECHONL);
+	term.c_cc[VMIN] = 1;
+	term.c_cc[VTIME] = 0;
+
 	tcsetattr(0, TCSANOW, &term);
 
 	if (prompt != NULL) {
 		printf("%s", prompt);
 		fflush(stdout);
 	}
+	memset(buf, 0, maxlen);
+
+/*
+	simple input routine, as fgets(stdin) really didn't do what I expected ...
+*/
+	n = 0;
+	while((c = fgetc(stdin)) != EOF) {
+		if (c == 0x7f || c == '\b') {
+			if (n > 0) {
+				buf[--n] = 0;
+				printf("\b \b");
+				fflush(stdout);
+			}
+			continue;
+		}
+		if (c == '\n' || c == '\r')
+			break;
+
+		if (n < maxlen) {
+			buf[n++] = c;
+			printf("*");
+			fflush(stdout);
+		}
+	}
+	buf[n] = 0;
+/*
 	if (fgets(buf, maxlen, stdin) == NULL)
 		*buf = 0;
+*/
+	buf[maxlen-1] = 0;
 
 	tcsetattr(0, TCSANOW, &saved_term);
 
@@ -58,19 +92,19 @@ struct termios term, saved_term;
 }
 
 int main(void) {
-char buf[128], buf2[128], crypt_buf[MAX_CRYPTED];
+char buf[MAX_LINE], buf2[MAX_LINE], crypt_buf[MAX_CRYPTED];
 
 	printf("%s", print_copyright(SHORT, "mkpasswd", buf));
 
-	getpassword("Enter password: ", buf, 128);
+	getpassword("Enter password: ", buf, MAX_LINE);
 	if (!*buf)
 		exit(1);
-	buf[127] = 0;
+	buf[MAX_LINE-1] = 0;
 
-	getpassword("Enter it again (for verification): ", buf2, 128);
+	getpassword("Enter it again (for verification): ", buf2, MAX_LINE);
 	if (!*buf2)
 		exit(1);
-	buf2[127] = 0;
+	buf2[MAX_LINE-1] = 0;
 
 	if (strcmp(buf, buf2)) {
 		printf("Passwords didn't match\n");
@@ -78,7 +112,12 @@ char buf[128], buf2[128], crypt_buf[MAX_CRYPTED];
 	}
 	rtc = time(NULL);
 	init_crypt();
+
 	printf("%s\n", crypt_phrase(buf, crypt_buf));
+
+	if (verify_phrase(buf, crypt_buf))
+		printf("\nERROR: verify_phrase() failed; passphrase encryption is NOT working correctly\n\n");
+
 	exit(0);
 	return 0;
 }

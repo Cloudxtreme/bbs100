@@ -1,3 +1,6 @@
+Changes as of August 5th 2005
+- mkpasswd displays asterisks when entering a password
+
 Changes as of August 3rd 2005
 - most common functions work on history prompts
 - boss key works on all menus
