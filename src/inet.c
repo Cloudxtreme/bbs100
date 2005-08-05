@@ -23,6 +23,10 @@
 
 #include "config.h"
 
+#ifndef HAVE_SOCKET
+#error This package relies on socket(), which is not available on this platform
+#endif
+
 #ifndef HAVE_SELECT
 #error This package relies on select(), which is not available on this platform
 #endif

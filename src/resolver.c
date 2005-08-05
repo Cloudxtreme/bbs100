@@ -25,6 +25,11 @@
 */
 
 #include "config.h"
+
+#ifndef HAVE_SOCKET
+#error This package relies on socket(), which is not available on this platform
+#endif
+
 #include "copyright.h"
 #include "cstring.h"
 #include "strerror.h"
