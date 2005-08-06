@@ -652,10 +652,10 @@ unsigned long msg_number;
 
 			deleted_by[0] = 0;
 			if (usr->message->flags & MSG_DELETED_BY_SYSOP)
-				cstrcpy(deleted_by, PARAM_NAME_SYSOP, MAX_NAME);
+				cstrcpy(deleted_by, PARAM_NAME_SYSOP, MAX_LINE);
 			else
 				if (usr->message->flags & MSG_DELETED_BY_ROOMAIDE)
-					cstrcpy(deleted_by, PARAM_NAME_ROOMAIDE, MAX_NAME);
+					cstrcpy(deleted_by, PARAM_NAME_ROOMAIDE, MAX_LINE);
 
 			if (*deleted_by)
 				cstrcat(deleted_by, ": ", MAX_LINE);
