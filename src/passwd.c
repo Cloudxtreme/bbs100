@@ -158,8 +158,7 @@ pid_t pid;
 	if (buf == NULL)
 		return NULL;
 
-	strncpy(phrase_buf, phrase, MAX_PASSPHRASE);
-	phrase_buf[MAX_PASSPHRASE] = 0;
+	cstrncpy(phrase_buf, phrase, MAX_PASSPHRASE);
 	phrase = phrase_buf;
 
 	pid = getpid();
@@ -172,8 +171,7 @@ pid_t pid;
 	System has a non-standard crypt() function, assume it will correctly
 	handle a phrase as input
 */
-		strncpy(buf, crypt(phrase_buf, salt), MAX_CRYPTED);
-		buf[MAX_CRYPTED-1] = 0;
+		cstrncpy(buf, crypt(phrase_buf, salt), MAX_CRYPTED);
 		return buf;
 	} else {
 /*
@@ -184,11 +182,8 @@ pid_t pid;
 		int len, plen = 0;
 
 		len = strlen(phrase);
-		if (len >= MAX_PASSPHRASE)
-			phrase[MAX_PASSPHRASE] = 0;
-		else
-			if (len < 16)
-				fill(phrase, 16);
+		if (len < 16)
+			fill(phrase, 16);
 
 		fill(phrase, 4);
 		reverse4(phrase);
@@ -199,8 +194,7 @@ pid_t pid;
 		for(;;) {
 			salt[0] = chartab[salt[0] & 255];
 			salt[1] = chartab[salt[1] & 255];
-			strncpy(bufp, crypt(phrase+plen, salt), 13);
-			bufp[13] = 0;
+			cstrncpy(bufp, crypt(phrase+plen, salt), 14);
 			bufp += 13;
 
 			plen += 8;
@@ -239,8 +233,7 @@ char buf[MAX_CRYPTED], salt[256];
 			salt[0] = crypted[0];
 			salt[1] = crypted[1];
 		}
-		strncpy(buf, crypt(phrase, salt), MAX_CRYPTED);
-		buf[MAX_CRYPTED-1] = 0;
+		cstrncpy(buf, crypt(phrase, salt), MAX_CRYPTED);
 	} else {
 		char *bufp, phrase_buf[MAX_PASSPHRASE+1];
 		int crypted_len, clen;
@@ -248,16 +241,12 @@ char buf[MAX_CRYPTED], salt[256];
 
 		bufp = buf;
 
-		strncpy(phrase_buf, phrase, MAX_PASSPHRASE);
-		phrase_buf[MAX_PASSPHRASE] = 0;
+		cstrncpy(phrase_buf, phrase, MAX_PASSPHRASE);
 		phrase = phrase_buf;
 
 		phrase_len = strlen(phrase);
-		if (phrase_len >= MAX_PASSPHRASE)
-			phrase[MAX_PASSPHRASE] = 0;
-		else
-			if (phrase_len < 16)
-				fill(phrase, 16);
+		if (phrase_len < 16)
+			fill(phrase, 16);
 
 		fill(phrase, 4);
 		reverse4(phrase);
@@ -269,8 +258,7 @@ char buf[MAX_CRYPTED], salt[256];
 		for(;;) {
 			salt[0] = crypted[clen];
 			salt[1] = crypted[clen+1];
-			strncpy(bufp, crypt(phrase+plen, salt), 13);
-			bufp[13] = 0;
+			cstrncpy(bufp, crypt(phrase+plen, salt), 14);
 			bufp += 13;
 			clen += 13;
 			plen += 8;

@@ -224,8 +224,7 @@ int sock, optval;
 	memset(&un, 0, sizeof(un));
 
 	un.sun_family = AF_UNIX;
-	strncpy(un.sun_path, path, sizeof(un.sun_path) - 1);
-	un.sun_path[sizeof(un.sun_path) - 1] = 0;
+	cstrncpy(un.sun_path, path, sizeof(un.sun_path));
 
 	if (bind(sock, (struct sockaddr *)&un, sizeof(un)) == -1) {
 		log_err("unix socket bind()");

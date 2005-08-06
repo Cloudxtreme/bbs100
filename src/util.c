@@ -612,8 +612,7 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 			return 6;
 
 		c = ((usr->display->term_width-1) > PRINT_BUF) ? PRINT_BUF : (usr->display->term_width-1);
-		strncpy(buf, code, c);
-		buf[c-1] = 0;
+		cstrncpy(buf, code, c);
 /*
 	it stinks, but you have to remove all chars that can reset the cursor pos
 */
@@ -648,7 +647,7 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 
 		c = strlen(code);
 		c = (c > PRINT_BUF) ? PRINT_BUF : c;
-		strncpy(buf, code, c - 1);
+		cstrncpy(buf, code, c);
 		buf[c-1] = 0;
 
 		if ((p = cstrchr(buf, '\n')) != NULL)		/* don't go over newlines */
@@ -762,21 +761,18 @@ int l, n;
 		return;
 
 	if ((p = cstristr(str, "<hline>")) == NULL) {
-		strncpy(dest, str, bufsize);
-		dest[bufsize-1] = 0;
+		cstrncpy(dest, str, bufsize);
 		return;
 	}
 	l = p - str;
 	if (l >= bufsize) {
-		strncpy(dest, str, bufsize-1);
-		dest[bufsize-1] = 0;
+		cstrncpy(dest, str, bufsize);
 		return;
 	}
 	if (l > 0)
-		strncpy(dest, str, l);
+		cstrncpy(dest, str, l+1);
 	else
-		l = 0;
-	dest[l] = 0;
+		*dest = 0;
 
 	p += 7;
 
@@ -798,10 +794,8 @@ int l, n;
 	color codes, giving ugly results
 
 	n = bufsize - l;
-	if (n > 0) {
-		strncpy(dest+l, p, n);
-		dest[bufsize-1] = 0;
-	}
+	if (n > 0)
+		cstrncpy(dest+l, p, n);
 */
 	while((p = cstristr(dest, "<hline>")) != NULL)		/* filter out duplicate codes */
 		memmove(p, p+7, strlen(p+7)+1);
@@ -819,18 +813,16 @@ int l, n;
 		return;
 
 	if  ((p = cstristr(str, "<center>")) == NULL) {
-		strncpy(dest, str, bufsize);
-		dest[bufsize-1] = 0;
+		cstrncpy(dest, str, bufsize);
 		return;
 	}
 	l = p - str;
 	if (l >= bufsize) {
-		strncpy(dest, str, bufsize-1);
-		dest[bufsize-1] = 0;
+		cstrncpy(dest, str, bufsize);
 		return;
 	}
 	if (l > 0)
-		strncpy(dest, str, l);
+		cstrncpy(dest, str, l);
 	else
 		l = 0;
 	dest[l] = 0;
@@ -848,10 +840,8 @@ int l, n;
 	n = strlen(p);
 	if (l + n >= bufsize) {
 		n = bufsize - l;
-		if (n > 0) {
-			strncpy(dest+l, p, n);
-			dest[bufsize-1] = 0;
-		}
+		if (n > 0)
+			cstrncpy(dest+l, p, n);
 	} else
 		cstrcpy(dest+l, p, bufsize - l);
 

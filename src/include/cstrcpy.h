@@ -21,9 +21,8 @@
 #define CSTRCPY_H_WJ105	1
 
 char *cstrcpy(char *, char *, int);
-char *cstrncpy(char *, char *, int, int);
+char *cstrncpy(char *, char *, int);
 char *cstrcat(char *, char *, int);
-char *cstrncat(char *, char *, int, int);
 
 #endif	/* CSTRCPY_H_WJ105 */
 

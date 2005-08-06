@@ -318,8 +318,7 @@ char addr[MAX_LINE], *p, *startp;
 	if (ipnum == NULL || !*ipnum || ip6 == NULL || flags == NULL)
 		return -1;
 
-	strncpy(addr, ipnum, MAX_LINE-1);
-	addr[MAX_LINE-1] = 0;
+	cstrncpy(addr, ipnum, MAX_LINE);
 
 	if (sscanf(addr, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
 		if (a1 < 0 || a1 > 255

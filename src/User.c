@@ -300,10 +300,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 		Fclose(f);
 		usr->flags &= USR_ALL;
 
-		if (!usr->name[0]) {
-			strncpy(usr->name, username, MAX_NAME-1);
-			usr->name[MAX_NAME-1] = 0;
-		}
+		if (!usr->name[0])
+			cstrncpy(usr->name, username, MAX_NAME);
 		return 0;
 	}
 	Fclose(f);
@@ -647,8 +645,7 @@ int i;
 			goto err_load_User;
 
 		cstrip_line(buf);
-		strncpy(usr->passwd, buf, MAX_CRYPTED_PASSWD-1);
-		usr->passwd[MAX_CRYPTED_PASSWD-1] = 0;
+		cstrncpy(usr->passwd, buf, MAX_CRYPTED_PASSWD);
 	} else
 		LOAD_USER_SKIPLINES(1);
 

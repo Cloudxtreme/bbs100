@@ -180,32 +180,28 @@ char buf[MAX_LONGLINE];
 	if (!*buf)
 		goto err_load_message;
 
-	strncpy(m->from, buf, MAX_NAME);
-	m->from[MAX_NAME-1] = 0;
+	cstrncpy(m->from, buf, MAX_NAME);
 
 /* anon (may be empty) */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);
-	strncpy(m->anon, buf, MAX_NAME);
-	m->anon[MAX_NAME-1] = 0;
+	cstrncpy(m->anon, buf, MAX_NAME);
 
 /* deleted_by */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);
-	strncpy(m->deleted_by, buf, MAX_NAME);
-	m->deleted_by[MAX_NAME-1] = 0;
+	cstrncpy(m->deleted_by, buf, MAX_NAME);
 
 /* subject (may be empty) */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);
-	strncpy(m->subject, buf, MAX_LINE);
-	m->subject[MAX_LINE-1] = 0;
+	cstrncpy(m->subject, buf, MAX_LINE);
 
 /* to */
 	listdestroy_StringList(m->to);

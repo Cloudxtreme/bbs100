@@ -62,8 +62,7 @@ char *p;
 	else
 		p = filename;
 
-	strncpy(buf, p, MAX_LINE-1);
-	buf[MAX_LINE-1] = 0;
+	cstrncpy(buf, p, MAX_LINE);
 
 	while((p = cstrchr(buf, '_')) != NULL)
 		*p = ' ';

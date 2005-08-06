@@ -44,19 +44,20 @@ char *cstrcpy(char *dest, char *src, int buflen) {
 }
 
 /*
-	strncpy() with bounds check
-	also always terminates dest with a zero byte
+	strncpy() with terminating zero byte
+
+	There is no explicit bounds check, because for strncpy() you already have
+	to think about bounds
 */
-char *cstrncpy(char *dest, char *src, int n, int buflen) {
-	if (dest == NULL || src == NULL || buflen <= 0)
+char *cstrncpy(char *dest, char *src, int n) {
+	if (dest == NULL || src == NULL || n <= 0)
 		return NULL;
 
-	if (n > buflen-1)
-		n = buflen - 1;
-
-	if (n <= 0)
+	n--;
+	if (n <= 0) {
+		*dest = 0;
 		return dest;
-
+	}
 	strncpy(dest, src, n);
 	dest[n] = 0;
 	return dest;
@@ -75,20 +76,6 @@ int len;
 
 	len = strlen(dest);
 	return cstrcpy(dest+len, src, buflen - len);
-}
-
-/*
-	strncat() with bounds check
-	always terminates dest with a zero byte
-*/
-char *cstrncat(char *dest, char *src, int n, int buflen) {
-int len;
-
-	if (dest == NULL || src == NULL || buflen <= 0)
-		return NULL;
-
-	len = strlen(dest);
-	return cstrncpy(dest+len, src, n, buflen - len);
 }
 
 /* EOB */

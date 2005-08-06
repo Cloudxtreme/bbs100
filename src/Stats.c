@@ -134,72 +134,63 @@ char buf[MAX_LINE];
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->oldest, buf, MAX_NAME);
-	st->oldest[MAX_NAME-1] = 0;
+	cstrncpy(st->oldest, buf, MAX_NAME);
 
 /* youngest */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->youngest, buf, MAX_NAME);
-	st->youngest[MAX_NAME-1] = 0;
+	cstrncpy(st->youngest, buf, MAX_NAME);
 
 /* most_logins */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_logins, buf, MAX_NAME);
-	st->most_logins[MAX_NAME-1] = 0;
+	cstrncpy(st->most_logins, buf, MAX_NAME);
 
 /* most_xsent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_xsent, buf, MAX_NAME);
-	st->most_xsent[MAX_NAME-1] = 0;
+	cstrncpy(st->most_xsent, buf, MAX_NAME);
 
 /* most_xrecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_xrecv, buf, MAX_NAME);
-	st->most_xrecv[MAX_NAME-1] = 0;
+	cstrncpy(st->most_xrecv, buf, MAX_NAME);
 
 /* most_esent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_esent, buf, MAX_NAME);
-	st->most_esent[MAX_NAME-1] = 0;
+	cstrncpy(st->most_esent, buf, MAX_NAME);
 
 /* most_erecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_erecv, buf, MAX_NAME);
-	st->most_erecv[MAX_NAME-1] = 0;
+	cstrncpy(st->most_erecv, buf, MAX_NAME);
 
 /* most_posted */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_posted, buf, MAX_NAME);
-	st->most_posted[MAX_NAME-1] = 0;
+	cstrncpy(st->most_posted, buf, MAX_NAME);
 
 /* most_read */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_read, buf, MAX_NAME);
-	st->most_read[MAX_NAME-1] = 0;
+	cstrncpy(st->most_read, buf, MAX_NAME);
 
 /* oldest_birth */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -279,16 +270,14 @@ char buf[MAX_LINE];
 		goto end_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_fsent, buf, MAX_NAME);
-	st->most_fsent[MAX_NAME-1] = 0;
+	cstrncpy(st->most_fsent, buf, MAX_NAME);
 
 /* most_frecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
-	strncpy(st->most_frecv, buf, MAX_NAME);
-	st->most_frecv[MAX_NAME-1] = 0;
+	cstrncpy(st->most_frecv, buf, MAX_NAME);
 
 /* fsent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)

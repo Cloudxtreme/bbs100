@@ -1789,8 +1789,7 @@ char buf[MAX_LINE], *p;
 			if (usr->timezone == NULL)
 				cstrcpy(buf, "GMT", MAX_LINE);
 			else {
-				strncpy(buf, usr->timezone, MAX_LINE-1);
-				buf[MAX_LINE-1] = 0;
+				cstrncpy(buf, usr->timezone, MAX_LINE);
 				p = buf;
 				while((p = cstrchr(p, '_')) != NULL)
 					*p = ' ';
