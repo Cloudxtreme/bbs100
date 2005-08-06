@@ -26,25 +26,33 @@
 	Use the defines bufprintf() and bufvprintf() instead
 */
 
+#include "config.h"
 #include "bufprintf.h"
 
 #include <stdio.h>
+#include <string.h>
+
+#ifndef HAVE_VPRINTF
+#error This package uses vprintf(), which you do not have
+#endif
 
 
-int buf_printf(char *buf, int size, char *fmt, ...) {
+int bufprintf(char *buf, int buflen, char *fmt, ...) {
 va_list args;
 
 	va_start(args, fmt);
-	return buf_vprintf(buf, size, fmt, args);
+	return bufvprintf(buf, buflen, fmt, args);
 }
 
-/*
-	Note: the size parameter is not used at all ...
-*/
-int buf_vprintf(char *buf, int size, char *fmt, va_list args) {
+int bufvprintf(char *buf, int buflen, char *fmt, va_list args) {
 int ret;
 
+#ifdef HAVE_VSNPRINTF
+	vsnprintf(buf, buflen, fmt, args);
+	ret = strlen(buf);						/* <-- important! */
+#else
 	ret = vsprintf(buf, fmt, args);
+#endif
 	va_end(args);
 	return ret;
 }

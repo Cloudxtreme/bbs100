@@ -23,34 +23,10 @@
 #ifndef BUFPRINTF_H_WJ105
 #define BUFPRINTF_H_WJ105	1
 
-#include "config.h"
-
 #include <stdarg.h>
 
-#ifndef HAVE_VPRINTF
-#error This package uses vprintf(), which you do not have
-#endif
-
-
-#ifndef HAVE_SNPRINTF
-#define bufprintf	buf_printf
-#else
-#define bufprintf	snprintf
-#endif
-
-
-#ifndef HAVE_VSNPRINTF
-#define bufvprintf	buf_vprintf
-#else
-#define bufvprintf	vsnprintf
-#endif
-
-/*
-	stay away from using these directly ...
-	use bufprintf() and bufvprintf() instead
-*/
-int buf_printf(char *, int, char *, ...);
-int buf_vprintf(char *, int, char *, va_list);
+int bufprintf(char *, int, char *, ...);
+int bufvprintf(char *, int, char *, va_list);
 
 #endif	/* BUFPRINTF_H_WJ105 */
 
