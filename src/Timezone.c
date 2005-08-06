@@ -161,7 +161,7 @@ int i;
 	it is valid to have zero DST transitions
 	if so, types[0] should be used
 */
-	if (tzh_timecnt && (tz->transitions = (DST_Transition *)Malloc(tzh_timecnt * sizeof(DST_Transition), TYPE_DST_TRANS)) == NULL) {
+	if (tzh_timecnt > 0 && (tz->transitions = (DST_Transition *)Malloc(tzh_timecnt * sizeof(DST_Transition), TYPE_DST_TRANS)) == NULL) {
 		log_err("load_Timezone(): out of memory allocating %d DST_Transitions", tzh_timecnt);
 		closefile(f);
 		destroy_Timezone(tz);
@@ -394,7 +394,10 @@ int i;
 	since the last ice age, so I'm going to free up some memory
 	I'm only interested in the transitions for the next 2 years to come
 	(anyone running bbs100 with an uptime of more than 2 years will
-	have the chance to see the clock fail ;)
+	have the chance of seeing the clock fail ;)
+
+	(I guess you could do the same thing for the TimeTypes, but there
+	are so few that it is not really a problem)
 */
 		n = tz->curr_idx;
 		in_two_years = rtc + 2 * 52 * SECS_IN_WEEK;
