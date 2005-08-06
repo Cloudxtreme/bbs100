@@ -32,7 +32,7 @@
 
 #include "copyright.h"
 #include "cstring.h"
-#include "strerror.h"
+#include "cstrerror.h"
 #include "memset.h"
 
 #include <stdio.h>
@@ -151,7 +151,7 @@ int s, n, un_len;
 
 	for(;;) {
 		if ((n = read(s, request, 127)) <= 0) {
-			fprintf(stderr, "resolver: read(): %s\n", strerror(errno));
+			fprintf(stderr, "resolver: read(): %s\n", cstrerror(errno));
 			break;
 		}
 		request[n] = 0;
@@ -164,19 +164,19 @@ int s, n, un_len;
 	write the answer back to the unix socket connection
 */
 		if (write(s, request, strlen(request)) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
 			break;
 		}
 		if (write(s, " ", 1) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
 			break;
 		}
 		if (write(s, result, strlen(result)) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
 			break;
 		}
 		if (write(s, "\r", 1) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", strerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
 			break;
 		}
 	}

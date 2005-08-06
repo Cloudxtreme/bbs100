@@ -26,7 +26,7 @@
 #include "edit.h"
 #include "cstring.h"
 #include "mydirentry.h"
-#include "strerror.h"
+#include "cstrerror.h"
 #include "CachedFile.h"
 #include "Param.h"
 #include "access.h"
@@ -1555,7 +1555,7 @@ char *p;
 			if (errno == EEXIST)
 				continue;
 
-			log_err("mkdir_p(): failed to create directory %s : %s", pathname, strerror(errno));
+			log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno));
 			return -1;
 		}
 		*p = '/';
@@ -1565,7 +1565,7 @@ char *p;
 		if (errno == EEXIST)
 			return 0;
 
-		log_err("mkdir_p(): failed to create directory %s : %s", pathname, strerror(errno));
+		log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno));
 		return -1;
 	}
 	return 0;

@@ -31,6 +31,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "ConnResolv.h"
+#include "cstrerror.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,7 +124,7 @@ Process *proc;
 
 	pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
 	if (pid == (pid_t)-1L) {
-		log_err("waitpid(): %s", strerror(errno));
+		log_err("waitpid(): %s", cstrerror(errno));
 		return;
 	}
 	if (pid == (pid_t)0L) {

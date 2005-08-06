@@ -41,6 +41,7 @@
 #include "Signal.h"
 #include "memset.h"
 #include "bufprintf.h"
+#include "cstrerror.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -81,7 +82,7 @@
 
 const char *inet_error(int err) {
 	if (err == EAI_SYSTEM)
-		return (const char *)strerror(errno);
+		return (const char *)cstrerror(errno);
 
 	return (const char *)gai_strerror(err);
 }
@@ -138,7 +139,7 @@ Conn *conn;
 /* be cool about errors about IPv6 ... not many people have it yet */
 			if (!(errno == EAFNOSUPPORT && ai_p->ai_family == PF_INET6))
 				log_warn("inet_listen(%s): socket(family = %d, socktype = %d, protocol = %d) failed: %s",
-					service, ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol, strerror(errno));
+					service, ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol, cstrerror(errno));
 			continue;
 		}
 /*
@@ -148,12 +149,12 @@ Conn *conn;
 #ifdef IPV6_V6ONLY
 		optval = 1;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(optval))) == -1)
-			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, strerror(errno));
+			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, cstrerror(errno));
 #endif
 */
 		optval = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
-			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", strerror(errno));
+			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", cstrerror(errno));
 
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
@@ -170,7 +171,7 @@ Conn *conn;
 	to make sure ...
 */
 		if (ioctl(sock, FIONBIO, &optval) == -1) {
-			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, strerror(errno));
+			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, cstrerror(errno));
 			close(sock);
 			continue;
 		}
@@ -238,7 +239,7 @@ int sock, optval;
 		return -1;
 	}
 	if (listen(sock, MAX_NEWCONNS) == -1) {
-		log_err("unix_sock(): listen() failed: %s", strerror(errno));
+		log_err("unix_sock(): listen() failed: %s", cstrerror(errno));
 		close(sock);
 		return -1;
 	}

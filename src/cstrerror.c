@@ -17,31 +17,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	strerror.h	WJ99
+	cstrerror.c	WJ105
 */
 
-#ifndef STRERROR_H_WJ99
-#define STRERROR_H_WJ99 1
-
-#include <config.h>
+#include "config.h"
+#include "cstrerror.h"
+#include "bufprintf.h"
 
 #ifndef HAVE_STRERROR
-#define HAVE_STRERROR 1
 
-#include <stdio.h>
-#include <errno.h>
-
-/* Note: returns a static buffer */
-char *strerror(int err) {
+/*
+	Note: returns a static buffer
+*/
+char *c_strerror(int err) {
 char buf[64];
 
-	sprintf(buf, "errno == %d\n", errno);
+	bufprintf(buf, 64, "errno == %d\n", errno);
 	return buf;
 }
 
-#endif
-
-#endif	/* STRERROR_H_WJ99 */
+#endif	/* HAVE_STRERROR */
 
 /* EOB */
-

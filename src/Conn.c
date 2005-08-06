@@ -24,6 +24,7 @@
 #include "Conn.h"
 #include "Memory.h"
 #include "log.h"
+#include "cstrerror.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,7 +188,7 @@ char buf[MAX_PATHLEN];
 			return 0;
 #endif
 		if (errno != EBADF)
-			log_warn("input_Conn(): read(): %s, closing connection", strerror(errno));
+			log_warn("input_Conn(): read(): %s, closing connection", cstrerror(errno));
 
 		if (conn->sock >= 0) {
 			close(conn->sock);
