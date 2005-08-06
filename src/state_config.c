@@ -36,6 +36,7 @@
 #include "Memory.h"
 #include "Timezone.h"
 #include "Param.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -259,16 +260,16 @@ void state_config_menu(User *usr, char c) {
 }
 
 
-static char *print_address(char *value, char *alt, char *buf) {
+static char *print_address(char *value, char *alt, char *buf, int buflen) {
 	if (value != NULL && *value)
-		sprintf(buf, "<yellow> %s", value);
+		bufprintf(buf, buflen, "<yellow> %s", value);
 	else
-		sprintf(buf, "<white> <unknown%s>", alt);
+		bufprintf(buf, buflen, "<white> <unknown%s>", alt);
 	return buf;
 }
 
 void state_config_address(User *usr, char c) {
-char buf[MAX_LINE*2];
+char buf[MAX_LINE*3];
 
 	if (usr == NULL)
 		return;
@@ -283,19 +284,19 @@ char buf[MAX_LINE*2];
 			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
-				"<hotkey>Real name :%s<magenta>\n", print_address(usr->real_name, "", buf));
+				"<hotkey>Real name :%s<magenta>\n", print_address(usr->real_name, "", buf, MAX_LINE*3));
 
-			Print(usr, "<hotkey>Address   :%s\n", print_address(usr->street, " street", buf));
+			Print(usr, "<hotkey>Address   :%s\n", print_address(usr->street, " street", buf, MAX_LINE*3));
 
-			Print(usr, "           %s",		print_address(usr->city, " city", buf));
-			Print(usr, " %s\n",				print_address(usr->zipcode, " ZIP code", buf));
-			Print(usr, "           %s,",	print_address(usr->state, " state", buf));
-			Print(usr, "%s<magenta>\n",		print_address(usr->country, " country", buf));
+			Print(usr, "           %s",		print_address(usr->city, " city", buf, MAX_LINE*3));
+			Print(usr, " %s\n",				print_address(usr->zipcode, " ZIP code", buf, MAX_LINE*3));
+			Print(usr, "           %s,",	print_address(usr->state, " state", buf, MAX_LINE*3));
+			Print(usr, "%s<magenta>\n",		print_address(usr->country, " country", buf, MAX_LINE*3));
 
-			Print(usr, "<hotkey>Phone     :%s<magenta>\n",	print_address(usr->phone, " phone number", buf));
+			Print(usr, "<hotkey>Phone     :%s<magenta>\n",	print_address(usr->phone, " phone number", buf, MAX_LINE*3));
 			Print(usr, "\n"
-				"<hotkey>E-mail    :%s<magenta>\n",			print_address(usr->email, " e-mail address", buf));
-			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf));
+				"<hotkey>E-mail    :%s<magenta>\n",			print_address(usr->email, " e-mail address", buf, MAX_LINE*3));
+			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf, MAX_LINE*3));
 
 			Print(usr, "\n"
 				"<hotkey>Hide address from non-friends...  <white>%s<magenta>\n",
@@ -1972,7 +1973,7 @@ char filename[MAX_PATHLEN];
 		Put(usr, "<red>Sorry, something is not working. Please try again later\n\n");
 		Return;
 	}
-	sprintf(filename, "%s/%s/.tz_index", PARAM_ZONEINFODIR, usr->tmpbuf[0]);
+	bufprintf(filename, MAX_PATHLEN, "%s/%s/.tz_index", PARAM_ZONEINFODIR, usr->tmpbuf[0]);
 	path_strip(filename);
 
 	if (usr->tmpbuf[1] != NULL) {
@@ -2079,7 +2080,7 @@ int r;
 		idx = 1;
 		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
 			if (choice == idx) {
-				sprintf(filename, "%s/%s", usr->tmpbuf[1], sl->str);
+				bufprintf(filename, MAX_PATHLEN, "%s/%s", usr->tmpbuf[1], sl->str);
 				break;
 			}
 			idx++;

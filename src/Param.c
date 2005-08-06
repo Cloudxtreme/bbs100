@@ -281,7 +281,7 @@ int i;
 
 	for(i = 0; i < NUM_PARAM; i++) {
 		if (param[i]->key != NULL && param[i]->key[0]) {
-			print_KVPair(param[i], buf);
+			print_KVPair(param[i], buf, PRINT_BUF*3);
 			fprintf(f->f, "%-22s %s\n", param[i]->key, buf);
 		} else
 			fprintf(f->f, "\n");
@@ -333,7 +333,7 @@ char buf[PRINT_BUF*3];
 
 	for(i = 0; i < NUM_PARAM; i++) {
 		if (param[i]->key != NULL && param[i]->key[0]) {
-			print_KVPair(param[i], buf);
+			print_KVPair(param[i], buf, PRINT_BUF*3);
 			printf("%-22s %s\n", param[i]->key, buf);
 		} else
 			printf("\n");

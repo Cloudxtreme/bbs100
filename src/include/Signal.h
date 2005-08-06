@@ -29,6 +29,8 @@
 #include <signal.h>
 #include <setjmp.h>
 
+#define MAX_SIGNAME		64			/* for sig_name() */
+
 /*
 	the following is for brain-dead OSes and broken development environments
 	e.g. Cygwin for Windows
@@ -89,7 +91,7 @@ extern SigTable sig_table[];
 
 void init_Signal(void);
 void deinit_Signal(void);
-char *sig_name(int, char *);
+char *sig_name(int, char *, int);
 
 int set_Signal(int, void (*)(int));
 void remove_Signal(int, void (*)(int));

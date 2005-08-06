@@ -32,6 +32,7 @@
 #include "log.h"
 #include "debug.h"
 #include "mydirentry.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -105,7 +106,7 @@ int i;
 		tz->refcount++;									/* somebody is using it (!) */
 		return tz;
 	}
-	sprintf(filename, "%s/%s", PARAM_ZONEINFODIR, name);
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_ZONEINFODIR, name);
 	path_strip(filename);
 
 	if ((f = openfile(filename, "r")) == NULL) {
@@ -529,7 +530,7 @@ StringList *sl;
 			log_err("generate_tz_index(): path too long, file skipped");
 			continue;
 		}
-		sprintf(filename, "%s/%s", dirname, direntp->d_name);
+		bufprintf(filename, MAX_PATHLEN, "%s/%s", dirname, direntp->d_name);
 		path_strip(filename);
 
 		if (subdir) {

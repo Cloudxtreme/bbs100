@@ -35,6 +35,7 @@
 #include "OnlineUser.h"
 #include "FileFormat.h"
 #include "log.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,7 +78,7 @@ void destroy_Room(Room *r) {
 Room *load_Room(unsigned int number, int flags) {
 char filename[MAX_PATHLEN];
 
-	sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, number);
+	bufprintf(filename, MAX_PATHLEN, "%s/%u/RoomData", PARAM_ROOMDIR, number);
 	path_strip(filename);
 	return load_RoomData(filename, number, flags);
 }
@@ -91,7 +92,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	Enter(load_Mail);
 
-	sprintf(filename, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
 	if ((r = load_RoomData(filename, 1, flags)) == NULL) {
@@ -101,7 +102,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = MAIL_ROOM;
-	possession(username, "Mail", roomname);
+	possession(username, "Mail", roomname, MAX_LINE);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -110,7 +111,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	r->flags = ROOM_SUBJECTS | ROOM_NOZAP | ROOM_INVITE_ONLY;
 
-	sprintf(filename, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 	room_readroomdir(r, filename);
 	Return r;
@@ -125,7 +126,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	Enter(load_Home);
 
-	sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
 	if ((r = load_RoomData(filename, 2, flags)) == NULL) {
@@ -135,7 +136,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 		r->generation = (unsigned long)rtc;
 	}
 	r->number = HOME_ROOM;
-	possession(username, "Home", roomname);
+	possession(username, "Home", roomname, MAX_LINE);
 	Free(r->name);
 	r->name = cstrdup(roomname);
 
@@ -449,14 +450,14 @@ File *f;
 		*p = 0;
 
 		if (r->number == MAIL_ROOM)
-			sprintf(filename, "%s/%c/%s/MailData", PARAM_USERDIR, *name, name);
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/MailData", PARAM_USERDIR, *name, name);
 		else
 			if (r->number == HOME_ROOM)
-				sprintf(filename, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
+				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
 
 		load_roominfo(r, name);
 	} else {
-		sprintf(filename, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
 		load_roominfo(r, NULL);
 	}
 	path_strip(filename);
@@ -533,9 +534,9 @@ char filename[MAX_PATHLEN];
 		if (usr == NULL)
 			filename[0] = 0;
 		else
-			sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, r->msgs[0]);
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, r->msgs[0]);
 	} else
-		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
 
 	if (r->msg_idx >= r->max_msgs) {
 		if (filename[0] && unlink_file(filename) == -1)
@@ -586,7 +587,7 @@ char dirname[MAX_PATHLEN];
 	if (r == NULL || (r->flags & ROOM_CHATROOM))
 		return;
 
-	sprintf(dirname, "%s/%u/", PARAM_ROOMDIR, r->number);
+	bufprintf(dirname, MAX_PATHLEN, "%s/%u/", PARAM_ROOMDIR, r->number);
 	path_strip(dirname);
 	room_readroomdir(r, dirname);
 }
@@ -597,7 +598,7 @@ char buf[MAX_PATHLEN];
 	if (r == NULL || username == NULL || !*username)
 		return;
 
-	sprintf(buf, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(buf);
 	room_readroomdir(r, buf);
 }
@@ -824,7 +825,7 @@ int load_room_flags;
 	if (!PARAM_HAVE_HOMEROOM || username == NULL || !*username)
 		return NULL;
 
-	possession(username, "Home", buf);
+	possession(username, "Home", buf, MAX_LINE);
 
 	for(r = HomeRooms; r != NULL; r = r->next)
 		if (!strcmp(r->name, buf))
@@ -1049,7 +1050,7 @@ int load_room_flags;
 	if (!PARAM_HAVE_RESIDENT_INFO)
 		load_room_flags &= ~LOAD_ROOM_INFO;
 
-	sprintf(buf, "%s/", PARAM_ROOMDIR);
+	bufprintf(buf, MAX_PATHLEN, "%s/", PARAM_ROOMDIR);
 	path_strip(buf);
 	bufp = buf+strlen(buf);
 

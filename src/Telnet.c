@@ -23,6 +23,7 @@
 #include "edit.h"
 #include "debug.h"
 #include "cstring.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,12 +31,14 @@
 #include <arpa/telnet.h>
 
 #ifndef TELOPT_NAWS
-#define TELOPT_NAWS 31			/* negotiate about window size */
+#define TELOPT_NAWS			31		/* negotiate about window size */
 #endif
 
 #ifndef TELOPT_NEW_ENVIRON
-#define TELOPT_NEW_ENVIRON 39	/* set new environment variable */
+#define TELOPT_NEW_ENVIRON	39		/* set new environment variable */
 #endif
+
+#define MAX_TELNETBUF		20
 
 
 Telnet *new_Telnet(void) {
@@ -55,7 +58,7 @@ void destroy_Telnet(Telnet *t) {
 }
 
 int telnet_negotiations(Telnet *t, Conn *conn, unsigned char c, void (*window_event)(Conn *, Telnet *)) {
-char buf[20];
+char buf[MAX_TELNETBUF];
 
 	if (t == NULL)
 		return -1;
@@ -137,12 +140,12 @@ char buf[20];
 					break;
 
 				case TELOPT_NEW_ENVIRON:		/* NEW-ENVIRON SEND */
-					sprintf(buf, "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
+					bufprintf(buf, MAX_TELNETBUF, "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
 					write_Conn(conn, buf, 6);
 					break;
 
 				default:
-					sprintf(buf, "%c%c%c", IAC, DONT, c);
+					bufprintf(buf, MAX_TELNETBUF, "%c%c%c", IAC, DONT, c);
 					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;
@@ -157,7 +160,7 @@ char buf[20];
 					break;
 
 				default:
-					sprintf(buf, "%c%c%c", IAC, WONT, c);
+					bufprintf(buf, MAX_TELNETBUF, "%c%c%c", IAC, WONT, c);
 					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;

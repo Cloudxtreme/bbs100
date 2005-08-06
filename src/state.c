@@ -58,6 +58,7 @@
 #include "Category.h"
 #include "Memory.h"
 #include "memset.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -330,10 +331,10 @@ void state_dummy(User *usr, char c) {
 }
 
 void print_version_info(User *usr) {
-char version_buf[256];
+char version_buf[MAX_LINE*3];
 
 	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
-		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf));
+		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf, MAX_LINE*3));
 
 	if (*patchlist)
 		Print(usr, "<green>Patches: <white>%s\n", patchlist);
@@ -576,7 +577,7 @@ void loop_ping(User *usr, char c) {
 			if (tdiff >= 2UL * SECS_IN_MIN) {
 				char total_buf[MAX_LINE];
 
-				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf));
+				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf, MAX_LINE));
 			}
 		}
 /*
@@ -633,7 +634,7 @@ int r;
 			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf));
+				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf, MAX_LINE));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
 						Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
@@ -696,7 +697,7 @@ int r;
 		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
 			char fmt[16];
 
-			sprintf(fmt, "%%-%ds", MAX_NAME + 10);
+			bufprintf(fmt, 16, "%%-%ds", MAX_NAME + 10);
 			Print(usr, fmt, u->name);
 			Print(usr, "<magenta>* <white>%s <magenta>*", u->vanity);
 		} else
@@ -759,12 +760,12 @@ int r;
 			if (u->last_online_time > 0UL) {
 				int l;
 
-				l = sprintf(online_for, "%c for %c", color_by_name("green"), color_by_name("yellow"));
-				print_total_time(u->last_online_time, online_for+l);
+				l = bufprintf(online_for, MAX_LINE+10, "%c for %c", color_by_name("green"), color_by_name("yellow"));
+				print_total_time(u->last_online_time, online_for+l, MAX_LINE+10-l);
 			} else
 				online_for[0] = 0;
 
-			Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf), online_for);
+			Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf, MAX_LINE), online_for);
 			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
@@ -774,7 +775,7 @@ int r;
 /*
 	display for how long someone is online
 */
-			Print(usr, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf));
+			Print(usr, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf, MAX_LINE));
 			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
 					Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
@@ -786,7 +787,7 @@ int r;
 		}
 		if (!allocated)
 			update_stats(u);
-		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf));
+		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf, MAX_LINE));
 
 		if (u->flags & USR_X_DISABLED)
 			Print(usr, "<red>%s has message reception turned off\n", u->name);
@@ -794,8 +795,8 @@ int r;
 		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
 
-			sprintf(namebuf, "<yellow>%s<green>", u->name);
-			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf));
+			bufprintf(namebuf, MAX_NAME+20, "<yellow>%s<green>", u->name);
+			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf, MAX_LINE));
 		}
 		visible = 1;
 		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
@@ -1711,9 +1712,9 @@ User *u;
 		width = (usr->display->term_width > (PRINT_BUF-36)) ? (PRINT_BUF-36) : usr->display->term_width;
 
 		if (u->doing == NULL || !u->doing[0])
-			sprintf(buf, "%c%s<cyan>", col, u->name);
+			bufprintf(buf, PRINT_BUF, "%c%s<cyan>", col, u->name);
 		else {
-			sprintf(buf, "%c%s <cyan>%s", col, u->name, u->doing);
+			bufprintf(buf, PRINT_BUF, "%c%s <cyan>%s", col, u->name, u->doing);
 			expand_center(buf, buf2, PRINT_BUF - 36, width);
 			expand_hline(buf2, buf, PRINT_BUF - 36, width);
 		}
@@ -1826,7 +1827,7 @@ PList *pl_cols[16];
 			if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_StringList(u->new_message->to, usr->name) != NULL)
 				stat = 'm';
 
-			sprintf(buf+buflen, "<white>%c%c%-18s", stat, col, u->name);
+			bufprintf(buf+buflen, PRINT_BUF - buflen, "<white>%c%c%-18s", stat, col, u->name);
 			buflen = strlen(buf);
 
 			if ((i+1) < cols) {
@@ -1939,7 +1940,7 @@ int msgtype;
 }
 
 void do_reply_x(User *usr, int flags) {
-char many_buf[MAX_LINE*3];
+char many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -1953,7 +1954,7 @@ char many_buf[MAX_LINE*3];
 /* replying to just one person? */
 	if (usr->recipients->next == NULL && usr->recipients->prev == NULL) {
 		usr->runtime_flags &= ~RTF_MULTI;
-		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf));
+		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
 
 		if ((flags & BUFMSG_TYPE) == BUFMSG_QUESTION) {
 			CALL(usr, STATE_EDIT_ANSWER);
@@ -1966,7 +1967,7 @@ char many_buf[MAX_LINE*3];
 		}
 	} else {
 /* replying to <many>, edit the recipient list */
-		Print(usr, "<green>Replying to%s", print_many(usr, many_buf));
+		Print(usr, "<green>Replying to%s", print_many(usr, many_buf, MAX_LINE));
 
 		if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 			PUSH(usr, STATE_EMOTE_PROMPT);
@@ -2244,17 +2245,17 @@ char buf[MAX_LINE*3], *p;
 		Return 0;
 	}
 	if (!strcmp(cmd, "uptime")) {
-		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf));
+		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf, MAX_LINE*3));
 		i = list_Count(AllUsers);
 		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
 		Return 0;
 	}
 	if (!strcmp(cmd, "date")) {
-		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf), name_Timezone(usr->tz));
+		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf, MAX_LINE*3), name_Timezone(usr->tz));
 		Return 0;
 	}
 	if (!strcmp(cmd, "uname")) {
-		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf));
+		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf, MAX_LINE*3));
 		Return 0;
 	}
 	if (!strcmp(cmd, "whoami")) {
@@ -2422,10 +2423,7 @@ int i;
 	Return;
 }
 
-/*
-	mind that 'buf' must be large enough to contain all data
-*/
-static int print_worldclock(User *usr, int item, char *buf) {
+static int print_worldclock(User *usr, int item, char *buf, int buflen) {
 struct tm *t, ut;
 char zone_color[16], zone_color2[16];
 
@@ -2457,11 +2455,11 @@ char zone_color[16], zone_color2[16];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		return sprintf(buf, "<cyan>%-15s <%s>%02d:%02d %cM",
+		return bufprintf(buf, buflen, "<cyan>%-15s <%s>%02d:%02d %cM",
 			(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 			zone_color2, t->tm_hour, t->tm_min, am_pm);
 	}
-	return sprintf(buf, "<cyan>%-15s <%s>%02d:%02d",
+	return bufprintf(buf, buflen, "<cyan>%-15s <%s>%02d:%02d",
 		(worldclock[item].name == NULL) ? "" : worldclock[item].name,
 		zone_color2, t->tm_hour, t->tm_min);
 }
@@ -2477,7 +2475,7 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 
 	Enter(print_calendar);
 
-	Print(usr, "<magenta>Current time is<yellow> %s %s\n", print_date(usr, (time_t)0UL, date_buf), name_Timezone(usr->tz));
+	Print(usr, "<magenta>Current time is<yellow> %s %s\n", print_date(usr, (time_t)0UL, date_buf, MAX_LINE), name_Timezone(usr->tz));
 
 	if (!PARAM_HAVE_CALENDAR && !PARAM_HAVE_WORLDCLOCK) {
 		Return;
@@ -2496,15 +2494,15 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 	Put(usr, "\n");
 	l = 0;
 	if (PARAM_HAVE_CALENDAR)
-		l += sprintf(line, "<magenta>  S  M Tu  W Th  F  S");
+		l += bufprintf(line, PRINT_BUF, "<magenta>  S  M Tu  W Th  F  S");
 
 	if (PARAM_HAVE_WORLDCLOCK) {
 		if (PARAM_HAVE_CALENDAR)
-			l += sprintf(line+l, "    ");
+			l += bufprintf(line+l, PRINT_BUF - l, "    ");
 
-		l += print_worldclock(usr, 0, line+l);
-		l += sprintf(line+l, "    ");
-		l += print_worldclock(usr, 1, line+l);
+		l += print_worldclock(usr, 0, line+l, PRINT_BUF - l);
+		l += bufprintf(line+l, PRINT_BUF - l, "    ");
+		l += print_worldclock(usr, 1, line+l, PRINT_BUF - l);
 	}
 	line[l++] = '\n';
 	line[l] = 0;
@@ -2519,28 +2517,28 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 	green_color = 1;
 
 	if (PARAM_HAVE_CALENDAR)
-		l += sprintf(line, "<green>");
+		l += bufprintf(line, PRINT_BUF, "<green>");
 
 	for(w = 0; w < 5; w++) {
 		if (PARAM_HAVE_CALENDAR) {
-			l += sprintf(line+l, (green_color == 0) ? "<yellow>" : "<green>");
+			l += bufprintf(line+l, PRINT_BUF - l, (green_color == 0) ? "<yellow>" : "<green>");
 
 			for(d = 0; d < 7; d++) {
 				tmp = user_time(usr, t);
 
 /* highlight today and bbs birthday */
 				if  (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
-					l += sprintf(line+l, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+					l += bufprintf(line+l, PRINT_BUF - l, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 				else {
 					if (tmp->tm_mday == bday_day && tmp->tm_mon == bday_mon && tmp->tm_year > bday_year)
-						l += sprintf(line+l, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+						l += bufprintf(line+l, PRINT_BUF - l, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 					else {
 						if (old_month != tmp->tm_mon) {
 							green_color ^= 1;
-							l += sprintf(line+l, (green_color == 0) ? "<yellow>" : "<green>");
+							l += bufprintf(line+l, PRINT_BUF - l, (green_color == 0) ? "<yellow>" : "<green>");
 							old_month = tmp->tm_mon;
 						}
-						l += sprintf(line+l, " %2d", tmp->tm_mday);
+						l += bufprintf(line+l, PRINT_BUF - l, " %2d", tmp->tm_mday);
 					}
 				}
 				t += SECS_IN_DAY;
@@ -2548,11 +2546,11 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 		}
 		if (PARAM_HAVE_WORLDCLOCK) {
 			if (PARAM_HAVE_CALENDAR)
-				l += sprintf(line+l, "    ");
+				l += bufprintf(line+l, PRINT_BUF - l, "    ");
 
-			l += print_worldclock(usr, w+2, line+l);
-			l += sprintf(line+l, "    ");
-			l += print_worldclock(usr, w+7, line+l);
+			l += print_worldclock(usr, w+2, line+l, PRINT_BUF - l);
+			l += bufprintf(line+l, PRINT_BUF - l, "    ");
+			l += print_worldclock(usr, w+7, line+l, PRINT_BUF - l);
 		}
 		line[l++] = '\n';
 		line[l] = 0;

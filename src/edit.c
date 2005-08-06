@@ -30,6 +30,7 @@
 #include "Param.h"
 #include "OnlineUser.h"
 #include "util.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,7 +49,7 @@ char *Wrap_Charset2 = WRAP_CHARSET2;
 int edit_recipients(User *usr, char c, int (*access_func)(User *)) {
 StringList *sl;
 int i;
-char many_buf[MAX_LINE*3];
+char many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return 0;
@@ -89,7 +90,7 @@ char many_buf[MAX_LINE*3];
 					if (usr->recipients == NULL)
 						usr->runtime_flags &= ~RTF_MULTI;
 
-					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				}
 			}
 			break;
@@ -108,7 +109,7 @@ char many_buf[MAX_LINE*3];
 						Put(usr, "<green>, ");
 				}
 			}
-			Print(usr, "\n<green>Enter recipient%s", print_many(usr, many_buf));
+			Print(usr, "\n<green>Enter recipient%s", print_many(usr, many_buf, MAX_LINE));
 			break;
 
 		case KEY_CTRL('F'):
@@ -132,7 +133,7 @@ char many_buf[MAX_LINE*3];
 
 					add_StringList(&usr->recipients, new_StringList(sl->str));
 			}
-			Put(usr, print_many(usr, many_buf));
+			Put(usr, print_many(usr, many_buf, MAX_LINE));
 			break;
 
 		case KEY_CTRL('T'):						/* Multi to talked-to list by Richard */
@@ -160,7 +161,7 @@ char many_buf[MAX_LINE*3];
 						add_StringList(&usr->recipients, new_StringList(sl->str));
 				}
 				listdestroy_StringList(talked_to);
-				Put(usr, print_many(usr, many_buf));
+				Put(usr, print_many(usr, many_buf, MAX_LINE));
 			}
 			break;
 
@@ -182,7 +183,7 @@ char many_buf[MAX_LINE*3];
 						usr->recipients = add_StringList(&usr->recipients, new_StringList(u->name));
 				}
 				usr->recipients = rewind_StringList(usr->recipients);
-				Put(usr, print_many(usr, many_buf));
+				Put(usr, print_many(usr, many_buf, MAX_LINE));
 			}
 			break;
 
@@ -213,7 +214,7 @@ char many_buf[MAX_LINE*3];
 						remove_StringList(&usr->recipients, sl);
 						destroy_StringList(sl);
 
-						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
+						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 					}
 					usr->edit_pos = 0;
 					usr->edit_buf[0] = 0;
@@ -323,12 +324,12 @@ char many_buf[MAX_LINE*3];
 
 				if (usr->recipients == NULL) {
 					add_StringList(&usr->recipients, sl);
-					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				} else {
 					if (usr->recipients->next == NULL) {
 						erase_many(usr);
 						add_StringList(&usr->recipients, sl);
-						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
+						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 					} else
 						add_StringList(&usr->recipients, sl);
 				}
@@ -397,7 +398,7 @@ char many_buf[MAX_LINE*3];
 }
 
 int edit_name(User *usr, char c) {
-char many_buf[MAX_LINE*3];
+char many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return 0;
@@ -446,7 +447,7 @@ char many_buf[MAX_LINE*3];
 					if (usr->recipients == NULL)
 						usr->runtime_flags &= ~RTF_MULTI;
 
-					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf));
+					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				}
 			}
 			break;
@@ -1307,7 +1308,7 @@ char color = 0;
 
 void edit_long_color(User *usr) {
 int i, l;
-char colorbuf[20];
+char colorbuf[MAX_COLORBUF];
 
 	if (usr == NULL)
 		return;
@@ -1316,7 +1317,7 @@ char colorbuf[20];
 		if (i == HOTKEY)
 			continue;
 
-		l = sprintf(colorbuf, "<%s", color_table[i].name);
+		l = bufprintf(colorbuf, MAX_COLORBUF, "<%s", color_table[i].name);
 		if (usr->edit_pos < l)
 			continue;
 
@@ -1356,7 +1357,7 @@ char colorbuf[20];
 */
 int edit_tab_color(User *usr, int (*edit_func)(User *, char)) {
 int pos, i, n;
-char color[16];
+char color[MAX_COLORBUF];
 
 	if (usr == NULL || edit_func == NULL)
 		return -1;
@@ -1382,7 +1383,7 @@ char color[16];
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(color, "<%s", color_table[i].name);
+		bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
 		cstrlwr(color);
 
 		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
@@ -1399,7 +1400,7 @@ char color[16];
 				if (i >= HOTKEY)
 					i = 1;				/* skip 0, which is black */
 
-				sprintf(color, "<%s", color_table[i].name);
+				bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
 				cstrlwr(color);
 				n = 1;
 			}
@@ -1415,7 +1416,7 @@ char color[16];
 
 int edit_backtab_color(User *usr, int (*edit_func)(User *, char)) {
 int pos, i, n;
-char color[16];
+char color[MAX_COLORBUF];
 
 	if (usr == NULL || edit_func == NULL)
 		return -1;
@@ -1441,7 +1442,7 @@ char color[16];
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(color, "<%s", color_table[i].name);
+		bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
 		cstrlwr(color);
 
 		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
@@ -1460,7 +1461,7 @@ char color[16];
 					if (i == HOTKEY)
 						i--;
 				}
-				sprintf(color, "<%s", color_table[i].name);
+				bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
 				cstrlwr(color);
 				n = 1;
 			}
@@ -1602,9 +1603,9 @@ void erase_many(User *usr) {
 }
 
 /*
-	Note: buf must be large enough (120 bytes will do)
+	Note: buf must be large enough (MAX_LINE should do)
 */
-char *print_many(User *usr, char *buf) {
+char *print_many(User *usr, char *buf, int buflen) {
 	if (buf == NULL)
 		return NULL;
 
@@ -1614,14 +1615,14 @@ char *print_many(User *usr, char *buf) {
 
 	if (usr->recipients != NULL) {
 		if (usr->recipients->next == NULL)
-			sprintf(buf, " <white>[<yellow>%s<white>]%c <yellow>%s", usr->recipients->str,
+			bufprintf(buf, buflen, " <white>[<yellow>%s<white>]%c <yellow>%s", usr->recipients->str,
 				(usr->runtime_flags & RTF_MULTI) ? ',' : ':', usr->edit_buf);
 		else
-			sprintf(buf, "<green> <white>[<green><many<green>><white>]%c <yellow>%s", (usr->runtime_flags & RTF_MULTI) ? ',' : ':',
+			bufprintf(buf, buflen, "<green> <white>[<green><many<green>><white>]%c <yellow>%s", (usr->runtime_flags & RTF_MULTI) ? ',' : ':',
 				usr->edit_buf);
 	} else {
 		usr->runtime_flags &= ~RTF_MULTI;
-		sprintf(buf, ": <yellow>%s", usr->edit_buf);
+		bufprintf(buf, buflen, ": <yellow>%s", usr->edit_buf);
 	}
 	return buf;
 }

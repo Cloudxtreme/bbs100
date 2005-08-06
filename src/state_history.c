@@ -79,7 +79,7 @@ BufferedMsg *m = NULL;
 StringList *sl;
 PList *pl;
 int n, remaining;
-char num_buf1[25], num_buf2[25], printbuf[256];
+char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -225,7 +225,7 @@ History_Reply_Code:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, printbuf));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
 
 			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
@@ -301,8 +301,8 @@ History_Reply_Code:
 		remaining--;
 
 	Print(usr, "<yellow>\n[History]<magenta> #%s (%s remaining) %c<white> ",
-		print_number(n, num_buf1),
-		print_number(remaining, num_buf2),
+		print_number(n, num_buf1, MAX_NUMBER),
+		print_number(remaining, num_buf2, MAX_NUMBER),
 		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 	);
 	Return;
@@ -485,7 +485,7 @@ StringList *sl;
 PList *pl, *pl_next;
 BufferedMsg *m;
 int printed, n, remaining;
-char num_buf1[25], num_buf2[25], printbuf[256];
+char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -639,7 +639,7 @@ Held_History_Reply:
 			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
 				usr->runtime_flags &= ~RTF_MULTI;
 
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, printbuf));
+			Print(usr, "\n<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
 
 			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 				CALL(usr, STATE_EDIT_EMOTE);
@@ -727,8 +727,8 @@ Exit_Held_History:
 		remaining--;
 
 	Print(usr, "<yellow>\n[Held Messages]<magenta> #%s (%s remaining) %c<white> ",
-		print_number(n, num_buf1),
-		print_number(remaining, num_buf2),
+		print_number(n, num_buf1, MAX_NUMBER),
+		print_number(remaining, num_buf2, MAX_NUMBER),
 		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 	);
 	Return;

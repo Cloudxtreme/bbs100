@@ -64,10 +64,10 @@ int mask_Wrapper(Wrapper *w, int *);
 int read_inet_addr(char *, int *, int *);
 int read_inet_mask(char *, int *, int);
 
-char *print_inet_addr(int *, char *, int);
-char *print_ipv4_addr(int *, char *);
-char *print_ipv6_addr(int *, char *, int);
-char *print_inet_mask(int *, char *, int);
+char *print_inet_addr(int *, char *, int, int);
+char *print_ipv4_addr(int *, char *, int);
+char *print_ipv6_addr(int *, char *, int, int);
+char *print_inet_mask(int *, char *, int, int);
 
 void ipv4_bitmask(int, int *);
 void ipv6_bitmask(int, int *);

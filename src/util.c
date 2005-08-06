@@ -36,6 +36,7 @@
 #include "OnlineUser.h"
 #include "locale_system.h"
 #include "mkdir.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
+
 
 #define HACK_CHANCE	((rand() % 20) < 4)
 
@@ -93,7 +95,7 @@ int Out(User *usr, char *str) {
 	- dont_auto_color is for controlling exceptions to the rule of auto-coloring
 */
 int Out_text(StringIO *dev, User *usr, char *str, int *cpos, int *lines, int max_lines, int force_auto_color_off) {
-char buf[20], c;
+char buf[MAX_COLORBUF], c;
 int pos, n, dont_auto_color, color, is_symbol;
 
 	if (usr == NULL || usr->display == NULL || str == NULL || cpos == NULL || lines == NULL)
@@ -135,13 +137,13 @@ int pos, n, dont_auto_color, color, is_symbol;
 			if (*cpos + word_len(str+1) >= usr->display->term_width) {
 				if (c != ' ') {
 					if (is_symbol && !dont_auto_color) {
-						auto_color(usr, buf);
+						auto_color(usr, buf, MAX_COLORBUF);
 						put_StringIO(dev, buf);
 					}
 					write_StringIO(dev, str, 1);
 
 					if (is_symbol && !dont_auto_color) {
-						restore_colorbuf(usr, usr->color, buf);
+						restore_colorbuf(usr, usr->color, buf, MAX_COLORBUF);
 						put_StringIO(dev, buf);
 					}
 				}
@@ -234,9 +236,9 @@ int pos, n, dont_auto_color, color, is_symbol;
 					usr->color = c;
 					color = Ansi_Color(usr, c);
 					if (usr->flags & USR_BOLD)
-						sprintf(buf, "\x1b[1;%dm", color);
+						bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", color);
 					else
-						sprintf(buf, "\x1b[%dm", color);
+						bufprintf(buf, MAX_COLORBUF, "\x1b[%dm", color);
 					put_StringIO(dev, buf);
 					dont_auto_color = AUTO_COLOR_FORCED;
 				}
@@ -247,7 +249,7 @@ int pos, n, dont_auto_color, color, is_symbol;
 				if (!*str)
 					break;
 
-				print_hotkey(usr, *str, buf, cpos);
+				print_hotkey(usr, *str, buf, MAX_COLORBUF, cpos);
 				put_StringIO(dev, buf);
 
 				dont_auto_color = force_auto_color_off;
@@ -255,7 +257,7 @@ int pos, n, dont_auto_color, color, is_symbol;
 
 			case KEY_CTRL('N'):
 				if (usr->flags & USR_ANSI) {
-					sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+					bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
 					put_StringIO(dev, buf);
 				} else
 					if (usr->flags & USR_BOLD)
@@ -286,14 +288,14 @@ int pos, n, dont_auto_color, color, is_symbol;
 
 			default:
 				if (is_symbol && !dont_auto_color) {
-					auto_color(usr, buf);
+					auto_color(usr, buf, MAX_COLORBUF);
 					put_StringIO(dev, buf);
 				}
 				write_StringIO(dev, &c, 1);
 				(*cpos)++;
 
 				if (is_symbol && !dont_auto_color) {
-					restore_colorbuf(usr, usr->color, buf);
+					restore_colorbuf(usr, usr->color, buf, MAX_COLORBUF);
 					put_StringIO(dev, buf);
 				}
 				if (!is_symbol)
@@ -469,7 +471,7 @@ int i;
 */
 int long_color_code(StringIO *dev, User *usr, char *code, int *cpos, int *lines, int max_lines, int dont_auto_color) {
 int i, c, color;
-char colorbuf[20], buf[PRINT_BUF], *p;
+char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 
 	if (usr == NULL || code == NULL || !*code || cpos == NULL || lines == NULL)
 		return 0;
@@ -478,7 +480,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(colorbuf, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
 
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf))) {
 			if (!(usr->flags & USR_ANSI))
@@ -488,9 +490,9 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 
 			color = Ansi_Color(usr, c);
 			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm", color);
+				bufprintf(buf, PRINT_BUF, "\x1b[1;%dm", color);
 			else
-				sprintf(buf, "\x1b[%dm", color);
+				bufprintf(buf, PRINT_BUF, "\x1b[%dm", color);
 			put_StringIO(dev, buf);
 			return strlen(colorbuf)-1;
 		}
@@ -505,9 +507,9 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		usr->color = KEY_CTRL('F');
 		color = Ansi_Color(usr, KEY_CTRL('F'));
 		if (usr->flags & USR_BOLD)
-			sprintf(buf, "\x1b[1;%dm", color);
+			bufprintf(buf, PRINT_BUF, "\x1b[1;%dm", color);
 		else
-			sprintf(buf, "\x1b[%dm", color);
+			bufprintf(buf, PRINT_BUF, "\x1b[%dm", color);
 		put_StringIO(dev, buf);
 		return 6;
 	}
@@ -517,7 +519,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		if (!c)
 			return 7;
 
-		print_hotkey(usr, c, buf, cpos);
+		print_hotkey(usr, c, buf, PRINT_BUF, cpos);
 		put_StringIO(dev, buf);
 		return 8;
 	}
@@ -533,13 +535,13 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 */
 		if (usr->flags & USR_ANSI) {
 			if (usr->flags & USR_BOLD)
-				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				bufprintf(buf, PRINT_BUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 			else
-				sprintf(buf, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				bufprintf(buf, PRINT_BUF, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 
 			(*cpos)++;
 		} else {
-			sprintf(buf, "<%c>", c);
+			bufprintf(buf, PRINT_BUF, "<%c>", c);
 			*cpos += 3;
 		}
 		put_StringIO(dev, buf);
@@ -552,7 +554,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {
 		if (usr->flags & USR_ANSI) {
-			sprintf(buf, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+			bufprintf(buf, PRINT_BUF, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
 			put_StringIO(dev, buf);
 		} else
 			if (usr->flags & USR_BOLD)
@@ -569,28 +571,28 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	}
 	if (!cstrnicmp(code, "<lt>", 4)) {
 		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-			auto_color(usr, colorbuf);
+			auto_color(usr, colorbuf, MAX_COLORBUF);
 			put_StringIO(dev, colorbuf);
 		}
 		write_StringIO(dev, "<", 1);
 		(*cpos)++;
 
 		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-			restore_colorbuf(usr, usr->color, colorbuf);
+			restore_colorbuf(usr, usr->color, colorbuf, MAX_COLORBUF);
 			put_StringIO(dev, colorbuf);
 		}
 		return 3;
 	}
 	if (!cstrnicmp(code, "<gt>", 4)) {
 		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-			auto_color(usr, colorbuf);
+			auto_color(usr, colorbuf, MAX_COLORBUF);
 			put_StringIO(dev, colorbuf);
 		}
 		write_StringIO(dev, ">", 1);
 		(*cpos)++;
 
 		if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-			restore_colorbuf(usr, usr->color, colorbuf);
+			restore_colorbuf(usr, usr->color, colorbuf, MAX_COLORBUF);
 			put_StringIO(dev, colorbuf);
 		}
 		return 3;
@@ -662,14 +664,14 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 		return 7;
 	}
 	if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-		auto_color(usr, colorbuf);
+		auto_color(usr, colorbuf, MAX_COLORBUF);
 		put_StringIO(dev, colorbuf);
 	}
 	write_StringIO(dev, "<", 1);
 	(*cpos)++;
 
 	if ((usr->flags & USR_ANSI) && !(usr->flags & USR_DONT_AUTO_COLOR) && !dont_auto_color) {
-		restore_colorbuf(usr, usr->color, colorbuf);
+		restore_colorbuf(usr, usr->color, colorbuf, MAX_COLORBUF);
 		put_StringIO(dev, colorbuf);
 	}
 	return 0;
@@ -677,7 +679,7 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 
 /*
 	construct hotkey string into buf
-	buf must be large enough (20 chars should do)
+	buf must be large enough (MAX_COLORBUF should do)
 
 	cpos is the cursor position on the display
 
@@ -695,10 +697,10 @@ char colorbuf[20], buf[PRINT_BUF], *p;
 	to use 2 flags {one for ANSI terminals and one for dumb terminals},
 	I use just 1 and link it to BOLD])
 */
-void print_hotkey(User *usr, char c, char *buf, int *cpos) {
+void print_hotkey(User *usr, char c, char *buf, int buflen, int *cpos) {
 int len;
 
-	if (usr == NULL)
+	if (usr == NULL || buf == NULL || buflen <= 0 || cpos == NULL)
 		return;
 
 	if (usr->flags & USR_UPPERCASE_HOTKEYS)
@@ -716,7 +718,7 @@ int len;
 			buf[len++] = (usr->flags & USR_BOLD_HOTKEYS) ? '1' : '0';
 
 		if (usr->flags & USR_ANSI)
-			len += sprintf(buf+len, ";%dm", color_table[usr->colors[HOTKEY]].value);
+			len += bufprintf(buf+len, buflen - len, ";%dm", color_table[usr->colors[HOTKEY]].value);
 		else
 			buf[len++] = 'm';
 	}
@@ -740,7 +742,7 @@ int len;
 			buf[len++] = '0';
 
 		if (usr->flags & USR_ANSI)
-			len += sprintf(buf+len, ";%dm", Ansi_Color(usr, usr->color));
+			len += bufprintf(buf+len, buflen - len, ";%dm", Ansi_Color(usr, usr->color));
 		else
 			buf[len++] = 'm';
 	}
@@ -859,12 +861,9 @@ int l, n;
 }
 
 
-/*
-	this function is kind of lame :)
-*/
 int skip_long_color_code(char *code) {
 int i;
-char colorbuf[20];
+char colorbuf[MAX_COLORBUF];
 
 	if (code == NULL || !*code || *code != '<')
 		return 0;
@@ -873,7 +872,7 @@ char colorbuf[20];
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(colorbuf, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf)))
 			return strlen(colorbuf);
 	}
@@ -957,7 +956,7 @@ int cpos, i;
 /*
 	automatically change color for symbols
 */
-void auto_color(User *usr, char *colorbuf) {
+void auto_color(User *usr, char *colorbuf, int buflen) {
 int color;
 
 	if (usr == NULL || colorbuf == NULL)
@@ -984,16 +983,16 @@ int color;
 			color = color_table[usr->symbol_colors[WHITE]].value;
 	}
 	if (usr->flags & USR_BOLD)
-		sprintf(colorbuf, "\x1b[1;%dm", color);
+		bufprintf(colorbuf, buflen, "\x1b[1;%dm", color);
 	else
-		sprintf(colorbuf, "\x1b[0;%dm", color);
+		bufprintf(colorbuf, buflen, "\x1b[0;%dm", color);
 }
 
 /*
 	only a helper function for Out_text() ... use restore_color() instead
 	color should be a CTRL_KEY() value like usr->color
 */
-void restore_colorbuf(User *usr, int color, char *colorbuf) {
+void restore_colorbuf(User *usr, int color, char *colorbuf, int buflen) {
 	if (usr == NULL || colorbuf == NULL)
 		return;
 
@@ -1001,14 +1000,14 @@ void restore_colorbuf(User *usr, int color, char *colorbuf) {
 	if (usr->flags & USR_ANSI) {
 		color = Ansi_Color(usr, color);
 		if (usr->flags & USR_BOLD)
-			sprintf(colorbuf, "\x1b[1;%dm", color);
+			bufprintf(colorbuf, buflen, "\x1b[1;%dm", color);
 		else
-			sprintf(colorbuf, "\x1b[0;%dm", color);
+			bufprintf(colorbuf, buflen, "\x1b[0;%dm", color);
 	}
 }
 
 /*
-	restore a previously saved usr->color
+	restore a previously saved usr->color (which is a KEY_CTRL() color character)
 
 	using restore_colorbuf() here doesn't work, because the auto-coloring
 	would color the escape sequence string
@@ -1019,7 +1018,7 @@ char buf[2];
 	if (usr == NULL)
 		return;
 
-	*buf = color;
+	*buf = (char)color;
 	buf[1] = 0;
 	Put(usr, buf);
 }
@@ -1185,7 +1184,7 @@ struct stat statbuf;
 	if (is_guest(name))
 		return 1;
 
-	sprintf(buf, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
+	bufprintf(buf, MAX_LINE, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
 	path_strip(buf);
 	if (!stat(buf, &statbuf))
 		return 1;
@@ -1319,7 +1318,7 @@ struct tm *tm;
 		if ((u->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 			tm->tm_hour -= 12;
 
-		sprintf(buf, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
+		bufprintf(buf, PRINT_BUF, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
 			"%s\n", tm->tm_hour, tm->tm_min, msg);
 
 		func(u, buf);
@@ -1388,64 +1387,65 @@ struct tm *user_time(User *usr, time_t tt) {
 }
 
 /*
-	Note: date_str should be large enough (80 bytes will do)
+	Note: date_str should be large enough (MAX_LINE will do)
 */
-char *print_date(User *usr, time_t tt, char *date_str) {
-	if (date_str == NULL)
+char *print_date(User *usr, time_t tt, char *date_str, int buflen) {
+	if (date_str == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_system->print_date(lc_system, user_time(usr, tt), (usr == NULL) ? 0 : usr->flags & USR_12HRCLOCK, date_str);
+	return lc_system->print_date(lc_system, user_time(usr, tt), (usr == NULL) ? 0 : usr->flags & USR_12HRCLOCK, date_str, buflen);
 }
 
 /*
 	Note: buf must be large enough (MAX_LINE bytes should do)
 */
-char *print_total_time(unsigned long total, char *buf) {
-	if (buf == NULL)
+char *print_total_time(unsigned long total, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_system->print_total_time(lc_system, total, buf);
+	return lc_system->print_total_time(lc_system, total, buf, buflen);
 }
 
 
 /*
-	Note: buf must be large enough (at least 21 bytes)
+	Note: buf must be large enough (at least MAX_NUMBER)
 */
-char *print_number(unsigned long ul, char *buf) {
-	if (buf == NULL)
+char *print_number(unsigned long ul, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_system->print_number(lc_system, ul, buf);
+	return lc_system->print_number(lc_system, ul, buf, buflen);
 }
 
 /*
 	print_number() with '1st', '2nd', '3rd', '4th', ... extension
 	Note: buf must be large enough (at least 25 bytes)
 */
-char *print_numberth(unsigned long ul, char *buf) {
-	if (buf == NULL)
+char *print_numberth(unsigned long ul, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_system->print_numberth(lc_system, ul, buf);
+	return lc_system->print_numberth(lc_system, ul, buf, buflen);
 }
 
 /*
-	Note: buf must be large enough (MAX_LINE bytes in size)
+	Note: buf must be large enough (MAX_NAME + 3 + strlen(obj) + some ...)
+	obj may be NULL
 */
-char *possession(char *name, char *obj, char *buf) {
-	if (buf == NULL)
+char *possession(char *name, char *obj, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_system->possession(lc_system, name, obj, buf);
+	return lc_system->possession(lc_system, name, obj, buf, buflen);
 }
 
 unsigned long get_mail_top(char *username) {
-char buf[MAX_LINE], *p;
+char buf[MAX_PATHLEN], *p;
 DIR *dirp;
 struct dirent *direntp;
 unsigned long maxnum = 0UL, n;
 
-	sprintf(buf, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(buf);
 	if ((dirp = opendir(buf)) == NULL)
 		return maxnum;
@@ -1463,9 +1463,10 @@ unsigned long maxnum = 0UL, n;
 }
 
 /*
-	Note: buf must be large enough (MAX_LINE should do)
+	print the room name into a buffer
+	user has choice to have room numbers in the name
 */
-char *room_name(User *usr, Room *r, char *buf) {
+char *room_name(User *usr, Room *r, char *buf, int buflen) {
 	if (buf == NULL)
 		return NULL;
 
@@ -1474,9 +1475,9 @@ char *room_name(User *usr, Room *r, char *buf) {
 		return buf;
 
 	if (usr->flags & USR_ROOMNUMBERS)
-		sprintf(buf, "<white>%u <yellow>%s>", r->number, r->name);
+		bufprintf(buf, buflen, "<white>%u <yellow>%s>", r->number, r->name);
 	else
-		sprintf(buf, "<yellow>%s>", r->name);
+		bufprintf(buf, buflen, "<yellow>%s>", r->name);
 	return buf;
 }
 
@@ -1503,7 +1504,7 @@ struct dirent *direntp;
 		return -1;
 
 /* safety check */
-	sprintf(buf, "%s/", PARAM_TRASHDIR);
+	bufprintf(buf, MAX_PATHLEN, "%s/", PARAM_TRASHDIR);
 	path_strip(buf);
 	if (strncmp(buf, dirname, strlen(buf)) || cstrstr(dirname, "..") != NULL)
 		return -1;
@@ -1642,7 +1643,7 @@ int StringList_to_StringIO(StringList *sl, StringIO *s) {
 void print_columns(User *usr, StringList *raw_list, int flags) {
 int term_width, total, cols, rows, i, j, buflen, len, max_width, idx;
 StringList *sl, *sl_cols[16];
-char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
+char buf[MAX_LINE*4], format[MAX_LINE], filename[MAX_PATHLEN], *p;
 
 	if (usr == NULL || raw_list == NULL)
 		return;
@@ -1660,9 +1661,9 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 		total++;
 	}
 	if (flags & FORMAT_NUMBERED)
-		sprintf(format, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
+		bufprintf(format, MAX_LINE, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
 	else
-		sprintf(format, "%c%%-%ds", (char)color_by_name("yellow"), max_width);
+		bufprintf(format, MAX_LINE, "%c%%-%ds", (char)color_by_name("yellow"), max_width);
 
 	cols = term_width / (max_width+6);
 	if (cols < 1)
@@ -1710,9 +1711,9 @@ char buf[MAX_LINE*4], format[50], filename[MAX_PATHLEN], *p;
 					*p = ' ';
 			}
 			if (flags & FORMAT_NUMBERED)
-				buflen += sprintf(buf+buflen, format, idx, filename);
+				buflen += bufprintf(buf+buflen, MAX_LINE*4 - buflen, format, idx, filename);
 			else
-				buflen += sprintf(buf+buflen, format, filename);
+				buflen += bufprintf(buf+buflen, MAX_LINE*4 - buflen, format, filename);
 			idx += rows;
 
 			if ((i+1) < cols) {

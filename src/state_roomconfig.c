@@ -39,6 +39,7 @@
 #include "OnlineUser.h"
 #include "Category.h"
 #include "Memory.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -649,7 +650,8 @@ int r;
 
 			if ((u = is_online(sl->str)) != NULL) {
 				if (u != usr)
-					Tell(u, "\n<magenta>You have been invited into %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+					Tell(u, "\n<magenta>You have been invited into %s<magenta> by <yellow>%s\n",
+						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
 				if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 					if ((j = new_Joined()) != NULL)
@@ -670,7 +672,8 @@ int r;
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
-						Tell(u, "\n<magenta>You have been uninvited from %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+						Tell(u, "\n<magenta>You have been uninvited from %s<magenta> by <yellow>%s\n",
+							room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
 					if ((usr->curr_room->flags & ROOM_HIDDEN)
 						&& (j = in_Joined(u->rooms, usr->curr_room->number)) != NULL)
@@ -683,7 +686,8 @@ int r;
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
-						Tell(u, "\n<magenta>You have been invited in %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+						Tell(u, "\n<magenta>You have been invited in %s<magenta> by <yellow>%s\n",
+							room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
 					if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 						if ((j = new_Joined()) != NULL)
@@ -769,7 +773,8 @@ int r;
 			log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n",
+					room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
 				if (u->curr_room == usr->curr_room) {
 					Tell(u, "<green>You are being dropped off in the <yellow>%s>", Lobby_room->name);
@@ -794,7 +799,8 @@ int r;
 				log_msg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n",
+						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 				}
 			} else {
 				add_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
@@ -803,7 +809,8 @@ int r;
 				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
-					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n", room_name(u, usr->curr_room, roomname_buf), usr->name);
+					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n",
+						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
 					if (u->curr_room == usr->curr_room) {
 						Tell(u, "<green>You are being dropped off in the <yellow>%s>\n", Lobby_room->name);
@@ -1045,7 +1052,7 @@ User *u;
 	Enter(remove_all_posts);
 
 	for(idx = 0; idx < room->msg_idx; idx++) {
-		sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, room->number, room->msgs[idx]);
+		bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, room->msgs[idx]);
 		path_strip(buf);
 		unlink_file(buf);
 
@@ -1119,9 +1126,9 @@ void (*func)(User *, char *, ...);
 		}
 	}
 /* move room to trash/ directory */
-	sprintf(path, "%s/%u", PARAM_ROOMDIR, room->number);
+	bufprintf(path, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 	path_strip(path);
-	sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
+	bufprintf(newpath, MAX_PATHLEN, "%s/%s", PARAM_TRASHDIR, path);
 	path_strip(newpath);
 
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */

@@ -40,6 +40,7 @@
 #include "User.h"
 #include "Signal.h"
 #include "memset.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -86,16 +87,16 @@ const char *inet_error(int err) {
 }
 
 /*
-	WARNING: buf should be large enough
+	buf should be large enough, MAX_LINE should do
 */
-char *inet_printaddr(char *host, char *service, char *buf) {
-	if (buf == NULL)
+char *inet_printaddr(char *host, char *service, char *buf, int buflen) {
+	if (host == NULL || service == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 	if (cstrchr(host, ':') != NULL)
-		sprintf(buf, "[%s]:%s", host, service);
+		bufprintf(buf, buflen, "[%s]:%s", host, service);
 	else
-		sprintf(buf, "%s:%s", host, service);
+		bufprintf(buf, buflen, "%s:%s", host, service);
 
 	return buf;
 }
@@ -157,7 +158,7 @@ Conn *conn;
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv, buf));
+				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
 			else
 				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
 
@@ -176,7 +177,7 @@ Conn *conn;
 		if (listen(sock, MAX_NEWCONNS) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv, buf));
+				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
 			else
 				log_err("inet_listen(%s): listen() failed", service);
 			close(sock);
@@ -198,7 +199,7 @@ Conn *conn;
 
 		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-			log_msg("listening on %s", inet_printaddr(host, serv, buf));
+			log_msg("listening on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
 		else
 			log_msg("listening on port %s", service);
 

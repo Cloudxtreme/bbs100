@@ -135,13 +135,13 @@ Process *proc;
 		proc = (Process *)pl->p;
 
 		if (pid == proc->pid) {
-			char signame_buf[MAX_LINE];
+			char signame_buf[MAX_SIGNAME];
 
 			if (WIFSIGNALED(status))
-				log_msg("%s terminated on signal %s", proc->name, sig_name(WTERMSIG(status), signame_buf));
+				log_msg("%s terminated on signal %s", proc->name, sig_name(WTERMSIG(status), signame_buf, MAX_SIGNAME));
 			else
 				if (WIFSTOPPED(status))
-					log_msg("%s stopped on signal %s", proc->name, sig_name(WSTOPSIG(status), signame_buf));
+					log_msg("%s stopped on signal %s", proc->name, sig_name(WSTOPSIG(status), signame_buf, MAX_SIGNAME));
 				else
 					log_msg("%s terminated, exit code %d", proc->name, WEXITSTATUS(status));
 

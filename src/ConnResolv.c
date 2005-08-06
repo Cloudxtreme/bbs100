@@ -30,6 +30,7 @@
 #include "inet.h"
 #include "util.h"
 #include "edit.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,7 +73,7 @@ static Process process_resolver = {
 */
 int init_ConnResolv(void) {
 Conn *listener;
-char buf[MAX_LINE];
+char buf[MAX_PATHLEN];
 
 	process_resolver.path = PARAM_PROGRAM_RESOLVER;
 
@@ -82,7 +83,7 @@ char buf[MAX_LINE];
 	}
 /* make pathname for the unix domain socket */
 
-	sprintf(buf, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
+	bufprintf(buf, MAX_PATHLEN, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
 	path_strip(buf);
 	if ((listener->sock = unix_sock(buf)) < 0) {
 		log_err("failed to create unix domain socket");

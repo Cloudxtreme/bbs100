@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "Memory.h"
 #include "memset.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +118,7 @@ KVPair *kv1, *kv2;
 void make_feelings_screen(StringIO *screen, int width) {
 KVPair *f, *f_cols[16];
 int len, max_len = 0, i, j, rows, cols, buflen, total;
-char buf[PRINT_BUF], fmt[128];
+char buf[PRINT_BUF], fmt[MAX_LINE];
 
 	if (screen == NULL)
 		return;
@@ -167,7 +168,7 @@ char buf[PRINT_BUF], fmt[128];
 
 /* make the feelings screen with sorted columns */
 
-	sprintf(fmt, "<yellow>%%3d <green>%%-%ds  ", max_len);
+	bufprintf(fmt, MAX_LINE, "<yellow>%%3d <green>%%-%ds  ", max_len);
 
 	for(j = 0; j < rows; j++) {
 		buf[0] = 0;
@@ -176,7 +177,7 @@ char buf[PRINT_BUF], fmt[128];
 			if (f_cols[i] == NULL || f_cols[i]->key == NULL || !f_cols[i]->key[0])
 				continue;
 
-			buflen += sprintf(buf+buflen, fmt, j+i*rows+1, f_cols[i]->key);
+			buflen += bufprintf(buf+buflen, PRINT_BUF - buflen, fmt, j+i*rows+1, f_cols[i]->key);
 			f_cols[i] = f_cols[i]->next;
 		}
 		buf[buflen++] = '\n';

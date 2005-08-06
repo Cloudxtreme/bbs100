@@ -56,6 +56,7 @@
 #include "Wrapper.h"
 #include "Signal.h"
 #include "memset.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -365,7 +366,7 @@ int r;
 				if (room->number < rm->number)
 					break;
 		}
-		sprintf(buf, "%s/%u", PARAM_ROOMDIR, room->number);
+		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
 		if (mkdir(buf, (mode_t)0750) < 0) {
 			log_err("failed to create new room directory %s", buf);
@@ -685,9 +686,9 @@ char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
 				close_connection(u, "user is being nuked by %s", usr->name);
 				u = NULL;
 			}
-			sprintf(path, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
+			bufprintf(path, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
 			path_strip(path);
-			sprintf(newpath, "%s/%s", PARAM_TRASHDIR, path);
+			bufprintf(newpath, MAX_PATHLEN, "%s/%s", PARAM_TRASHDIR, path);
 			path_strip(newpath);
 /*
 	Move the user directory
@@ -808,14 +809,16 @@ int i;
 		i = 2;
 		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (PARAM_HAVE_WRAPPER_ALL)
-				sprintf(buf, "<yellow>%2d <white>%s%s %s/%s",
+				bufprintf(buf, MAX_LINE*3, "<yellow>%2d <white>%s%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
-					print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags));
+					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
+					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));
 			else
-				sprintf(buf, "<yellow>%2d <white>%s %s/%s",
+				bufprintf(buf, MAX_LINE*3, "<yellow>%2d <white>%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
-					print_inet_addr(w->addr, addr_buf, w->flags), print_inet_mask(w->mask, mask_buf, w->flags));
+					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
+					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));
 
 			if (w->comment != NULL)
 				Print(usr, "%-40s <cyan># %s\n", buf, w->comment);
@@ -922,10 +925,10 @@ char buf[MAX_LINE];
 					(w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
 
 			Print(usr, "<hotkey>IP address                   <white>%s<magenta>\n",
-				print_inet_addr(w->addr, buf, w->flags));
+				print_inet_addr(w->addr, buf, MAX_LINE, w->flags));
 
 			Print(usr, "IP <hotkey>mask                      <white>%s<magenta>\n",
-				print_inet_mask(w->mask, buf, w->flags));
+				print_inet_mask(w->mask, buf, MAX_LINE, w->flags));
 
 			Print(usr,
 				"<hotkey>Comment                      <cyan>%s<magenta>\n"
@@ -1222,12 +1225,12 @@ char total_buf[MAX_LINE];
 
 	if (c == INIT_STATE)
 		Print(usr, "\n"
-"<yellow>*** <white>WARNING <yellow>***\n"
-"\n"
-"<red>This is serious. Enter the reboot password and the system will reboot\n"
-"in %s (including one minute grace period)\n"
-"\n"
-"Enter reboot password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			"<yellow>*** <white>WARNING <yellow>***\n"
+			"\n"
+			"<red>This is serious. Enter the reboot password and the system will reboot\n"
+			"in %s (including one minute grace period)\n"
+			"\n"
+			"Enter reboot password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1239,7 +1242,7 @@ char total_buf[MAX_LINE];
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *pwd, buf[256];
+		char *pwd, buf[PRINT_BUF];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
@@ -1260,10 +1263,11 @@ char total_buf[MAX_LINE];
 			reboot_timer->restart = TIMEOUT_REBOOT;
 			add_Timer(&timerq, reboot_timer);
 
-			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n",
+				print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 
-			sprintf(buf, "The system is now rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			bufprintf(buf, PRINT_BUF, "The system is now rebooting in %s",
+				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1280,8 +1284,8 @@ char total_buf[MAX_LINE];
 		Put(usr, "\n<red>Reboot procedure started\n");
 
 		if (reboot_timer->sleeptime > 0) {
-			sprintf(buf, "The system is rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			bufprintf(buf, PRINT_BUF, "The system is rebooting in %s",
+				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1331,12 +1335,12 @@ char total_buf[MAX_LINE];
 
 	if (c == INIT_STATE)
 		Print(usr, "\n"
-"<yellow>*** <white>WARNING <yellow>***\n"
-"\n"
-"<red>This is serious. Enter the shutdown password and the system will shut\n"
-"down in %s (including one minute grace period)\n"
-"\n"
-"Enter shutdown password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			"<yellow>*** <white>WARNING <yellow>***\n"
+			"\n"
+			"<red>This is serious. Enter the shutdown password and the system will shut\n"
+			"down in %s (including one minute grace period)\n"
+			"\n"
+			"Enter shutdown password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1348,7 +1352,7 @@ char total_buf[MAX_LINE];
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *pwd, buf[256];
+		char *pwd, buf[PRINT_BUF];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
@@ -1368,10 +1372,11 @@ char total_buf[MAX_LINE];
 			shutdown_timer->sleeptime = shutdown_timer->maxtime = usr->read_lines;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
 			add_Timer(&timerq, shutdown_timer);
-			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf));
+			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n",
+				print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 
-			sprintf(buf, "The system is now shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			bufprintf(buf, PRINT_BUF, "The system is now shutting down in %s",
+				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1388,8 +1393,8 @@ char total_buf[MAX_LINE];
 		Put(usr, "\n<red>Shutdown sequence initiated\n");
 
 		if (shutdown_timer->sleeptime > 0) {
-			sprintf(buf, "The system is shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+			bufprintf(buf, PRINT_BUF, "The system is shutting down in %s",
+				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1561,7 +1566,7 @@ int r;
 
 void state_malloc_status(User *usr, char c) {
 int i, len = 0, l;
-char num_buf[25], line[PRINT_BUF];
+char num_buf[MAX_NUMBER], line[PRINT_BUF];
 
 	if (usr == NULL)
 		return;
@@ -1577,7 +1582,8 @@ char num_buf[25], line[PRINT_BUF];
 
 			buffer_text(usr);
 
-			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n\n", print_number(memory_total, num_buf));
+			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n\n",
+				print_number(memory_total, num_buf, MAX_NUMBER));
 
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (strlen(Types_table[i].type) > len)
@@ -1587,9 +1593,10 @@ char num_buf[25], line[PRINT_BUF];
 			line[0] = 0;
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (i & 1)
-					l += sprintf(line+l, "      ");
+					l += bufprintf(line+l, PRINT_BUF - l, "      ");
 
-				l += sprintf(line+l, "%-*s :<white> %12s<green> ", len, Types_table[i].type, print_number(mem_stats[i], num_buf));
+				l += bufprintf(line+l, PRINT_BUF - l, "%-*s :<white> %12s<green> ",
+					len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER));
 
 				if (i & 1) {
 					Print(usr, "%s\n", line);

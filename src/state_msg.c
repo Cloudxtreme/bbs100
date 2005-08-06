@@ -38,6 +38,7 @@
 #include "Param.h"
 #include "OnlineUser.h"
 #include "Memory.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -374,7 +375,7 @@ StringIO *tmp;
 			} else
 				usr->new_message->number = room_top(u->mail)+1;
 
-			sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, sl->str[0], sl->str, usr->new_message->number);
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, sl->str[0], sl->str, usr->new_message->number);
 			path_strip(filename);
 
 			if (!save_Message(usr->new_message, filename)) {
@@ -395,7 +396,7 @@ StringIO *tmp;
 		if (usr->new_message->to != NULL) {
 			if (!err) {
 				usr->new_message->number = room_top(usr->mail)+1;
-				sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
+				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
 				path_strip(filename);
 
 				if (save_Message(usr->new_message, filename))
@@ -427,7 +428,7 @@ StringIO *tmp;
 			Return;
 		}
 		usr->new_message->number = room_top(usr->curr_room)+1;
-		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->new_message->number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->new_message->number);
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename)) {
@@ -626,9 +627,9 @@ unsigned long msg_number;
 
 /* construct filename */
 	if (usr->curr_room == usr->mail)
-		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, msg_number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, msg_number);
 	else
-		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, msg_number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, msg_number);
 	path_strip(filename);
 
 /* load the message */
@@ -646,7 +647,7 @@ unsigned long msg_number;
 
 		if (usr->message->flags & MSG_DELETED_BY_ANON)
 			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]\n",
-				print_date(usr, usr->message->deleted, date_buf), usr->message->anon);
+				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), usr->message->anon);
 		else {
 			char deleted_by[MAX_LINE];
 
@@ -662,7 +663,7 @@ unsigned long msg_number;
 			strcat(deleted_by, usr->message->deleted_by);
 
 			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
-				print_date(usr, usr->message->deleted, date_buf), deleted_by);
+				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), deleted_by);
 		}
 	} else {
 		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
@@ -742,9 +743,9 @@ int r;
 					usr->message->flags |= MSG_DELETED_BY_ANON;
 
 		if (usr->curr_room == usr->mail)
-			sprintf(buf, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+			bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 		else
-			sprintf(buf, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+			bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
 		path_strip(buf);
 
 		if (save_Message(usr->message, buf)) {
@@ -789,9 +790,9 @@ char filename[MAX_PATHLEN];
 	usr->message->flags &= ~(MSG_DELETED_BY_SYSOP | MSG_DELETED_BY_ROOMAIDE | MSG_DELETED_BY_ANON);
 
 	if (usr->curr_room == usr->mail)
-		sprintf(filename, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 	else
-		sprintf(filename, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
 	path_strip(filename);
 
 	if (save_Message(usr->message, filename)) {
@@ -1024,9 +1025,9 @@ int printed;
 	Produce an X message header
 	Note: buf must be large enough (PRINT_BUF in size)
 */
-char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf) {
+char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf, int buflen) {
 struct tm *tm;
-char frombuf[256] = "", namebuf[256] = "", multi[8] = "", msgtype[MAX_LINE] = "";
+char frombuf[MAX_LINE*3] = "", namebuf[MAX_LINE*3] = "", multi[MAX_NAME] = "", msgtype[MAX_LINE] = "";
 int from_me = 0;
 
 	if (usr == NULL || msg == NULL || buf == NULL)
@@ -1058,13 +1059,13 @@ int from_me = 0;
 	}
 	if (msg->flags & BUFMSG_SYSOP) {
 		if (from_me)
-			sprintf(frombuf, "as %s ", PARAM_NAME_SYSOP);
+			bufprintf(frombuf, MAX_LINE*3, "as %s ", PARAM_NAME_SYSOP);
 		else
-			sprintf(frombuf, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
+			bufprintf(frombuf, MAX_LINE*3, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
 				PARAM_NAME_SYSOP, msg->from);
 	} else {
 		if (!from_me)
-			sprintf(frombuf, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
+			bufprintf(frombuf, MAX_LINE*3, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
 		strcpy(multi, "Multi ");
@@ -1087,14 +1088,14 @@ int from_me = 0;
 						strcpy(msgtype, "Answer");
 
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me)
-		sprintf(buf, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
+		bufprintf(buf, buflen, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
 			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', frombuf);
 	else {
 		if (*msgtype) {
 			if (from_me)
-				sprintf(buf, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				bufprintf(buf, buflen, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
-				sprintf(buf, "<blue>***<cyan> %s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
+				bufprintf(buf, buflen, "<blue>***<cyan> %s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
 		}
 	}
 	Return buf;
@@ -1109,7 +1110,7 @@ char buf[PRINT_BUF];
 	Enter(print_buffered_msg);
 
 	Put(usr, "\n");
-	Put(usr, buffered_msg_header(usr, msg, buf));
+	Put(usr, buffered_msg_header(usr, msg, buf, PRINT_BUF));
 	display_text(usr, msg->msg);
 	Return;
 }
@@ -1242,7 +1243,7 @@ int r;
 		if (!usr->new_message->subject[0]) {
 			char buf[MAX_LINE*3];
 
-			sprintf(buf, "<yellow><forwarded from %s>", usr->curr_room->name);
+			bufprintf(buf, MAX_LINE*3, "<yellow><forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
 				strcpy(buf + MAX_LINE - 5, "...>");
 
@@ -1536,7 +1537,7 @@ char buf[PRINT_BUF], c;
 */
 	c = usr->name[0];
 	usr->name[0] = 0;
-	buffered_msg_header(usr, usr->send_msg, buf);
+	buffered_msg_header(usr, usr->send_msg, buf, PRINT_BUF);
 	usr->name[0] = c;
 
 	put_StringIO(usr->text, buf);
@@ -1595,15 +1596,15 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 /* print message header */
 
 	if (msg->anon[0])
-		sprintf(from, "<cyan>- %s <cyan>-", msg->anon);
+		bufprintf(from, MAX_LINE, "<cyan>- %s <cyan>-", msg->anon);
 	else
 		if (msg->flags & MSG_FROM_SYSOP)
-			sprintf(from, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->from);
+			bufprintf(from, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->from);
 		else
 			if (msg->flags & MSG_FROM_ROOMAIDE)
-				sprintf(from, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->from);
+				bufprintf(from, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->from);
 			else
-				sprintf(from, "<yellow>%s", msg->from);
+				bufprintf(from, MAX_LINE, "<yellow>%s", msg->from);
 
 	if (msg->to != NULL) {			/* in the Mail> room */
 		StringList *sl;
@@ -1614,34 +1615,35 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			max_dl = MAX_LINE*3-1;
 
 		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && !msg->anon[0]) {
-			l = sprintf(buf, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf));
+			l = bufprintf(buf, MAX_LINE*3, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
 			for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 				if ((dl + strlen(sl->str)+2) < max_dl)
-					l += sprintf(buf+l, "<yellow>%s<green>, ", sl->str);
+					l += bufprintf(buf+l, MAX_LINE*3 - l, "<yellow>%s<green>, ", sl->str);
 				else {
 					Put(usr, buf);
 					Put(usr, "\n");
-					l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
+					l = bufprintf(buf, MAX_LINE*3, "<yellow>%s<green>, ", sl->str);
 				}
 				dl = color_strlen(buf);
 			}
 			Print(usr, "%s<yellow>%s<green>\n", buf, sl->str);
 		} else {
 			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
-				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
-				l = sprintf(buf, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf), from);
+				l = bufprintf(buf, MAX_LINE*3, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
 				for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-					if ((dl + strlen(sl->str)+2) < MAX_LINE)
-						l += sprintf(buf+strlen(buf), "<yellow>%s<green>, ", sl->str);
-					else {
+					if ((dl + strlen(sl->str)+2) < MAX_LINE) {
+						l = strlen(buf);
+						l += bufprintf(buf+l, MAX_LINE*3 - l, "<yellow>%s<green>, ", sl->str);
+					} else {
 						Put(usr, buf);
 						Put(usr, "\n");
-						l = sprintf(buf, "<yellow>%s<green>, ", sl->str);
+						l = bufprintf(buf, MAX_LINE*3, "<yellow>%s<green>, ", sl->str);
 					}
 					dl = color_strlen(buf);
 				}
@@ -1649,7 +1651,7 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			}
 		}
 	} else
-		Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf), from);
+		Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 	Return;
 }
 

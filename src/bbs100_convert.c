@@ -23,6 +23,7 @@
 */
 
 #include "config.h"
+#include "defines.h"
 #include "copyright.h"
 
 #include <stdio.h>
@@ -308,57 +309,57 @@ FILE *f, *f2;
 
 
 int main(int argc, char **argv) {
-char filename[512], *p;
+char buf[MAX_PATHLEN], *p;
 
-	printf("%s", print_copyright(SHORT, "bbs100_convert", filename));
+	printf("%s", print_copyright(SHORT, "bbs100_convert", buf, MAX_PATHLEN));
 
 	if (argc <= 1 || (argc > 1 && strcmp(argv[1], "--"))) {
-		basename(argv[0], filename);
+		basename(argv[0], buf);
 		printf("specify filenames on stdin\n"
 			"typical usage is, from the bbs' basedir:\n"
 			"\n");
-		printf("find users -type f -print | %s --\n", filename);
-		printf("find rooms -type f -print | %s --\n", filename);
-		printf("echo etc/statistics | %s --\n\n", filename);
+		printf("find users -type f -print | %s --\n", buf);
+		printf("find rooms -type f -print | %s --\n", buf);
+		printf("echo etc/statistics | %s --\n\n", buf);
 		return 1;
 	}
-	while(fgets(filename, 512, stdin) != NULL) {
-		strip_line(filename);
-		if (!*filename)
+	while(fgets(buf, MAX_PATHLEN, stdin) != NULL) {
+		strip_line(buf);
+		if (!*buf)
 			continue;
 
-		if ((p = strrchr(filename, '/')) == NULL)
-			p = filename;
+		if ((p = strrchr(buf, '/')) == NULL)
+			p = buf;
 		else {
 			p++;
 			if (!*p)
 				continue;
 		}
 		if (!strcmp(p, "UserData")) {
-			convert_userdata(filename);
+			convert_userdata(buf);
 			continue;
 		}
 		if (!strcmp(p, "HomeData")) {
-			convert_roomdata(filename);
+			convert_roomdata(buf);
 			continue;
 		}
 		if (!strcmp(p, "MailData")) {
-			convert_roomdata(filename);
+			convert_roomdata(buf);
 			continue;
 		}
 		if (!strcmp(p, "RoomData")) {
-			convert_roomdata(filename);
+			convert_roomdata(buf);
 			continue;
 		}
 		if (is_numeric(p)) {
-			convert_message(filename);
+			convert_message(buf);
 			continue;
 		}
 		if (!strcmp(p, "stats")) {
-			convert_statistics(filename);
+			convert_statistics(buf);
 			continue;
 		}
-		printf("skipping %s\n", filename);
+		printf("skipping %s\n", buf);
 	}
 	return 0;
 }

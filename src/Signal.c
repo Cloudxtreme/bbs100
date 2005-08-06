@@ -38,6 +38,7 @@
 #include "Param.h"
 #include "OnlineUser.h"
 #include "Memory.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -179,9 +180,9 @@ int i;
 }
 
 /*
-	Note: signame_buf must be large enough (64 bytes should do)
+	buflen should be at least MAX_SIGNAME in size
 */
-char *sig_name(int sig, char *signame_buf) {
+char *sig_name(int sig, char *signame_buf, int buflen) {
 int i;
 
 	if (signame_buf == NULL)
@@ -193,7 +194,7 @@ int i;
 			return signame_buf;
 		}
 	}
-	sprintf(signame_buf, "(unknown signal %d)", sig);
+	bufprintf(signame_buf, buflen, "(unknown signal %d)", sig);
 	return signame_buf;
 }
 
@@ -332,7 +333,7 @@ void sig_fatal(int sig) {
 	SIGQUIT: reboot in 5
 */
 void sig_reboot(int sig) {
-char buf[128], total_buf[MAX_LINE];
+char buf[MAX_LINE*3], total_buf[MAX_LINE];
 
 	Enter(sig_reboot);
 	log_msg("SIGQUIT received, rebooting in 5 minutes");
@@ -341,8 +342,8 @@ char buf[128], total_buf[MAX_LINE];
 		reboot_timer->sleeptime = reboot_timer->maxtime = 4 * SECS_IN_MIN;	/* reboot in 5 mins */
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
-		sprintf(buf, "The system is now rebooting in %s", 
-			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+		bufprintf(buf, MAX_LINE*3, "The system is now rebooting in %s", 
+			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -353,8 +354,8 @@ char buf[128], total_buf[MAX_LINE];
 	}
 	add_Timer(&timerq, reboot_timer);
 
-	sprintf(buf, "The system is rebooting in %s",
-		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+	bufprintf(buf, MAX_LINE*3, "The system is rebooting in %s",
+		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -363,7 +364,7 @@ char buf[128], total_buf[MAX_LINE];
 	SIGABRT: shutdown in 5
 */
 void sig_shutdown(int sig) {
-char buf[128], total_buf[128];
+char buf[MAX_LINE*3], total_buf[MAX_LINE];
 
 	Enter(sig_shutdown);
 	log_msg("SIGTERM received, shutting down in 5 minutes");
@@ -372,8 +373,8 @@ char buf[128], total_buf[128];
 		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4 * SECS_IN_MIN;	/* shutdown in 5 mins */
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
-		sprintf(buf, "The system is now shutting down in %s",
-			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+		bufprintf(buf, MAX_LINE*3, "The system is now shutting down in %s",
+			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 		system_broadcast(0, buf);
 		Return;
 	}
@@ -384,8 +385,8 @@ char buf[128], total_buf[128];
 	}
 	add_Timer(&timerq, shutdown_timer);
 
-	sprintf(buf, "The system is shutting down in %s",
-		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf));
+	bufprintf(buf, MAX_LINE*3, "The system is shutting down in %s",
+		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -396,11 +397,11 @@ char buf[128], total_buf[128];
 void sig_shutnow(int sig) {
 StringIO *screen;
 User *u;
-char signame_buf[MAX_LINE];
+char signame_buf[MAX_SIGNAME];
 
 	Enter(sig_shutnow);
 
-	log_info("*** shutting down on %s ***", sig_name(sig, signame_buf));
+	log_info("*** shutting down on %s ***", sig_name(sig, signame_buf, MAX_SIGNAME));
 
 	if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_SHUTDOWN_SCREEN) >= 0) {
 		for(u = AllUsers; u != NULL; u = u->next) {

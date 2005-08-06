@@ -78,7 +78,7 @@ long KVPair_getlong(KVPair *);
 char *KVPair_getstring(KVPair *);
 void *KVPair_getpointer(KVPair *);
 
-int print_KVPair(KVPair *, char *);
+int print_KVPair(KVPair *, char *, int);
 
 #endif	/* KVPAIR_H_WJ105 */
 

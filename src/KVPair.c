@@ -26,6 +26,7 @@
 #include "Memory.h"
 #include "cstring.h"
 #include "log.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,8 +187,8 @@ void *KVPair_getpointer(KVPair *kv) {
 	return kv->value.v;
 }
 
-int print_KVPair(KVPair *kv, char *buf) {
-	if (buf == NULL)
+int print_KVPair(KVPair *kv, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return 0;
 
 	if (kv == NULL) {
@@ -204,15 +205,15 @@ int print_KVPair(KVPair *kv, char *buf) {
 			break;
 
 		case KV_INT:
-			sprintf(buf, "%d", kv->value.i);
+			bufprintf(buf, buflen, "%d", kv->value.i);
 			break;
 
 		case KV_OCTAL:
-			sprintf(buf, "0%02o", kv->value.o);
+			bufprintf(buf, buflen, "0%02o", kv->value.o);
 			break;
 
 		case KV_LONG:
-			sprintf(buf, "%ld", kv->value.l);
+			bufprintf(buf, buflen, "%ld", kv->value.l);
 			break;
 
 		case KV_STRING:
@@ -223,11 +224,11 @@ int print_KVPair(KVPair *kv, char *buf) {
 			break;
 
 		case KV_POINTER:
-			sprintf(buf, "<pointer 0x%08lx>", (long)kv->value.v);
+			bufprintf(buf, buflen, "<pointer 0x%08lx>", (long)kv->value.v);
 			break;
 
 		default:
-			log_err("sprintf_KVPair(): unknown type for key '%s'", kv->key);
+			log_err("print_KVPair(): unknown type for key '%s'", kv->key);
 			strcpy(buf, "(unknown KV type)");
 	}
 	return strlen(buf);

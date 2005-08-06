@@ -44,6 +44,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define MAX_LOGLINE	4096
+
+
 StringList *internal_log = NULL;
 int internal_log_len = 0;
 
@@ -136,14 +139,15 @@ int fd;
 void log_entry(FILE *f, char *msg, char level, va_list ap) {
 time_t t;
 struct tm *tm;
-char buf[4096];
+char buf[MAX_LOGLINE];
+int l;
 
 	t = rtc;
 	tm = localtime(&t);		/* logging goes in localtime */
 
-	sprintf(buf, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
+	l = bufprintf(buf, MAX_LOGLINE, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
-	bufvprintf(buf+strlen(buf), 4096, msg, ap);
+	bufvprintf(buf+l, MAX_LOGLINE - l, msg, ap);
 
 	if (internal_log_len > MAX_INTERNAL_LOG) {
 		StringList *sl;
@@ -218,7 +222,7 @@ struct tm *tm;
 	t = rtc;
 	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
 	tm = localtime(&t);
-	sprintf(filename, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
+	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
 	path_strip(filename);
 	if (mkdir_p(filename) < 0)
 		return;
@@ -231,7 +235,7 @@ struct tm *tm;
 		if (!*p)
 			p = logfile;
 	}
-	sprintf(filename, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
+	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
 		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 	path_strip(filename);
 

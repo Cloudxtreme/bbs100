@@ -27,6 +27,7 @@
 #include "config.h"
 #include "copyright.h"
 #include "cstring.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,7 +110,7 @@ int Ansi_Color(int c) {
 }
 
 void Put(char *str) {
-char buf[20], c;
+char buf[MAX_COLORBUF], c;
 
 	if (str == NULL)
 		return;
@@ -141,7 +142,7 @@ char buf[20], c;
 			case KEY_CTRL('W'):
 			case KEY_CTRL('F'):
 				usr_color = Ansi_Color(c);
-				sprintf(buf, "\x1b[1;%dm", usr_color);
+				bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", usr_color);
 				Write(buf);
 				break;
 
@@ -150,12 +151,12 @@ char buf[20], c;
 				if (!*str)
 					break;
 
-				sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, *str, usr_color);
+				bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, *str, usr_color);
 				Write(buf);
 				break;
 
 			case KEY_CTRL('N'):
-				sprintf(buf, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
+				bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
 				Write(buf);
 				Write("\x1b[1m");
 				break;
@@ -190,20 +191,20 @@ char buf[20], c;
 */
 int long_color_code(char *code) {
 int i, c, colors;
-char colorbuf[20], buf[20];
+char colorbuf[MAX_COLORBUF], buf[MAX_COLORBUF];
 
 	colors = sizeof(color_table)/sizeof(ColorTable);
 	for(i = 0; i < colors; i++) {
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(colorbuf, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
 
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf))) {
 			c = color_table[i].key;
 
 			usr_color = Ansi_Color(c);
-			sprintf(buf, "\x1b[1;%dm", usr_color);
+			bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", usr_color);
 			Write(buf);
 			return strlen(colorbuf)-1;
 		}
@@ -213,7 +214,7 @@ char colorbuf[20], buf[20];
 
 	if (!cstrnicmp(code, "<flash>", 7) || !cstrnicmp(code, "<blink>", 7)) {
 		color = Ansi_Color(KEY_CTRL('F'));
-		sprintf(buf, "\x1b[1;%dm", color);
+		bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", color);
 		Write(buf);
 		return 6;
 	}
@@ -223,7 +224,7 @@ char colorbuf[20], buf[20];
 		if (!c)
 			return 7;
 
-		sprintf(buf, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, c, usr_color);
+		bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, c, usr_color);
 		Write(buf);
 		return 8;
 	}
@@ -232,7 +233,7 @@ char colorbuf[20], buf[20];
 		return 5;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {
-		sprintf(buf, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
+		bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
 		Write(buf);
 		Write("\x1b[1m");
 		return 7;
@@ -314,12 +315,9 @@ char colorbuf[20], buf[20];
 	return 0;
 }
 
-/*
-	this function is kind of lame :)
-*/
 int skip_long_color_code(char *code) {
 int colors, i;
-char colorbuf[20];
+char colorbuf[MAX_COLORBUF];
 
 	if (code == NULL || !*code || *code != '<')
 		return 0;
@@ -329,7 +327,7 @@ char colorbuf[20];
 		if (i == HOTKEY)
 			continue;
 
-		sprintf(colorbuf, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf)))
 			return strlen(colorbuf);
 	}
@@ -380,7 +378,7 @@ int len = 0;
 int main(void) {
 char buf[256];
 
-	printf("%s", print_copyright(SHORT, "ccat", buf));
+	printf("%s", print_copyright(SHORT, "ccat", buf, 256));
 
 	while(fgets(buf, 256, stdin) != NULL)
 		Put(buf);

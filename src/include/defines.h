@@ -34,6 +34,8 @@
 #define MAX_LINE            80
 #define MAX_X_LINES         7
 #define MAX_CRYPTED_PASSWD  140
+#define MAX_COLORBUF		20
+#define MAX_NUMBER			30
 
 #define MAX_PATHLEN			1024		/* MAXPATH variable */
 #define PRINT_BUF			512

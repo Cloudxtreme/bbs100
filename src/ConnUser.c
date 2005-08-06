@@ -34,6 +34,7 @@
 #include "Param.h"
 #include "ConnResolv.h"
 #include "Wrapper.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +104,7 @@ Conn *conn;
 void ConnUser_accept(Conn *conn) {
 User *new_user;
 Conn *new_conn;
-char buf[256];
+char buf[MAX_LINE*3];
 int s, err, optval;
 struct sockaddr_storage client;
 socklen_t client_len = sizeof(struct sockaddr_storage);
@@ -151,7 +152,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		destroy_Conn(new_conn);
 		Return;
 	}
-	sprintf(buf, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
+	bufprintf(buf, MAX_LINE*3, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
 		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
 
 	if (write(new_conn->sock, buf, strlen(buf)) < 0) {
@@ -169,7 +170,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	we don't have that input yet, and we're surely not going to wait for it
 */
 	display_screen(new_user, PARAM_LOGIN_SCREEN);
-	Print(new_user, "        %s\n", print_copyright(SHORT, NULL, buf));
+	Print(new_user, "        %s\n", print_copyright(SHORT, NULL, buf, MAX_LINE*3));
 
 	CALL(new_user, STATE_LOGIN_PROMPT);
 	Return;

@@ -49,6 +49,7 @@
 #include "Timezone.h"
 #include "Wrapper.h"
 #include "sys_time.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,7 +153,7 @@ int r;
 				strcpy(usr->name, PARAM_NAME_GUEST);
 			else {
 				for(r = 2; r < 1024; r++) {
-					sprintf(usr->tmpbuf[TMP_NAME], "%s %d", PARAM_NAME_GUEST, r);
+					bufprintf(usr->tmpbuf[TMP_NAME], MAX_NAME, "%s %d", PARAM_NAME_GUEST, r);
 					if (is_online(usr->tmpbuf[TMP_NAME]) == NULL)
 						break;
 				}
@@ -296,7 +297,7 @@ int r;
 
 
 void state_logout_prompt(User *usr, char c) {
-char buf[MAX_LINE*2];
+char buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -329,7 +330,7 @@ char buf[MAX_LINE*2];
 				}
 			}
 		}
-		sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+		bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 		Put(usr, buf);
 		Put(usr, "(y/N): ");
 		usr->runtime_flags |= RTF_BUSY;
@@ -351,7 +352,7 @@ char buf[MAX_LINE*2];
 			break;
 
 		default:
-			sprintf(buf, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+			bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 			Put(usr, buf);
 			Put(usr, "(y/N): ");
 	}
@@ -426,7 +427,7 @@ File *f;
 
 void state_go_online(User *usr, char c) {
 Joined *j;
-char num_buf[25];
+char num_buf[MAX_NUMBER];
 int i, new_mail;
 
 	if (usr == NULL)
@@ -478,10 +479,9 @@ int i, new_mail;
 		Put(usr, "<green>This is your <yellow>1st<green> login\n");
 
 		if (usr->doing == NULL) {
-			char buf[MAX_LINE*3];
+			char buf[MAX_LINE];
 
-			sprintf(buf, "is new to <white>%s", PARAM_BBS_NAME);
-			buf[MAX_LINE] = 0;
+			bufprintf(buf, MAX_LINE, "is new to <white>%s", PARAM_BBS_NAME);
 			usr->doing = cstrdup(buf);
 		}
 	} else {
@@ -494,7 +494,7 @@ int i, new_mail;
 			exclaim[0] = 0;
 
 		Print(usr, "<green>Welcome back, <yellow>%s! <green>"
-			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf), exclaim);
+			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf, MAX_NUMBER), exclaim);
 	}
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
@@ -506,16 +506,16 @@ int i, new_mail;
 		if (usr->last_online_time > 0UL) {
 			int l;
 
-			l = sprintf(online_for, "%c, for %c", color_by_name("green"), color_by_name("yellow"));
-			print_total_time(usr->last_online_time, online_for+l);
+			l = bufprintf(online_for, MAX_LINE+10, "%c, for %c", color_by_name("green"), color_by_name("yellow"));
+			print_total_time(usr->last_online_time, online_for+l, MAX_LINE+10-l);
 		} else
 			online_for[0] = 0;
 
 		if (usr->tmpbuf[TMP_FROM_HOST]) {
-			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
+			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for);
 			Print(usr, "<green>From host: <yellow>%s\n", usr->tmpbuf[TMP_FROM_HOST]);
 		} else
-			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf), online_for);
+			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for);
 	}
 /* free the tmp buffers as they won't be used anymore for a long time */
 	for(i = 0; i < NUM_TMP; i++) {
@@ -696,7 +696,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char crypted[MAX_CRYPTED];
+		char crypted[MAX_CRYPTED], dirname[MAX_PATHLEN];
 		int i;
 
 		if (!usr->edit_buf[0]) {
@@ -732,9 +732,9 @@ int r;
 		}
 		strcpy(usr->passwd, crypted);
 
-		sprintf(usr->edit_buf, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
-		path_strip(usr->edit_buf);
-		if (mkdir(usr->edit_buf, (mode_t)0750))
+		bufprintf(dirname, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
+		path_strip(dirname);
+		if (mkdir(dirname, (mode_t)0750))
 			Perror(usr, "Failed to create user directory");
 
 		log_auth("NEWUSER %s (%s)", usr->name, usr->conn->hostname);
@@ -813,7 +813,7 @@ User *u;
 	if (usr->logins > 1) {
 		struct tm *tm;
 		int bday_day, bday_mon, bday_year;
-		char num_buf[25];
+		char num_buf[MAX_NUMBER];
 
 		tm = user_time(usr, usr->birth);
 		bday_day = tm->tm_mday;
@@ -823,7 +823,8 @@ User *u;
 		tm = user_time(usr, (time_t)0UL);
 
 		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
-			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n", print_numberth(tm->tm_year - bday_year, num_buf));
+			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n",
+				print_numberth(tm->tm_year - bday_year, num_buf, MAX_NUMBER));
 	}
 
 /* if booting/shutting down, inform the user */

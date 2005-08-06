@@ -28,6 +28,7 @@
 #include "locale_system.h"
 #include "defines.h"
 #include "sys_time.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,9 +36,9 @@
 
 
 /*
-	Note: date_str should be large enough (80 bytes will do)
+	date_str must be large enough, MAX_LINE will do
 */
-char *lc_print_date(Locale *lc, struct tm *t, int twelve_hour_clock, char *date_str) {
+char *lc_print_date(Locale *lc, struct tm *t, int twelve_hour_clock, char *date_str, int buflen) {
 char add[2];
 
 	if (lc == NULL)
@@ -79,11 +80,11 @@ char add[2];
 			if (t->tm_hour > 12)
 				t->tm_hour -= 12;
 		}
-		sprintf(date_str, "%sday, %s %d%c%c %d %02d:%02d:%02d %cM",
+		bufprintf(date_str, buflen, "%sday, %s %d%c%c %d %02d:%02d:%02d %cM",
 			lc->days[t->tm_wday], lc->months[t->tm_mon], t->tm_mday, add[0], add[1], t->tm_year + 1900,
 			t->tm_hour, t->tm_min, t->tm_sec, am_pm);
 	} else {
-		sprintf(date_str, "%sday, %s %d%c%c %d %02d:%02d:%02d",
+		bufprintf(date_str, buflen, "%sday, %s %d%c%c %d %02d:%02d:%02d",
 			lc->days[t->tm_wday], lc->months[t->tm_mon], t->tm_mday, add[0], add[1], t->tm_year + 1900,
 			t->tm_hour, t->tm_min, t->tm_sec);
 	}
@@ -98,14 +99,17 @@ char add[2];
 	I wrote the former function out and turned into this math-like looking
 	formula stuff. This one actually produces better output.
 
-	Note: buf must be large enough (MAX_LINE bytes should do)
+	Note: buf must be large enough, MAX_LINE should do
 */
-char *lc_print_total_time(Locale *lc, unsigned long total, char *buf) {
+char *lc_print_total_time(Locale *lc, unsigned long total, char *buf, int buflen) {
 int div[5] = { SECS_IN_WEEK, SECS_IN_DAY, SECS_IN_HOUR, SECS_IN_MIN, 1 };
 int v[5];
 int i, l, elems;
 char *one[5] = { "week", "day", "hour", "minute", "second" };
 char *more[5] = { "weeks", "days", "hours", "minutes", "seconds" };
+
+	if (buf == NULL || buflen <= 0)
+		return NULL;
 
 	elems = 0;
 	for(i = 0; i < 5; i++) {
@@ -122,12 +126,12 @@ char *more[5] = { "weeks", "days", "hours", "minutes", "seconds" };
 	l = 0;
 	for(i = 0; i < 5; i++) {
 		if (v[i] > 0) {
-			l += sprintf(buf+l, "%d %s", v[i], (v[i] == 1) ? one[i] : more[i]);
+			l += bufprintf(buf+l, buflen - l, "%d %s", v[i], (v[i] == 1) ? one[i] : more[i]);
 			elems--;
 			if (!elems)
 				break;
 
-			l += sprintf(buf+l, (elems == 1) ? ", and " : ", ");
+			l += bufprintf(buf+l, buflen - l, (elems == 1) ? ", and " : ", ");
 		}
 	}
 	return buf;
@@ -138,23 +142,25 @@ char *more[5] = { "weeks", "days", "hours", "minutes", "seconds" };
 	We use a silly trick to do this ; walk the string in a reverse order and
 	insert comma's into the string representation
 
-	Note: buf must be large enough (at least 21 bytes)
+	Note: buf must be large enough, MAX_NUMBER will do
 */
-char *lc_print_number(unsigned long ul, int sep, char *buf) {
-char buf2[21];
+char *lc_print_number(unsigned long ul, int sep, char *buf, int buflen) {
+char buf2[MAX_NUMBER];
 int i, j = 0, n = 0;
 
-	if (buf == NULL)
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
 	buf[0] = 0;
-	sprintf(buf2, "%lu", ul);
+	bufprintf(buf2, MAX_NUMBER, "%lu", ul);
 	i = strlen(buf2)-1;
 	if (i < 0)
 		return buf;
 
-	while(i >= 0) {
+	while(i >= 0 && j < buflen-1) {
 		buf[j++] = buf2[i--];
+		if (j >= buflen-1)
+			break;
 
 		n++;
 		if (i >= 0 && n >= 3) {
@@ -167,41 +173,43 @@ int i, j = 0, n = 0;
 	strcpy(buf2, buf);
 	i = strlen(buf2)-1;
 	j = 0;
-	while(i >= 0)
+	while(i >= 0 && j <= buflen-1)
 		buf[j++] = buf2[i--];
+	buf[j] = 0;
 	return buf;
 }
 
 /*
 	standard template for having large numbers displayed with comma's
-	Note: buf must be large enough (at least 21 bytes)
+	Note: buf must be large enough, MAX_NUMBER should do
 */
-char *lc_print_number_commas(Locale *lc, unsigned long ul, char *buf) {
-	if (buf == NULL)
+char *lc_print_number_commas(Locale *lc, unsigned long ul, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_print_number(ul, ',', buf);
+	return lc_print_number(ul, ',', buf, buflen);
 }
 
 /*
 	standard template for having large numbers displayed with dots
-	Note: buf must be large enough (at least 21 bytes)
+	Note: buf must be large enough, MAX_NUMBER should do
 */
-char *lc_print_number_dots(Locale *lc, unsigned long ul, char *buf) {
-	if (buf == NULL)
+char *lc_print_number_dots(Locale *lc, unsigned long ul, char *buf, int buflen) {
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
-	return lc_print_number(ul, '.', buf);
+	return lc_print_number(ul, '.', buf, buflen);
 }
 
 /*
 	print_number() with '1st', '2nd', '3rd', '4th', ... extension
-	Note: buf must be large enough (MAX_LINE should do)
+	Note: buf must be large enough, MAX_NUMBER should do
 */
-char *lc_print_numberth(Locale *lc, unsigned long ul, char *buf) {
+char *lc_print_numberth(Locale *lc, unsigned long ul, char *buf, int buflen) {
 char add[3];
+int l;
 
-	if (buf == NULL)
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
 	if (((ul % 100UL) >= 10UL) && ((ul % 100UL) <= 20UL)) {
@@ -233,18 +241,24 @@ char add[3];
 
 	if (lc == NULL)
 		lc = lc_system;
-	lc->print_number(lc, ul, buf);
-	strcat(buf, add);
+	lc->print_number(lc, ul, buf, buflen);
+
+	l = strlen(buf);
+	if (l < buflen-2) {
+		buf[l++] = add[0];
+		buf[l++] = add[1];
+		buf[l] = 0;
+	}
 	return buf;
 }
 
 /*
 	Note: buf must be large enough (MAX_LINE bytes in size)
 */
-char *lc_possession(Locale *lc, char *name, char *obj, char *buf) {
-int i, j;
+char *lc_possession(Locale *lc, char *name, char *obj, char *buf, int buflen) {
+int l, j;
 
-	if (buf == NULL)
+	if (buf == NULL || buflen <= 0)
 		return NULL;
 
 	if (name == NULL || !*name) {
@@ -252,14 +266,18 @@ int i, j;
 		return buf;
 	}
 	strcpy(buf, name);
-	i = j = strlen(buf)-1;
-	buf[++i] = '\'';
-	if (buf[j] != 'z' && buf[j] != 'Z' &&
-		buf[j] != 's' && buf[j] != 'S')
-		buf[++i] = 's';
-	buf[++i] = ' ';
-	buf[++i] = 0;
-	strcat(buf, obj);
+	l = j = strlen(buf)-1;
+	if (l < buflen-3) {
+		buf[++l] = '\'';
+		if (buf[j] != 'z' && buf[j] != 'Z' &&
+			buf[j] != 's' && buf[j] != 'S')
+			buf[++l] = 's';
+		buf[++l] = ' ';
+		buf[++l] = 0;
+
+		if (obj != NULL && buflen - l > strlen(obj))
+			strcat(buf, obj);
+	}
 	return buf;
 }
 

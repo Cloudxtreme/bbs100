@@ -52,6 +52,7 @@
 #include "Category.h"
 #include "ConnUser.h"
 #include "ConnResolv.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,11 +92,11 @@ struct stat statbuf;
 		if ((tm = localtime(&statbuf.st_ctime)) == NULL)
 			return 0;
 
-		sprintf(filename, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+		bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 		path_strip(filename);
 		i = 1;
 		while(!stat(filename, &statbuf) && i < 10) {
-			sprintf(filename, "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
+			bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
 			path_strip(filename);
 			i++;
 		}
@@ -109,6 +110,8 @@ struct stat statbuf;
 
 static void goto_background(void) {
 pid_t pid;
+
+#ifdef TIOCNOTTY
 int fd;
 
 	if ((fd = open("/dev/tty", O_WRONLY 	/* detach from tty */
@@ -117,11 +120,11 @@ int fd;
 | O_NOCTTY
 #endif
 	)) != -1) {
-#ifdef TIOCNOTTY
 		ioctl(fd, TIOCNOTTY);
-#endif
 		close(fd);
 	}
+#endif	/* TIOCNOTTY */
+
 	pid = fork();							/* go to background */
 	if (pid == (pid_t)-1L) {
 		log_err("failed to fork()");
@@ -185,7 +188,7 @@ void usage(void) {
 
 int main(int argc, char **argv) {
 int debugger = 0;
-char buf[256];
+char buf[MAX_LINE*3];
 
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 main)";
@@ -203,7 +206,7 @@ char buf[256];
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}
-	printf("%s\n", print_copyright(SHORT, "main", buf));
+	printf("%s\n", print_copyright(SHORT, "main", buf, MAX_LINE*3));
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
 

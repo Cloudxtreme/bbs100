@@ -32,6 +32,7 @@
 #include "Memory.h"
 #include "memset.h"
 #include "AtomicFile.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -194,8 +195,8 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 	while(w != NULL) {
 		fprintf(f->f, "%s%s %s/%s", (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 			(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
-			print_inet_addr(w->addr, addr_buf, w->flags),
-			print_inet_mask(w->mask, mask_buf, w->flags)
+			print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
+			print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags)
 		);
 		if (w->comment != NULL)
 			fprintf(f->f, "\t# %s", w->comment);
@@ -565,20 +566,20 @@ char *endp;
 	return 0;
 }
 
-char *print_inet_addr(int *addr, char *buf, int flags) {
-	if (addr == NULL || buf == NULL)
+char *print_inet_addr(int *addr, char *buf, int buflen, int flags) {
+	if (addr == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 	if (flags & WRAPPER_IP4)
-		return print_ipv4_addr(addr, buf);
+		return print_ipv4_addr(addr, buf, buflen);
 
-	return print_ipv6_addr(addr, buf, flags);
+	return print_ipv6_addr(addr, buf, buflen, flags);
 }
 
-char *print_ipv4_addr(int *addr, char *buf) {
+char *print_ipv4_addr(int *addr, char *buf, int buflen) {
 int a1, a2, a3, a4;
 
-	if (addr == NULL || buf == NULL)
+	if (addr == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 	a1 = (addr[6] >> 8) & 0xff;
@@ -586,18 +587,19 @@ int a1, a2, a3, a4;
 	a3 = (addr[7] >> 8) & 0xff;
 	a4 = addr[7] & 0xff;
 
-	sprintf(buf, "%d.%d.%d.%d", a1, a2, a3, a4);
+	bufprintf(buf, buflen, "%d.%d.%d.%d", a1, a2, a3, a4);
 	return buf;
 }
 
 /*
 	print IPv6 address into buffer
-	WARNING: buffer must be large enough, NO bounds checking is done
+
+	flags are WRAPPER_xxx flags
 */
-char *print_ipv6_addr(int *addr, char *buf, int flags) {
+char *print_ipv6_addr(int *addr, char *buf, int buflen, int flags) {
 int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
 
-	if (addr == NULL || buf == NULL)
+	if (addr == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 	l = 0;
@@ -636,7 +638,7 @@ int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
 			buf[l++] = ':';
 			continue;
 		}
-		l += sprintf(buf+l, "%x", addr[i]);
+		l += bufprintf(buf+l, buflen - l, "%x", addr[i]);
 
 		if ((i < (num - 1)) && best_zero_pos != i+1)
 			buf[l++] = ':';
@@ -645,16 +647,16 @@ int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
 		if (buf[l-1] != ':')
 			buf[l++] = ':';
 
-		l += sprintf(buf+l, "%d.%d.%d.%d", (addr[6] >> 8) & 0xff, addr[6] & 0xff, (addr[7] >> 8) & 0xff, addr[7] & 0xff);
+		l += bufprintf(buf+l, buflen - l, "%d.%d.%d.%d", (addr[6] >> 8) & 0xff, addr[6] & 0xff, (addr[7] >> 8) & 0xff, addr[7] & 0xff);
 	}
 	buf[l] = 0;
 	return buf;
 }
 
-char *print_inet_mask(int *mask, char *buf, int flags) {
+char *print_inet_mask(int *mask, char *buf, int buflen, int flags) {
 int i, b, bits, num_bits, zeroes, complex_mask;
 
-	if (mask == NULL || buf == NULL)
+	if (mask == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 /* see if we can print the mask as '/24' or something like that */
@@ -677,10 +679,10 @@ int i, b, bits, num_bits, zeroes, complex_mask;
 			break;
 	}
 	if (!complex_mask) {
-		sprintf(buf, "%d", num_bits);
+		bufprintf(buf, buflen, "%d", num_bits);
 		return buf;
 	}
-	return print_inet_addr(mask, buf, flags);
+	return print_inet_addr(mask, buf, buflen, flags);
 }
 
 void ipv4_bitmask(int bits, int *mask) {

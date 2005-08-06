@@ -264,7 +264,7 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 	usr->timezone = NULL;
 
 /* open the file for loading */
-	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/UserData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
 	if ((f = Fopen(filename)) == NULL) {
@@ -984,7 +984,7 @@ char buf[MAX_PATHLEN];
 	if (usr == NULL)
 		return -1;
 
-	sprintf(buf, "%s/%c/%s/UserData.site", PARAM_USERDIR, *username, username);
+	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/UserData.site", PARAM_USERDIR, *username, username);
 	path_strip(buf);
 
 	if ((f = Fopen(buf)) == NULL)
@@ -1042,7 +1042,7 @@ File *f;
 
 	usr->last_online_time = (unsigned long)rtc - (unsigned long)usr->login_time;
 
-	sprintf(filename, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/UserData", PARAM_USERDIR, usr->name[0], usr->name);
 	path_strip(filename);
 
 	if ((f = Fcreate(filename)) == NULL) {
@@ -1173,14 +1173,15 @@ void close_connection(User *usr, char *reason, ...) {
 	if (reason != NULL) {			/* log why we're being disconnected */
 		va_list ap;
 		char buf[PRINT_BUF];
+		int len;
 
 		if (usr->name[0])
-			sprintf(buf, "CLOSE %s (%s): ", usr->name, usr->conn->hostname);
+			len = bufprintf(buf, PRINT_BUF, "CLOSE %s (%s): ", usr->name, usr->conn->hostname);
 		else
-			sprintf(buf, "CLOSE (%s): ", usr->conn->hostname);
+			len = bufprintf(buf, PRINT_BUF, "CLOSE (%s): ", usr->conn->hostname);
 
 		va_start(ap, reason);
-		bufvprintf(buf+strlen(buf), PRINT_BUF, reason, ap);
+		bufvprintf(buf+len, PRINT_BUF - len, reason, ap);
 		va_end(ap);
 
 		log_auth(buf);

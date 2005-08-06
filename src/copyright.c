@@ -23,6 +23,7 @@
 #include "config.h"
 #include "copyright.h"
 #include "version.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +32,9 @@
 
 
 /*
-	Note: buf must be large enough (160 bytes should do)
+	Note: buf must be large enough (MAX_LONGLINE should do)
 */
-char *print_copyright(int full, char *progname, char *buf) {
+char *print_copyright(int full, char *progname, char *buf, int buflen) {
 	if (buf == NULL)
 		return NULL;
 
@@ -49,12 +50,15 @@ char *print_copyright(int full, char *progname, char *buf) {
 	if (full) {
 #ifdef HAVE_UNAME
 		struct utsname uts;
+		int len;
 #endif
 
 		strcat(buf, "running on ");
 #ifdef HAVE_UNAME
-		if (!uname(&uts))
-			sprintf(buf+strlen(buf), "%s, %s %s %s ", uts.nodename, uts.machine, uts.sysname, uts.release);
+		if (!uname(&uts)) {
+			len = strlen(buf);
+			bufprintf(buf+len, buflen - len, "%s, %s %s %s ", uts.nodename, uts.machine, uts.sysname, uts.release);
+		}
 #endif
 		strcat(buf, "[" SYSTEM "]\n");
 	}

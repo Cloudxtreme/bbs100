@@ -63,7 +63,7 @@ void abort_message(User *, char);
 void read_more(User *);
 void readMsg(User *);
 void recvMsg(User *, User *, BufferedMsg *);
-char *buffered_msg_header(User *, BufferedMsg *, char *);
+char *buffered_msg_header(User *, BufferedMsg *, char *, int);
 void print_buffered_msg(User *, BufferedMsg *);
 void spew_BufferedMsg(User *);
 void expire_msg(Room *);

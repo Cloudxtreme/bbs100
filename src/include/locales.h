@@ -30,11 +30,11 @@ typedef struct Locale_tag Locale;
 struct Locale_tag {
 	char *name, *days[7], *months[12];
 
-	char *(*print_date)(Locale *, struct tm *, int, char *);
-	char *(*print_total_time)(Locale *, unsigned long, char *);
-	char *(*print_number)(Locale *, unsigned long, char *);
-	char *(*print_numberth)(Locale *, unsigned long, char *);
-	char *(*possession)(Locale *, char *, char *, char *);
+	char *(*print_date)(Locale *, struct tm *, int, char *, int);
+	char *(*print_total_time)(Locale *, unsigned long, char *, int);
+	char *(*print_number)(Locale *, unsigned long, char *, int);
+	char *(*print_numberth)(Locale *, unsigned long, char *, int);
+	char *(*possession)(Locale *, char *, char *, char *, int);
 };
 
 extern Locale *all_locales[];

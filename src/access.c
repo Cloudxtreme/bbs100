@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,7 +78,7 @@ int allocated = 0;
 char err_msg[MAX_LINE] = "";
 
 	if (is_guest(usr->edit_buf)) {
-		sprintf(err_msg, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
+		bufprintf(err_msg, MAX_LINE, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
 		goto No_multi_mail;
 	}
 	if (!user_exists(usr->edit_buf)) {

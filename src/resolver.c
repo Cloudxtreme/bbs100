@@ -114,7 +114,7 @@ char request[128], result[NI_MAXHOST];
 struct sockaddr_un un;
 int s, n, un_len;
 
-	printf("%s", print_copyright(SHORT, "resolver", result));
+	printf("%s", print_copyright(SHORT, "resolver", result, NI_MAXHOST));
 
 	if (strcmp(get_basename(argv[0]), "(bbs100 resolver)")) {
 		printf("You must not run this program by hand. It is supposed to be started by\n"
