@@ -331,10 +331,10 @@ void state_dummy(User *usr, char c) {
 }
 
 void print_version_info(User *usr) {
-char version_buf[MAX_LINE*3];
+char version_buf[MAX_LONGLINE];
 
 	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
-		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf, MAX_LINE*3));
+		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf, MAX_LONGLINE));
 
 	if (*patchlist)
 		Print(usr, "<green>Patches: <white>%s\n", patchlist);
@@ -2151,7 +2151,7 @@ int r;
 */
 int cmd_line(User *usr, char *cmd) {
 int i;
-char buf[MAX_LINE*3], *p;
+char buf[MAX_LONGLINE], *p;
 
 	if (usr == NULL)
 		return -1;
@@ -2245,17 +2245,17 @@ char buf[MAX_LINE*3], *p;
 		Return 0;
 	}
 	if (!strcmp(cmd, "uptime")) {
-		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf, MAX_LINE*3));
+		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf, MAX_LONGLINE));
 		i = list_Count(AllUsers);
 		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
 		Return 0;
 	}
 	if (!strcmp(cmd, "date")) {
-		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf, MAX_LINE*3), name_Timezone(usr->tz));
+		Print(usr, "%s %s\n", print_date(usr, (time_t)0UL, buf, MAX_LONGLINE), name_Timezone(usr->tz));
 		Return 0;
 	}
 	if (!strcmp(cmd, "uname")) {
-		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf, MAX_LINE*3));
+		Print(usr, "%s %s", PARAM_BBS_NAME, print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, buf, MAX_LONGLINE));
 		Return 0;
 	}
 	if (!strcmp(cmd, "whoami")) {

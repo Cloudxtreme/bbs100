@@ -1026,7 +1026,7 @@ int printed;
 */
 char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf, int buflen) {
 struct tm *tm;
-char frombuf[MAX_LINE*3] = "", namebuf[MAX_LINE*3] = "", multi[MAX_NAME] = "", msgtype[MAX_LINE] = "";
+char frombuf[MAX_LONGLINE] = "", namebuf[MAX_LONGLINE] = "", multi[MAX_NAME] = "", msgtype[MAX_LINE] = "";
 int from_me = 0;
 
 	if (usr == NULL || msg == NULL || buf == NULL)
@@ -1058,13 +1058,13 @@ int from_me = 0;
 	}
 	if (msg->flags & BUFMSG_SYSOP) {
 		if (from_me)
-			bufprintf(frombuf, MAX_LINE*3, "as %s ", PARAM_NAME_SYSOP);
+			bufprintf(frombuf, MAX_LONGLINE, "as %s ", PARAM_NAME_SYSOP);
 		else
-			bufprintf(frombuf, MAX_LINE*3, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
+			bufprintf(frombuf, MAX_LONGLINE, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
 				PARAM_NAME_SYSOP, msg->from);
 	} else {
 		if (!from_me)
-			bufprintf(frombuf, MAX_LINE*3, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
+			bufprintf(frombuf, MAX_LONGLINE, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
 		strcpy(multi, "Multi ");
@@ -1240,9 +1240,9 @@ int r;
 			}
 		}
 		if (!usr->new_message->subject[0]) {
-			char buf[MAX_LINE*3];
+			char buf[MAX_LONGLINE];
 
-			bufprintf(buf, MAX_LINE*3, "<yellow><forwarded from %s>", usr->curr_room->name);
+			bufprintf(buf, MAX_LONGLINE, "<yellow><forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
 				strcpy(buf + MAX_LINE - 5, "...>");
 
@@ -1581,7 +1581,7 @@ User *u;
 }
 
 void msg_header(User *usr, Message *msg) {
-char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
+char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -1610,20 +1610,20 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 		int l, dl, max_dl;			/* l = strlen, dl = display length */
 
 		max_dl = usr->display->term_width-1;
-		if (max_dl >= (MAX_LINE*3-1))	/* MAX_LINE*3 is used buffer size */
-			max_dl = MAX_LINE*3-1;
+		if (max_dl >= (MAX_LONGLINE-1))	/* MAX_LONGLINE is used buffer size */
+			max_dl = MAX_LONGLINE-1;
 
 		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && !msg->anon[0]) {
-			l = bufprintf(buf, MAX_LINE*3, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
+			l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
 			for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 				if ((dl + strlen(sl->str)+2) < max_dl)
-					l += bufprintf(buf+l, MAX_LINE*3 - l, "<yellow>%s<green>, ", sl->str);
+					l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", sl->str);
 				else {
 					Put(usr, buf);
 					Put(usr, "\n");
-					l = bufprintf(buf, MAX_LINE*3, "<yellow>%s<green>, ", sl->str);
+					l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", sl->str);
 				}
 				dl = color_strlen(buf);
 			}
@@ -1632,17 +1632,17 @@ char from[MAX_LINE], buf[MAX_LINE*3], date_buf[MAX_LINE];
 			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
-				l = bufprintf(buf, MAX_LINE*3, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
+				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
 				for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
 					if ((dl + strlen(sl->str)+2) < MAX_LINE) {
 						l = strlen(buf);
-						l += bufprintf(buf+l, MAX_LINE*3 - l, "<yellow>%s<green>, ", sl->str);
+						l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", sl->str);
 					} else {
 						Put(usr, buf);
 						Put(usr, "\n");
-						l = bufprintf(buf, MAX_LINE*3, "<yellow>%s<green>, ", sl->str);
+						l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", sl->str);
 					}
 					dl = color_strlen(buf);
 				}

@@ -798,7 +798,7 @@ int i;
 		Return;
 	}
 	if (c == INIT_STATE) {
-		char buf[MAX_LINE*3], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
+		char buf[MAX_LONGLINE], addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 
 		buffer_text(usr);
 
@@ -809,13 +809,13 @@ int i;
 		i = 2;
 		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (PARAM_HAVE_WRAPPER_ALL)
-				bufprintf(buf, MAX_LINE*3, "<yellow>%2d <white>%s%s %s/%s",
+				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
 					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
 					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));
 			else
-				bufprintf(buf, MAX_LINE*3, "<yellow>%2d <white>%s %s/%s",
+				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
 					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));

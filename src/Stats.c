@@ -444,7 +444,7 @@ int updated = 0;
 }
 
 void print_stats(User *usr) {
-char copyright_buf[MAX_LINE*3], date_buf[MAX_LINE];
+char copyright_buf[MAX_LONGLINE], date_buf[MAX_LINE];
 int l, w;
 unsigned long num;
 
@@ -458,7 +458,7 @@ unsigned long num;
 	buffer_text(usr);
 
 	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
-		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf, MAX_LINE*3));
+		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, copyright_buf, MAX_LONGLINE));
 
 	Print(usr, "<green>The system was last booted on <cyan>%s\n", print_date(usr, stats.uptime, date_buf, MAX_LINE));
 	Print(usr, "<green>Uptime is <yellow>%s\n", print_total_time(rtc - stats.uptime, date_buf, MAX_LINE));

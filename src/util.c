@@ -1648,8 +1648,8 @@ char buf[MAX_LINE*4], format[MAX_LINE], filename[MAX_PATHLEN], *p;
 		return;
 
 	term_width = usr->display->term_width;
-	if (term_width >= MAX_LINE*3)
-		term_width = MAX_LINE*3;
+	if (term_width >= MAX_LONGLINE)
+		term_width = MAX_LONGLINE;
 
 	total = 0;
 	max_width = 10;

@@ -333,7 +333,7 @@ void sig_fatal(int sig) {
 	SIGQUIT: reboot in 5
 */
 void sig_reboot(int sig) {
-char buf[MAX_LINE*3], total_buf[MAX_LINE];
+char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 
 	Enter(sig_reboot);
 	log_msg("SIGQUIT received, rebooting in 5 minutes");
@@ -342,7 +342,7 @@ char buf[MAX_LINE*3], total_buf[MAX_LINE];
 		reboot_timer->sleeptime = reboot_timer->maxtime = 4 * SECS_IN_MIN;	/* reboot in 5 mins */
 		reboot_timer->restart = TIMEOUT_REBOOT;
 
-		bufprintf(buf, MAX_LINE*3, "The system is now rebooting in %s", 
+		bufprintf(buf, MAX_LONGLINE, "The system is now rebooting in %s", 
 			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 		system_broadcast(0, buf);
 		Return;
@@ -354,7 +354,7 @@ char buf[MAX_LINE*3], total_buf[MAX_LINE];
 	}
 	add_Timer(&timerq, reboot_timer);
 
-	bufprintf(buf, MAX_LINE*3, "The system is rebooting in %s",
+	bufprintf(buf, MAX_LONGLINE, "The system is rebooting in %s",
 		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 	system_broadcast(0, buf);
 	Return;
@@ -364,7 +364,7 @@ char buf[MAX_LINE*3], total_buf[MAX_LINE];
 	SIGABRT: shutdown in 5
 */
 void sig_shutdown(int sig) {
-char buf[MAX_LINE*3], total_buf[MAX_LINE];
+char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 
 	Enter(sig_shutdown);
 	log_msg("SIGTERM received, shutting down in 5 minutes");
@@ -373,7 +373,7 @@ char buf[MAX_LINE*3], total_buf[MAX_LINE];
 		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4 * SECS_IN_MIN;	/* shutdown in 5 mins */
 		shutdown_timer->restart = TIMEOUT_REBOOT;
 
-		bufprintf(buf, MAX_LINE*3, "The system is now shutting down in %s",
+		bufprintf(buf, MAX_LONGLINE, "The system is now shutting down in %s",
 			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 		system_broadcast(0, buf);
 		Return;
@@ -385,7 +385,7 @@ char buf[MAX_LINE*3], total_buf[MAX_LINE];
 	}
 	add_Timer(&timerq, shutdown_timer);
 
-	bufprintf(buf, MAX_LINE*3, "The system is shutting down in %s",
+	bufprintf(buf, MAX_LONGLINE, "The system is shutting down in %s",
 		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 	system_broadcast(0, buf);
 	Return;

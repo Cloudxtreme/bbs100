@@ -93,9 +93,9 @@ int c, n;
 }
 
 int main(void) {
-char buf[MAX_LINE], buf2[MAX_LINE], crypt_buf[MAX_CRYPTED];
+char buf[MAX_LONGLINE], buf2[MAX_LINE], crypt_buf[MAX_CRYPTED];
 
-	printf("%s", print_copyright(SHORT, "mkpasswd", buf, MAX_LINE*2));		/* mind the (harmless) overrun here */
+	printf("%s", print_copyright(SHORT, "mkpasswd", buf, MAX_LONGLINE));
 
 	getpassword("Enter password: ", buf, MAX_LINE);
 	if (!*buf)

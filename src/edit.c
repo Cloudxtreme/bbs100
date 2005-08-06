@@ -818,7 +818,7 @@ int edit_line(User *usr, char c) {
 	(this will be forever the case, until all buffers are dynamically sizeable)
 */
 static void edit_wrap(User *usr, char c, char *prompt) {
-char erase[MAX_LINE*3], wrap[MAX_LINE];
+char erase[MAX_LONGLINE], wrap[MAX_LINE];
 int i, wrap_len;
 
 	Enter(edit_wrap);
@@ -1551,7 +1551,7 @@ char lastcolor = 0;
 	erase a color-code marked line
 */
 void erase_line(User *usr, char *line) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 char *p;
 
 	if (usr == NULL || line == NULL)
@@ -1568,7 +1568,7 @@ char *p;
 	Note: erase_name() and erase_many() only erase onscreen
 */
 void erase_name(User *usr) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 int i;
 
 	if (usr == NULL)
@@ -1586,7 +1586,7 @@ void erase_many(User *usr) {
 
 	if (usr->recipients != NULL) {
 		if (usr->recipients->next == NULL) {
-			char buf[MAX_LINE*3];
+			char buf[MAX_LONGLINE];
 			int i;
 
 			buf[0] = 0;
@@ -1699,7 +1699,7 @@ Joined *j;
 }
 
 void erase_tabname(User *usr) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 int i;
 
 	if (usr == NULL)

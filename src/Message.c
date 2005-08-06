@@ -139,10 +139,10 @@ int ff1_continue;
 }
 
 int load_Message_version0(File *f, Message *m) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 
 /* mtime */
-	if (Fgets(f, buf, MAX_LINE*3) == NULL)
+	if (Fgets(f, buf, MAX_LONGLINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);

@@ -269,7 +269,7 @@ static char *print_address(char *value, char *alt, char *buf, int buflen) {
 }
 
 void state_config_address(User *usr, char c) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 
 	if (usr == NULL)
 		return;
@@ -284,19 +284,19 @@ char buf[MAX_LINE*3];
 			buffer_text(usr);
 
 			Print(usr, "<magenta>\n"
-				"<hotkey>Real name :%s<magenta>\n", print_address(usr->real_name, "", buf, MAX_LINE*3));
+				"<hotkey>Real name :%s<magenta>\n", print_address(usr->real_name, "", buf, MAX_LONGLINE));
 
-			Print(usr, "<hotkey>Address   :%s\n", print_address(usr->street, " street", buf, MAX_LINE*3));
+			Print(usr, "<hotkey>Address   :%s\n", print_address(usr->street, " street", buf, MAX_LONGLINE));
 
-			Print(usr, "           %s",		print_address(usr->city, " city", buf, MAX_LINE*3));
-			Print(usr, " %s\n",				print_address(usr->zipcode, " ZIP code", buf, MAX_LINE*3));
-			Print(usr, "           %s,",	print_address(usr->state, " state", buf, MAX_LINE*3));
-			Print(usr, "%s<magenta>\n",		print_address(usr->country, " country", buf, MAX_LINE*3));
+			Print(usr, "           %s",		print_address(usr->city, " city", buf, MAX_LONGLINE));
+			Print(usr, " %s\n",				print_address(usr->zipcode, " ZIP code", buf, MAX_LONGLINE));
+			Print(usr, "           %s,",	print_address(usr->state, " state", buf, MAX_LONGLINE));
+			Print(usr, "%s<magenta>\n",		print_address(usr->country, " country", buf, MAX_LONGLINE));
 
-			Print(usr, "<hotkey>Phone     :%s<magenta>\n",	print_address(usr->phone, " phone number", buf, MAX_LINE*3));
+			Print(usr, "<hotkey>Phone     :%s<magenta>\n",	print_address(usr->phone, " phone number", buf, MAX_LONGLINE));
 			Print(usr, "\n"
-				"<hotkey>E-mail    :%s<magenta>\n",			print_address(usr->email, " e-mail address", buf, MAX_LINE*3));
-			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf, MAX_LINE*3));
+				"<hotkey>E-mail    :%s<magenta>\n",			print_address(usr->email, " e-mail address", buf, MAX_LONGLINE));
+			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf, MAX_LONGLINE));
 
 			Print(usr, "\n"
 				"<hotkey>Hide address from non-friends...  <white>%s<magenta>\n",

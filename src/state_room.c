@@ -1144,7 +1144,7 @@ int r;
 
 void print_known_room(User *usr, Room *r) {
 Joined *j;
-char status[2], buf[MAX_LINE*2], buf2[MAX_LINE*3];
+char status[2], buf[MAX_LONGLINE], buf2[MAX_LONGLINE];
 int read_it = 1, idx, l;
 
 	if (usr == NULL || r == NULL)
@@ -1204,25 +1204,25 @@ int read_it = 1, idx, l;
 			}
 		}
 	}
-	bufprintf(buf, MAX_LINE*2, "%c%c%c %3u %c%s>",
+	bufprintf(buf, MAX_LONGLINE, "%c%c%c %3u %c%s>",
 		status[0], status[1],
 		(char)color_by_name("white"), r->number,
 		(char)color_by_name("yellow"), r->name);
 
-	bufprintf(buf2, MAX_LINE*3, "%-50s", buf);
+	bufprintf(buf2, MAX_LONGLINE, "%-50s", buf);
 
 /* add room aides to the line */
 	if (r->room_aides == NULL) {
 		if (r->number >= SPECIAL_ROOMS) {
 			l = strlen(buf2);
-			bufprintf(buf2+l, MAX_LINE*3 - l, "%c (no %s)", (char)color_by_name("red"), PARAM_NAME_ROOMAIDE);
+			bufprintf(buf2+l, MAX_LONGLINE - l, "%c (no %s)", (char)color_by_name("red"), PARAM_NAME_ROOMAIDE);
 		}
 	} else {
 		StringList *sl;
 
 		l = strlen(buf2);
 		for(sl = r->room_aides; sl != NULL && l < MAX_LINE; sl = sl->next)
-			l += bufprintf(buf2+l, MAX_LINE*3 - l, " %c%s,", (char)color_by_name("cyan"), sl->str);
+			l += bufprintf(buf2+l, MAX_LONGLINE - l, " %c%s,", (char)color_by_name("cyan"), sl->str);
 
 		l--;							/* strip the final comma */
 		buf2[l] = 0;
@@ -1318,7 +1318,7 @@ char *category = NULL;
 }
 
 void room_info(User *usr) {
-char buf[MAX_LINE*3];
+char buf[MAX_LONGLINE];
 Joined *j;
 StringList *sl;
 
@@ -1654,7 +1654,7 @@ PList *p;
 }
 
 void enter_chatroom(User *usr) {
-char buf[MAX_LINE*3], *str;
+char buf[MAX_LONGLINE], *str;
 StringList *sl;
 
 	if (usr == NULL)
@@ -1663,7 +1663,7 @@ StringList *sl;
 	Enter(enter_chatroom);
 
 	if (usr->curr_room->number == HOME_ROOM) {
-		possession(usr->name, "Home", buf, MAX_LINE*3);
+		possession(usr->name, "Home", buf, MAX_LONGLINE);
 
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);
@@ -1678,12 +1678,12 @@ StringList *sl;
 		str = RND_STR(Str_enter_chatroom);
 
 	if (usr->runtime_flags & RTF_SYSOP)
-		bufprintf(buf, MAX_LINE*3, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
+		bufprintf(buf, MAX_LONGLINE, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			bufprintf(buf, MAX_LINE*3, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
+			bufprintf(buf, MAX_LONGLINE, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
 		else
-			bufprintf(buf, MAX_LINE*3, "<yellow>%s <magenta>%s<white>", usr->name, str);
+			bufprintf(buf, MAX_LONGLINE, "<yellow>%s <magenta>%s<white>", usr->name, str);
 
 	if (usr->curr_room->chat_history != NULL) {
 		Put(usr, "\n");
@@ -1696,7 +1696,7 @@ StringList *sl;
 }
 
 void leave_chatroom(User *usr) {
-char buf[3 * MAX_LINE], *str;
+char buf[MAX_LONGLINE], *str;
 
 	if (usr == NULL || !usr->name[0])
 		return;
@@ -1709,12 +1709,12 @@ char buf[3 * MAX_LINE], *str;
 		str = RND_STR(Str_leave_chatroom);
 
 	if (usr->runtime_flags & RTF_SYSOP)
-		bufprintf(buf, MAX_LINE*3, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
+		bufprintf(buf, MAX_LONGLINE, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_SYSOP, usr->name, str);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			bufprintf(buf, MAX_LINE*3, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
+			bufprintf(buf, MAX_LONGLINE, "<yellow>%s: %s <magenta>%s<white>", PARAM_NAME_ROOMAIDE, usr->name, str);
 		else
-			bufprintf(buf, MAX_LINE*3, "<yellow>%s <magenta>%s<white>", usr->name, str);
+			bufprintf(buf, MAX_LONGLINE, "<yellow>%s <magenta>%s<white>", usr->name, str);
 
 	chatroom_msg(usr->curr_room, buf);
 	Return;
@@ -1724,7 +1724,7 @@ char buf[3 * MAX_LINE], *str;
 	user says something in a chat room
 */
 void chatroom_say(User *usr, char *str) {
-char buf[3 * MAX_LINE], from[MAX_LINE];
+char buf[MAX_LONGLINE], from[MAX_LINE];
 int i;
 
 	if (usr == NULL || str == NULL || !*str)
@@ -1747,9 +1747,9 @@ int i;
 			strcpy(from, usr->name);
 
 	if (*str == ' ')
-		bufprintf(buf, MAX_LINE*3, "<cyan>%s<yellow>%s", from, str);
+		bufprintf(buf, MAX_LONGLINE, "<cyan>%s<yellow>%s", from, str);
 	else
-		bufprintf(buf, MAX_LINE*3, "<white>[<cyan>%s<white>]: <yellow>%s", from, str);
+		bufprintf(buf, MAX_LONGLINE, "<white>[<cyan>%s<white>]: <yellow>%s", from, str);
 
 	chatroom_tell(usr->curr_room, buf);
 	Return;

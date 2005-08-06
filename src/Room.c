@@ -267,7 +267,7 @@ int ff1_continue;
 
 
 int load_RoomData_version0(File *f, Room *r, int flags) {
-char buf[MAX_LINE*2];
+char buf[MAX_LONGLINE];
 StringList *sl;
 int i;
 
