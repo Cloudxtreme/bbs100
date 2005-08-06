@@ -202,10 +202,12 @@ char buf[MAX_LONGLINE];
 	}
 	Enter(main);
 
+	debug_breakpoint();
 	if (init_Memory()) {
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}
+	debug_breakpoint();
 	printf("%s\n", print_copyright(SHORT, "main", buf, MAX_LONGLINE));
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
@@ -256,6 +258,7 @@ char buf[MAX_LONGLINE];
 	gen_crc32_table();
 
 	init_Param();
+	debug_breakpoint();
 	path_strip(param_file);
 	printf("loading param file %s ... ", param_file);
 	if (load_Param(param_file)) {
@@ -265,6 +268,9 @@ char buf[MAX_LONGLINE];
 		printf("ok\n");
 	check_Param();
 	print_Param();
+
+	if (!PARAM_HAVE_MEMCACHE)
+		deinit_memcache();
 
 	umask(PARAM_UMASK);
 
@@ -279,16 +285,20 @@ char buf[MAX_LONGLINE];
 	if (!debugger)
 		init_Signal();
 
+	debug_breakpoint();
 	bbs_init_process();
+	debug_breakpoint();
 
 	if (init_FileCache()) {
 		fprintf(stderr, "bbs100: failed to initialize file cache\n");
 		exit(-1);
 	}
+	debug_breakpoint();
 	if (init_screens()) {
 		fprintf(stderr, "bbs100: failed to initialize screens\n");
 		exit(-1);
 	}
+	debug_breakpoint();
 	printf("loading stat_file %s ... ", PARAM_STAT_FILE);
 	printf("%s\n", (load_Stats(&stats, PARAM_STAT_FILE) != 0) ? "failed" : "ok");
 
@@ -309,40 +319,41 @@ char buf[MAX_LONGLINE];
 
 	printf("loading feelings from %s ... ", PARAM_FEELINGSDIR);
 	printf("%s\n", (init_Feelings() != 0) ? "failed" : "ok");
+	debug_breakpoint();
 
 	printf("loading default timezone %s ... ", PARAM_DEFAULT_TIMEZONE);
-	if (init_Timezone())
-		printf("failed\n");
-	else {
-		Timezone *tz;
+	printf("%s\n", (init_Timezone() != 0) ? "failed" : "ok");
 
-		if ((tz = load_Timezone(PARAM_DEFAULT_TIMEZONE)) == NULL)
-			printf("failed\n");
-		else
-			printf("%s\n", name_Timezone(tz));
-	}
+	debug_breakpoint();
 	init_Worldclock();
+	debug_breakpoint();
 	init_Category();
+	debug_breakpoint();
 
 	if (init_Room()) {
 		printf("fatal: failed to initialize the rooms message system\n");
 		exit_program(SHUTDOWN);
 	}
+	debug_breakpoint();
 	if (init_OnlineUser()) {
 		printf("fatal: failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
+	debug_breakpoint();
 	init_crypt();			/* init salt table for passwd encryption */
+	debug_breakpoint();
 
 	if (init_ConnUser()) {		/* startup inet */
 		printf("fatal: failed to initialize connection code\n");
 		exit_program(SHUTDOWN);
 	}
+	debug_breakpoint();
 	if (debugger) {
 		printf("running under debugger, signal handling disabled\n");
 		printf("running under debugger, not going to background\n");
 	}
 	init_log();						/* start logging to files */
+	debug_breakpoint();
 
 	log_info("bbs restart");
 	log_entry(stderr, "bbs restart", 'I', NULL);
@@ -351,6 +362,7 @@ char buf[MAX_LONGLINE];
 		goto_background();
 
 	init_ConnResolv();
+	debug_breakpoint();
 
 	stats.uptime = rtc = time(NULL);
 

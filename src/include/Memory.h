@@ -35,6 +35,8 @@ extern unsigned long memory_total;
 extern unsigned long mem_stats[NUM_TYPES+1];
 
 int init_Memory(void);
+int init_memcache(void);
+void deinit_memcache(void);
 void *Malloc(unsigned long, int);
 void Free(void *);
 

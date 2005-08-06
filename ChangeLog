@@ -5,6 +5,7 @@ Changes as of August 6th 2005
 - portability: use make_dir() rather than mkdir()
 - portability: use remove_dir() rather than rmdir()
 - bounds checking with cstrcpy(), cstrcat()
+- memory object cache can be switched on/off in a live system
 
 Changes as of August 5th 2005
 - mkpasswd displays asterisks when entering a password

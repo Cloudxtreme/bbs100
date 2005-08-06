@@ -72,6 +72,7 @@ What's new to the admins?
 - configurable notification string for when a user uses Hold message mode
 - configurable minimum age for users that want to be a Helping Hand
 - option of keeping room info and profile info resident in memory or not
+- memory object cache can be switched off in a live system
 - when locked, Sysops must use their Sysop password to unlock
 
 

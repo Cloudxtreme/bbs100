@@ -3204,7 +3204,12 @@ void state_features_menu(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			TOGGLE_FEATURE(PARAM_HAVE_MEMCACHE, "Object cache");
+			TOGGLE_FEAT(PARAM_HAVE_MEMCACHE, "Object cache");
+			if (PARAM_HAVE_MEMCACHE == PARAM_FALSE)
+				deinit_memcache();
+			else
+				init_memcache();
+			Return;
 
 		case 'f':
 		case 'F':

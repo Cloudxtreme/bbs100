@@ -40,11 +40,37 @@ int init_Memory(void) {
 	memory_total = 0UL;
 	memset(mem_stats, 0, sizeof(unsigned long) * (NUM_TYPES+1));
 
+	init_memcache();
+	return 0;
+}
+
+int init_memcache(void) {
+	if (free_list != NULL)
+		return -1;
+
 	if ((free_list = (MemFreeList *)malloc(NUM_TYPES * sizeof(MemFreeList))) == NULL)
 		return -1;
 
 	memset(free_list, 0, NUM_TYPES * sizeof(MemFreeList));
 	return 0;
+}
+
+void deinit_memcache(void) {
+int n, memtype;
+
+	if (free_list == NULL)
+		return;
+
+	for(memtype = 0; memtype < NUM_TYPES; memtype++) {
+		for(n = 0; n < NUM_FREELIST; n++) {
+			if (free_list[memtype].free[n] != NULL) {
+				Free(free_list[memtype].free[n]);
+				free_list[memtype].free[n] = NULL;
+			}
+		}
+	}
+	free(free_list);
+	free_list = NULL;
 }
 
 
@@ -54,6 +80,9 @@ int init_Memory(void) {
 static void *get_freelist(int memtype) {
 void *mem;
 int n;
+
+	if (free_list == NULL)
+		return NULL;
 
 	for(n = 0; n < NUM_FREELIST; n++) {
 		if (free_list[memtype].free[n] != NULL) {
@@ -71,7 +100,7 @@ int n;
 static int put_freelist(void *mem, int memtype) {
 int n;
 
-	if (param != NULL && PARAM_HAVE_MEMCACHE == PARAM_FALSE)
+	if (free_list == NULL)
 		return -1;
 
 	for(n = 0; n < NUM_FREELIST; n++) {
