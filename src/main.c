@@ -303,7 +303,7 @@ char buf[MAX_LONGLINE];
 	printf("%s\n", (load_Stats(&stats, PARAM_STAT_FILE) != 0) ? "failed" : "ok");
 
 	printf("loading hostmap %s ... ", PARAM_HOSTMAP_FILE);
-	printf("%s\n", (load_HostMap(PARAM_HOSTMAP_FILE) != 0) ? "failed" : "ok");
+	printf("%s\n", (load_HostMap() != 0) ? "failed" : "ok");
 
 	printf("loading hosts_access %s ... ", PARAM_HOSTS_ACCESS_FILE);
 	printf("%s\n", (load_Wrapper(PARAM_HOSTS_ACCESS_FILE) != 0) ? "failed" : "ok");

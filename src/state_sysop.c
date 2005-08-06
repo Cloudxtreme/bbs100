@@ -2466,11 +2466,13 @@ void state_reload_files_menu(User *usr, char c) {
 			Put(usr, "Reload sysop menu help\n");
 			UNCACHE_FILE(PARAM_HELP_SYSOP);
 
-		case 'g':
-		case 'G':
-		case KEY_CTRL('G'):
-			Put(usr, "Reload GNU General Public License\n");
-			UNCACHE_FILE(PARAM_GPL_SCREEN);
+		case 'h':
+		case 'H':
+			Put(usr, "Reload hostmap\n");
+			UNCACHE_FILE(PARAM_HOSTMAP_FILE);
+
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'l':
 		case ']':
@@ -2488,16 +2490,11 @@ void state_reload_files_menu(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
-		case 'h':
-		case 'H':
-			Put(usr, "Reload hostmap\n");
-			if (load_HostMap(PARAM_HOSTMAP_FILE))
-				Perror(usr, "Failed to load hostmap");
-			else
-				Print(usr, "loading %s ... Ok\n", PARAM_HOSTMAP_FILE);
-
-			CURRENT_STATE(usr);
-			Return;
+		case 'g':
+		case 'G':
+		case KEY_CTRL('G'):
+			Put(usr, "Reload GNU General Public License\n");
+			UNCACHE_FILE(PARAM_GPL_SCREEN);
 	}
 	Print(usr, "<yellow>\n[%s] Reload# <white>", PARAM_NAME_SYSOP);
 }

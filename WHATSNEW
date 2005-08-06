@@ -114,6 +114,7 @@ What's new internally?
 - bufprintf() and bufvprintf(), which map to snprintf() and vsnprintf(),
   if HAVE_SNPRINTF and HAVE_VSNPRINTF are defined in config.h
 - bounds checking against buffer overruns with cstrcpy() and cstrcat()
+- hostmap is no longer permanently loaded, but works through the file cache
 - some bugs fixed ...
 
 

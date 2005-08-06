@@ -606,7 +606,7 @@ int r;
 	if (r == EDIT_RETURN) {
 		User *u = NULL;
 		int allocated = 0, visible;
-		char total_buf[MAX_LINE], *p, *hidden;
+		char total_buf[MAX_LINE], *hidden;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
@@ -641,8 +641,8 @@ int r;
 					else
 						Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 				}
-				if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
-					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, p);
+				if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
+					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, total_buf);
 			}
 			RET(usr);
 			Return;
@@ -769,8 +769,8 @@ int r;
 			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
-			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
-				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, p);
+			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
+				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, total_buf);
 		} else {
 /*
 	display for how long someone is online
@@ -782,8 +782,8 @@ int r;
 				else
 					Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
 			}
-			if ((p = HostMap_desc(u->conn->ipnum)) != NULL)
-				Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, p);
+			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
+				Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, total_buf);
 		}
 		if (!allocated)
 			update_stats(u);

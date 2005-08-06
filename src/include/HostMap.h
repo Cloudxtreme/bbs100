@@ -23,8 +23,8 @@
 #ifndef HOSTMAP_H_WJ100
 #define HOSTMAP_H_WJ100	1
 
-int load_HostMap(char *);
-char *HostMap_desc(char *);
+int load_HostMap(void);
+char *site_description(char *, char *, int);
 
 #endif	/* HOSTMAP_H_WJ100 */
 

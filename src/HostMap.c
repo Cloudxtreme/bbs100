@@ -18,38 +18,51 @@
 */
 /*
 	HostMap.c	WJ100
+
+	the HostMap file is no longer permanently resident in memory
+	it works through the file cache
 */
 
 #include "config.h"
 #include "HostMap.h"
+#include "CachedFile.h"
+#include "Param.h"
 #include "cstring.h"
-#include "Memory.h"
-#include "AtomicFile.h"
-#include "KVPair.h"
 #include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-static KVPair *hostmap = NULL;
 
-static int hostmap_sort_func(void *, void *);
+/*
+	this checks if the hostmap file exists and loads it in the cache
+*/
+int load_HostMap(void) {
+File *f;
+
+	if ((f = Fopen(PARAM_HOSTMAP_FILE)) == NULL)
+		return -1;
+
+	Fclose(f);
+	return 0;
+}
 
 
-int load_HostMap(char *filename) {
-AtomicFile *f;
-KVPair *kv;
-char buf[256], *p;
-int line_no;
+char *site_description(char *site, char *desc, int buflen) {
+char buf[MAX_LONGLINE], *p;
+File *f;
+int len, site_len, line_no;
 
-	listdestroy_KVPair(hostmap);
-	hostmap = NULL;
+	if (site == NULL || !*site)
+		return NULL;
 
-	if ((f = openfile(filename, "r")) == NULL)
-		return 1;
+	site_len = strlen(site);
+
+	if ((f = Fopen(PARAM_HOSTMAP_FILE)) == NULL)
+		return NULL;
 
 	line_no = 0;
-	while(fgets(buf, 256, f->f) != NULL) {
+	while(Fgets(f, buf, MAX_LONGLINE) != NULL) {
 		line_no++;
 		if ((p = cstrchr(buf, '#')) != NULL)
 			*p = 0;
@@ -60,87 +73,29 @@ int line_no;
 
 		cstrip_spaces(buf);
 		if ((p = cstrchr(buf, ' ')) == NULL) {
-			log_warn("load_HostMap(%s): error in line %d, ignored", filename, line_no);
+			log_warn("site_description(): %s: error in line %d, ignored", PARAM_HOSTMAP_FILE, line_no);
 			continue;				/* error in line; ignore */
 		}
 		*p = 0;
 		p++;
 		if (!*p) {
-			log_warn("load_HostMap(%s): error in line %d, ignored", filename, line_no);
+			log_warn("site_description(): %s: error in line %d, ignored", PARAM_HOSTMAP_FILE, line_no);
 			continue;				/* error, ignore */
 		}
-		if ((kv = new_KVPair()) == NULL)
-			break;
 
-		KVPair_setstring(kv, buf, p);
-		add_KVPair(&hostmap, kv);
-	}
-	closefile(f);
-
-	hostmap = sort_KVPair(hostmap, hostmap_sort_func);
-	return 0;
-}
-
-/*
-	sort by key lenght, place longest first
-*/
-static int hostmap_sort_func(void *v1, void *v2) {
-KVPair *kv1, *kv2;
-int l1, l2;
-
-	if (v1 == NULL || v2 == NULL)
-		return 0;
-
-	kv1 = *(KVPair **)v1;
-	kv2 = *(KVPair **)v2;
-
-	if (kv1 == NULL || kv2 == NULL)
-		return 0;
-
-	if (kv1->key == NULL)
-		l1 = 0;
-	else
-		l1 = strlen(kv1->key);
-
-	if (kv2->key == NULL)
-		l2 = 0;
-	else
-		l2 = strlen(kv2->key);
-
-	if (l1 > l2)
-		return -1;
-
-	if (l1 < l2)
-		return 1;
-
-	return 0;
-}
-
-char *HostMap_desc(char *site) {
-KVPair *kv;
-int len, len2;
-
-	if (site == NULL || !*site)
-		return NULL;
-
-	len2 = strlen(site);
-
-	for(kv = hostmap; kv != NULL; kv = kv->next) {
-		if (kv->key == NULL)
-			len = 0;
-		else
-			len = strlen(kv->key);
-
-		if (len > len2)
+		len = strlen(buf);
+		if (len > site_len)
 			continue;
 
 /* see if the end of the string matches */
-		if (!strcmp(site+len2-len, kv->key))
-			return kv->value.s;
+		if (!strcmp(site+site_len-len, buf)) {
+			cstrncpy(desc, p, buflen);
+			Fclose(f);
+			return desc;
+		}
 	}
+	Fclose(f);
 	return NULL;
 }
-
-
 
 /* EOB */
