@@ -110,21 +110,21 @@ main: $(OBJS)
 	@echo '  BUILD     main'
 	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET)
 
-mkpasswd: mkpasswd.o passwd.o copyright.o
+mkpasswd: mkpasswd.o passwd.o bufprintf.o copyright.o
 	@echo '  BUILD     mkpasswd'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o bufprintf.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
 
-resolver: resolver.o copyright.o
+resolver: resolver.o bufprintf.o copyright.o
 	@echo '  BUILD     resolver'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o bufprintf.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
 
-ccat: ccat.o copyright.o
+ccat: ccat.o bufprintf.o copyright.o
 	@echo '  BUILD     ccat'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o copyright.o -o ccat $(LFLAGS)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o bufprintf.o copyright.o -o ccat $(LFLAGS)
 
-bbs100_convert: bbs100_convert.o copyright.o
+bbs100_convert: bbs100_convert.o bufprintf.o copyright.o
 	@echo '  BUILD     bbs100_convert'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) bbs100_convert.o copyright.o -o bbs100_convert $(LFLAGS)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) bbs100_convert.o bufprintf.o copyright.o -o bbs100_convert $(LFLAGS)
 
 install: $(TARGETS) $(SCRIPTS)
 	@echo "*** installing bbs100-$(VERSION) to $(prefix)/"

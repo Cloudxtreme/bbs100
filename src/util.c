@@ -27,7 +27,6 @@
 #include "cstring.h"
 #include "mydirentry.h"
 #include "strerror.h"
-#include "strtoul.h"
 #include "CachedFile.h"
 #include "Param.h"
 #include "access.h"
@@ -1453,7 +1452,7 @@ unsigned long maxnum = 0UL, n;
 	while((direntp = readdir(dirp)) != NULL) {
 		p = direntp->d_name;
 		if (*p >= '0' && *p <= '9') {
-			n = strtoul(p, NULL, 10);
+			n = cstrtoul(p, 10);
 			if (n > maxnum)
 				maxnum = n;
 		}

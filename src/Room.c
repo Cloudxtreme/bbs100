@@ -28,7 +28,6 @@
 #include "util.h"
 #include "cstring.h"
 #include "mydirentry.h"
-#include "strtoul.h"
 #include "Param.h"
 #include "Timer.h"
 #include "Memory.h"
@@ -285,20 +284,20 @@ int i;
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_room;
 		cstrip_line(buf);
-		r->generation = strtoul(buf, NULL, 10);
+		r->generation = cstrtoul(buf, 10);
 
 /* flags */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_room;
 		cstrip_line(buf);
-		r->flags = (unsigned int)strtoul(buf, NULL, 16);
+		r->flags = (unsigned int)cstrtoul(buf, 16);
 		r->flags &= ROOM_ALL;		/* reset non-existant flags */
 
 /* roominfo_changed */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_room;
 		cstrip_line(buf);
-		r->roominfo_changed = (unsigned int)strtoul(buf, NULL, 10);
+		r->roominfo_changed = (unsigned int)cstrtoul(buf, 10);
 	} else
 		LOAD_ROOM_SKIPLINES(3);
 
@@ -621,7 +620,7 @@ unsigned long num;
 	while((direntp = readdir(dirp)) != NULL) {
 		if (direntp->d_name[0] >= '0' && direntp->d_name[0] <= '9') {
 			strcpy(bufp, direntp->d_name);
-			num = strtoul(bufp, NULL, 10);
+			num = cstrtoul(bufp, 10);
 
 			newMsg(r, num, NULL);
 		}
@@ -1064,7 +1063,7 @@ int load_room_flags;
 				continue;
 
 			if ((statbuf.st_mode & S_IFDIR) == S_IFDIR) {
-				u = (unsigned int)strtoul(bufp, NULL, 10);
+				u = (unsigned int)cstrtoul(bufp, 10);
 
 				printf("loading room %3u ... ", u);
 				fflush(stdout);

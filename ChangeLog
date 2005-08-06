@@ -1,5 +1,6 @@
 Changes as of August 6th 2005
 - use of bufprintf(), which really maps to snprintf(), ifdef HAVE_SNPRINTF
+- eliminated use of strtoul(), use cstrtoul()
 
 Changes as of August 5th 2005
 - mkpasswd displays asterisks when entering a password

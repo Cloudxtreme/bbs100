@@ -126,8 +126,12 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (usr->edit_buf[0]) {
-			*var = (int)strtoul(usr->edit_buf, NULL, 8);
-			usr->runtime_flags |= RTF_PARAM_EDITED;
+			if (!is_octal(usr->edit_buf)) {
+				Put(usr, "<red>Invalid value\n");
+			} else {
+				*var = (int)cstrtoul(usr->edit_buf, 8);
+				usr->runtime_flags |= RTF_PARAM_EDITED;
+			}
 		} else
 			Put(usr, "<red>Not changed\n");
 		RET(usr);

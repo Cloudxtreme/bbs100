@@ -1007,8 +1007,6 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		char *endp;
-
 		if (!usr->edit_buf[0]) {
 			if (next_state != NULL) {
 				JMP(usr, next_state);
@@ -1017,8 +1015,9 @@ int r;
 			RET(usr);
 			Return;
 		}
-		r = (int)strtoul(usr->edit_buf, &endp, 10);
-		if (endp == NULL || *endp)
+		if (is_numeric(usr->edit_buf))
+			r = (int)cstrtoul(usr->edit_buf, 10);
+		else
 			r = -1;
 
 		if (r < 1) {

@@ -41,7 +41,6 @@
 #include "access.h"
 #include "sys_time.h"
 #include "mydirentry.h"
-#include "strtoul.h"
 #include "Param.h"
 #include "Memory.h"
 #include "FileFormat.h"
@@ -699,21 +698,21 @@ int i;
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->birth = (time_t)strtoul(buf, NULL, 10);
+		usr->birth = (time_t)cstrtoul(buf, 10);
 
 /* last_logout */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->last_logout = (time_t)strtoul(buf, NULL, 10);
+		usr->last_logout = (time_t)cstrtoul(buf, 10);
 
 /* flags */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->flags |= (unsigned int)strtoul(buf, NULL, 16);
+		usr->flags |= (unsigned int)cstrtoul(buf, 16);
 		usr->flags &= USR_ALL;			/* reset non-existant flags */
 
 /* logins */
@@ -721,56 +720,56 @@ int i;
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->logins = strtoul(buf, NULL, 10);
+		usr->logins = cstrtoul(buf, 10);
 
 /* total_time */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->total_time = strtoul(buf, NULL, 10);
+		usr->total_time = cstrtoul(buf, 10);
 
 /* xsent */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->xsent = strtoul(buf, NULL, 10);
+		usr->xsent = cstrtoul(buf, 10);
 
 /* xrecv */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->xrecv = strtoul(buf, NULL, 10);
+		usr->xrecv = cstrtoul(buf, 10);
 
 /* esent */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->esent = strtoul(buf, NULL, 10);
+		usr->esent = cstrtoul(buf, 10);
 
 /* erecv */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->erecv = strtoul(buf, NULL, 10);
+		usr->erecv = cstrtoul(buf, 10);
 
 /* posted */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->posted = strtoul(buf, NULL, 10);
+		usr->posted = cstrtoul(buf, 10);
 
 /* read */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
 			goto err_load_User;
 
 		cstrip_line(buf);
-		usr->read = strtoul(buf, NULL, 10);
+		usr->read = cstrtoul(buf, 10);
 
 /* colors */
 		if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -958,7 +957,7 @@ int i;
 			goto end_load_User;
 
 		cstrip_line(buf);
-		usr->fsent = strtoul(buf, NULL, 10);
+		usr->fsent = cstrtoul(buf, 10);
 
 /* frecv */
 		usr->frecv = 0UL;
@@ -966,7 +965,7 @@ int i;
 			goto end_load_User;
 
 		cstrip_line(buf);
-		usr->frecv = strtoul(buf, NULL, 10);
+		usr->frecv = cstrtoul(buf, 10);
 	}
 
 end_load_User:

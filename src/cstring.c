@@ -220,9 +220,16 @@ int i, l = 0;
 	return buf;
 }
 
+/*
+	you can also do this with strspn(), but then I'd need to write a #ifdef HAVE_STRSPN
+	construction ... and this routine just always works
+*/
 int is_numeric(char *str) {
 	if (str == NULL)
 		return 0;
+
+	if (*str == '-' || *str == '+')
+		str++;
 
 	while(*str) {
 		if (*str >= '0' && *str <= '9')
@@ -231,6 +238,60 @@ int is_numeric(char *str) {
 			return 0;
 	}
 	return 1;
+}
+
+int is_hexadecimal(char *str) {
+	if (str == NULL)
+		return 0;
+
+	if (*str == '-' || *str == '+')
+		str++;
+
+	if (*str == '0') {
+		str++;
+		if (*str == 'x')
+			str++;
+	}
+	while(*str) {
+		if ((*str >= '0' && *str <= '9') || (*str >= 'a' && *str <= 'f') || (*str >= 'A' && *str <= 'F'))
+			str++;
+		else
+			return 0;
+	}
+	return 1;
+}
+
+int is_octal(char *str) {
+	if (str == NULL)
+		return 0;
+
+	if (*str == '-' || *str == '+')
+		str++;
+
+	while(*str) {
+		if (*str >= '0' && *str <= '7')
+			str++;
+		else
+			return 0;
+	}
+	return 1;
+}
+
+unsigned long cstrtoul(char *str, int base) {
+long l = -1L;
+
+	if (base == 10)
+		return (unsigned long)atol(str);
+
+	if (base == 16) {
+		sscanf(str, "%lx", &l);
+		return (unsigned long)l;
+	}
+	if (base == 8) {
+		sscanf(str, "%lo", &l);
+		return (unsigned long)l;
+	}
+	return (unsigned long)-1L;
 }
 
 /* EOB */

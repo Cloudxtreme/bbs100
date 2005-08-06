@@ -1413,7 +1413,7 @@ int r;
 		unsigned long num;
 		int idx;
 
-		num = strtoul(usr->edit_buf, NULL, 10);
+		num = cstrtoul(usr->edit_buf, 10);
 		if (num <= 0UL) {
 			Put(usr, "<red>No such message\n");
 			RET(usr);

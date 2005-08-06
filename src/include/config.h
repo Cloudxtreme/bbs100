@@ -51,9 +51,6 @@
 /* Define if you have the select function.  */
 #define HAVE_SELECT 1
 
-/* Define if you have the snprintf function.  */
-#define HAVE_SNPRINTF 1
-
 /* Define if you have the socket function.  */
 #define HAVE_SOCKET 1
 
@@ -62,9 +59,6 @@
 
 /* Define if you have the strrchr function.  */
 #define HAVE_STRRCHR 1
-
-/* Define if you have the strtoul function.  */
-#define HAVE_STRTOUL 1
 
 /* Define if you have the uname function.  */
 #define HAVE_UNAME 1

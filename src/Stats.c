@@ -28,7 +28,6 @@
 #include "User.h"
 #include "cstring.h"
 #include "util.h"
-#include "strtoul.h"
 #include "copyright.h"
 #include "timeout.h"
 #include "access.h"
@@ -207,70 +206,70 @@ char buf[MAX_LINE];
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->oldest_birth = strtoul(buf, NULL, 10);
+	st->oldest_birth = cstrtoul(buf, 10);
 
 /* youngest_birth */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->youngest_birth = strtoul(buf, NULL, 10);
+	st->youngest_birth = cstrtoul(buf, 10);
 
 /* logins */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->logins = strtoul(buf, NULL, 10);
+	st->logins = cstrtoul(buf, 10);
 
 /* xsent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->xsent = strtoul(buf, NULL, 10);
+	st->xsent = cstrtoul(buf, 10);
 
 /* xrecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->xrecv = strtoul(buf, NULL, 10);
+	st->xrecv = cstrtoul(buf, 10);
 
 /* esent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->esent = strtoul(buf, NULL, 10);
+	st->esent = cstrtoul(buf, 10);
 
 /* erecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->erecv = strtoul(buf, NULL, 10);
+	st->erecv = cstrtoul(buf, 10);
 
 /* posted */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->posted = strtoul(buf, NULL, 10);
+	st->posted = cstrtoul(buf, 10);
 
 /* read */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->read = strtoul(buf, NULL, 10);
+	st->read = cstrtoul(buf, 10);
 
 /* oldest_age */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_Stats;
 
 	cstrip_line(buf);
-	st->oldest_age = strtoul(buf, NULL, 10);
+	st->oldest_age = cstrtoul(buf, 10);
 
 /*
 	stats for Feelings, as suggested by many, finally present in 1.1.6 and up
@@ -296,14 +295,14 @@ char buf[MAX_LINE];
 		goto end_load_Stats;
 
 	cstrip_line(buf);
-	st->fsent = strtoul(buf, NULL, 10);
+	st->fsent = cstrtoul(buf, 10);
 
 /* frecv */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
 
 	cstrip_line(buf);
-	st->frecv = strtoul(buf, NULL, 10);
+	st->frecv = cstrtoul(buf, 10);
 
 end_load_Stats:
 	Fclose(f);

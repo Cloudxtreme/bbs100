@@ -27,7 +27,6 @@
 #include "CachedFile.h"
 #include "sys_time.h"
 #include "cstring.h"
-#include "strtoul.h"
 #include "Memory.h"
 #include "FileFormat.h"
 #include "log.h"
@@ -80,7 +79,7 @@ int version;
 		if ((p = cstrrchr(filename, '/')) == NULL)		/* get msg number from filename */
 			p = filename;
 
-		m->number = strtoul(p, NULL, 10);
+		m->number = cstrtoul(p, 10);
 	} else
 		m->number = number;
 
@@ -150,7 +149,7 @@ char buf[MAX_LINE*3];
 	if (!*buf)
 		goto err_load_message;
 
-	m->mtime = (time_t)strtoul(buf, NULL, 10);
+	m->mtime = (time_t)cstrtoul(buf, 10);
 
 /* deleted */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -160,7 +159,7 @@ char buf[MAX_LINE*3];
 	if (!*buf)
 		goto err_load_message;
 
-	m->deleted = (time_t)strtoul(buf, NULL, 10);
+	m->deleted = (time_t)cstrtoul(buf, 10);
 
 /* flags */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -170,7 +169,7 @@ char buf[MAX_LINE*3];
 	if (!*buf)
 		goto err_load_message;
 
-	m->flags = (time_t)strtoul(buf, NULL, 16);
+	m->flags = (time_t)cstrtoul(buf, 16);
 	m->flags &= MSG_ALL;
 
 /* from */
@@ -225,7 +224,7 @@ char buf[MAX_LINE*3];
 	if (Fgets(f, buf, MAX_LINE) != NULL) {
 		cstrip_line(buf);
 		if (*buf)
-			m->reply_number = strtoul(buf, NULL, 10);
+			m->reply_number = cstrtoul(buf, 10);
 	}
 	return 0;
 

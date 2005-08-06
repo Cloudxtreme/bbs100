@@ -216,12 +216,12 @@ int i, line_no, errors;
 								errors++;
 								break;
 							}
-							if (strspn(p, "0123456789") != strlen(p)) {
+							if (!is_numeric(p)) {
 								fprintf(stderr, "%s:%d: error in integer format for param %s\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
-							param[i]->value.i = (int)strtoul(p, NULL, 10);
+							param[i]->value.i = (int)cstrtoul(p, 10);
 							break;
 
 						case KV_OCTAL:
@@ -230,12 +230,12 @@ int i, line_no, errors;
 								errors++;
 								break;
 							}
-							if (strspn(p, "01234567") != strlen(p)) {
+							if (!is_octal(p)) {
 								fprintf(stderr, "%s:%d: error in octal integer format for param %s\n", filename, line_no, param[i]->key);
 								errors++;
 								break;
 							}
-							param[i]->value.o = (int)strtoul(p, NULL, 8);
+							param[i]->value.o = (int)cstrtoul(p, 8);
 							break;
 
 						case KV_BOOL:

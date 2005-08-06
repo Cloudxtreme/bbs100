@@ -69,6 +69,10 @@ char **cstrsplit(char *, char);
 char *cstrjoin(char **);
 
 int is_numeric(char *);
+int is_hexadecimal(char *);
+int is_octal(char *);
+
+unsigned long cstrtoul(char *, int);
 
 #endif /* _CSTRING_H_WJ97 */
 

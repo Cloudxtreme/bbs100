@@ -313,7 +313,7 @@ int i;
 */
 int read_inet_addr(char *ipnum, int *ip6, int *flags) {
 int a1, a2, a3, a4, l, i, num_colons, abbrev;
-char addr[MAX_LINE], *p, *startp, *endp;
+char addr[MAX_LINE], *p, *startp;
 
 	if (ipnum == NULL || !*ipnum || ip6 == NULL || flags == NULL)
 		return -1;
@@ -403,11 +403,11 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			*flags |= WRAPPER_MIXED;
 			break;
 		} else {
-			ip6[i] = (int)strtoul(startp, &endp, 16);
-			if (*endp) {
+			if (!is_hexadecimal(startp)) {
 				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			ip6[i] = (int)cstrtoul(startp, 16);
 			if (ip6[i] < 0 || ip6[i] > 0xffff) {
 				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 				return -1;
@@ -438,11 +438,11 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			num_colons++;
 			*flags |= WRAPPER_MIXED;
 		} else {
-			ip6[i] = (int)strtoul(startp, &endp, 16);
-			if (*endp) {
+			if (!is_hexadecimal(startp)) {
 				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			ip6[i] = (int)cstrtoul(startp, 16);
 			if (ip6[i] < 0 || ip6[i] > 0xffff) {
 				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 				return -1;
@@ -488,11 +488,11 @@ char addr[MAX_LINE], *p, *startp, *endp;
 				num_colons++;
 				*flags |= WRAPPER_MIXED;
 			} else {
-				ip6[i] = (int)strtoul(p, &endp, 16);
-				if (*endp) {
+				if (!is_hexadecimal(p)) {
 					log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 					return -1;
 				}
+				ip6[i] = (int)cstrtoul(p, 16);
 				if (ip6[i] < 0 || ip6[i] > 0xffff) {
 					log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 					return -1;
@@ -522,11 +522,11 @@ char addr[MAX_LINE], *p, *startp, *endp;
 			num_colons++;
 			*flags |= WRAPPER_MIXED;
 		} else {
-			ip6[i] = (int)strtoul(startp, &endp, 16);
-			if (*endp) {
+			if (!is_hexadecimal(startp)) {
 				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
 				return -1;
 			}
+			ip6[i] = (int)cstrtoul(startp, 16);
 			if (ip6[i] < 0 || ip6[i] > 0xffff) {
 				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
 				return -1;
@@ -543,13 +543,13 @@ char addr[MAX_LINE], *p, *startp, *endp;
 
 int read_inet_mask(char *maskbuf, int *mask, int flags) {
 int bits;
-char *endp;
 
 	if (maskbuf == NULL || !*maskbuf || mask == NULL)
 		return -1;
 
-	bits = (int)strtoul(maskbuf, &endp, 10);
-	if (endp != NULL && !*endp) {
+	if (is_numeric(maskbuf)) {
+		bits = cstrtoul(maskbuf, 10);
+
 		if (flags & WRAPPER_IP4)
 			ipv4_bitmask(bits, mask);
 		else
