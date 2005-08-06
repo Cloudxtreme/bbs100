@@ -28,6 +28,7 @@
 #include "config.h"
 #include "log.h"
 #include "defines.h"
+#include "cstring.h"
 #include "StringList.h"
 #include "Param.h"
 #include "util.h"

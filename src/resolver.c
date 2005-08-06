@@ -49,7 +49,7 @@
 char *get_basename(char *path) {
 char *p;
 
-	if ((p = strrchr(path, '/')) == NULL)
+	if ((p = cstrrchr(path, '/')) == NULL)
 		return path;
 	p++;
 	if (!*p)

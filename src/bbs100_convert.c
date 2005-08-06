@@ -25,6 +25,7 @@
 #include "config.h"
 #include "defines.h"
 #include "copyright.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@
 char *basename(char *argv0, char *buf) {
 char *p;
 
-	if ((p = strrchr(argv0, '/')) == NULL) {
+	if ((p = cstrrchr(argv0, '/')) == NULL) {
 		strcpy(buf, argv0);
 		return buf;
 	}
@@ -328,7 +329,7 @@ char buf[MAX_PATHLEN], *p;
 		if (!*buf)
 			continue;
 
-		if ((p = strrchr(buf, '/')) == NULL)
+		if ((p = cstrrchr(buf, '/')) == NULL)
 			p = buf;
 		else {
 			p++;

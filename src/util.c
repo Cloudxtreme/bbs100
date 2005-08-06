@@ -1483,7 +1483,7 @@ char *room_name(User *usr, Room *r, char *buf, int buflen) {
 char *get_basename(char *path) {
 char *p;
 
-	if ((p = strrchr(path, '/')) == NULL)
+	if ((p = cstrrchr(path, '/')) == NULL)
 		return path;
 	p++;
 	if (!*p)

@@ -454,7 +454,7 @@ char addr[MAX_LINE], *p, *startp;
 /* right-hand side */
 		i = 7;
 		startp = p;
-		while((p = strrchr(startp, ':')) != NULL) {
+		while((p = cstrrchr(startp, ':')) != NULL) {
 			num_colons++;
 			if (num_colons > 7) {
 				fprintf(stderr, "too many colons\n");
