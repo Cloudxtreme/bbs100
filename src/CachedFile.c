@@ -64,7 +64,7 @@ Timer *expire_timer = NULL;
 
 
 int init_FileCache(void) {
-	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE)
+	if (PARAM_MAX_CACHED <= 0 || !PARAM_HAVE_FILECACHE)
 		return 0;
 
 	if ((file_cache = (CachedFile **)Malloc(PARAM_MAX_CACHED * sizeof(CachedFile *), TYPE_POINTER)) == NULL)
@@ -99,7 +99,7 @@ void deinit_FileCache(void) {
 }
 
 CachedFile *new_CachedFile(void) {
-	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE)
+	if (PARAM_MAX_CACHED <= 0 || !PARAM_HAVE_FILECACHE)
 		return NULL;
 
 	return (CachedFile *)Malloc(sizeof(CachedFile), TYPE_CACHEDFILE);
@@ -206,6 +206,13 @@ void Fclose(File *f) {
 		f->flags &= ~FILE_DIRTY;
 	}
 	f->flags &= ~FILE_OPEN;
+
+	if (PARAM_MAX_CACHED <= 0 || !PARAM_HAVE_FILECACHE)
+		destroy_File(f);
+/*
+	else
+		already in cache ...
+*/
 }
 
 
@@ -440,7 +447,7 @@ void add_Cache(File *f) {
 int addr;
 CachedFile *cf;
 
-	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE
+	if (PARAM_MAX_CACHED <= 0 || !PARAM_HAVE_FILECACHE
 		|| f == NULL || f->filename == NULL || file_cache == NULL
 		|| (addr = filecache_hash_addr(f->filename)) == -1
 		|| (cf = new_CachedFile()) == NULL)
@@ -507,7 +514,7 @@ int resize_Cache(void) {
 CachedFile **new_fc, *cf, *cf_next;
 int old_size, i, addr, n;
 
-	if (!PARAM_MAX_CACHED || PARAM_HAVE_FILECACHE == PARAM_FALSE) {		/* resized to 0 */
+	if (PARAM_MAX_CACHED <= 0 || !PARAM_HAVE_FILECACHE) {		/* resized to 0 */
 		deinit_FileCache();
 		return 0;
 	}
