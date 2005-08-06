@@ -33,7 +33,6 @@
 #define MAX_TITLE			(MAX_NAME+10)
 #define MAX_LINE            80
 #define MAX_LONGLINE		256
-#define MAX_X_LINES         7
 #define MAX_CRYPTED_PASSWD  140
 #define MAX_COLORBUF		20
 #define MAX_NUMBER			30
