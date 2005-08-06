@@ -82,7 +82,7 @@ char many_buf[MAX_LINE];
 					erase_many(usr);
 
 					for(sl = usr->recipients; sl != NULL && sl->next != NULL; sl = sl->next);
-					strcpy(usr->edit_buf, sl->str);
+					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
 					remove_StringList(&usr->recipients, sl);
@@ -371,7 +371,7 @@ char many_buf[MAX_LINE];
 
 				if (usr->quick[i] != NULL) {
 					erase_name(usr);
-					strcpy(usr->edit_buf, usr->quick[i]);
+					cstrcpy(usr->edit_buf, usr->quick[i], MAX_LINE);
 					Put(usr, usr->edit_buf);
 					usr->edit_pos = strlen(usr->edit_buf);
 				}
@@ -439,7 +439,7 @@ char many_buf[MAX_LINE];
 					erase_many(usr);
 
 					for(sl = usr->recipients; sl != NULL && sl->next != NULL; sl = sl->next);
-					strcpy(usr->edit_buf, sl->str);
+					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
 					remove_StringList(&usr->recipients, sl);
@@ -518,7 +518,7 @@ int i;
 			}
 			if (!usr->edit_pos) {
 				if (usr->recipients != NULL && usr->recipients->str != NULL) {
-					strcpy(usr->edit_buf, usr->recipients->str);
+					cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 				}
 			}
@@ -543,7 +543,7 @@ int i;
 
 				if (usr->quick[i] != NULL) {
 					erase_name(usr);
-					strcpy(usr->edit_buf, usr->quick[i]);
+					cstrcpy(usr->edit_buf, usr->quick[i], MAX_LINE);
 					Put(usr, usr->edit_buf);
 					usr->edit_pos = strlen(usr->edit_buf);
 				}
@@ -852,13 +852,13 @@ int i, wrap_len;
 			break;
 		}
 		if (cstrchr(Wrap_Charset2, usr->edit_buf[i]) != NULL) {
-			strcat(erase, "\b \b");
+			cstrcat(erase, "\b \b", MAX_LONGLINE);
 			break;
 		}
-		strcat(erase, "\b \b");
+		cstrcat(erase, "\b \b", MAX_LONGLINE);
 	}
 	if (i > wrap_len) {
-		strcpy(wrap, usr->edit_buf+i);
+		cstrcpy(wrap, usr->edit_buf+i, MAX_LINE);
 		usr->edit_buf[i] = 0;
 		Put(usr, erase);
 	}
@@ -872,7 +872,7 @@ int i, wrap_len;
 	usr->total_lines++;
 
 /* wrap word to next line */
-	strcpy(usr->edit_buf, wrap);
+	cstrcpy(usr->edit_buf, wrap, MAX_LINE);
 	usr->edit_pos = strlen(usr->edit_buf);
 	usr->edit_buf[usr->edit_pos++] = c;
 	usr->edit_buf[usr->edit_pos] = 0;
@@ -1560,7 +1560,7 @@ char *p;
 	buf[0] = 0;
 	for(p = line; *p != 0; p++)
 		if (*p >= ' ' && *p <= '~')
-			strcat(buf, "\b \b");
+			cstrcat(buf, "\b \b", MAX_LONGLINE);
 	Put(usr, buf);
 }
 
@@ -1576,7 +1576,7 @@ int i;
 
 	buf[0] = 0;
 	for(i = usr->edit_pos; i > 0; i--)
-		strcat(buf, "\b \b");
+		cstrcat(buf, "\b \b", MAX_LONGLINE);
 	Put(usr, buf);
 }
 
@@ -1592,7 +1592,7 @@ void erase_many(User *usr) {
 			buf[0] = 0;
 			i = strlen(usr->recipients->str) + 5;	/* erase '[User Joe]: ' */
 			while(i > 0) {
-				strcat(buf, "\b \b");
+				cstrcat(buf, "\b \b", MAX_LONGLINE);
 				i--;
 			}
 			Print(usr, "%s<yellow>%c ", buf, (usr->runtime_flags & RTF_MULTI) ? ',' : ':');
@@ -1707,7 +1707,7 @@ int i;
 
 	buf[0] = 0;
 	for(i = usr->edit_pos; i > 0; i--)
-		strcat(buf, "\b \b");
+		cstrcat(buf, "\b \b", MAX_LONGLINE);
 	Put(usr, buf);
 }
 
@@ -1724,7 +1724,7 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 
 	if (usr->tablist != NULL && usr->tablist->str != NULL) {
 		erase_tabname(usr);
-		strcpy(usr->edit_buf, usr->tablist->str);
+		cstrcpy(usr->edit_buf, usr->tablist->str, MAX_LINE);
 		usr->edit_pos = strlen(usr->tablist->str);
 		Put(usr, usr->tablist->str);
 	}
@@ -1742,7 +1742,7 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 
 	if (usr->tablist != NULL && usr->tablist->str != NULL) {
 		erase_tabname(usr);
-		strcpy(usr->edit_buf, usr->tablist->str);
+		cstrcpy(usr->edit_buf, usr->tablist->str, MAX_LINE);
 		usr->edit_pos = strlen(usr->tablist->str);
 		Put(usr, usr->tablist->str);
 	}

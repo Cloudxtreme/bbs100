@@ -146,7 +146,7 @@ char *p;
 
 		for(c = AllConns; c != NULL; c = c->next)
 			if (!strcmp(c->ipnum, s->buf))
-				strcpy(c->hostname, p);			/* fill in IP name */
+				cstrcpy(c->hostname, p, MAX_LINE);		/* fill in IP name */
 	}
 	rewind_StringIO(s);
 }

@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "version.h"
 #include "bufprintf.h"
+#include "cstrcpy.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,14 +39,14 @@ char *print_copyright(int full, char *progname, char *buf, int buflen) {
 	if (buf == NULL)
 		return NULL;
 
-	strcpy(buf, "bbs100 ");
-	strcat(buf, VERSION);
+	cstrcpy(buf, "bbs100 ", buflen);
+	cstrcat(buf, VERSION, buflen);
 
 	if (progname != NULL && *progname) {
-		strcat(buf, " ");
-		strcat(buf, progname);
+		cstrcat(buf, " ", buflen);
+		cstrcat(buf, progname, buflen);
 	}
-	strcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2005\n");
+	cstrcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2005\n", buflen);
 
 	if (full) {
 #ifdef HAVE_UNAME
@@ -53,14 +54,14 @@ char *print_copyright(int full, char *progname, char *buf, int buflen) {
 		int len;
 #endif
 
-		strcat(buf, "running on ");
+		cstrcat(buf, "running on ", buflen);
 #ifdef HAVE_UNAME
 		if (!uname(&uts)) {
 			len = strlen(buf);
 			bufprintf(buf+len, buflen - len, "%s, %s %s %s ", uts.nodename, uts.machine, uts.sysname, uts.release);
 		}
 #endif
-		strcat(buf, "[" SYSTEM "]\n");
+		cstrcat(buf, "[" SYSTEM "]\n", buflen);
 	}
 	return buf;
 }

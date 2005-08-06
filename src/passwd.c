@@ -233,7 +233,7 @@ char buf[MAX_CRYPTED], salt[256];
 /* get the salt of a "$num$salt$crypto" format string */
 		if (*crypted == '$' && (d = cstrchr(crypted+1, '$')) != NULL) {
 			*d = 0;
-			strcpy(salt, crypted+1);
+			cstrcpy(salt, crypted+1, 255);
 			*d = '$';
 		} else {
 			salt[0] = crypted[0];

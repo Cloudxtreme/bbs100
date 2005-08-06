@@ -62,7 +62,7 @@ void destroy_SymbolTable(SymbolTable *st) {
 */
 int load_SymbolTable(char *filename) {
 AtomicFile *f;
-char buf[256], namebuf[256], type;
+char buf[MAX_LONGLINE], namebuf[MAX_LONGLINE], type;
 unsigned long addr;
 SymbolTable *st;
 
@@ -72,14 +72,14 @@ SymbolTable *st;
 	if ((f = openfile(filename, "r")) == NULL)
 		return 1;
 
-	while(fgets(buf, 256, f->f) != NULL) {
+	while(fgets(buf, MAX_LONGLINE, f->f) != NULL) {
 		cstrip_line(buf);
 		if (!*buf)
 			continue;
 
 		addr = 0UL;
 		type = '#';
-		strcpy(namebuf, "<unknown>");
+		cstrcpy(namebuf, "<unknown>", MAX_LONGLINE);
 
 		if (*buf == ' ')
 			sscanf(buf, " %c %lx", &type, &addr);

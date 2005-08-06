@@ -56,8 +56,8 @@ INCLUDE = include
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
 OBJS = List.o PList.o Hash.o StringList.o CallStack.o \
-	debug.o cstring.o bufprintf.o cstrerror.o log.o inet.o util.o \
-	crc32.o screens.o edit.o edit_param.o access.o copyright.o \
+	debug.o cstring.o cstrcpy.o bufprintf.o cstrerror.o log.o inet.o \
+	crc32.o screens.o edit.o edit_param.o util.o access.o copyright.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o \
 	state.o state_room.o state_login.o state_msg.o state_friendlist.o \
@@ -110,21 +110,21 @@ main: $(OBJS)
 	@echo '  BUILD     main'
 	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET)
 
-mkpasswd: mkpasswd.o passwd.o bufprintf.o copyright.o
+mkpasswd: mkpasswd.o passwd.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     mkpasswd'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o bufprintf.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o bufprintf.o cstrcpy.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
 
-resolver: resolver.o bufprintf.o copyright.o
+resolver: resolver.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     resolver'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o bufprintf.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o bufprintf.o cstrcpy.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
 
-ccat: ccat.o bufprintf.o copyright.o
+ccat: ccat.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     ccat'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o bufprintf.o copyright.o -o ccat $(LFLAGS)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) ccat.o bufprintf.o cstrcpy.o copyright.o -o ccat $(LFLAGS)
 
-bbs100_convert: bbs100_convert.o bufprintf.o copyright.o
+bbs100_convert: bbs100_convert.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     bbs100_convert'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) bbs100_convert.o bufprintf.o copyright.o -o bbs100_convert $(LFLAGS)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) bbs100_convert.o bufprintf.o cstrcpy.o copyright.o -o bbs100_convert $(LFLAGS)
 
 install: $(TARGETS) $(SCRIPTS)
 	@echo "*** installing bbs100-$(VERSION) to $(prefix)/"

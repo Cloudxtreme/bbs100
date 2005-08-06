@@ -31,13 +31,16 @@
 
 char *cstrdup(char *s) {
 char *p;
+int len;
 
 	if (s == NULL)
 		return NULL;
 
-	if ((p = (char *)Malloc(strlen(s)+1, TYPE_CHAR)) == NULL)
+	len = strlen(s)+1;
+	if ((p = (char *)Malloc(len, TYPE_CHAR)) == NULL)
 		return NULL;
-	strcpy(p, s);
+
+	cstrcpy(p, s, len);
 	return p;
 }
 
@@ -196,12 +199,12 @@ int num = 2;
 */
 char *cstrjoin(char **args) {
 char *buf;
-int i, l = 0;
+int i, l, buflen = 0;
 
 	for(i = 0; args[i] != NULL && *args[i]; i++)
-		l += strlen(args[i]) + 1;
-	l++;
-	if ((buf = (char *)Malloc(l, TYPE_CHAR)) == NULL)
+		buflen += strlen(args[i]) + 1;
+	buflen++;
+	if ((buf = (char *)Malloc(buflen, TYPE_CHAR)) == NULL)
 		return NULL;
 
 	*buf = 0;
@@ -210,7 +213,7 @@ int i, l = 0;
 
 	l = 0;
 	for(i = 0; args[i] != NULL && *args[i]; i++) {
-		strcat(buf, args[i]);
+		cstrcat(buf, args[i], buflen);
 		l = strlen(buf);
 		buf[l++] = ' ';
 		buf[l] = 0;

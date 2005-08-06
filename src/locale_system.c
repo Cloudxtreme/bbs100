@@ -29,6 +29,7 @@
 #include "defines.h"
 #include "sys_time.h"
 #include "bufprintf.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,7 +120,7 @@ char *more[5] = { "weeks", "days", "hours", "minutes", "seconds" };
 			elems++;
 	}
 	if (!elems) {
-		strcpy(buf, "0 seconds");
+		cstrcpy(buf, "0 seconds", buflen);
 		return buf;
 	}
 	buf[0] = 0;
@@ -170,7 +171,7 @@ int i, j = 0, n = 0;
 	}
 	buf[j] = 0;
 
-	strcpy(buf2, buf);
+	cstrcpy(buf2, buf, MAX_NUMBER);
 	i = strlen(buf2)-1;
 	j = 0;
 	while(i >= 0 && j <= buflen-1)
@@ -262,10 +263,10 @@ int l, j;
 		return NULL;
 
 	if (name == NULL || !*name) {
-		strcpy(buf, "(NULL)");
+		cstrcpy(buf, "(NULL)", buflen);
 		return buf;
 	}
-	strcpy(buf, name);
+	cstrcpy(buf, name, buflen);
 	l = j = strlen(buf)-1;
 	if (l < buflen-3) {
 		buf[++l] = '\'';
@@ -276,7 +277,7 @@ int l, j;
 		buf[++l] = 0;
 
 		if (obj != NULL && buflen - l > strlen(obj))
-			strcat(buf, obj);
+			cstrcat(buf, obj, buflen);
 	}
 	return buf;
 }

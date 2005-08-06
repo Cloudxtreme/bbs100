@@ -4,6 +4,7 @@ Changes as of August 6th 2005
 - portability: use cstrerror() rather than strerror()
 - portability: use make_dir() rather than mkdir()
 - portability: use remove_dir() rather than rmdir()
+- bounds checking with cstrcpy(), cstrcat()
 
 Changes as of August 5th 2005
 - mkpasswd displays asterisks when entering a password

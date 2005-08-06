@@ -35,6 +35,7 @@
 #include "ConnResolv.h"
 #include "Wrapper.h"
 #include "bufprintf.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,9 +143,9 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 
 	if ((err = getnameinfo((struct sockaddr *)&client, client_len, new_conn->ipnum, MAX_LINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
 		log_warn("ConnUser_accept(): getnameinfo(): %s", inet_error(err));
-		strcpy(new_conn->ipnum, "0.0.0.0");
+		cstrcpy(new_conn->ipnum, "0.0.0.0", MAX_LINE);
 	}
-	strcpy(new_conn->hostname, new_conn->ipnum);
+	cstrcpy(new_conn->hostname, new_conn->ipnum, MAX_LINE);
 
 	if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
 		put_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");

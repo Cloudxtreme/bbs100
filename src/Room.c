@@ -112,7 +112,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(filename);
-	room_readroomdir(r, filename);
+	room_readroomdir(r, filename, MAX_PATHLEN);
 	Return r;
 }
 
@@ -442,7 +442,7 @@ File *f;
 	if (r->number == MAIL_ROOM || r->number == HOME_ROOM) {
 		char name[MAX_LINE], *p;
 
-		strcpy(name, r->name);
+		cstrcpy(name, r->name, MAX_LINE);
 		if ((p = cstrchr(name, '\'')) == NULL)
 			return -1;
 
@@ -588,7 +588,7 @@ char dirname[MAX_PATHLEN];
 
 	bufprintf(dirname, MAX_PATHLEN, "%s/%u/", PARAM_ROOMDIR, r->number);
 	path_strip(dirname);
-	room_readroomdir(r, dirname);
+	room_readroomdir(r, dirname, MAX_PATHLEN);
 }
 
 void room_readmaildir(Room *r, char *username) {
@@ -599,27 +599,29 @@ char buf[MAX_PATHLEN];
 
 	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(buf);
-	room_readroomdir(r, buf);
+	room_readroomdir(r, buf, MAX_PATHLEN);
 }
 
-void room_readroomdir(Room *r, char *dirname) {
+void room_readroomdir(Room *r, char *dirname, int buflen) {
 DIR *dirp;
 struct dirent *direntp;
 char *bufp;
 unsigned long num;
+int len;
 
-	if (r == NULL || dirname == NULL)
+	if (r == NULL || dirname == NULL || buflen <= 0)
 		return;
 
 	r->msg_idx = 0;
-	bufp = dirname+strlen(dirname);
+	len = strlen(dirname);
+	bufp = dirname+len;
 
 	if ((dirp = opendir(dirname)) == NULL)
 		return;
 
 	while((direntp = readdir(dirp)) != NULL) {
 		if (direntp->d_name[0] >= '0' && direntp->d_name[0] <= '9') {
-			strcpy(bufp, direntp->d_name);
+			cstrcpy(bufp, direntp->d_name, buflen - len);
 			num = cstrtoul(bufp, 10);
 
 			newMsg(r, num, NULL);
@@ -1038,7 +1040,7 @@ struct dirent *direntp;
 struct stat statbuf;
 Room *newroom;
 unsigned int u;
-int load_room_flags;
+int load_room_flags, len;
 
 	printf("\n");
 
@@ -1051,14 +1053,15 @@ int load_room_flags;
 
 	bufprintf(buf, MAX_PATHLEN, "%s/", PARAM_ROOMDIR);
 	path_strip(buf);
-	bufp = buf+strlen(buf);
+	len = strlen(buf);
+	bufp = buf+len;
 
 	if ((dirp = opendir(buf)) == NULL)
 		return -1;
 
 	while((direntp = readdir(dirp)) != NULL) {
 		if (is_numeric(direntp->d_name)) {		/* only do numeric directories */
-			strcpy(bufp, direntp->d_name);
+			cstrcpy(bufp, direntp->d_name, MAX_PATHLEN - len);
 			if (stat(buf, &statbuf))
 				continue;
 

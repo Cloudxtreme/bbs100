@@ -19,15 +19,13 @@
 /*
 	Chatter18	WJ97
 	cstring.h
-
-	Linux doesn't have stricmp() and strnicmp()... *real deep sigh*
-	So we make our own cstricmp() and cstrnicmp()
 */
 
 #ifndef _CSTRING_H_WJ97
 #define _CSTRING_H_WJ97 1
 
 #include "config.h"
+#include "cstrcpy.h"
 #include "defines.h"
 #include "memset.h"
 

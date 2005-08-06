@@ -674,7 +674,7 @@ int r;
 					CURRENT_STATE(usr);
 					Return;
 				}
-				strcpy(usr->passwd, crypted);
+				cstrcpy(usr->passwd, crypted, MAX_CRYPTED_PASSWD);
 				Put(usr, "Password changed\n");
 				usr->runtime_flags |= RTF_CONFIG_EDITED;
 			} else
@@ -1787,7 +1787,7 @@ char buf[MAX_LINE], *p;
 
 /* filter underscores */
 			if (usr->timezone == NULL)
-				strcpy(buf, "GMT");
+				cstrcpy(buf, "GMT", MAX_LINE);
 			else {
 				strncpy(buf, usr->timezone, MAX_LINE-1);
 				buf[MAX_LINE-1] = 0;
@@ -1843,8 +1843,8 @@ char filename[MAX_PATHLEN];
 
 	Enter(select_tz_continent);
 
-	strcpy(filename, PARAM_ZONEINFODIR);
-	strcat(filename, TZ_INDEX_FILE);
+	cstrcpy(filename, PARAM_ZONEINFODIR, MAX_PATHLEN);
+	cstrcat(filename, TZ_INDEX_FILE, MAX_PATHLEN);
 	path_strip(filename);
 
 	if ((f = Fopen(filename)) == NULL) {
@@ -1923,7 +1923,7 @@ int r;
 		idx = 1;
 		for(sl = (StringList *)usr->tmpbuf[0]; sl != NULL; sl = sl->next) {
 			if (choice == idx) {
-				strcpy(filename, sl->str);
+				cstrcpy(filename, sl->str, MAX_PATHLEN);
 				break;
 			}
 			idx++;

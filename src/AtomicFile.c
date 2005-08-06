@@ -67,14 +67,14 @@ char tmpfile[MAX_PATHLEN];
 	if ((f = new_AtomicFile()) == NULL)
 		return NULL;
 
-	strcpy(tmpfile, filename);
+	cstrcpy(tmpfile, filename, MAX_PATHLEN);
 
 	if (cstrchr(mode, 'w') != NULL || cstrchr(mode, 'a') != NULL) {
 		if ((f->filename = cstrdup(filename)) == NULL) {
 			destroy_AtomicFile(f);
 			return NULL;
 		}
-		strcat(tmpfile, ".tmp");
+		cstrcat(tmpfile, ".tmp", MAX_PATHLEN);
 	}
 	if ((f->f = fopen(tmpfile, mode)) == NULL) {
 		destroy_AtomicFile(f);
@@ -97,8 +97,8 @@ char tmpfile[MAX_PATHLEN];
 	f->f = NULL;
 
 	if (f->filename != NULL) {
-		strcpy(tmpfile, f->filename);
-		strcat(tmpfile, ".tmp");
+		cstrcpy(tmpfile, f->filename, MAX_PATHLEN);
+		cstrcat(tmpfile, ".tmp", MAX_PATHLEN);
 		if (rename(tmpfile, f->filename) == -1)
 			log_err("failed to rename %s to %s", tmpfile, f->filename);
 	}

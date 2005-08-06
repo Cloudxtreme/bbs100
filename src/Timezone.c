@@ -551,12 +551,12 @@ StringList *sl;
 /*
 	now save the sorted list to a file
 */
-	strcpy(filename, dirname);
+	cstrcpy(filename, dirname, MAX_PATHLEN);
 	if (strlen(filename) + 11 >= MAX_PATHLEN) {
 		log_err("generate_tz_index(): tz_index path too long, directory skipped");
 		return -1;
 	}
-	strcat(filename, TZ_INDEX_FILE);
+	cstrcat(filename, TZ_INDEX_FILE, MAX_PATHLEN);
 	path_strip(filename);
 
 	if ((f = Fcreate(filename)) == NULL) {

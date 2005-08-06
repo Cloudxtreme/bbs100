@@ -150,7 +150,7 @@ int r;
 		if (is_guest(usr->tmpbuf[TMP_NAME])) {
 /* give Guest an appropriate login name */
 			if (is_online(PARAM_NAME_GUEST) == NULL)
-				strcpy(usr->name, PARAM_NAME_GUEST);
+				cstrcpy(usr->name, PARAM_NAME_GUEST, MAX_NAME);
 			else {
 				for(r = 2; r < 1024; r++) {
 					bufprintf(usr->tmpbuf[TMP_NAME], MAX_NAME, "%s %d", PARAM_NAME_GUEST, r);
@@ -162,7 +162,7 @@ int r;
 					close_connection(usr, "too many guest users online");
 					Return;
 				}
-				strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
+				cstrcpy(usr->name, usr->tmpbuf[TMP_NAME], MAX_NAME);
 			}
 			log_auth("LOGIN %s (%s)", usr->name, usr->conn->hostname);
 
@@ -219,7 +219,7 @@ void state_new_account_yesno(User *usr, char c) {
 				close_connection(usr, "new user login closed by wrapper");
 				Return;
 			}
-			strcpy(usr->edit_buf, usr->tmpbuf[TMP_NAME]);
+			cstrcpy(usr->edit_buf, usr->tmpbuf[TMP_NAME], MAX_LINE);
 			usr->edit_pos = strlen(usr->edit_buf);
 
 			MOV(usr, STATE_NEW_LOGIN_PROMPT);
@@ -276,7 +276,7 @@ int r;
 				Print(u, "\n<red>Connection closed by another login from %s\n", usr->conn->hostname);
 				close_connection(u, "connection closed by another login");
 			}
-			strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
+			cstrcpy(usr->name, usr->tmpbuf[TMP_NAME], MAX_NAME);
 			log_auth("LOGIN %s (%s)", usr->name, usr->conn->hostname);
 
 			if (u == NULL)				/* if (u != NULL) killed by another login */
@@ -489,7 +489,7 @@ int i, new_mail;
 
 /* yell out on a hundredth login */
 		if (!(usr->logins % 100))
-			strcpy(exclaim, "!!!");
+			cstrcpy(exclaim, "!!!", 4);
 		else
 			exclaim[0] = 0;
 
@@ -714,13 +714,13 @@ int r;
 /*
 	from here we have a name -- from here on others can see the new user online
 */
-		strcpy(usr->name, usr->tmpbuf[TMP_NAME]);
+		cstrcpy(usr->name, usr->tmpbuf[TMP_NAME], MAX_NAME);
 		i = strlen(usr->name)-1;
 		if (usr->name[i] == ' ')
 			usr->name[i] = 0;
 
 		stats.youngest_birth = usr->birth = usr->login_time = usr->online_timer = rtc;
-		strcpy(stats.youngest, usr->name);
+		cstrcpy(stats.youngest, usr->name, MAX_NAME);
 
 		crypt_phrase(usr->edit_buf, crypted);
 		crypted[MAX_CRYPTED_PASSWD-1] = 0;
@@ -730,7 +730,7 @@ int r;
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
 		}
-		strcpy(usr->passwd, crypted);
+		cstrcpy(usr->passwd, crypted, MAX_CRYPTED_PASSWD);
 
 		bufprintf(dirname, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
 		path_strip(dirname);

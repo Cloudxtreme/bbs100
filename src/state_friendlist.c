@@ -156,7 +156,7 @@ int r;
 				RET(usr);
 				Return;
 			}
-			strcpy(usr->edit_buf, usr->recipients->str);
+			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
 		}
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
@@ -214,7 +214,7 @@ int r;
 				RET(usr);
 				Return;
 			}
-			strcpy(usr->edit_buf, usr->recipients->str);
+			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Stopped being friends with yourself? How sad and lonely...\n");
@@ -354,7 +354,7 @@ int r;
 				RET(usr);
 				Return;
 			}
-			strcpy(usr->edit_buf, usr->recipients->str);
+			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf)) {
 			Put(usr, "<red>So, your worst enemy is <white>YOU\n");
@@ -417,7 +417,7 @@ int r;
 				RET(usr);
 				Return;
 			}
-			strcpy(usr->edit_buf, usr->recipients->str);
+			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Time to come to peace with yourself?\n");

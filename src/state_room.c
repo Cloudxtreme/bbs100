@@ -272,7 +272,7 @@ int i, idx;
 					listdestroy_StringList(usr->recipients);
 					usr->recipients = NULL;
 
-					strcpy(usr->edit_buf, usr->quick[c - '1']);
+					cstrcpy(usr->edit_buf, usr->quick[c - '1'], MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 					usr->runtime_flags |= RTF_BUSY;
 
@@ -764,7 +764,7 @@ int i, idx;
 					Perror(usr, "Out of memory");
 					break;
 				}
-				strcpy(m->from, usr->name);
+				cstrcpy(m->from, usr->name, MAX_NAME);
 
 				if (usr->curr_room == usr->mail) {
 					if (mail_access(usr, usr->message->from))
@@ -793,7 +793,7 @@ int i, idx;
 						m->flags |= MSG_FROM_ROOMAIDE;
 
 				if (usr->message->subject[0])
-					strcpy(m->subject, usr->message->subject);
+					cstrcpy(m->subject, usr->message->subject, MAX_LINE);
 
 				if (usr->curr_room == usr->mail)
 					m->reply_number = 0UL;
@@ -828,7 +828,7 @@ int i, idx;
 				if (usr->new_message != NULL) {
 					if (!usr->new_message->subject[0])
 						bufprintf(usr->new_message->subject, MAX_LINE, "<mail message from %s>", usr->new_message->from);
-					strcpy(usr->new_message->from, usr->name);
+					cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
 					if (usr->runtime_flags & RTF_SYSOP)
 						usr->new_message->flags |= MSG_FROM_SYSOP;
@@ -930,7 +930,7 @@ void PrintPrompt(User *usr) {
 			if (usr->curr_room == usr->mail)
 				possession(usr->name, "Mail", roomname, MAX_LINE);
 			else
-				strcpy(roomname, usr->curr_room->name);
+				cstrcpy(roomname, usr->curr_room->name, MAX_LINE);
 
 /* print a long prompt with msg number when reading messages */
 
@@ -1347,15 +1347,20 @@ StringList *sl;
 	}
 	*buf = 0;
 	if (usr->curr_room->flags & ROOM_READONLY)
-		strcat(buf, ", read-only");
+		cstrcat(buf, ", read-only", MAX_LONGLINE);
+
 	if (usr->curr_room->flags & ROOM_INVITE_ONLY)
-		strcat(buf, ", invite-only");
+		cstrcat(buf, ", invite-only", MAX_LONGLINE);
+
 	if (usr->curr_room->flags & ROOM_ANONYMOUS)
-		strcat(buf, ", anonymous-optional");
+		cstrcat(buf, ", anonymous-optional", MAX_LONGLINE);
+
 	if (usr->curr_room->flags & ROOM_NOZAP)
-		strcat(buf, ", not zappable");
+		cstrcat(buf, ", not zappable", MAX_LONGLINE);
+
 	if ((usr->curr_room->flags & ROOM_HIDDEN) && (usr->runtime_flags & RTF_SYSOP))
-		strcat(buf, ", hidden");
+		cstrcat(buf, ", hidden", MAX_LONGLINE);
+
 	if (*buf)
 		Print(usr, "\n<green>This room is %s\n", buf+2);
 
@@ -1744,7 +1749,7 @@ int i;
 		if (usr->runtime_flags & RTF_ROOMAIDE)
 			bufprintf(from, MAX_LINE, "<yellow>%s: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->name);
 		else
-			strcpy(from, usr->name);
+			cstrcpy(from, usr->name, MAX_NAME);
 
 	if (*str == ' ')
 		bufprintf(buf, MAX_LONGLINE, "<cyan>%s<yellow>%s", from, str);

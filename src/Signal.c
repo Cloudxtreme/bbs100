@@ -190,7 +190,7 @@ int i;
 
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sig == sig_table[i].sig) {
-			strcpy(signame_buf, sig_table[i].sig_name);
+			cstrcpy(signame_buf, sig_table[i].sig_name, buflen);
 			return signame_buf;
 		}
 	}

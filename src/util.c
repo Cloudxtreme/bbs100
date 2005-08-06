@@ -788,7 +788,7 @@ int l, n;
 		c = color_strlen(p);
 
 		while(l + n < bufsize && cl < width) {
-			strcat(dest, p);
+			cstrcat(dest, p, bufsize);
 			l += n;
 			cl += c;
 		}
@@ -853,7 +853,7 @@ int l, n;
 			dest[bufsize-1] = 0;
 		}
 	} else
-		strcpy(dest+l, p);
+		cstrcpy(dest+l, p, bufsize - l);
 
 	while((p = cstristr(dest, "<center>")) != NULL)		/* filter out duplicate codes */
 		memmove(p, p+8, strlen(p+8)+1);
@@ -1219,7 +1219,7 @@ User *u;
 				&& !(u->runtime_flags & RTF_LOCKED)
 				&& (in_StringList(usr->enemies, u->name)) == NULL
 				&& (in_StringList(u->enemies, usr->name)) == NULL) {
-				strcpy(last_helping_hand, u->name);
+				cstrcpy(last_helping_hand, u->name, MAX_NAME);
 				usr->question_asked = cstrdup(u->name);
 				return 1;
 			}
@@ -1236,7 +1236,7 @@ User *u;
 			&& !(u->runtime_flags & RTF_LOCKED)
 			&& (in_StringList(usr->enemies, u->name)) == NULL
 			&& (in_StringList(u->enemies, usr->name)) == NULL) {
-			strcpy(last_helping_hand, u->name);
+			cstrcpy(last_helping_hand, u->name, MAX_NAME);
 			usr->question_asked = cstrdup(u->name);
 			return 1;
 		}
@@ -1508,7 +1508,7 @@ struct dirent *direntp;
 	if (strncmp(buf, dirname, strlen(buf)) || cstrstr(dirname, "..") != NULL)
 		return -1;
 
-	strcpy(buf, dirname);
+	cstrcpy(buf, dirname, MAX_PATHLEN);
 	bufp = buf+strlen(buf)-1;
 	if (*bufp != '/') {
 		bufp++;
@@ -1525,7 +1525,7 @@ struct dirent *direntp;
 			|| (direntp->d_name[1] == '.' && !direntp->d_name[2])))
 			continue;
 
-		strcpy(bufp, direntp->d_name);
+		cstrcpy(bufp, direntp->d_name, MAX_PATHLEN);
 		unlink(buf);		/* note: trash/ is not cached ; it's ok not to use unlink_file() */
 	}
 	closedir(dirp);
@@ -1702,7 +1702,7 @@ char buf[MAX_LINE*4], format[MAX_LINE], filename[MAX_PATHLEN], *p;
 			if (sl_cols[i] == NULL || sl_cols[i]->str == NULL)
 				continue;
 
-			strcpy(filename, sl_cols[i]->str);
+			cstrcpy(filename, sl_cols[i]->str, MAX_PATHLEN);
 
 			if (flags & FORMAT_NO_UNDERSCORES) {
 				p = filename;

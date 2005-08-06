@@ -130,7 +130,14 @@ int s, n, un_len;
 		exit(-1);
 	}
 	un.sun_family = AF_UNIX;
-	strcpy(un.sun_path, argv[1]);
+/*
+	weird: sockaddr_un.sun_path is declared as sun_path[108]
+	no #define for the constant, just plain 108
+	and 108 is very short for a Unix filename (MAX_PATH is typically 1024)
+
+	(I wonder how portable this is)
+*/
+	cstrncpy(un.sun_path, argv[1], 108, 108);
 	un_len = sizeof(struct sockaddr_un);
 
 	if (connect(s, (struct sockaddr *)&un, un_len) < 0) {

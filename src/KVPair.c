@@ -192,16 +192,16 @@ int print_KVPair(KVPair *kv, char *buf, int buflen) {
 		return 0;
 
 	if (kv == NULL) {
-		strcpy(buf, "(null)");
+		cstrcpy(buf, "(null)", buflen);
 		return 6;
 	}
 	switch(kv->type) {
 		case KV_UNKNOWN:
-			strcpy(buf, "(unknown KV type)");
+			cstrcpy(buf, "(unknown KV type)", buflen);
 			break;
 
 		case KV_BOOL:
-			strcpy(buf, (kv->value.bool == 0) ? "no" : "yes");
+			cstrcpy(buf, (kv->value.bool == 0) ? "no" : "yes", buflen);
 			break;
 
 		case KV_INT:
@@ -218,9 +218,9 @@ int print_KVPair(KVPair *kv, char *buf, int buflen) {
 
 		case KV_STRING:
 			if (kv->value.s == NULL)
-				strcpy(buf, "(null)");
+				cstrcpy(buf, "(null)", buflen);
 			else
-				strcpy(buf, kv->value.s);
+				cstrcpy(buf, kv->value.s, buflen);
 			break;
 
 		case KV_POINTER:
@@ -229,7 +229,7 @@ int print_KVPair(KVPair *kv, char *buf, int buflen) {
 
 		default:
 			log_err("print_KVPair(): unknown type for key '%s'", kv->key);
-			strcpy(buf, "(unknown KV type)");
+			cstrcpy(buf, "(unknown KV type)", buflen);
 	}
 	return strlen(buf);
 }

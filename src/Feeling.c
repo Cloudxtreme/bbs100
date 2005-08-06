@@ -70,12 +70,13 @@ struct dirent *direntp;
 struct stat statbuf;
 char buf[MAX_PATHLEN], *bufp;
 KVPair *f;
+int len;
 
-	strcpy(buf, PARAM_FEELINGSDIR);
-	bufp = buf + strlen(buf);
-	*bufp = '/';
-	bufp++;
-	*bufp = 0;
+	cstrcpy(buf, PARAM_FEELINGSDIR, MAX_PATHLEN);
+	len = strlen(buf);
+	buf[len++] = '/';
+	buf[len] = 0;
+	bufp = buf + len;
 
 	if ((dirp = opendir(buf)) == NULL)
 		return -1;
@@ -84,7 +85,7 @@ KVPair *f;
 	feelings = NULL;
 
 	while((direntp = readdir(dirp)) != NULL) {
-		strcpy(bufp, direntp->d_name);
+		cstrcpy(bufp, direntp->d_name, MAX_PATHLEN - len);
 
 		if (!stat(buf, &statbuf) && S_ISREG(statbuf.st_mode)) {
 			if ((f = load_Feeling(buf)) != NULL)

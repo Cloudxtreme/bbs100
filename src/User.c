@@ -675,10 +675,8 @@ int i;
 	cstrip_line(buf);
 
 /* put the former from_ip in usr->tmpbuf */
-	if (usr->tmpbuf[TMP_FROM_HOST] == NULL)
-		usr->tmpbuf[TMP_FROM_HOST] = cstrdup(buf);
-	else
-		strcpy(usr->tmpbuf[TMP_FROM_HOST], buf);
+	Free(usr->tmpbuf[TMP_FROM_HOST]);
+	usr->tmpbuf[TMP_FROM_HOST] = cstrdup(buf);
 
 /* ipnum */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
@@ -686,11 +684,8 @@ int i;
 	cstrip_line(buf);
 
 /* put former ip number in tmpbuf */
-	if (usr->tmpbuf[TMP_FROM_IP] == NULL)
-		usr->tmpbuf[TMP_FROM_IP] = cstrdup(buf);
-	else
-		strcpy(usr->tmpbuf[TMP_FROM_IP], buf);
-
+	Free(usr->tmpbuf[TMP_FROM_IP]);
+	usr->tmpbuf[TMP_FROM_IP] = cstrdup(buf);
 
 	if (flags & LOAD_USER_DATA) {
 /* birth */

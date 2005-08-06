@@ -82,27 +82,27 @@ char err_msg[MAX_LINE] = "";
 		goto No_multi_mail;
 	}
 	if (!user_exists(usr->edit_buf)) {
-		strcpy(err_msg, " <white>--> <red>No such user");
+		cstrcpy(err_msg, " <white>--> <red>No such user", MAX_LINE);
 		goto No_multi_mail;
 	}
 	if (in_StringList(usr->enemies, usr->edit_buf) != NULL && !(usr->runtime_flags & RTF_SYSOP)) {
-		strcpy(err_msg, " <white>--> <red>Is on your enemy list");
+		cstrcpy(err_msg, " <white>--> <red>Is on your enemy list", MAX_LINE);
 		goto No_multi_mail;
 	}
 	if ((u = is_online(usr->edit_buf)) == NULL) {
 		if ((u = new_User()) == NULL) {
-			strcpy(err_msg, " <white>--> <red>Out of memory");
+			cstrcpy(err_msg, " <white>--> <red>Out of memory", MAX_LINE);
 			goto No_multi_mail;
 		}
 		allocated = 1;
-		strcpy(u->name, usr->edit_buf);
+		cstrcpy(u->name, usr->edit_buf, MAX_NAME);
 		if (load_User(u, usr->edit_buf, LOAD_USER_ENEMYLIST)) {
-			strcpy(err_msg, " <white>--> <red>Error: Failed to load user");
+			cstrcpy(err_msg, " <white>--> <red>Error: Failed to load user", MAX_LINE);
 			goto No_multi_mail;
 		}
 	}
 	if (in_StringList(u->enemies, usr->name) != NULL && !(usr->runtime_flags & RTF_SYSOP))
-		strcpy(err_msg, " <white>--> <red>Has blocked you");
+		cstrcpy(err_msg, " <white>--> <red>Has blocked you", MAX_LINE);
 
 No_multi_mail:
 	if (allocated && u != NULL)
@@ -186,7 +186,7 @@ int allocated = 0;
 			goto No_mail_access;
 		}
 		allocated = 1;
-		strcpy(u->name, name);
+		cstrcpy(u->name, name, MAX_NAME);
 		if (load_User(u, name, LOAD_USER_ENEMYLIST)) {
 			Perror(usr, "Failed to load user");
 			goto No_mail_access;

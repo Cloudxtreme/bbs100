@@ -77,7 +77,7 @@ void enter_message(User *usr) {
 		CURRENT_STATE(usr);
 		Return;
 	}
-	strcpy(usr->new_message->from, usr->name);
+	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
 	if (usr->runtime_flags & RTF_SYSOP)
 		usr->new_message->flags |= MSG_FROM_SYSOP;
@@ -146,9 +146,9 @@ void state_post_as_anon(User *usr, char c) {
 
 			if (usr->default_anon != NULL && usr->default_anon[0]) {
 				cstrlwr(usr->default_anon);
-				strcpy(usr->new_message->anon, usr->default_anon);
+				cstrcpy(usr->new_message->anon, usr->default_anon, MAX_NAME);
 			} else
-				strcpy(usr->new_message->anon, "anonymous");
+				cstrcpy(usr->new_message->anon, "anonymous", MAX_NAME);
 
 			if (usr->curr_room->flags & ROOM_SUBJECTS)
 				JMP(usr, STATE_ENTER_SUBJECT);
@@ -185,9 +185,9 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (!usr->edit_buf[0])
-			strcpy(usr->new_message->anon, "anonymous");
+			cstrcpy(usr->new_message->anon, "anonymous", MAX_NAME);
 		else {
-			strcpy(usr->new_message->anon, usr->edit_buf);
+			cstrcpy(usr->new_message->anon, usr->edit_buf, MAX_NAME);
 			cstrlwr(usr->new_message->anon);
 		}
 		if (usr->curr_room->flags & ROOM_SUBJECTS)
@@ -253,7 +253,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (usr->edit_buf[0])
-			strcpy(usr->new_message->subject, usr->edit_buf);
+			cstrcpy(usr->new_message->subject, usr->edit_buf, MAX_LINE);
 
 		POP(usr);				/* pop this 'enter subject' call */
 		enter_the_message(usr);
@@ -444,7 +444,7 @@ StringIO *tmp;
 		usr->posted++;
 		if (usr->posted > stats.posted) {
 			stats.posted = usr->posted;
-			strcpy(stats.most_posted, usr->name);
+			cstrcpy(stats.most_posted, usr->name, MAX_NAME);
 		}
 		stats.posted_boot++;
 	}
@@ -652,14 +652,14 @@ unsigned long msg_number;
 
 			deleted_by[0] = 0;
 			if (usr->message->flags & MSG_DELETED_BY_SYSOP)
-				strcpy(deleted_by, PARAM_NAME_SYSOP);
+				cstrcpy(deleted_by, PARAM_NAME_SYSOP, MAX_NAME);
 			else
 				if (usr->message->flags & MSG_DELETED_BY_ROOMAIDE)
-					strcpy(deleted_by, PARAM_NAME_ROOMAIDE);
+					cstrcpy(deleted_by, PARAM_NAME_ROOMAIDE, MAX_NAME);
 
 			if (*deleted_by)
-				strcat(deleted_by, ": ");
-			strcat(deleted_by, usr->message->deleted_by);
+				cstrcat(deleted_by, ": ", MAX_LINE);
+			cstrcat(deleted_by, usr->message->deleted_by, MAX_LINE);
 
 			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
 				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), deleted_by);
@@ -702,7 +702,7 @@ unsigned long msg_number;
 		usr->read++;						/* update stats */
 		if (usr->read > stats.read) {
 			stats.read = usr->read;
-			strcpy(stats.most_read, usr->name);
+			cstrcpy(stats.most_read, usr->name, MAX_NAME);
 		}
 		stats.read_boot++;
 	}
@@ -730,7 +730,7 @@ int r;
 
 /* mark message as deleted */
 		usr->message->deleted = rtc;
-		strcpy(usr->message->deleted_by, usr->name);
+		cstrcpy(usr->message->deleted_by, usr->name, MAX_NAME);
 
 		if (usr->runtime_flags & RTF_SYSOP)
 			usr->message->flags |= MSG_DELETED_BY_SYSOP;
@@ -844,49 +844,49 @@ Rcv_Remove_Recipient:
 		}
 	}
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG) {
-		strcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
+		cstrcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header, MAX_LINE);
 
 		if (from != usr) {
 			usr->xrecv++;							/* update stats */
 			if (usr->xrecv > stats.xrecv) {
 				stats.xrecv = usr->xrecv;
-				strcpy(stats.most_xrecv, usr->name);
+				cstrcpy(stats.most_xrecv, usr->name, MAX_NAME);
 			}
 			stats.xrecv_boot++;
 		}
 	} else {
 		if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
-			strcpy(msg_type, "Emote");
+			cstrcpy(msg_type, "Emote", MAX_LINE);
 
 			if (from != usr) {
 				usr->erecv++;						/* update stats */
 				if (usr->erecv > stats.erecv) {
 					stats.erecv = usr->erecv;
-					strcpy(stats.most_erecv, usr->name);
+					cstrcpy(stats.most_erecv, usr->name, MAX_NAME);
 				}
 				stats.erecv_boot++;
 			}
 		} else {
 			if ((msg->flags & BUFMSG_TYPE) == BUFMSG_FEELING) {
-				strcpy(msg_type, "Feeling");
+				cstrcpy(msg_type, "Feeling", MAX_LINE);
 
 				if (from != usr) {
 					usr->frecv++;					/* update stats */
 					if (usr->frecv > stats.frecv) {
 						stats.frecv = usr->frecv;
-						strcpy(stats.most_frecv, usr->name);
+						cstrcpy(stats.most_frecv, usr->name, MAX_NAME);
 					}
 					stats.frecv_boot++;
 				}
 			} else
 				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
-					strcpy(msg_type, "Question");
+					cstrcpy(msg_type, "Question", MAX_LINE);
 				else {
 					if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ANSWER)
-						strcpy(msg_type, "Answer");
+						cstrcpy(msg_type, "Answer", MAX_LINE);
 					else {
 						log_err("recvMsg(): BUG ! Unknown message type %d", (msg->flags & BUFMSG_TYPE));
-						strcpy(msg_type, "Message");
+						cstrcpy(msg_type, "Message", MAX_LINE);
 					}
 				}
 		}
@@ -1046,15 +1046,15 @@ int from_me = 0;
 		from_me = 1;
 		if (msg->to != NULL) {
 			if (msg->to->next != NULL)
-				strcpy(namebuf, "<many>");
+				cstrcpy(namebuf, "<many>", MAX_LONGLINE);
 			else {
 				if (!strcmp(msg->to->str, usr->name))
-					strcpy(namebuf, "yourself");
+					cstrcpy(namebuf, "yourself", MAX_LONGLINE);
 				else
-					strcpy(namebuf, msg->to->str);
+					cstrcpy(namebuf, msg->to->str, MAX_LONGLINE);
 			}
 		} else
-			strcpy(namebuf, "<bug!>");
+			cstrcpy(namebuf, "<bug!>", MAX_LONGLINE);
 	}
 	if (msg->flags & BUFMSG_SYSOP) {
 		if (from_me)
@@ -1067,24 +1067,24 @@ int from_me = 0;
 			bufprintf(frombuf, MAX_LONGLINE, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
-		strcpy(multi, "Multi ");
+		cstrcpy(multi, "Multi ", MAX_NAME);
 
 /* the message type */
 
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG)
-		strcpy(msgtype, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header);
+		cstrcpy(msgtype, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header, MAX_LINE);
 	else
 		if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE)
-			strcpy(msgtype, "Emote");
+			cstrcpy(msgtype, "Emote", MAX_LINE);
 		else
 			if ((msg->flags & BUFMSG_TYPE) == BUFMSG_FEELING)
-				strcpy(msgtype, "Feeling");
+				cstrcpy(msgtype, "Feeling", MAX_LINE);
 			else
 				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
-					strcpy(msgtype, "Question");
+					cstrcpy(msgtype, "Question", MAX_LINE);
 				else
 					if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ANSWER)
-						strcpy(msgtype, "Answer");
+						cstrcpy(msgtype, "Answer", MAX_LINE);
 
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me)
 		bufprintf(buf, buflen, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
@@ -1244,9 +1244,9 @@ int r;
 
 			bufprintf(buf, MAX_LONGLINE, "<yellow><forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
-				strcpy(buf + MAX_LINE - 5, "...>");
+				cstrcpy(buf + MAX_LINE - 5, "...>", 5);
 
-			strcpy(usr->new_message->subject, buf);
+			cstrcpy(usr->new_message->subject, buf, MAX_LINE);
 		}
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
@@ -1254,11 +1254,11 @@ int r;
 		usr->new_message->to = NULL;
 
 		if (r == usr->mail) {
-			char recipient[MAX_LINE+1], *p;
+			char recipient[MAX_LINE], *p;
 /*
 	extract the username from the entered room name
 */
-			strcpy(recipient, usr->edit_buf);
+			cstrcpy(recipient, usr->edit_buf, MAX_LINE);
 			if ((p = cstrrchr(recipient, ' ')) != NULL) {
 				*p = 0;
 				p--;
@@ -1271,7 +1271,7 @@ int r;
 
 				usr->edit_buf[0] = 0;
 			} else
-				strcpy(recipient, usr->name);
+				cstrcpy(recipient, usr->name, MAX_LINE);
 
 			listdestroy_StringList(usr->message->to);
 			usr->message->to = NULL;
@@ -1505,7 +1505,7 @@ char buf[PRINT_BUF], c;
 		Perror(usr, "Out of memory");
 		Return;
 	}
-	strcpy(usr->new_message->from, usr->name);
+	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
 	sl = usr->recipients;
 	if (sl != NULL) {
@@ -1525,7 +1525,7 @@ char buf[PRINT_BUF], c;
 		Perror(usr, "Out of memory");
 		Return;
 	}
-	strcpy(usr->new_message->subject, "<lost message>");
+	cstrcpy(usr->new_message->subject, "<lost message>", MAX_LINE);
 
 	free_StringIO(usr->text);
 	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");

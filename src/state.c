@@ -681,7 +681,7 @@ int r;
 				Return;
 			}
 /* load the proper hostname */
-			strcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST]);
+			cstrcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST], MAX_LINE);
 		} else {
 			load_profile_info(u);
 
@@ -1005,7 +1005,7 @@ int r;
 		put_StringIO(msg->msg, usr->edit_buf);
 		write_StringIO(msg->msg, "\n", 1);
 
-		strcpy(msg->from, usr->name);
+		cstrcpy(msg->from, usr->name, MAX_NAME);
 		msg->mtime = rtc;
 
 		msg->flags = BUFMSG_EMOTE;
@@ -1023,7 +1023,7 @@ int r;
 			usr->esent++;
 			if (usr->esent > stats.esent) {
 				stats.esent = usr->esent;
-				strcpy(stats.most_esent, usr->name);
+				cstrcpy(stats.most_esent, usr->name, MAX_NAME);
 			}
 			stats.esent_boot++;
 		}
@@ -1087,7 +1087,7 @@ int r;
 		}
 		copy_StringIO(xmsg->msg, usr->text);
 
-		strcpy(xmsg->from, usr->name);
+		cstrcpy(xmsg->from, usr->name, MAX_NAME);
 		if (PARAM_HAVE_XMSG_HDR && usr->xmsg_header != NULL && usr->xmsg_header[0])
 			xmsg->xmsg_header = cstrdup(usr->xmsg_header);
 
@@ -1108,7 +1108,7 @@ int r;
 			usr->xsent++;
 			if (usr->xsent > stats.xsent) {
 				stats.xsent = usr->xsent;
-				strcpy(stats.most_xsent, usr->name);
+				cstrcpy(stats.most_xsent, usr->name, MAX_NAME);
 			}
 			stats.xsent_boot++;
 		}
@@ -1210,7 +1210,7 @@ int r;
 		}
 		Fclose(file);
 
-		strcpy(msg->from, usr->name);
+		cstrcpy(msg->from, usr->name, MAX_NAME);
 		msg->mtime = rtc;
 
 		msg->flags = BUFMSG_FEELING;
@@ -1228,7 +1228,7 @@ int r;
 			usr->fsent++;
 			if (usr->fsent > stats.fsent) {
 				stats.fsent = usr->fsent;
-				strcpy(stats.most_fsent, usr->name);
+				cstrcpy(stats.most_fsent, usr->name, MAX_NAME);
 			}
 			stats.fsent_boot++;
 		}
@@ -1299,7 +1299,7 @@ int r;
 		}
 		copy_StringIO(question->msg, usr->text);
 
-		strcpy(question->from, usr->name);
+		cstrcpy(question->from, usr->name, MAX_NAME);
 		question->mtime = rtc;
 
 		question->flags = BUFMSG_QUESTION;
@@ -1313,7 +1313,7 @@ int r;
 		usr->qsent++;
 		if (usr->qsent > stats.qsent) {
 			stats.qsent = usr->qsent;
-			strcpy(stats.most_qsent, usr->name);
+			cstrcpy(stats.most_qsent, usr->name, MAX_NAME);
 		}
 		RET(usr);
 	}
@@ -1384,7 +1384,7 @@ int r;
 		}
 		copy_StringIO(xmsg->msg, usr->text);
 
-		strcpy(xmsg->from, usr->name);
+		cstrcpy(xmsg->from, usr->name, MAX_NAME);
 
 /* Note: no custom X headers here */
 
@@ -1404,7 +1404,7 @@ int r;
 			usr->qansw++;
 			if (usr->qansw > stats.qansw) {
 				stats.qansw = usr->qansw;
-				strcpy(stats.most_qansw, usr->name);
+				cstrcpy(stats.most_qansw, usr->name, MAX_NAME);
 			}
 			stats.qansw_boot++;
 		}
@@ -2113,7 +2113,7 @@ int r;
 	r = edit_line(usr, c);
 
 	if (r == EDIT_BREAK) {
-		strcpy(usr->edit_buf, "exit");
+		cstrcpy(usr->edit_buf, "exit", MAX_LINE);
 		r = EDIT_RETURN;
 	}
 	if (r == EDIT_RETURN) {
@@ -2259,7 +2259,7 @@ char buf[MAX_LONGLINE], *p;
 		Return 0;
 	}
 	if (!strcmp(cmd, "whoami")) {
-		strcpy(buf, usr->name);
+		cstrcpy(buf, usr->name, MAX_LONGLINE);
 		cstrlwr(buf);
 		while((p = cstrchr(buf, ' ')) != NULL)
 			*p = '_';
@@ -2425,7 +2425,7 @@ int i;
 
 static int print_worldclock(User *usr, int item, char *buf, int buflen) {
 struct tm *t, ut;
-char zone_color[16], zone_color2[16];
+char zone_color[MAX_COLORBUF], zone_color2[MAX_COLORBUF];
 
 /*
 	light up the timezone that this user is in
@@ -2441,11 +2441,11 @@ char zone_color[16], zone_color2[16];
 		t->tm_min = 0;
 	}
 	if (t->tm_hour == ut.tm_hour && t->tm_min == ut.tm_min) {
-		strcpy(zone_color, "white");
-		strcpy(zone_color2, "white");
+		cstrcpy(zone_color, "white", MAX_COLORBUF);
+		cstrcpy(zone_color2, "white", MAX_COLORBUF);
 	} else {
-		strcpy(zone_color, "cyan");
-		strcpy(zone_color2, "yellow");
+		cstrcpy(zone_color, "cyan", MAX_COLORBUF);
+		cstrcpy(zone_color2, "yellow", MAX_COLORBUF);
 	}
 	if (usr->flags & USR_12HRCLOCK) {
 		char am_pm = 'A';

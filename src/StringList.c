@@ -65,24 +65,26 @@ StringList *in_StringList(StringList *sl, char *p) {
 	return sl;
 }
 
-/* converts stringlist to string; returned string must be Free()d */
+/*
+	converts stringlist to string; returned string must be Free()d
+*/
 char *str_StringList(StringList *root) {
 char *str;
-int i = 2;
+int len = 1;
 StringList *sl;
 
 	for(sl = root; sl != NULL; sl = sl->next)
 		if (sl->str != NULL)
-			i += strlen(sl->str);
+			len += strlen(sl->str) + 1;
 
-	if ((str = (char *)Malloc(i, TYPE_CHAR)) == NULL)
+	if ((str = (char *)Malloc(len, TYPE_CHAR)) == NULL)
 		return NULL;
 
 	*str = 0;
 	for(sl = root; sl != NULL; sl = sl->next) {
 		if (sl->str != NULL) {
-			strcat(str, sl->str);
-			strcat(str, "\n");
+			cstrcat(str, sl->str, len);
+			cstrcat(str, "\n", len);
 		}
 	}
 	return str;

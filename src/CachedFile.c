@@ -382,7 +382,7 @@ int l, i;
 
 /* the rest of this routine is to satisfy the cache :P */
 
-	strcpy(buf, dirname);
+	cstrcpy(buf, dirname, MAX_PATHLEN-1);
 	bufp = buf + strlen(buf)-1;
 	if (*bufp != '/') {
 		bufp++;

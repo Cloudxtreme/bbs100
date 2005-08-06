@@ -32,19 +32,19 @@
 #include <string.h>
 
 
-char *basename(char *argv0, char *buf) {
+char *basename(char *argv0, char *buf, int buflen) {
 char *p;
 
 	if ((p = cstrrchr(argv0, '/')) == NULL) {
-		strcpy(buf, argv0);
+		cstrcpy(buf, argv0, buflen);
 		return buf;
 	}
 	p++;
 	if (!*p) {
-		strcpy(buf, argv0);
+		cstrcpy(buf, argv0, buflen);
 		return buf;
 	}
-	strcpy(buf, p);
+	cstrcpy(buf, p, buflen);
 	return buf;
 }
 
@@ -94,10 +94,10 @@ char buf[1024];
 
 FILE *create_file(char *name) {
 FILE *f;
-char filename[512];
+char filename[MAX_PATHLEN];
 
-	strcpy(filename, name);
-	strcat(filename, ".new");
+	cstrcpy(filename, name, MAX_PATHLEN);
+	cstrcat(filename, ".new", MAX_PATHLEN);
 
 	if ((f = fopen(filename, "w")) == NULL) {
 		printf("failed to create file %s\n", filename);
@@ -131,10 +131,10 @@ char buf[512];
 }
 
 void rename_file(char *filename) {
-char oldname[512];
+char oldname[MAX_PATHLEN];
 
-	strcpy(oldname, filename);
-	strcat(oldname, ".new");
+	cstrcpy(oldname, filename, MAX_PATHLEN);
+	cstrcat(oldname, ".new", MAX_PATHLEN);
 	if (rename(oldname, filename) == -1)
 		printf("failed to rename %s to %s\n", oldname, filename);
 }
@@ -315,7 +315,7 @@ char buf[MAX_PATHLEN], *p;
 	printf("%s", print_copyright(SHORT, "bbs100_convert", buf, MAX_PATHLEN));
 
 	if (argc <= 1 || (argc > 1 && strcmp(argv[1], "--"))) {
-		basename(argv[0], buf);
+		basename(argv[0], buf, MAX_PATHLEN);
 		printf("specify filenames on stdin\n"
 			"typical usage is, from the bbs' basedir:\n"
 			"\n");

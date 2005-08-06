@@ -110,7 +110,7 @@ int newMsgs(Room *, unsigned long);
 void resize_Room(Room *, int, User *);
 void room_readdir(Room *);
 void room_readmaildir(Room *, char *);
-void room_readroomdir(Room *, char *);
+void room_readroomdir(Room *, char *, int);
 unsigned long room_top(Room *);
 
 int init_Room(void);

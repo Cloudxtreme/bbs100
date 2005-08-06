@@ -380,62 +380,62 @@ int updated = 0;
 	if (usr->total_time >= stats.oldest_age) {
 		stats.oldest_age = usr->total_time;
 		stats.oldest_birth = usr->birth;			/* oldest birth is not really used for anything */
-		strcpy(stats.oldest, usr->name);
+		cstrcpy(stats.oldest, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->logins >= stats.logins) {
 		stats.logins = usr->logins;
-		strcpy(stats.most_logins, usr->name);
+		cstrcpy(stats.most_logins, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->xsent >= stats.xsent) {
 		stats.xsent = usr->xsent;
-		strcpy(stats.most_xsent, usr->name);
+		cstrcpy(stats.most_xsent, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->xrecv >= stats.xrecv) {
 		stats.xrecv = usr->xrecv;
-		strcpy(stats.most_xrecv, usr->name);
+		cstrcpy(stats.most_xrecv, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->esent >= stats.esent) {
 		stats.esent = usr->esent;
-		strcpy(stats.most_esent, usr->name);
+		cstrcpy(stats.most_esent, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->erecv >= stats.erecv) {
 		stats.erecv = usr->erecv;
-		strcpy(stats.most_erecv, usr->name);
+		cstrcpy(stats.most_erecv, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->fsent >= stats.fsent) {
 		stats.fsent = usr->fsent;
-		strcpy(stats.most_fsent, usr->name);
+		cstrcpy(stats.most_fsent, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->frecv >= stats.frecv) {
 		stats.frecv = usr->frecv;
-		strcpy(stats.most_frecv, usr->name);
+		cstrcpy(stats.most_frecv, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->qsent >= stats.qsent) {
 		stats.qsent = usr->qsent;
-		strcpy(stats.most_qsent, usr->name);
+		cstrcpy(stats.most_qsent, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->qansw >= stats.qansw) {
 		stats.qansw = usr->qansw;
-		strcpy(stats.most_qansw, usr->name);
+		cstrcpy(stats.most_qansw, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->posted >= stats.posted) {
 		stats.posted = usr->posted;
-		strcpy(stats.most_posted, usr->name);
+		cstrcpy(stats.most_posted, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (usr->read >= stats.read) {
 		stats.read = usr->read;
-		strcpy(stats.most_read, usr->name);
+		cstrcpy(stats.most_read, usr->name, MAX_NAME);
 		updated++;
 	}
 	if (updated && save_Stats(&stats, PARAM_STAT_FILE)) {
