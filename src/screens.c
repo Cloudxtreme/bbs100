@@ -32,7 +32,7 @@
 #include <stdlib.h>
 
 /*
-	the screen screen is the only screen that is kept in-core and does
+	the crash screen is the only screen that is kept in-core and does
 	not go through the file cache
 */
 StringIO *crash_screen = NULL;
@@ -42,7 +42,10 @@ int init_screens(void) {
 File *f;
 
 	Enter(init_screens);
-
+/*
+	This is only to see if they load, and to cache them if the cache
+	is enabled
+*/
 	printf("loading login_screen %s ... ", PARAM_LOGIN_SCREEN);
 	if ((f = Fopen(PARAM_LOGIN_SCREEN)) == NULL) {
 		printf("failed\n");
