@@ -17,31 +17,45 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	mkdir.h	WJ99
+	make_dir.h	WJ105
 */
 
-#ifndef MKDIR_H_WJ99
-#define MKDIR_H_WJ99 1
+#ifndef MAKE_DIR_H_WJ105
+#define MAKE_DIR_H_WJ105	1
 
-#include <config.h>
+#include "config.h"
 
-#ifndef HAVE_MKDIR
-#define HAVE_MKDIR 1
+#ifdef HAVE_MKDIR
 
-#include "defines.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#define make_dir(x,y)		mkdir((x),(y))
 
-int mkdir(char *path, mode_t mode) {
-char buf[MAX_PATHLEN];
+#else
 
-	sprintf(buf, "/bin/mkdir -m %o %s", mode, path);
-	return system(buf);
-}
+#define make_dir(x,y)		my_mkdir((x),(y))
 
-#endif
+int my_mkdir(char *, mode_t);
 
-#endif	/* MKDIR_H_WJ99 */
+#endif	/* HAVE_MKDIR */
+
+
+#ifdef HAVE_RMDIR
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define remove_dir(x)		rmdir((x))
+
+#else
+
+#define remove_dir(x)		my_rmdir((x))
+
+int my_rmdir(char *);
+
+#endif	/* HAVE_RMDIR */
+
+#endif	/* MAKE_DIR_H_WJ105 */
 
 /* EOB */

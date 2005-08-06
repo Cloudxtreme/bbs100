@@ -39,7 +39,7 @@
 #include "CallStack.h"
 #include "screens.h"
 #include "cstring.h"
-#include "mkdir.h"
+#include "make_dir.h"
 #include "Param.h"
 #include "copyright.h"
 #include "access.h"
@@ -734,7 +734,7 @@ int r;
 
 		bufprintf(dirname, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
 		path_strip(dirname);
-		if (mkdir(dirname, (mode_t)0750))
+		if (make_dir(dirname, (mode_t)0750))
 			Perror(usr, "Failed to create user directory");
 
 		log_auth("NEWUSER %s (%s)", usr->name, usr->conn->hostname);

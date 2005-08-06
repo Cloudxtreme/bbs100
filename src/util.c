@@ -34,7 +34,7 @@
 #include "memset.h"
 #include "OnlineUser.h"
 #include "locale_system.h"
-#include "mkdir.h"
+#include "make_dir.h"
 #include "bufprintf.h"
 
 #include <stdio.h>
@@ -1529,7 +1529,7 @@ struct dirent *direntp;
 		unlink(buf);		/* note: trash/ is not cached ; it's ok not to use unlink_file() */
 	}
 	closedir(dirp);
-	return rmdir(dirname);
+	return remove_dir(dirname);
 }
 
 int mkdir_p(char *pathname) {
@@ -1549,7 +1549,7 @@ char *p;
 			p++;
 			continue;
 		}
-		if (mkdir(pathname, (mode_t)0750) == -1) {
+		if (make_dir(pathname, (mode_t)0750) == -1) {
 			*p = '/';
 			p++;
 			if (errno == EEXIST)
@@ -1561,7 +1561,7 @@ char *p;
 		*p = '/';
 		p++;
 	}
-	if (mkdir(pathname, (mode_t)0750) == -1) {
+	if (make_dir(pathname, (mode_t)0750) == -1) {
 		if (errno == EEXIST)
 			return 0;
 

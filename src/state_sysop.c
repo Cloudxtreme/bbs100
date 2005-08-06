@@ -42,7 +42,7 @@
 #include "timeout.h"
 #include "Room.h"
 #include "screens.h"
-#include "mkdir.h"
+#include "make_dir.h"
 #include "Param.h"
 #include "main.h"
 #include "CachedFile.h"
@@ -368,7 +368,7 @@ int r;
 		}
 		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
-		if (mkdir(buf, (mode_t)0750) < 0) {
+		if (make_dir(buf, (mode_t)0750) < 0) {
 			log_err("failed to create new room directory %s", buf);
 			Perror(usr, "failed to create room directory");
 			destroy_Room(room);
