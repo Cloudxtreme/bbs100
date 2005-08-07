@@ -69,7 +69,8 @@ char *p;
 		return -1;
 /*
 	this is not the quickest way there is
-	a chain-link of buffers would be faster, but this is much easier
+	a chain-link of buffers would be faster when allocating, but
+	this is faster and easier when working with the buffers
 */
 	if (s->buf != NULL) {
 		memcpy(p, s->buf, s->len);
@@ -109,6 +110,9 @@ char *p;
 	return 0;
 }
 
+/*
+	discard all data in the buffer before the read/write pointer
+*/
 int shift_StringIO(StringIO *s) {
 	if (s == NULL)
 		return -1;
@@ -220,6 +224,7 @@ int newpos;
 
 /*
 	if you want to support holes, remove this bit
+	(and expect to SEGV, because you need to change more to support holes)
 */
 	if (newpos > s->len)
 		return -1;
