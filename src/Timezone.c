@@ -45,15 +45,12 @@ Hash *tz_hash = NULL;
 
 
 int init_Timezone(void) {
-	debug_breakpoint();
 	if (tz_hash == NULL	&& (tz_hash = new_Hash()) == NULL)
 		return -1;
 
 	tz_hash->hashaddr = hashaddr_ascii;
 
-	debug_breakpoint();
 	generate_tz_index(PARAM_ZONEINFODIR, 1);
-	debug_breakpoint();
 	return 0;
 }
 
@@ -573,9 +570,7 @@ StringList *sl;
 	Fputlist(f, sl);
 	Fclose(f);
 
-	debug_breakpoint();
 	listdestroy_StringList(sl);
-	debug_breakpoint();
 	return 0;
 }
 
