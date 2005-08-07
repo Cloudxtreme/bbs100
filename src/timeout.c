@@ -151,7 +151,7 @@ StringIO *screen;
 		case (TIMEOUT_SHUTDOWN-3):
 			log_msg("shutting down, logging off all users");
 
-			if ((screen = new_StringIO()) != NULL && load_StringList(PARAM_SHUTDOWN_SCREEN) >= 0) {
+			if ((screen = new_StringIO()) != NULL && load_screen(screen, PARAM_SHUTDOWN_SCREEN) >= 0) {
 				for(u = AllUsers; u != NULL; u = u->next) {
 					display_text(u, screen);
 					flush_Conn(u->conn);
