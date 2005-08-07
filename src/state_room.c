@@ -899,7 +899,7 @@ void PrintPrompt(User *usr) {
 	usr->scroll = usr->scrollp = NULL;
 
 /*
-	these message were held while you were busy ...
+	these messages were held while you were busy ...
 */
 	if (!(usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) && usr->held_msgs != NULL) {
 		if (usr->flags & USR_HOLD_BUSY) {
