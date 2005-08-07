@@ -344,10 +344,15 @@ char buf[MAX_LONGLINE];
 
 	if (!debugger)
 		goto_background();
+	else
+		log_msg("running under debugger");
 
 	init_ConnResolv();
 
 	stats.uptime = rtc = time(NULL);
+
+	alloc_boot_balance = alloc_balance;
+	alloc_balance = 0;
 
 	nologin_active = 0;				/* users can login */
 	mainloop();

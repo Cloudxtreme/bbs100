@@ -42,6 +42,9 @@
 #define CONN_LOOPING		4
 #define CONN_CLOSED			5
 
+#define MIN_INPUTBUF		16
+#define MIN_OUTPUTBUF		STRINGIO_MINSIZE
+
 #ifndef CONN_DEFINED
 #define CONN_DEFINED 1
 typedef struct Conn_tag Conn;

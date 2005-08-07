@@ -25,7 +25,7 @@
 
 #include <stdarg.h>
 
-#define STRINGIO_MINSIZE	128
+#define STRINGIO_MINSIZE	256
 #define STRINGIO_BLKSIZE	1024
 
 #define STRINGIO_SET		0
@@ -41,9 +41,10 @@ typedef struct {
 StringIO *new_StringIO(void);
 void destroy_StringIO(StringIO *);
 
+int init_StringIO(StringIO *, int);
 int grow_StringIO(StringIO *);
 int trunc_StringIO(StringIO *, int);
-int shift_StringIO(StringIO *);
+int shift_StringIO(StringIO *, int);
 int read_StringIO(StringIO *, char *, int);
 int write_StringIO(StringIO *, char *, int);
 int tell_StringIO(StringIO *);

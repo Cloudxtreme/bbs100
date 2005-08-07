@@ -359,7 +359,7 @@ char input_char[2];
 	no input ready, mark for request to read()
 */
 						if (c->sock > 0) {
-							shift_StringIO(c->input);
+							shift_StringIO(c->input, MIN_INPUTBUF);
 
 							FD_SET(c->sock, &rfds);
 							if (highest_fd <= c->sock)

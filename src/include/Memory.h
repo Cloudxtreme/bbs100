@@ -33,6 +33,8 @@ typedef struct {
 
 extern unsigned long memory_total;
 extern unsigned long mem_stats[NUM_TYPES+1];
+extern int alloc_balance;
+extern int alloc_boot_balance;
 
 int init_Memory(void);
 int init_memcache(void);

@@ -48,6 +48,27 @@ void destroy_StringIO(StringIO *s) {
 	Free(s);
 }
 
+/*
+	generally there's no need to call init_StringIO()
+	but you can use it if you want to start out with a different sized buffer
+	than STRINGIO_MINSIZE
+*/
+int init_StringIO(StringIO *s, int size) {
+	if (s == NULL || s->buf != NULL)
+		return -1;
+
+	if (size <= 0) {
+		s->len = s->size = s->pos = 0;
+		return 0;
+	}
+	if ((s->buf = (char *)Malloc(size, TYPE_CHAR)) == NULL)
+		return -1;
+
+	s->len = s->pos = 0;
+	s->size = size;
+	return 0;
+}
+
 int grow_StringIO(StringIO *s) {
 int newsize;
 char *p;
@@ -112,8 +133,10 @@ char *p;
 
 /*
 	discard all data in the buffer before the read/write pointer
+	if there is no data left and the buffer has grown too large,
+	reallocate it to maxsize. This keeps buffers from growing and growing
 */
-int shift_StringIO(StringIO *s) {
+int shift_StringIO(StringIO *s, int maxsize) {
 	if (s == NULL)
 		return -1;
 
@@ -124,7 +147,19 @@ int shift_StringIO(StringIO *s) {
 		memmove(s->buf, s->buf + s->pos, s->len);
 		s->len -= s->pos;
 	}
+	if (s->len < 0)
+		s->len = 0;
 	s->pos = 0;
+
+	if (!s->len && s->size > maxsize) {			/* shrink the buffer */
+		char *p;
+
+		if ((p = (char *)Malloc(maxsize, TYPE_CHAR)) != NULL) {
+			Free(s->buf);
+			s->size = maxsize;
+			s->buf = p;
+		}
+	}
 	return 0;
 }
 

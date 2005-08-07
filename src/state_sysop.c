@@ -1582,8 +1582,10 @@ char num_buf[MAX_NUMBER], line[PRINT_BUF];
 
 			buffer_text(usr);
 
-			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n\n",
+			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n",
 				print_number(memory_total, num_buf, MAX_NUMBER));
+			Print(usr, "Balance between malloc() and free() after boot: <yellow>%d<green>\n", alloc_boot_balance);
+			Print(usr, "Current balance between malloc() and free():    <yellow>%d<green>\n\n", alloc_balance);
 
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (strlen(Types_table[i].type) > len)

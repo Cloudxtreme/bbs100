@@ -23,7 +23,6 @@
 #include "ConnUser.h"
 #include "User.h"
 #include "OnlineUser.h"
-#include "Timer.h"
 #include "debug.h"
 #include "inet.h"
 #include "log.h"

@@ -149,7 +149,7 @@ int l;
 	l = bufprintf(buf, MAX_LOGLINE, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
 	bufvprintf(buf+l, MAX_LOGLINE - l, msg, ap);
-
+/*
 	if (internal_log_len > MAX_INTERNAL_LOG) {
 		StringList *sl;
 
@@ -160,7 +160,7 @@ int l;
 	}
 	add_StringList(&internal_log, new_StringList(buf));
 	internal_log_len++;
-
+*/
 	fprintf(f, "%s\n", buf);
 }
 

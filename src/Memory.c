@@ -35,6 +35,8 @@ static MemFreeList *free_list = NULL;
 unsigned long memory_total = 0UL;
 unsigned long mem_stats[NUM_TYPES+1];
 
+int alloc_balance = 0, alloc_boot_balance = 0;
+
 
 int init_Memory(void) {
 	memory_total = 0UL;
@@ -130,6 +132,8 @@ void *mem;
 	if (memtype < 0 || memtype >= (NUM_TYPES+1))
 		return NULL;
 
+/*	log_debug("Malloc(): type %s: 0x%08lx", Types_table[memtype].type, (unsigned long)mem);	*/
+
 /*
 	asked for 1 item; search it in the free_list
 */
@@ -137,6 +141,7 @@ void *mem;
 		if ((mem = get_freelist(memtype)) != NULL) {
 			((int *)mem)[0] = 1UL;
 			((int *)mem)[1] = ('A' << 8) | memtype;
+			alloc_balance++;
 			return (void *)((char *)mem + 2*sizeof(int));
 		}
 	}
@@ -156,6 +161,7 @@ void *mem;
 	((int *)mem)[0] = (int)size;
 	((int *)mem)[1] = ('A' << 8) | memtype;
 
+	alloc_balance++;
 	return (void *)((char *)mem + 2*sizeof(int));
 }
 
@@ -165,17 +171,20 @@ int *mem, size;
 	if (ptr == NULL)
 		return;
 
+/*	log_debug("Free(): freeing ptr 0x%08lx", (unsigned long)ptr);	*/
+
 	mem = (int *)((char *)ptr - 2*sizeof(int));
 
-	if ((mem[1] >> 8) != 'A') {		/* crude sanity check */
+	if ((mem[1] >> 8) != 'A') {							/* crude sanity check */
 		log_err("Free(): sanity check failed");
 		return;
 	}
 	mem[1] &= 0xff;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
-		if (mem[0] == 1UL && !put_freelist(mem, mem[1]))
+		if (mem[0] == 1UL && !put_freelist(mem, mem[1])) {
+			alloc_balance--;
 			return;
-
+		}
 		size = mem[0] * Types_table[mem[1]].size;
 		mem_stats[mem[1]] -= mem[0];
 	} else {
@@ -185,6 +194,7 @@ int *mem, size;
 	mem[1] = 0UL;
 
 	memory_total -= (size + 2*sizeof(int));
+	alloc_balance--;
 	free(mem);
 }
 

@@ -1,3 +1,8 @@
+Changes as of August 7th 2005
+- memory status screen shows balance between malloc() and free()
+- input buffers initialized to small buffers
+- I/O buffers automatically shrink again
+
 Changes as of August 6th 2005
 - portability: use of bufprintf(), which really maps to snprintf(),
   if you have HAVE_SNPRINTF

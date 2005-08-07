@@ -61,6 +61,14 @@ Conn *c;
 		destroy_Conn(c);
 		return NULL;
 	}
+/*
+	explicitly initialize input to a small input buffer
+	the output buffer will go automatically, which is at least STRINGIO_MINSIZE bytes
+*/
+	if (init_StringIO(c->input, MIN_INPUTBUF) == -1) {
+		destroy_Conn(c);
+		return NULL;
+	}
 	return c;
 }
 
@@ -151,7 +159,7 @@ char buf[MAX_PATHLEN];
 		if (err != n)							/* partially written */
 			seek_StringIO(conn->output, err - n, STRINGIO_CUR);
 
-		shift_StringIO(conn->output);
+		shift_StringIO(conn->output, MIN_OUTPUTBUF);
 	}
 	return 0;
 }
