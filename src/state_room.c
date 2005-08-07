@@ -915,7 +915,7 @@ void PrintPrompt(User *usr) {
 		if (usr->curr_room == NULL || (usr->curr_room->flags & ROOM_CHATROOM)) {
 			StringList *sl;
 
-/* spool the messages we didn't get while we were busy */
+/* spool the chat messages we didn't get while we were busy */
 
 			for(sl = usr->chat_history; sl != NULL; sl = sl->next)
 				Print(usr, "%s\n", sl->str);
