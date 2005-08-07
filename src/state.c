@@ -113,7 +113,7 @@ int fun_common(User *usr, char c) {
 				break;
 			}
 			free_StringIO(usr->text);
-			if (load_StringIO(usr->text, PARAM_CREDITS_SCREEN) < 0) {
+			if (load_screen(usr->text, PARAM_CREDITS_SCREEN) < 0) {
 				Put(usr, "<red>The credits file is missing\n");		/* or out of memory! */
 				break;
 			}
