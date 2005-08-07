@@ -83,7 +83,7 @@ int fun_common(User *usr, char c) {
 		case KEY_CTRL('G'):
 			Put(usr, "<white>GNU General Public License\n");
 			if (load_screen(usr->text, PARAM_GPL_SCREEN) < 0) {
-				Put(usr, "<red>The GPL file is missing\n");		/* or out of memory! */
+				Put(usr, "<red>The GPL file is missing\n");				/* or out of memory! */
 				break;
 			}
 			read_text(usr);
@@ -97,7 +97,7 @@ int fun_common(User *usr, char c) {
 		case ']':
 			Put(usr, "<white>Local modifications made to bbs100");
 			if (load_screen(usr->text, PARAM_MODS_SCREEN) < 0) {
-				Put(usr, "\n<red>The local mods file is missing\n");		/* or out of memory! */
+				Put(usr, "\n<red>The local mods file is missing\n");	/* or out of memory! */
 				break;
 			}
 			Put(usr, "<green>");

@@ -327,7 +327,7 @@ int len;
 
 			case KEY_CTRL('X'):
 			case '\r':
-				return -1000;		/* fool him */
+				return -10000;		/* fool him */
 
 			case ' ':
 			case '\n':
