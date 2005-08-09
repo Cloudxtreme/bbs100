@@ -24,6 +24,8 @@
 #define MEMORY_H_WJ100
 
 #include "Types.h"
+#include "Timer.h"
+#include "sys_time.h"
 
 #define NUM_FREELIST	5
 
@@ -32,6 +34,7 @@ typedef struct {
 } MemFreeList;
 
 extern unsigned long memory_total;
+extern unsigned long memory_peak;
 extern unsigned long mem_stats[NUM_TYPES+1];
 extern int alloc_balance;
 extern int alloc_boot_balance;

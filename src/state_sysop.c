@@ -1584,6 +1584,10 @@ char num_buf[MAX_NUMBER], line[PRINT_BUF];
 
 			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n",
 				print_number(memory_total, num_buf, MAX_NUMBER));
+
+			Print(usr, "<green>Memory peak value:   <yellow>%s <green>bytes\n",
+				print_number(memory_peak, num_buf, MAX_NUMBER));
+
 			Print(usr, "Balance between malloc() and free() after boot: <yellow>%d<green>\n", alloc_boot_balance);
 			Print(usr, "Current balance between malloc() and free():    <yellow>%d<green>\n\n", alloc_balance);
 

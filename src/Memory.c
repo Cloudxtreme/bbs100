@@ -32,14 +32,14 @@
 
 static MemFreeList *free_list = NULL;
 
-unsigned long memory_total = 0UL;
+unsigned long memory_total = 0UL, memory_peak = 0UL;
 unsigned long mem_stats[NUM_TYPES+1];
 
 int alloc_balance = 0, alloc_boot_balance = 0;
 
 
 int init_Memory(void) {
-	memory_total = 0UL;
+	memory_total = memory_peak = 0UL;
 	memset(mem_stats, 0, sizeof(unsigned long) * (NUM_TYPES+1));
 
 	init_memcache();
@@ -151,6 +151,8 @@ void *mem;
 	}
 	memset(mem, 0, size + 2*sizeof(int));		/* malloc() sets it to 0, yeah right! :P */
 	memory_total += (size + 2*sizeof(int));
+	if (memory_total > memory_peak)
+		memory_peak = memory_total;
 
 	if (memtype < NUM_TYPES) {
 		size /= Types_table[memtype].size;
