@@ -716,7 +716,7 @@ int len;
 			buf[len++] = (usr->flags & USR_BOLD_HOTKEYS) ? '1' : '0';
 
 		if (usr->flags & USR_ANSI)
-			len += bufprintf(buf+len, buflen - len, ";%dm", color_table[usr->colors[HOTKEY]].value);
+			len += bufprintf(buf+len, buflen - len, ";%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, color_table[usr->colors[HOTKEY]].value);
 		else
 			buf[len++] = 'm';
 	}
@@ -740,7 +740,7 @@ int len;
 			buf[len++] = '0';
 
 		if (usr->flags & USR_ANSI)
-			len += bufprintf(buf+len, buflen - len, ";%dm", Ansi_Color(usr, usr->color));
+			len += bufprintf(buf+len, buflen - len, ";%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, Ansi_Color(usr, usr->color));
 		else
 			buf[len++] = 'm';
 	}
@@ -948,7 +948,7 @@ int cpos, i;
 void auto_color(User *usr, char *colorbuf, int buflen) {
 int color;
 
-	if (usr == NULL || colorbuf == NULL)
+	if (usr == NULL || colorbuf == NULL || !(usr->flags & USR_ANSI))
 		return;
 
 	*colorbuf = 0;
@@ -972,9 +972,9 @@ int color;
 			color = color_table[usr->symbol_colors[WHITE]].value;
 	}
 	if (usr->flags & USR_BOLD)
-		bufprintf(colorbuf, buflen, "\x1b[1;%dm", color);
+		bufprintf(colorbuf, buflen, "\x1b[1;%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, color);
 	else
-		bufprintf(colorbuf, buflen, "\x1b[0;%dm", color);
+		bufprintf(colorbuf, buflen, "\x1b[0;%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, color);
 }
 
 /*
@@ -989,9 +989,9 @@ void restore_colorbuf(User *usr, int color, char *colorbuf, int buflen) {
 	if (usr->flags & USR_ANSI) {
 		color = Ansi_Color(usr, color);
 		if (usr->flags & USR_BOLD)
-			bufprintf(colorbuf, buflen, "\x1b[1;%dm", color);
+			bufprintf(colorbuf, buflen, "\x1b[1;%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, color);
 		else
-			bufprintf(colorbuf, buflen, "\x1b[0;%dm", color);
+			bufprintf(colorbuf, buflen, "\x1b[0;%d;%dm", color_table[usr->colors[BACKGROUND]].value+10, color);
 	}
 }
 
