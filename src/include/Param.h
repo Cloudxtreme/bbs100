@@ -120,8 +120,9 @@
 #define KVPARAM_SAVE_TIMEOUT		param[KVPARAM_MAX_N+12]
 #define KVPARAM_CACHE_TIMEOUT		param[KVPARAM_MAX_N+13]
 #define KVPARAM_HELPER_AGE			param[KVPARAM_MAX_N+14]
+#define KVPARAM_CHUNK_SIZE			param[KVPARAM_MAX_N+15]
 
-#define KVPARAM_NAME_N				65
+#define KVPARAM_NAME_N				66
 #define KVPARAM_SEP8				param[KVPARAM_NAME_N]
 
 #define KVPARAM_NAME_SYSOP			param[KVPARAM_NAME_N+1]
@@ -129,7 +130,7 @@
 #define KVPARAM_NAME_HELPER			param[KVPARAM_NAME_N+3]
 #define KVPARAM_NAME_GUEST			param[KVPARAM_NAME_N+4]
 
-#define KVPARAM_NOTIFY_N			70
+#define KVPARAM_NOTIFY_N			71
 #define KVPARAM_SEP9				param[KVPARAM_NOTIFY_N]
 
 #define KVPARAM_NOTIFY_LOGIN		param[KVPARAM_NOTIFY_N+1]
@@ -143,7 +144,7 @@
 #define KVPARAM_NOTIFY_ENTER_CHAT	param[KVPARAM_NOTIFY_N+9]
 #define KVPARAM_NOTIFY_LEAVE_CHAT	param[KVPARAM_NOTIFY_N+10]
 
-#define KVPARAM_HAVE_N				81
+#define KVPARAM_HAVE_N				82
 #define KVPARAM_SEP10				param[KVPARAM_HAVE_N]
 
 #define KVPARAM_HAVE_XMSGS			param[KVPARAM_HAVE_N+1]
@@ -222,7 +223,6 @@
 #define PARAM_PID_FILE				SPARAM(PID_FILE)
 #define PARAM_SYMTAB_FILE			SPARAM(SYMTAB_FILE)
 #define PARAM_DEFAULT_TIMEZONE		SPARAM(DEFAULT_TIMEZONE)
-#define PARAM_DEFAULT_LANGUAGE		SPARAM(DEFAULT_LANGUAGE)
 
 #define PARAM_SYSLOG				SPARAM(SYSLOG)
 #define PARAM_AUTHLOG				SPARAM(AUTHLOG)
@@ -245,6 +245,7 @@
 #define PARAM_SAVE_TIMEOUT			IPARAM(SAVE_TIMEOUT)
 #define PARAM_CACHE_TIMEOUT			IPARAM(CACHE_TIMEOUT)
 #define PARAM_HELPER_AGE			IPARAM(HELPER_AGE)
+#define PARAM_CHUNK_SIZE			IPARAM(CHUNK_SIZE)
 
 #define PARAM_NAME_SYSOP			SPARAM(NAME_SYSOP)
 #define PARAM_NAME_ROOMAIDE			SPARAM(NAME_ROOMAIDE)
@@ -304,6 +305,7 @@
 #define DEFAULT_SAVE_TIMEOUT		5		/* save user every 5 minutes */
 #define DEFAULT_CACHE_TIMEOUT		30		/* expire unused cached files every 30 minutes */
 #define DEFAULT_HELPER_AGE			1		/* minimum age in days required for Helper status */
+#define DEFAULT_CHUNK_SIZE			4096	/* chunk size for BinAlloc() */
 #define DEFAULT_UMASK				007		/* allow user+group, deny others */
 
 extern KVPair **param;

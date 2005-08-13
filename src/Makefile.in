@@ -66,7 +66,7 @@ OBJS = List.o PList.o Hash.o StringList.o CallStack.o \
 	SU_Passwd.o Param.o Types.o Memory.o SymbolTable.o HostMap.o \
 	FileFormat.o Timezone.o Worldclock.o locale_system.o locales.o \
 	Category.o Conn.o ConnUser.o ConnResolv.o Telnet.o \
-	KVPair.o StringIO.o	Display.o patchlist.o \
+	KVPair.o StringIO.o	Display.o patchlist.o BinAlloc.o \
 	main.o
 
 MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o

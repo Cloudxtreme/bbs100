@@ -1,3 +1,10 @@
+Changes as of August 13th 2005
+- implemented special purpose memory allocator but it's not any better than
+  malloc() at all ...
+
+Changes as of August 9th 2005
+- memory peak value in sysop menu:malloc status screen
+
 Changes as of August 7th 2005
 - memory status screen shows balance between malloc() and free()
 - input buffers initialized to small buffers

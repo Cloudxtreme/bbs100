@@ -301,7 +301,7 @@ int err, err2;
 	if ((f = openfile(filename, "r")) == NULL)
 		return -1;
 
-	while((err = fread(buf, 1, PRINT_BUF, f->f)) > 0) {
+	while((err = fread(buf, 1, PRINT_BUF-1, f->f)) > 0) {
 		err2 = write_StringIO(s, buf, err);
 		if (err2 != err) {
 			closefile(f);

@@ -37,12 +37,21 @@ unsigned long mem_stats[NUM_TYPES+1];
 
 int alloc_balance = 0, alloc_boot_balance = 0;
 
+/*
+	allocate/free function
+*/
+void *(*Malloc)(unsigned long, int) = NULL;
+void (*Free)(void *) = NULL;
+
 
 int init_Memory(void) {
 	memory_total = memory_peak = 0UL;
 	memset(mem_stats, 0, sizeof(unsigned long) * (NUM_TYPES+1));
 
 	init_memcache();
+
+	Malloc = MemAlloc;
+	Free = MemFree;
 	return 0;
 }
 
@@ -116,14 +125,14 @@ int n;
 }
 
 /*
-	Malloc() puts the size and type before the pointer it returns
+	MemAlloc() puts the size and type before the pointer it returns
 	as a sanity check, it also inserts the character 'A' before
 	the memory type, so Free() can see if the pointer is valid at all
 	(if we haven't already crashed by then, that is)
 
-	Malloc() first checks the free_list for quick allocation
+	MemAlloc() first checks the free_list for quick allocation
 */
-void *Malloc(unsigned long size, int memtype) {
+void *MemAlloc(unsigned long size, int memtype) {
 void *mem;
 
 	if (size <= 0)
@@ -132,7 +141,7 @@ void *mem;
 	if (memtype < 0 || memtype >= (NUM_TYPES+1))
 		return NULL;
 
-/*	log_debug("Malloc(): type %s: 0x%08lx", Types_table[memtype].type, (unsigned long)mem);	*/
+/*	log_debug("MemAlloc(): type %s: 0x%08lx", Types_table[memtype].type, (unsigned long)mem);	*/
 
 /*
 	asked for 1 item; search it in the free_list
@@ -146,7 +155,7 @@ void *mem;
 		}
 	}
 	if ((mem = (char *)malloc(size + 2*sizeof(int))) == NULL) {
-		log_err("Malloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(int), Types_table[memtype].type);
+		log_err("MemAlloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(int), Types_table[memtype].type);
 		return NULL;
 	}
 	memset(mem, 0, size + 2*sizeof(int));		/* malloc() sets it to 0, yeah right! :P */
@@ -167,18 +176,18 @@ void *mem;
 	return (void *)((char *)mem + 2*sizeof(int));
 }
 
-void Free(void *ptr) {
+void MemFree(void *ptr) {
 int *mem, size;
 
 	if (ptr == NULL)
 		return;
 
-/*	log_debug("Free(): freeing ptr 0x%08lx", (unsigned long)ptr);	*/
+/*	log_debug("MemFree(): freeing ptr 0x%08lx", (unsigned long)ptr);	*/
 
 	mem = (int *)((char *)ptr - 2*sizeof(int));
 
 	if ((mem[1] >> 8) != 'A') {							/* crude sanity check */
-		log_err("Free(): sanity check failed");
+		log_err("MemFree(): sanity check failed");
 		return;
 	}
 	mem[1] &= 0xff;

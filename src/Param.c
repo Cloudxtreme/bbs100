@@ -44,8 +44,8 @@ int i;
 		if ((param[i] = new_KVPair()) == NULL)
 			return -1;
 
-	KVPair_setstring(KVPARAM_BBS_NAME,		"bbs_name",		"bbs100");
-	KVPair_setstring(KVPARAM_PORT_NUMBER,	"port_number",	DEFAULT_PORT_1234);
+	KVPair_setstring(KVPARAM_BBS_NAME,			"bbs_name",			"bbs100");
+	KVPair_setstring(KVPARAM_PORT_NUMBER,		"port_number",		DEFAULT_PORT_1234);
 
 	KVPair_setstring(KVPARAM_SEP1, "", "");
 
@@ -123,6 +123,7 @@ int i;
 	KVPair_setint(KVPARAM_SAVE_TIMEOUT,			"periodic_saving",	DEFAULT_SAVE_TIMEOUT);
 	KVPair_setint(KVPARAM_CACHE_TIMEOUT,		"cache_expire",		DEFAULT_CACHE_TIMEOUT);
 	KVPair_setint(KVPARAM_HELPER_AGE,			"helper_age",		DEFAULT_HELPER_AGE);
+	KVPair_setint(KVPARAM_CHUNK_SIZE,			"chunk_size",		DEFAULT_CHUNK_SIZE);
 
 	KVPair_setstring(KVPARAM_SEP8, "", "");
 

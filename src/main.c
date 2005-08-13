@@ -53,6 +53,7 @@
 #include "ConnUser.h"
 #include "ConnResolv.h"
 #include "bufprintf.h"
+#include "BinAlloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -203,6 +204,10 @@ char buf[MAX_LONGLINE];
 	Enter(main);
 
 	if (init_Memory()) {
+		fprintf(stderr, "bbs100: out of memory (?)\n");
+		exit(-1);
+	}
+	if (init_BinAlloc()) {
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}

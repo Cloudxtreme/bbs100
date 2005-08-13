@@ -18,7 +18,7 @@ Just "bee-bee-es one-hundred" or "bee-bee-es-hundred" if you like.
 
 PORTABILITY
 What platforms does bbs100 run on?
-Basically, it runs on any Unix-like platform.
+Basically, it runs on any POSIX compliant platform.
 So far, I've succesfully compiled and run bbs100 on the following platforms:
 
     Platform                Architecture
@@ -31,9 +31,9 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     Solaris 2.6             Sun Sparc Ultra-1
     SunOS 5.6               Sun Sparc Ultra-1
     AIX 4.2.1 with DFS      IBM RS/6000
-    Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000
+    Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000/O3000
     Unicos 10.0.0.x         Cray C90
-    Mac OS X                I think it was a Apple MacIntosh G5
+    Mac OS X                I think it was an Apple MacIntosh G5
     Windows 2000            under Cygwin
     Windows XP SP2          under Cygwin
 
@@ -47,6 +47,14 @@ share your experiences.
 IS bbs100 IPv6 ENABLED?
 Yes. If you have problems with running bbs100 due to the networking code,
 please let me know.
+
+
+WHAT DOES request_module[net-pf-10]: fork failed, errno 1 DURING
+STARTUP MEAN?
+You are running Linux and the system is trying to load the IPv6 module.
+errno 1 means you don't have permission to do so. There can be other
+error codes as well.
+You can safely ignore the message and run on IPv4.
 
 
 YAWC

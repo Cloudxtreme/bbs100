@@ -19,7 +19,6 @@
 /*
 	log.c	WJ103
 
-	- complete rewrite of logging code
 	- more 'syslog'-like to the outside world
 	- automatic rotation
 	- automatic archiving
