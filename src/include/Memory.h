@@ -34,10 +34,9 @@ typedef struct {
 } MemFreeList;
 
 extern unsigned long memory_total;
-extern unsigned long memory_peak;
 extern unsigned long mem_stats[NUM_TYPES+1];
+extern int mem_balance[NUM_TYPES+1];
 extern int alloc_balance;
-extern int alloc_boot_balance;
 extern void *(*Malloc)(unsigned long, int);
 extern void (*Free)(void *);
 

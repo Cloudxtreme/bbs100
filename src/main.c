@@ -356,9 +356,6 @@ char buf[MAX_LONGLINE];
 
 	stats.uptime = rtc = time(NULL);
 
-	alloc_boot_balance = alloc_balance;
-	alloc_balance = 0;
-
 	nologin_active = 0;				/* users can login */
 	mainloop();
 	exit_program(SHUTDOWN);			/* clean shutdown */

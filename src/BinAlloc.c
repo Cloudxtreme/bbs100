@@ -139,6 +139,8 @@ static void remove_freelist(BinChunk *, int, int);
 
 
 int init_BinAlloc(void) {
+	return 0;
+
 	if ((root_chunk = alloc_chunk()) == NULL)
 		return -1;
 

@@ -32,10 +32,10 @@
 
 static MemFreeList *free_list = NULL;
 
-unsigned long memory_total = 0UL, memory_peak = 0UL;
+unsigned long memory_total = 0UL;
 unsigned long mem_stats[NUM_TYPES+1];
-
-int alloc_balance = 0, alloc_boot_balance = 0;
+int mem_balance[NUM_TYPES+1];
+int alloc_balance = 0;
 
 /*
 	allocate/free function
@@ -45,8 +45,9 @@ void (*Free)(void *) = NULL;
 
 
 int init_Memory(void) {
-	memory_total = memory_peak = 0UL;
+	memory_total = 0UL;
 	memset(mem_stats, 0, sizeof(unsigned long) * (NUM_TYPES+1));
+	memset(mem_balance, 0, sizeof(int) * (NUM_TYPES+1));
 
 	init_memcache();
 
@@ -151,6 +152,7 @@ void *mem;
 			((int *)mem)[0] = 1UL;
 			((int *)mem)[1] = ('A' << 8) | memtype;
 			alloc_balance++;
+			mem_balance[memtype]++;
 			return (void *)((char *)mem + 2*sizeof(int));
 		}
 	}
@@ -160,15 +162,15 @@ void *mem;
 	}
 	memset(mem, 0, size + 2*sizeof(int));		/* malloc() sets it to 0, yeah right! :P */
 	memory_total += (size + 2*sizeof(int));
-	if (memory_total > memory_peak)
-		memory_peak = memory_total;
 
 	if (memtype < NUM_TYPES) {
 		size /= Types_table[memtype].size;
 		mem_stats[memtype] += size;
-	} else
+		mem_balance[memtype]++;
+	} else {
 		mem_stats[NUM_TYPES]++;		/* unknown type */
-
+		mem_balance[NUM_TYPES]++;
+	}
 	((int *)mem)[0] = (int)size;
 	((int *)mem)[1] = ('A' << 8) | memtype;
 
@@ -194,13 +196,16 @@ int *mem, size;
 	if (mem[1] >= 0 && mem[1] < NUM_TYPES) {
 		if (mem[0] == 1UL && !put_freelist(mem, mem[1])) {
 			alloc_balance--;
+			mem_balance[mem[1]]--;
 			return;
 		}
 		size = mem[0] * Types_table[mem[1]].size;
 		mem_stats[mem[1]] -= mem[0];
+		mem_balance[mem[1]]--;
 	} else {
 		size = mem[0];
 		mem_stats[NUM_TYPES]--;		/* unknown type */
+		mem_balance[NUM_TYPES]--;
 	}
 	mem[1] = 0UL;
 

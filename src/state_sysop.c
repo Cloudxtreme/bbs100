@@ -1565,8 +1565,8 @@ int r;
 }
 
 void state_malloc_status(User *usr, char c) {
-int i, len = 0, l;
-char num_buf[MAX_NUMBER], line[PRINT_BUF];
+int i, len;
+char num_buf[MAX_NUMBER];
 
 	if (usr == NULL)
 		return;
@@ -1582,39 +1582,32 @@ char num_buf[MAX_NUMBER], line[PRINT_BUF];
 
 			buffer_text(usr);
 
-			Print(usr, "<green>Total memory in use: <yellow>%s <green>bytes\n",
-				print_number(memory_total, num_buf, MAX_NUMBER));
-
-			Print(usr, "<green>Memory peak value:   <yellow>%s <green>bytes\n",
-				print_number(memory_peak, num_buf, MAX_NUMBER));
-
-			Print(usr, "Balance between malloc() and free() after boot: <yellow>%d<green>\n", alloc_boot_balance);
-			Print(usr, "Current balance between malloc() and free():    <yellow>%d<green>\n\n", alloc_balance);
-
+			len = 0;
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (strlen(Types_table[i].type) > len)
 					len = strlen(Types_table[i].type);
 			}
-			l = 0;
-			line[0] = 0;
+			Put(usr, "<white>Statistics<green>\n");
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (i & 1)
-					l += bufprintf(line+l, PRINT_BUF - l, "      ");
+					Put(usr, "      ");
 
-				l += bufprintf(line+l, PRINT_BUF - l, "%-*s :<white> %12s<green> ",
-					len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER));
-
-				if (i & 1) {
-					Print(usr, "%s\n", line);
-					l = 0;
-					line[0] = 0;
-				} else {
-					line[l++] = ' ';
-					line[l] = 0;
-				}
+				Print(usr, "%-*s :<white> %12s<green>%c", len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER), (i & 1) ? '\n' : ' ');
 			}
-			if (!(i & 1))
-				Put(usr, "\n");
+			if (i & 1)
+				Put(usr, "      ");
+			Print(usr, "<yellow>%-*s :<white> %12s<green>\n", len, "total", print_number(memory_total, num_buf, MAX_NUMBER));
+
+			Put(usr, "\n<white>Balance<green>\n");
+			for(i = 0; i < NUM_TYPES+1; i++) {
+				if (i & 1)
+					Put(usr, "      ");
+
+				Print(usr, "%-*s :<white> %12d<green>%c", len, Types_table[i].type, mem_balance[i], (i & 1) ? '\n' : ' ');
+			}
+			if (i & 1)
+				Put(usr, "      ");
+			Print(usr, "<yellow>%-*s :<white> %12d<green>\n", len, "total", alloc_balance);
 
 			read_menu(usr);
 			Return;
