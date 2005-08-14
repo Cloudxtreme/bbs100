@@ -471,7 +471,7 @@ unsigned long num;
 
 		Print(usr, "\n<green>Total memory in use:<yellow> %s <green>bytes\n", print_number(memory_total, date_buf, MAX_LINE));
 		if (Malloc == BinMalloc) {
-			Print(usr, "In use:<yellow> %s <green>bytes                    ", print_number(bin_use, date_buf, MAX_LINE));
+			Print(usr, "In use:<yellow> %s <green>bytes                   ", print_number(bin_use, date_buf, MAX_LINE));
 			Print(usr, "Foreign use:<yellow> %s <green>bytes\n", print_number(bin_foreign, date_buf, MAX_LINE));
 		}
 	}

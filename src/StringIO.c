@@ -33,6 +33,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 StringIO *new_StringIO(void) {
@@ -293,15 +296,24 @@ char buf[1024];
 
 int load_StringIO(StringIO *s, char *filename) {
 AtomicFile *f;
+struct stat statbuf;
 char buf[PRINT_BUF];
 int err, err2;
 
 	if (s == NULL || filename == NULL || !*filename)
 		return -1;
 
+	if (stat(filename, &statbuf) == -1)
+		return -1;
+
 	if ((f = openfile(filename, "r")) == NULL)
 		return -1;
 
+	if (s->size < statbuf.st_size+1 || s->size > statbuf.st_size+100) {
+		free_StringIO(s);
+		if (init_StringIO(s, statbuf.st_size+1) == -1)
+			return -1;
+	}
 	while((err = fread(buf, 1, PRINT_BUF-1, f->f)) > 0) {
 		err2 = write_StringIO(s, buf, err);
 		if (err2 != err) {

@@ -1,5 +1,6 @@
 Changes as of August 14th 2005
 - BinAlloc is finally working, but hardly paying off
+- load_StringIO() allocates complete filesize
 
 Changes as of August 13th 2005
 - implemented special purpose memory allocator but it's not any better than
