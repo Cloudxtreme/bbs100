@@ -1612,7 +1612,7 @@ char num_buf[MAX_NUMBER];
 
 			if (Malloc == BinMalloc) {
 				BinChunk *c;
-				int n, chunk_size, bytes_free;
+				int n, chunk_size, bytes_free, fl_addr, fl_next, fl_size;
 
 				Put(usr, "\n<white>BinMalloc status\n");
 				Print(usr, "<yellow>%d <green>chunks allocated\n\n", list_Count(root_chunk));
@@ -1624,9 +1624,19 @@ char num_buf[MAX_NUMBER];
 					chunk_size <<= 2;
 					LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
 					bytes_free <<= 2;
-					Print(usr, "Chunk<yellow> #%-3d: %13s <green>bytes", n, print_number(chunk_size, num_buf, MAX_NUMBER));
+					Print(usr, "<green>Chunk<yellow> #%-3d %13s <green>bytes", n, print_number(chunk_size, num_buf, MAX_NUMBER));
 					Print(usr, "<yellow> %13s <green>allocated", print_number(chunk_size - bytes_free, num_buf, MAX_NUMBER));
-					Print(usr, "<yellow> %13s <green>free\n", print_number(bytes_free, num_buf, MAX_NUMBER));
+					Print(usr, "<yellow> %13s <green>free\n<white>", print_number(bytes_free, num_buf, MAX_NUMBER));
+
+					LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
+					while(fl_addr) {
+						LD_ADDR(c, fl_addr, fl_next);
+						LD_SIZE(c, fl_addr, fl_size);
+						Print(usr, "  [addr:%04x, size:%d]\n", fl_addr << 2, fl_size << 2);
+						fl_addr = fl_next;
+					}
+					if (c->next != NULL)
+						Put(usr, "\n");
 				}
 			}
 			read_menu(usr);

@@ -190,8 +190,6 @@ unsigned long *ulptr;
 	alloc_balance++;
 
 	ROUND4(size);
-	n = size / Types_table[type].size;
-	mem_stats[type] += n;
 
 	hdr_size = OFFSET_FREE_LIST+2;
 	ROUND4(hdr_size);
@@ -235,6 +233,8 @@ unsigned long *ulptr;
 							ST_WORD(c, OFFSET_FREE_LIST, fl_next);
 
 						ST_ALLOC(c, fl_addr, type);
+						n = (fl_size << 2) / Types_table[type].size;
+						mem_stats[type] += n;
 
 						bytes_free -= fl_size;
 						if (bytes_free < 0)
@@ -257,6 +257,8 @@ unsigned long *ulptr;
 
 						ST_ALLOC(c, fl_addr, type);		/* allocate */
 						ST_SIZE(c, fl_addr, size);
+						n = (size << 2) / Types_table[type].size;
+						mem_stats[type] += n;
 
 /* split the piece; the marker takes up 1 cell as well */
 						size++;
@@ -344,6 +346,8 @@ unsigned long *ulptr;
 
 	memory_total += size;
 	bin_foreign += size;
+	n = size / Types_table[type].size;
+	mem_stats[type] += n;
 
 	p = p + 4;
 	size -= (sizeof(unsigned long) + 4);
