@@ -47,11 +47,11 @@ Worldclock worldclock[] = {
 };
 
 
-/*
-	Note: buf must be large enough (64 bytes should do)
-*/
-static char *zonefile_name(char *filename, char *buf) {
+static char *zonefile_name(char *filename, char *buf, int maxlen) {
 char *p;
+
+	if (buf == NULL || maxlen <= 0)
+		return NULL;
 
 	buf[0] = 0;
 	if (filename == NULL || !*filename)
@@ -62,7 +62,7 @@ char *p;
 	else
 		p = filename;
 
-	cstrncpy(buf, p, MAX_LINE);
+	cstrncpy(buf, p, maxlen);
 
 	while((p = cstrchr(buf, '_')) != NULL)
 		*p = ' ';
@@ -77,14 +77,14 @@ char *p;
 int init_Worldclock(void) {
 int i, num;
 Timezone *tz;
-char zfn_buf[80];
+char zfn_buf[MAX_LINE];
 
 	printf("loading worldclock ...\n");
 
 	num = sizeof(worldclock)/sizeof(Worldclock);
 	for(i = 0; i < num; i++) {
 		worldclock[i].tz = tz = load_Timezone(worldclock[i].filename);
-		worldclock[i].name = cstrdup(zonefile_name(worldclock[i].filename, zfn_buf));
+		worldclock[i].name = cstrdup(zonefile_name(worldclock[i].filename, zfn_buf, MAX_LINE));
 
 		printf("  %-16s", (worldclock[i].name == NULL) ? worldclock[i].filename : worldclock[i].name);
 

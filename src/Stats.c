@@ -36,6 +36,7 @@
 #include "CachedFile.h"
 #include "FileFormat.h"
 #include "memset.h"
+#include "BinAlloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -262,9 +263,6 @@ char buf[MAX_LINE];
 	cstrip_line(buf);
 	st->oldest_age = cstrtoul(buf, 10);
 
-/*
-	stats for Feelings, as suggested by many, finally present in 1.1.6 and up
-*/
 /* most_fsent */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto end_load_Stats;
@@ -471,7 +469,11 @@ unsigned long num;
 		else
 			Print(usr, "rate: <yellow>%lu%%", 0UL);
 
-		Print(usr, "\n<green>Total memory in use: <yellow>%s <green>bytes\n", print_number(memory_total, date_buf, MAX_LINE));
+		Print(usr, "\n<green>Total memory in use:<yellow> %s <green>bytes\n", print_number(memory_total, date_buf, MAX_LINE));
+		if (Malloc == BinMalloc) {
+			Print(usr, "In use:<yellow> %s <green>bytes                    ", print_number(bin_use, date_buf, MAX_LINE));
+			Print(usr, "Foreign use:<yellow> %s <green>bytes\n", print_number(bin_foreign, date_buf, MAX_LINE));
+		}
 	}
 	Print(usr, "\n<yellow>User statistics\n");
 

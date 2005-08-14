@@ -85,14 +85,15 @@ char *p;
 			newsize = 2 * s->size;
 		else
 			newsize = s->size + STRINGIO_BLKSIZE;
-
+/*
+	reallocate the buffer
+	this is not the quickest way there is; a chain-link of buffers would be
+	faster when allocating, but this is faster and easier when working with
+	the buffers
+*/
 	if ((p = (char *)Malloc(newsize, TYPE_CHAR)) == NULL)
 		return -1;
-/*
-	this is not the quickest way there is
-	a chain-link of buffers would be faster when allocating, but
-	this is faster and easier when working with the buffers
-*/
+
 	if (s->buf != NULL) {
 		memcpy(p, s->buf, s->len);
 		Free(s->buf);

@@ -57,6 +57,7 @@
 #include "Signal.h"
 #include "memset.h"
 #include "bufprintf.h"
+#include "BinAlloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1592,23 +1593,42 @@ char num_buf[MAX_NUMBER];
 				if (i & 1)
 					Put(usr, "      ");
 
-				Print(usr, "%-*s :<white> %12s<green>%c", len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER), (i & 1) ? '\n' : ' ');
+				Print(usr, "%-*s :<white> %13s<green>%c", len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER), (i & 1) ? '\n' : ' ');
 			}
 			if (i & 1)
 				Put(usr, "      ");
-			Print(usr, "<yellow>%-*s :<white> %12s<green>\n", len, "total", print_number(memory_total, num_buf, MAX_NUMBER));
+			Print(usr, "<yellow>%-*s :<white> %13s<green>\n", len, "total", print_number(memory_total, num_buf, MAX_NUMBER));
 
 			Put(usr, "\n<white>Balance<green>\n");
 			for(i = 0; i < NUM_TYPES+1; i++) {
 				if (i & 1)
 					Put(usr, "      ");
 
-				Print(usr, "%-*s :<white> %12d<green>%c", len, Types_table[i].type, mem_balance[i], (i & 1) ? '\n' : ' ');
+				Print(usr, "%-*s :<white> %13d<green>%c", len, Types_table[i].type, mem_balance[i], (i & 1) ? '\n' : ' ');
 			}
 			if (i & 1)
 				Put(usr, "      ");
-			Print(usr, "<yellow>%-*s :<white> %12d<green>\n", len, "total", alloc_balance);
+			Print(usr, "<yellow>%-*s :<white> %13d<green>\n", len, "total", alloc_balance);
 
+			if (Malloc == BinMalloc) {
+				BinChunk *c;
+				int n, chunk_size, bytes_free;
+
+				Put(usr, "\n<white>BinMalloc status\n");
+				Print(usr, "<yellow>%d <green>chunks allocated\n\n", list_Count(root_chunk));
+
+				n = 0;
+				for(c = root_chunk; c != NULL; c = c->next) {
+					n++;
+					LD_WORD(c, OFFSET_CHUNK_SIZE, chunk_size);
+					chunk_size <<= 2;
+					LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
+					bytes_free <<= 2;
+					Print(usr, "Chunk<yellow> #%-3d: %13s <green>bytes", n, print_number(chunk_size, num_buf, MAX_NUMBER));
+					Print(usr, "<yellow> %13s <green>allocated", print_number(chunk_size - bytes_free, num_buf, MAX_NUMBER));
+					Print(usr, "<yellow> %13s <green>free\n", print_number(bytes_free, num_buf, MAX_NUMBER));
+				}
+			}
 			read_menu(usr);
 			Return;
 

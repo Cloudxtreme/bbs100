@@ -53,9 +53,7 @@
 	as pool (the "wilderness") to split off smaller blocks.
 
 	Advantages: much lower memory consumption
-	Drawbacks:  can be (relatively?) slow when trying best-fit and
-		having to skip over lots and lots of small blocks that are
-		scattered over many pages
+	Drawbacks:  it's slow
 
 	Allocating a block:
 		check freelist for a best-fit block
@@ -91,7 +89,6 @@
 	  allocated block (size/4)   Mind that the check for 0xff is crude as
 	  it also represents a valid address if it were on the freelist
 	  and if you use a large chunk size
-	- end of chunk is marked with a pointer to NULL, and size 0
 	- address space is 2-bytes: 2^16 * 4 = 256K
 	- waste is 4 bytes per malloc
 	  Additionally there are 2 pointers for prev and next chunk, and 4 bytes for
@@ -104,43 +101,38 @@
 	+----------------------------+----------------------------+
 	|  Chunk *prev               |  Chunk *next               |
 	+-------------+--------------+-------------+--------------+
-	|  chunksize  |  bytes_free  |  freelist * |  freelist *  |
+	|  chunksize  |  bytes_free  |  freelist * |  unused      |
 	+-------------+--------------+-------------+--------------+
-	|  freelist * |  freelist *  |  freelist * |  freelist *  |
+	|  marker     |  size        |  data ...                  |
 	+-------------+--------------+-------------+--------------+
-	|  marker p   |  size        |  data ...                  |
-	+-------------+--------------+-------------+--------------+
-	|  data ...                  |  marker p   |  size        |
+	|  data ...                  |  marker     |  size        |
 	+----------------------------+-------------+--------------+
-	|  data ...                  |  NULL       |  0           |
-	+----------------------------+-------------+--------------+
+	|  data ...                                               |
+	+---------------------------------------------------------+
 */
 
 #include "config.h"
+#include "debug.h"
 #include "BinAlloc.h"
 #include "Memory.h"
 #include "Param.h"
 #include "memset.h"
+#include "Types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static BinChunk *root_chunk = NULL;
-
-int binalloc_balance = 0;
-unsigned long bin_allocated = 0UL, foreign_alloc = 0UL;
-
-int Chunk_Size = 4096;
+BinChunk *root_chunk = NULL;
+int Chunk_Size = 16*1024;
+unsigned long bin_use = 0UL, bin_foreign = 0UL;
 
 static BinChunk *alloc_chunk(void);
-static void insert_freelist(BinChunk *, int, int, int);
-static void remove_freelist(BinChunk *, int, int);
+static void insert_freelist(BinChunk *, int, int);
+static void remove_freelist(BinChunk *, int);
 
 
 int init_BinAlloc(void) {
-	return 0;
-
 	if ((root_chunk = alloc_chunk()) == NULL)
 		return -1;
 
@@ -151,34 +143,35 @@ int init_BinAlloc(void) {
 
 static BinChunk *alloc_chunk(void) {
 BinChunk *c;
-int n, hdr_size, start_addr;
+int max_free, hdr_size, start_addr;
 
 	ROUND4(Chunk_Size);
 
-	hdr_size = OFFSET_FREE_LIST(NUM_TYPES+1);
+	hdr_size = OFFSET_FREE_LIST+2;
 	ROUND4(hdr_size);
 
-	if (Chunk_Size <= hdr_size)
+/*
+	size of free space in this chunk
+	the -1 is because start of memory always begins with a marker
+*/
+	max_free = ((Chunk_Size - hdr_size) >> 2) - 1;
+	if (max_free <= 256)			/* need at least some space... */
 		return NULL;
 
 	if ((c = (BinChunk *)malloc(Chunk_Size)) == NULL)
 		return NULL;
 
+	memory_total += Chunk_Size;
 	memset(c, 0, hdr_size);
 
-	ST_WORD(c, OFFSET_CHUNK_SIZE, Chunk_Size >> 2);			/* size of this chunk */
+	ST_WORD(c, OFFSET_CHUNK_SIZE, Chunk_Size >> 2);		/* size of this chunk */
+	ST_WORD(c, OFFSET_BYTES_FREE, max_free);
 
-/*
-	size of free space in this chunk
-	the -1 is because end of memory is marked with 'NULL|0'
-*/
-	n = (((Chunk_Size - hdr_size) >> 2) - 1) & ~3;
 	start_addr = hdr_size >> 2;
-	ST_WORD(c, OFFSET_BYTES_FREE, n);
-	ST_WORD(c, OFFSET_FREE_LIST(TYPE_CHAR), start_addr);	/* root freelist pointer for the pool */
+	ST_WORD(c, OFFSET_FREE_LIST, start_addr);	/* root freelist pointer for the pool */
 
-	ST_ADDR(c, start_addr, 0);	/* root->next = NULL */
-	ST_SIZE(c, start_addr, n);	/* fl->size = free space in this chunk */
+	ST_ADDR(c, start_addr, 0);			/* root->next = NULL */
+	ST_SIZE(c, start_addr, max_free);	/* fl->size = free space in this chunk */
 	return c;
 }
 
@@ -187,87 +180,50 @@ int n, hdr_size, start_addr;
 */
 void *BinMalloc(unsigned long size, int type) {
 char *p;
-int max_size;
+int max_free, hdr_size, n;
 unsigned long *ulptr;
 
-	max_size = (Chunk_Size - (sizeof(BinChunk) + 4 + (NUM_TYPES << 1) + 4)) & ~3;
-	if (size < max_size) {
+	if (type < 0 || type >= NUM_TYPES)
+		type = TYPE_CHAR;
+
+	mem_balance[type]++;
+	alloc_balance++;
+
+	ROUND4(size);
+	n = size / Types_table[type].size;
+	mem_stats[type] += n;
+
+	hdr_size = OFFSET_FREE_LIST+2;
+	ROUND4(hdr_size);
+	max_free = Chunk_Size - hdr_size - 4;
+	if (size < max_free) {
 /*
 	small alloc: get from chunks
 */
 		BinChunk *c;
-		int bytes_free, prev_fl, fl_addr, fl_next, fl_size, alloc_type;
+		int chunk_size, bytes_free, prev_fl, fl_addr, fl_next, fl_size, fl_adj;
 
-/*
-	only allocate from type-specific freelist if exactly 1 object was requested
-*/
-		alloc_type = type;
-		if (alloc_type > 0 && alloc_type < NUM_TYPES) {
-			if (Types_table[alloc_type].size != size)
-				alloc_type = TYPE_CHAR;
-		} else
-			alloc_type = TYPE_CHAR;
-
-		ROUND4(size);
 		size >>= 2;
+		max_free >>= 2;
 
-		if (alloc_type != TYPE_CHAR) {
-			for(c = root_chunk; c != NULL; c = c->next) {
-/*
-	find chunk with enough free space for this alloc
-	this is still a gamble, because the sum of free space does not garantee
-	we can satisfy the alloc here
-*/
-				LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-				if (bytes_free >= size) {
-					prev_fl = 0;
-					LD_WORD(c, OFFSET_FREE_LIST(alloc_type), fl_addr);
-					while(fl_addr) {
-						LD_ADDR(c, fl_addr, fl_next);
-						if (fl_next < 0 || fl_next > (Chunk_Size >> 2)) {
-							abort();			/* invalid address */
-						}
-						LD_SIZE(c, fl_addr, fl_size);
-/*
-	also satisfy for pieces that are just a bit bigger; splitting off a very
-	small size wouldn't pay off
-*/
-						if (fl_size == size || fl_size == size+1 || fl_size == size+2) {
-							if (prev_fl)						/* unlink this piece */
-								ST_ADDR(c, prev_fl, fl_next);
-							else
-								ST_WORD(c, OFFSET_FREE_LIST(alloc_type), fl_next);
-
-							ST_ALLOC(c, fl_addr, alloc_type);
-
-							bytes_free -= fl_size;
-							ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-
-							CLEAR_MEM(c, fl_addr, size);
-							return REAL_ADDRESS(c, fl_addr);
-						}
-						prev_fl = fl_addr;
-						fl_addr = fl_next;
-					}
-				}
-			}
-		}
-/*
-	didn't find anything on the freelists
-	try again, but take it from the pool
-*/
 		for(c = root_chunk; c != NULL; c = c->next) {
+			LD_WORD(c, OFFSET_CHUNK_SIZE, chunk_size);
 			LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
+			if (bytes_free < 0 || bytes_free > max_free)
+				abort();
+
 			if (bytes_free >= size) {
-/* same as above, but now from the TYPE_CHAR pool */
+/*
+	this is a 'good guess'; if the sum of the free space is enough, maybe
+	we can get a good malloc here
+*/
 				prev_fl = 0;
-				LD_WORD(c, OFFSET_FREE_LIST(TYPE_CHAR), fl_addr);
+				LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
 				while(fl_addr) {
 					LD_ADDR(c, fl_addr, fl_next);
-					if (fl_next < 0 || fl_next > (Chunk_Size >> 2)) {
-						abort();			/* invalid address */
-					}
 					LD_SIZE(c, fl_addr, fl_size);
+					if (size > max_free)
+						abort();
 /*
 	also satisfy for pieces that are just a bit bigger; splitting off a very
 	small size wouldn't pay off
@@ -276,39 +232,83 @@ unsigned long *ulptr;
 						if (prev_fl)						/* unlink this piece */
 							ST_ADDR(c, prev_fl, fl_next);
 						else
-							ST_WORD(c, OFFSET_FREE_LIST(TYPE_CHAR), fl_next);
+							ST_WORD(c, OFFSET_FREE_LIST, fl_next);
 
-						ST_ALLOC(c, fl_addr, alloc_type);
+						ST_ALLOC(c, fl_addr, type);
 
 						bytes_free -= fl_size;
+						if (bytes_free < 0)
+							abort();
 						ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
+
+						bin_use += (size << 2);
 
 						CLEAR_MEM(c, fl_addr, size);
 						return REAL_ADDRESS(c, fl_addr);
 					}
 /*
-	split off a piece from the pool
+	split a piece in two
 */
 					if (fl_size > size) {
-						if (prev_fl)						/* unlink this piece */
+						if (prev_fl)					/* unlink this piece */
 							ST_ADDR(c, prev_fl, fl_next);
 						else
-							ST_WORD(c, OFFSET_FREE_LIST(TYPE_CHAR), fl_next);
+							ST_WORD(c, OFFSET_FREE_LIST, fl_next);
 
-						ST_ALLOC(c, fl_addr, alloc_type);		/* allocate */
+						ST_ALLOC(c, fl_addr, type);		/* allocate */
 						ST_SIZE(c, fl_addr, size);
 
 /* split the piece; the marker takes up 1 cell as well */
 						size++;
 						fl_addr += size;
 						fl_size -= size;
-						insert_freelist(c, fl_addr, fl_size, TYPE_CHAR);
 
-						bytes_free--;				/* the marker takes some space */
+						insert_freelist(c, fl_addr, fl_size);
+
+						bytes_free -= size;			/* we allocated size, and the marker takes 1 cell as well */
+						if (bytes_free < 0)
+							abort();
 						ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
 
-						CLEAR_MEM(c, fl_addr - size, size);
+						bin_use += ((size-1) << 2);
+
+						CLEAR_MEM(c, fl_addr - size, size-1);
 						return REAL_ADDRESS(c, fl_addr - size);
+					}
+/*
+	the piece is too small, but maybe it can be merged with the next one
+	mind to check for 'end of memory', or else it just overflows
+*/
+					if ((fl_addr + fl_size + 1) < chunk_size) {
+						LD_WORD(c, (fl_addr + fl_size+1) << 2, fl_adj);
+						if (fl_adj && (fl_adj & 0xff00) != 0xff00) {	/* prob for high addresses */
+							int merge_size;
+
+							LD_SIZE(c, fl_addr + fl_size+1, merge_size);
+
+							remove_freelist(c, fl_addr + fl_size+1);
+
+							fl_size++;
+							fl_size += merge_size;
+							ST_SIZE(c, fl_addr, fl_size);
+
+							bytes_free++;					/* marker space released */
+							if (bytes_free > max_free)
+								abort();
+							ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
+/*
+	the freelist is sorted by size
+	therefore we must now reinsert this merged piece into the freelist
+*/
+							remove_freelist(c, fl_addr);
+							insert_freelist(c, fl_addr, fl_size);
+/*
+	because the list is sorted, we must restart the search from the beginning
+*/
+							prev_fl = 0;
+							LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
+							continue;
+						}
 					}
 					prev_fl = fl_addr;
 					fl_addr = fl_next;
@@ -321,11 +321,13 @@ unsigned long *ulptr;
 
 				c->next->prev = c;
 				LD_WORD(c->next, OFFSET_BYTES_FREE, bytes_free);
-				if (bytes_free < size)		/* well, that's odd ... this should never happen */
+				if (bytes_free < size) {		/* well, that's odd ... this should never happen */
+					abort();
 					return NULL;
+				}
 			}
 		}
-		/* we shouldn't get here */
+		abort();		/* should never get here */
 	}
 /*
 	requested size is too large to fit in a chunk, call standard malloc()
@@ -338,14 +340,15 @@ unsigned long *ulptr;
 	ulptr++;
 	p = (char *)ulptr;
 	ST_ADDR(p, 0, 1);				/* 0001 means 'malloc() used'  */
-	ST_SIZE(p, 0, 0xff00 | (type & 0xff));
+	ST_WORD(p, 2, 0xff00 | (type & 0xff));
 
-	binalloc_balance++;
-	bin_allocated += size;
-	foreign_alloc += size;
+	memory_total += size;
+	bin_foreign += size;
 
-	memset(p+4, 0, size);
-	return (void *)(p + 4);
+	p = p + 4;
+	size -= (sizeof(unsigned long) + 4);
+	memset(p, 0, size);
+	return (void *)p;
 }
 
 /*
@@ -353,10 +356,12 @@ unsigned long *ulptr;
 */
 void BinFree(void *ptr) {
 char *p;
-int addr, type, size;
+int addr, type, size, n;
 
 	if (ptr == NULL)
 		return;
+
+	alloc_balance--;
 
 	p = (char *)ptr - 4;
 	LD_WORD(p, 0, addr);
@@ -364,32 +369,45 @@ int addr, type, size;
 	if (addr == 1) {				/* was allocated by malloc() */
 		unsigned long *ulptr, ulsize;
 
-		if ((unsigned char)p[3] != 0xff) {		/* check for corruption */
-			return;
+		debug_breakpoint();
+		LD_WORD(p, 2, size);
+		if ((size & 0xff00) != 0xff00) {		/* check for corruption */
+			abort();
 		}
-		type = p[4] & 0xff;
+		type = size & 0xff;
+		if (type < 0 || type > NUM_TYPES)
+			type = TYPE_CHAR;
+		mem_balance[type]--;
 
 		ulptr = (unsigned long *)p;
 		ulptr--;
 		ulsize = *ulptr;
 
-		binalloc_balance--;
-		bin_allocated -= ulsize;
-		foreign_alloc -= ulsize;
+		memory_total -= ulsize;
+		bin_foreign -= ulsize;
+
+		n = ulsize / Types_table[type].size;
+		mem_stats[type] -= n;
 
 		free(ulptr);
 		return;
 	} else {
 		BinChunk *c;
-		int chunk_size, bytes_free;
+		int chunk_size, bytes_free, hdr_size;
 		char *end;
 
 		if ((unsigned char)p[0] != 0xff) {		/* check for corruption */
-			return;
+			abort();
 		}
 		type = p[1] & 0xff;
+		if (type < 0 || type > NUM_TYPES)
+			type = TYPE_CHAR;
+		mem_balance[type]--;
 
 		LD_SIZE(p, 0, size);
+
+		n = (size << 2) / Types_table[type].size;
+		mem_stats[type] -= n;
 
 		for(c = root_chunk; c != NULL; c = c->next) {
 			LD_WORD(c, OFFSET_CHUNK_SIZE, chunk_size);
@@ -397,64 +415,59 @@ int addr, type, size;
 			end = (char *)c + chunk_size;
 			if ((unsigned long)p > (unsigned long)c && (unsigned long)p < (unsigned long)end) {
 				addr = (unsigned long)p - (unsigned long)c;
-				if (addr % 4) {				/* corrupted */
-					return;
-				}
+				if (addr % 4)				/* corrupted */
+					abort();
+
 				addr >>= 2;
-				insert_freelist(c, addr, size, type);
+				insert_freelist(c, addr, size);
+
+				bin_use -= (size << 2);
 
 				LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
 				bytes_free += size;
 				ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
+/*
+	see if this entire chunk is empty
+*/
+				if (c->prev != NULL) {
+					int max_free;
+
+					hdr_size = OFFSET_FREE_LIST+2;
+					ROUND4(hdr_size);
+					max_free = ((chunk_size - hdr_size) >> 2) - 1;
+					if (bytes_free > max_free)
+						abort();
+
+					if (bytes_free == max_free) {
+						c->prev->next = c->next;
+						c->prev = c->next = NULL;
+						free(c);
+						memory_total -= chunk_size;
+					}
+				}
 				return;
 			}
 		}
 	}
-	/* not found, problem, just let it leak */
+	abort();	/* not found, problem */
 }
 
 /*
 	freelists are sorted by size
 */
-static void insert_freelist(BinChunk *c, int addr, int size, int alloc_type) {
-int prev_fl, fl_addr, fl_next = 0, fl_size;
+static void insert_freelist(BinChunk *c, int addr, int size) {
+int prev_fl, fl_addr, fl_next, fl_size;
 
-	if (c == NULL || !addr || size <= 0 || alloc_type < 0 || alloc_type >= NUM_TYPES)
+	if (c == NULL || !addr || size <= 0)
 		return;
 
-/*
-	try to do merging
-	merging is slow and it has a habit of eliminating type-specific freelists,
-	and thereby slowing down allocations
-	it does, however, return memory to the free pool and fight fragmentation
+	ASSERT_ADDR(addr);
+	ASSERT_SIZE(size);
 
-	Note that high addresses are never merged because there is no way of
-	telling whether they are allocated or free. This only happens when using
-	the maximum chunk size (256K)
-*/
-	LD_ADDR(c, addr + size+1, fl_next);
-	if (fl_next && (fl_next & 0xff00) != 0xff00) {	/* prob for high addresses */
-		int merge_size, bytes_free;
-
-		LD_SIZE(c, addr + size+1, merge_size);
-		remove_freelist(c, addr + size+1, fl_next & 0xff);
-
-		size++;
-		size += merge_size;
-
-		LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-		bytes_free++;					/* marker space released */
-		ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-
-		alloc_type = TYPE_CHAR;			/* insert it back into the pool */
-	}
 	prev_fl = 0;
-	LD_WORD(c, OFFSET_FREE_LIST(alloc_type), fl_addr);
+	LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
 	while(fl_addr) {
 		LD_ADDR(c, fl_addr, fl_next);
-		if (fl_next < 0 || fl_next > (Chunk_Size >> 2)) {
-			abort();			/* invalid address */
-		}
 		LD_SIZE(c, fl_addr, fl_size);
 		if (fl_size >= size)
 			break;
@@ -465,40 +478,41 @@ int prev_fl, fl_addr, fl_next = 0, fl_size;
 	if (prev_fl)
 		ST_ADDR(c, prev_fl, addr);
 	else
-		ST_WORD(c, OFFSET_FREE_LIST(alloc_type), addr);
+		ST_WORD(c, OFFSET_FREE_LIST, addr);
 
 	ST_ADDR(c, addr, fl_addr);
 	ST_SIZE(c, addr, size);
 }
 
 /*
-	remove a piece from its freelist
-	this routine is a bit inefficient because there is no prev pointer
-	in a marker, so it walks the freelist from the start
-	so do not use this routine in malloc, only for free block merging
+	remove a piece from the freelist
+	this routine is inefficient because there is no prev pointer in a marker,
+	so it walks the freelist from the start
 */
-static void remove_freelist(BinChunk *c, int addr, int alloc_type) {
-int prev_fl, fl_addr, fl_next;
+static void remove_freelist(BinChunk *c, int addr) {
+int prev_fl, fl_addr, fl_next, addr_next;
 
-	if (c == NULL || addr <= 0 || alloc_type < 0 || alloc_type >= NUM_TYPES)
+	if (c == NULL)
 		return;
 
+	LD_ADDR(c, addr, addr_next);
+	ST_ADDR(c, addr, 0);
+
 	prev_fl = 0;
-	LD_WORD(c, OFFSET_FREE_LIST(alloc_type), fl_addr);
+	LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
 	while(fl_addr) {
-		LD_ADDR(c, fl_addr, fl_next);
-		if (fl_next < 0 || fl_next > (Chunk_Size >> 2)) {
-			abort();			/* invalid address */
-		}
 		if (fl_addr == addr) {
-			ST_ADDR(c, fl_addr, 0);
-			ST_ADDR(c, prev_fl, fl_next);
+			if (prev_fl)
+				ST_ADDR(c, prev_fl, addr_next);
+			else
+				ST_WORD(c, OFFSET_FREE_LIST, addr_next);
 			return;
 		}
 		prev_fl = fl_addr;
+		LD_ADDR(c, fl_addr, fl_next);
 		fl_addr = fl_next;
 	}
-	/* shouldn't get here */
+	abort();		/* shouldn't get here */
 }
 
 /* EOB */
