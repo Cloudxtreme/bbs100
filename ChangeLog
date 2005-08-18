@@ -1,6 +1,10 @@
+Changes as of August 18th 2005
+- parameter bind_address for binding to a specific interface
+
 Changes as of August 14th 2005
-- BinAlloc is finally working, but hardly paying off
-- load_StringIO() allocates complete filesize
+- BinAlloc is finally working, but fragments just as much
+- sysop menu shows BinAlloc status
+- load_StringIO() allocates complete filesize in one go
 
 Changes as of August 13th 2005
 - implemented special purpose memory allocator but it's not any better than

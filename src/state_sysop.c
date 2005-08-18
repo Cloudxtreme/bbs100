@@ -1785,11 +1785,18 @@ void state_system_config_menu(User *usr, char c) {
 
 			buffer_text(usr);
 
+			Put(usr, "<white>\n"
+				"Note: <red>Although these parameters are live, most of them require a reboot "
+				"to correctly re-initialize the BBS\n"
+			);
 			Print(usr, "<magenta>\n"
 				"BBS <hotkey>Name           <white> %s<magenta>\n"
+				"Bind <hotkey>address       <white> %s<magenta>\n"
 				"P<hotkey>ort number        <white> %s<magenta>\n"
 				"<hotkey>Param file         <white> %s<magenta>\n",
+
 				PARAM_BBS_NAME,
+				PARAM_BIND_ADDRESS,
 				PARAM_PORT_NUMBER,
 				param_file
 			);
@@ -1798,6 +1805,7 @@ void state_system_config_menu(User *usr, char c) {
 				"B<hotkey>inary directory   <white> %s<magenta>\n"
 				"<hotkey>Config directory   <white> %s<magenta>\n"
 				"<hotkey>Feelings directory <white> %s<magenta>\n",
+
 				PARAM_BASEDIR,
 				PARAM_BINDIR,
 				PARAM_CONFDIR,
@@ -1805,6 +1813,7 @@ void state_system_config_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"<hotkey>Zoneinfo directory <white> %s<magenta>\n",
+
 				PARAM_ZONEINFODIR
 			);
 			Print(usr,
@@ -1812,6 +1821,7 @@ void state_system_config_menu(User *usr, char c) {
 				"<hotkey>Room directory     <white> %s<magenta>\n"
 				"<hotkey>Trash directory    <white> %s<magenta>\n"
 				"umas<hotkey>k              <white> 0%02o<magenta>\n",
+
 				PARAM_USERDIR,
 				PARAM_ROOMDIR,
 				PARAM_TRASHDIR,
@@ -1819,12 +1829,12 @@ void state_system_config_menu(User *usr, char c) {
 			);
 			Print(usr, "\n"
 				"<hotkey>Main program       <white> %s<magenta>\n"
-				"Resol<hotkey>ver program   <white> %s<magenta>\n",
-				PARAM_PROGRAM_MAIN,
-				PARAM_PROGRAM_RESOLVER
-			);
-			Print(usr, "\n"
+				"Resol<hotkey>ver program   <white> %s<magenta>\n"
+				"\n"
 				"Default time<hotkey>zone   <white> %s<magenta>\n",
+
+				PARAM_PROGRAM_MAIN,
+				PARAM_PROGRAM_RESOLVER,
 				PARAM_DEFAULT_TIMEZONE
 			);
 			read_menu(usr);
@@ -1850,6 +1860,12 @@ void state_system_config_menu(User *usr, char c) {
 		case 'N':
 			Put(usr, "BBS Name\n");
 			CALL(usr, STATE_PARAM_BBS_NAME);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "Bind address\n");
+			CALL(usr, STATE_PARAM_BIND_ADDRESS);
 			Return;
 
 		case 'o':
@@ -1942,6 +1958,12 @@ void state_system_config_menu(User *usr, char c) {
 void state_param_bbs_name(User *usr, char c) {
 	Enter(state_param_bbs_name);
 	change_string_param(usr, c, &PARAM_BBS_NAME, "<green>Enter name: <yellow>");
+	Return;
+}
+
+void state_param_bind_address(User *usr, char c) {
+	Enter(state_param_bbs_name);
+	change_string_param(usr, c, &PARAM_BIND_ADDRESS, "<green>Enter address to bind to: <yellow>");
 	Return;
 }
 

@@ -332,19 +332,21 @@ char buf[MAX_LONGLINE];
 		printf("fatal: failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
-	init_crypt();			/* init salt table for passwd encryption */
+	init_crypt();					/* init salt table for passwd encryption */
 
-	if (init_ConnUser()) {		/* startup inet */
-		printf("fatal: failed to initialize connection code\n");
+	if (init_ConnUser()) {			/* startup inet */
+		printf("failed\n");
 		exit_program(SHUTDOWN);
 	}
-	if (debugger) {
-		printf("running under debugger, signal handling disabled\n");
-		printf("running under debugger, not going to background\n");
-	}
+	if (debugger)
+		printf("running under debugger, signal handling disabled\n"
+			"running under debugger, not going to background\n"
+			"\n"
+		);
+
 	init_log();						/* start logging to files */
 
-	log_info("bbs restart");
+ 	log_info("bbs restart");
 	log_entry(stderr, "bbs restart", 'I', NULL);
 
 	if (!debugger)

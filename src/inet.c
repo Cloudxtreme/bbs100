@@ -110,7 +110,7 @@ char *inet_printaddr(char *host, char *service, char *buf, int buflen) {
 	This function is protocol-family independent, so it supports
 	both IPv4 and IPv6 (and possibly even more ...)
 */
-int inet_listen(char *service, ConnType *conn_type) {
+int inet_listen(char *node, char *service, ConnType *conn_type) {
 int sock, err, optval, retval;
 struct addrinfo hints, *res, *ai_p;
 char host[NI_MAXHOST], serv[NI_MAXSERV], buf[NI_MAXHOST+NI_MAXSERV+MAX_LINE];
@@ -125,9 +125,9 @@ Conn *conn;
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 /*	hints.ai_protocol = 0;		already 0 */
-	hints.ai_flags |= AI_PASSIVE;			/* accept clients on any network */
+/*	hints.ai_flags |= AI_PASSIVE; */			/* accept clients on any network */
 
-	if ((err = getaddrinfo(NULL, service, &hints, &res)) != 0) {
+	if ((err = getaddrinfo(node, service, &hints, &res)) != 0) {
 		log_err("inet_listen(%s): %s", service, inet_error(err));
 		return -1;
 	}

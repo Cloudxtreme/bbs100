@@ -45,6 +45,7 @@ int i;
 			return -1;
 
 	KVPair_setstring(KVPARAM_BBS_NAME,			"bbs_name",			"bbs100");
+	KVPair_setstring(KVPARAM_BIND_ADDRESS,		"bind_address",		"0.0.0.0");
 	KVPair_setstring(KVPARAM_PORT_NUMBER,		"port_number",		DEFAULT_PORT_1234);
 
 	KVPair_setstring(KVPARAM_SEP1, "", "");

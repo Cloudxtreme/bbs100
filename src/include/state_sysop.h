@@ -52,6 +52,7 @@
 
 #define STATE_SYSTEM_CONFIG_MENU		state_system_config_menu
 #define STATE_PARAM_BBS_NAME			state_param_bbs_name
+#define STATE_PARAM_BIND_ADDRESS		state_param_bind_address
 #define STATE_PARAM_PORT_NUMBER			state_param_port_number
 #define STATE_PARAM_FILE				state_param_file
 #define STATE_PARAM_BASEDIR				state_param_basedir
@@ -164,6 +165,7 @@ void state_shutdown_password(User *, char);
 
 void state_system_config_menu(User *, char);
 void state_param_bbs_name(User *, char);
+void state_param_bind_address(User *, char);
 void state_param_port_number(User *, char);
 void state_param_file(User *, char);
 void state_param_basedir(User *, char);

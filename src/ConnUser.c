@@ -89,7 +89,7 @@ ConnType ConnUser = {
 
 
 int init_ConnUser(void) {
-	return inet_listen(PARAM_PORT_NUMBER, &ConnUser);
+	return inet_listen(PARAM_BIND_ADDRESS, PARAM_PORT_NUMBER, &ConnUser);
 }
 
 Conn *new_ConnUser(void) {

@@ -35,9 +35,10 @@
 	It would be easier to put the params in a Hash, but this code is much faster
 */
 #define KVPARAM_BBS_NAME			param[0]
-#define KVPARAM_PORT_NUMBER			param[1]
+#define KVPARAM_BIND_ADDRESS		param[1]
+#define KVPARAM_PORT_NUMBER			param[2]
 
-#define KVPARAM_DIR_N				2
+#define KVPARAM_DIR_N				3
 #define KVPARAM_SEP1				param[KVPARAM_DIR_N]
 
 #define KVPARAM_BASEDIR				param[KVPARAM_DIR_N+1]
@@ -50,13 +51,13 @@
 #define KVPARAM_TRASHDIR			param[KVPARAM_DIR_N+8]
 #define KVPARAM_UMASK				param[KVPARAM_DIR_N+9]
 
-#define KVPARAM_PROGRAM_N			12
+#define KVPARAM_PROGRAM_N			13
 #define KVPARAM_SEP2				param[KVPARAM_PROGRAM_N]
 
 #define KVPARAM_PROGRAM_MAIN		param[KVPARAM_PROGRAM_N+1]
 #define KVPARAM_PROGRAM_RESOLVER	param[KVPARAM_PROGRAM_N+2]
 
-#define KVPARAM_SCREEN_N			15
+#define KVPARAM_SCREEN_N			16
 #define KVPARAM_SEP3				param[KVPARAM_SCREEN_N]
 
 #define KVPARAM_GPL_SCREEN			param[KVPARAM_SCREEN_N+1]
@@ -71,7 +72,7 @@
 #define KVPARAM_CRASH_SCREEN		param[KVPARAM_SCREEN_N+10]
 #define KVPARAM_BOSS_SCREEN			param[KVPARAM_SCREEN_N+11]
 
-#define KVPARAM_HELP_N				27
+#define KVPARAM_HELP_N				28
 #define KVPARAM_SEP4				param[KVPARAM_HELP_N]
 
 #define KVPARAM_FIRST_LOGIN			param[KVPARAM_HELP_N+1]
@@ -80,7 +81,7 @@
 #define KVPARAM_HELP_ROOMCONFIG		param[KVPARAM_HELP_N+4]
 #define KVPARAM_HELP_SYSOP			param[KVPARAM_HELP_N+5]
 
-#define KVPARAM_FILE_N				33
+#define KVPARAM_FILE_N				34
 #define KVPARAM_SEP5				param[KVPARAM_FILE_N]
 
 #define KVPARAM_HOSTMAP_FILE		param[KVPARAM_FILE_N+1]
@@ -93,7 +94,7 @@
 #define KVPARAM_SYMTAB_FILE			param[KVPARAM_FILE_N+8]
 #define KVPARAM_DEFAULT_TIMEZONE	param[KVPARAM_FILE_N+9]
 
-#define KVPARAM_LOG_N				43
+#define KVPARAM_LOG_N				44
 #define KVPARAM_SEP6				param[KVPARAM_LOG_N]
 
 #define KVPARAM_SYSLOG				param[KVPARAM_LOG_N+1]
@@ -103,7 +104,7 @@
 #define KVPARAM_ONCRASH				param[KVPARAM_LOG_N+5]
 #define KVPARAM_CRASHDIR			param[KVPARAM_LOG_N+6]
 
-#define KVPARAM_MAX_N				50
+#define KVPARAM_MAX_N				51
 #define KVPARAM_SEP7				param[KVPARAM_MAX_N]
 
 #define KVPARAM_MAX_CACHED			param[KVPARAM_MAX_N+1]
@@ -122,7 +123,7 @@
 #define KVPARAM_HELPER_AGE			param[KVPARAM_MAX_N+14]
 #define KVPARAM_CHUNK_SIZE			param[KVPARAM_MAX_N+15]
 
-#define KVPARAM_NAME_N				66
+#define KVPARAM_NAME_N				67
 #define KVPARAM_SEP8				param[KVPARAM_NAME_N]
 
 #define KVPARAM_NAME_SYSOP			param[KVPARAM_NAME_N+1]
@@ -130,7 +131,7 @@
 #define KVPARAM_NAME_HELPER			param[KVPARAM_NAME_N+3]
 #define KVPARAM_NAME_GUEST			param[KVPARAM_NAME_N+4]
 
-#define KVPARAM_NOTIFY_N			71
+#define KVPARAM_NOTIFY_N			72
 #define KVPARAM_SEP9				param[KVPARAM_NOTIFY_N]
 
 #define KVPARAM_NOTIFY_LOGIN		param[KVPARAM_NOTIFY_N+1]
@@ -144,7 +145,7 @@
 #define KVPARAM_NOTIFY_ENTER_CHAT	param[KVPARAM_NOTIFY_N+9]
 #define KVPARAM_NOTIFY_LEAVE_CHAT	param[KVPARAM_NOTIFY_N+10]
 
-#define KVPARAM_HAVE_N				82
+#define KVPARAM_HAVE_N				83
 #define KVPARAM_SEP10				param[KVPARAM_HAVE_N]
 
 #define KVPARAM_HAVE_XMSGS			param[KVPARAM_HAVE_N+1]
@@ -180,6 +181,7 @@
 #define VPARAM(x)					(KVPARAM_##x)->value.v
 
 #define PARAM_BBS_NAME				SPARAM(BBS_NAME)
+#define PARAM_BIND_ADDRESS			SPARAM(BIND_ADDRESS)
 #define PARAM_PORT_NUMBER			SPARAM(PORT_NUMBER)
 
 #define PARAM_BASEDIR				SPARAM(BASEDIR)
