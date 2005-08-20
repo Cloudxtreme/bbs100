@@ -81,7 +81,8 @@
 #define USR_HOTKEY_BRACKETS		0x800000	/* always display brackets around hotkeys */
 #define USR_DONT_ASK_REASON		0x1000000	/* don't ask for an Away reason, just go */
 #define USR_BOLD_HOTKEYS		0x2000000	/* print hotkeys bold; Warning: complex meaning for this flag (see util.c, function print_hotkey()) */
-#define USR_ALL					0x3ffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_XMSG_NUM			0x4000000	/* put sequence numbers in received messages */
+#define USR_ALL					0x7ffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -151,7 +152,7 @@ struct User_tag {
 	unsigned long logins, total_time, last_online_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, qsent, qansw, posted, read;
 	unsigned int flags, runtime_flags;
-	int colors[9], symbol_colors[8], color;
+	int colors[9], symbol_colors[8], color, xmsg_num;
 
 	char *quick[NUM_QUICK];
 

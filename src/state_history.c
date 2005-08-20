@@ -292,6 +292,9 @@ History_Reply_Code:
 
 		n++;
 	}
+/*
+	this is not very efficient for large histories ...
+*/
 	remaining = 0;
 	while(pl != NULL) {
 		pl = pl->next;
@@ -683,6 +686,8 @@ Held_History_Reply:
 				Put(usr, "Stop\n");
 
 Exit_Held_History:
+			rewind_PList(usr->held_msgs);
+			usr->xmsg_num += list_Count(usr->held_msgs);
 			concat_BufferedMsg(&usr->history, usr->held_msgs);
 			usr->held_msgs = usr->held_msgp = NULL;
 

@@ -1657,9 +1657,11 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_FOLLOWUP) ? "On" : "Off"
 			);
 			Print(usr,
+				"<hotkey>Sequence number on received messages <white>%s<magenta>\n"
 				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n"
 				"Ask for a <hotkey>reason when going away     <white>%s<magenta>\n",
 
+				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No",
 				(usr->flags & USR_DONT_ASK_REASON) ? "No" : "Yes"
 			);
@@ -1729,6 +1731,10 @@ void state_config_options(User *usr, char c) {
 			Print(usr, "%s follow up mode\n", (usr->flags & USR_FOLLOWUP) ? "Enable" : "Disable");
 			CURRENT_STATE(usr);
 			Return;
+
+		case 's':
+		case 'S':
+			CONFIG_OPTION(USR_XMSG_NUM, "Sequence numbers");
 
 		case 'h':
 		case 'H':

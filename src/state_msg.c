@@ -904,8 +904,10 @@ Rcv_Remove_Recipient:
 	else
 		if (usr->runtime_flags & RTF_BUSY)
 			add_BufferedMsg(&usr->held_msgs, new_msg);
-		else
+		else {
 			add_BufferedMsg(&usr->history, new_msg);
+			usr->xmsg_num++;
+		}
 
 	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
 		PList *pl;
@@ -992,12 +994,13 @@ int printed;
 
 	while(usr->held_msgs != NULL) {
 		m = (BufferedMsg *)usr->held_msgs->p;
-		remove_BufferedMsg(&usr->held_msgs, m);
-		add_BufferedMsg(&usr->history, m);			/* remember this message */
-
 		Put(usr, "<beep>");
 		print_buffered_msg(usr, m);
 		Put(usr, "\n");
+
+		remove_BufferedMsg(&usr->held_msgs, m);
+		add_BufferedMsg(&usr->history, m);			/* remember this message */
+		usr->xmsg_num++;
 
 /* auto-reply is follow up or question */
 		if (strcmp(m->from, usr->name)
@@ -1021,12 +1024,12 @@ int printed;
 }
 
 /*
-	Produce an X message header
+	Produce an eXpress message header
 	Note: buf must be large enough (PRINT_BUF in size)
 */
 char *buffered_msg_header(User *usr, BufferedMsg *msg, char *buf, int buflen) {
 struct tm *tm;
-char frombuf[MAX_LONGLINE] = "", namebuf[MAX_LONGLINE] = "", multi[MAX_NAME] = "", msgtype[MAX_LINE] = "";
+char frombuf[MAX_LONGLINE] = "", namebuf[MAX_LONGLINE] = "", multi[MAX_NAME] = "", msgtype[MAX_LINE] = "", numbuf[MAX_NUMBER] = "";
 int from_me = 0;
 
 	if (usr == NULL || msg == NULL || buf == NULL)
@@ -1042,6 +1045,53 @@ int from_me = 0;
 	if ((usr->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 		tm->tm_hour -= 12;				/* use 12 hour clock, no 'military' time */
 
+/*
+	the user wants numbered messages ... this is quite slow
+	the sequence number cannot be stored in the BufferedMsg struct because
+	they are referenced by both the sender and the receiver, while their
+	sequence numbers can differ
+
+	held messages have not been counted yet, messages in usr->history
+	have been counted in usr->xmsg_num
+*/
+	if (usr->flags & USR_XMSG_NUM) {
+		PList *p;
+		BufferedMsg *m;
+		int msg_num;
+
+		p = NULL;
+		if (usr->held_msgs != NULL) {
+			msg_num = usr->xmsg_num;
+			p = usr->held_msgs;
+			while(p != NULL) {
+				msg_num++;
+				m = (BufferedMsg *)p->p;
+				if (m == msg)
+					break;
+
+				p = p->next;
+			}
+		}
+		if (p == NULL) {
+			msg_num = usr->xmsg_num;
+			p = unwind_PList(usr->history);
+			while(p != NULL) {
+				m = (BufferedMsg *)p->p;
+				if (m == msg)
+					break;
+
+				p = p->prev;
+
+/* only count received messages, not the ones you sent yourself */
+				if (strcmp(m->from, usr->name))
+					msg_num--;
+			}
+		}
+		if (msg_num <= 0)
+			msg_num = 1;
+
+		bufprintf(numbuf, MAX_NUMBER, "(#%d) ", msg_num);
+	}
 	if (!strcmp(msg->from, usr->name)) {
 		from_me = 1;
 		if (msg->to != NULL) {
@@ -1087,14 +1137,14 @@ int from_me = 0;
 						cstrcpy(msgtype, "Answer", MAX_LINE);
 
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE && !from_me)
-		bufprintf(buf, buflen, "<white> \b%c%d:%02d%c %s <yellow>", (multi[0] == 0) ? '(' : '[',
-			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', frombuf);
+		bufprintf(buf, buflen, "<white> \b%c%d:%02d%c %s%s <yellow>", (multi[0] == 0) ? '(' : '[',
+			tm->tm_hour, tm->tm_min, (multi[0] == 0) ? ')' : ']', numbuf, frombuf);
 	else {
 		if (*msgtype) {
 			if (from_me)
-				bufprintf(buf, buflen, "<blue>*** <cyan>You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				bufprintf(buf, buflen, "<blue>***<cyan> You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
-				bufprintf(buf, buflen, "<blue>***<cyan> %s%s<cyan> received from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, frombuf, tm->tm_hour, tm->tm_min);
+				bufprintf(buf, buflen, "<blue>***<cyan> %s%s<cyan> %sreceived from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, numbuf, frombuf, tm->tm_hour, tm->tm_min);
 		}
 	}
 	Return buf;
