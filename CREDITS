@@ -1,4 +1,4 @@
-bbs100 by Walter de Jong <walter@heiho.net> (C) 2005
+bbs100 by Walter de Jong <walter at heiho.net> (C) 2005
 
 Credits are due to:
 - The original Citadel developers
@@ -7,13 +7,13 @@ Credits are due to:
   iscaBBS is the BBS of the Iowa Student Computer Association at
   bbs.isca.uiowa.edu
 - Serendipity of iscaBBS
-- Edward Breedveld aka Freddy Krueger and Jaap Dijkshoorn <jaap@sara.nl>
+- Edward Breedveld aka Freddy Krueger and Jaap Dijkshoorn <jaap at sara.nl>
   aka Distroyer of BrintaBBS for founding BrintaBBS
-- Ruben van Staveren <ruben@verweg.com> aka The Guru aka Het Guur for running
-  as first beta tester at erg.verweg.com and for early registration of the
-  heiho.net domain
-- Petros Mylonopoulos <r00t__beer@hotmail.com> aka Afterworld and
-  Stephan van Beerschoten <myth@whacky.net> aka Myth
+- Ruben van Staveren <ruben at verweg.com> aka The Guru aka Het Guur for
+  running as first beta tester at erg.verweg.com and for early registration
+  of the heiho.net domain
+- Petros Mylonopoulos <r00t__beer at hotmail.com> aka Afterworld and
+  Stephan van Beerschoten <myth at whacky.net> aka Myth
   for encouraging the bbs100 project and beta testing
 - some unknown people for providing the example feelings
 - Marcel Gagne' for giving bbs100 good press in Linux Journal (June 2005)
@@ -23,50 +23,50 @@ and last but not least
 
 
 Credits for bug fixes et al after public release
-- CHIPS <chips@hawmps.2y.net> reports bug in startup code:
+- CHIPS <chips at hawmps.2y.net> reports bug in startup code:
   write_pidfile() used PARAM_PID_FILE even before the param file was loaded
   fixed in 1.1.1
 
   Big thanks also go to CHIPS for maintaining the bbs100 coding mailing
   list. The list is gone now but it was fun while it lasted.
 
-- Jaap Dijkshoorn <jaap@sara.nl> was the first one to suggest 'make setup'
+- Jaap Dijkshoorn <jaap at sara.nl> was the first one to suggest 'make setup'
   in order to simplify installation
   first appeared in 1.1.2
 
-- Martin Bethlehem <dmouse@brinta.cs.hro.nl> reports that bbs100 compiles and
+- Martin Bethlehem <dmouse at brinta.cs.hro.nl> reports that bbs100 compiles and
   installs fine on RedHat Linux on a DEC Alpha machine
 
-- Jason Lentz <lentz@westpole.net> reported that Linux Slackware has its own
+- Jason Lentz <lentz at westpole.net> reported that Linux Slackware has its own
   SignalHandler type in /usr/include/signal.h
   fixed in version 1.1.2; SignalHandler is now called SignalVector
 
-- Arend Brouwer <arend@belboek.com> reports that the password crypting does
+- Arend Brouwer <arend at belboek.com> reports that the password crypting does
   not work correctly on FreeBSD 4.0 with MD5 encryption algorithm
   fixed in 1.1.3; init_crypt() now detects whether the system has standard
   DES crypt() or not and uses crypt() accordingly
 
-- Stephan van Beerschoten <myth@whacky.net> points out that the Guest user
+- Stephan van Beerschoten <myth at whacky.net> points out that the Guest user
   can lock the screen, which is pretty annoying
   changed in 1.1.3, although now Guest can't see how locking works...
 
-- Icabod <icabod@lump.mine.nu> reports that bbs100 compiles and runs
+- Icabod <icabod at lump.mine.nu> reports that bbs100 compiles and runs
   fine on a PowerMac running LinuxPPC.
 
-- Mz Boobala <boobala@whacky.net> of MatrixBBS reports bug; when you hit
+- Mz Boobala <boobala at whacky.net> of MatrixBBS reports bug; when you hit
   'd' of delete msg right after you've saved a message, you can delete
   other people's posts
   fixed in 1.1.5
 
-- Ruben van Staveren <ruben@verweg.com> reported that Ctrl-R for the
+- Ruben van Staveren <ruben at verweg.com> reported that Ctrl-R for the
   room config menu of Home> was not documented in the Help
   fixed in 1.1.6
 
-- Mz Boobala <boobala@whacky.net> reported that the message number was
+- Mz Boobala <boobala at whacky.net> reported that the message number was
   wrong when replying to a reply
   fixed in 1.1.6
 
-- Richard Odekerken <richard@odekerken.net> reported that his compiler
+- Richard Odekerken <richard at odekerken.net> reported that his compiler
   choked on the control characters in the bbs100 source
   fixed in 1.1.6
 
@@ -75,22 +75,22 @@ Credits for bug fixes et al after public release
   problems for Mac and Windows users
   (should be) fixed in 1.1.6
 
-- Jeremy Stock <stockj@mediaone.net> for giving the (old) idea of notification
+- Jeremy Stock <stockj at mediaone.net> for giving the (old) idea of notification
   that someone is sending/mailing you a message when logging out
   first appeared in 1.1.7
 
-- Martin Bethlehem <dmouse@brinta.cs.hro.nl> suggested to change "unzappable"
+- Martin Bethlehem <dmouse at brinta.cs.hro.nl> suggested to change "unzappable"
   to "not zappable".
   changed in 1.1.8
 
 - The Ruiner of MatrixBBS said that "You do get by this way" is bad grammar.
   changed in 1.1.8
 
-- Stephan van Beerschoten <myth@whacky.net> reported problem with early 1.1.9
+- Stephan van Beerschoten <myth at whacky.net> reported problem with early 1.1.9
   distribution; it didn't compile out of the box.
   Now it's been fixed in an hour later re-release of 1.1.9
 
-- Arend Brouwer <arend@belboek.com> for reporting the double friend
+- Arend Brouwer <arend at belboek.com> for reporting the double friend
   notification messages when a user does multiple logins and kills his own
   (other) login.
   fixed in 1.1.12
@@ -106,7 +106,7 @@ Credits for bug fixes et al after public release
   'Read Again' and 'Read Parent of Reply' options
   new in 1.1.13
 
-- Shannon Prickett <spameater@metanav.org> contributed a patch
+- Shannon Prickett <spameater at metanav.org> contributed a patch
   Ctrl-W does word erase when editing
   'ABORT' also aborts an X message
   new in 1.1.13
@@ -134,7 +134,7 @@ Credits for bug fixes et al after public release
   Suggested a hold message mode (under Ctrl-B)
   done in 1.1.13
 
-- Cease To Resist <v@chained.cx> reported problem with MD5 passwords that
+- Cease To Resist <v at chained.cx> reported problem with MD5 passwords that
   have long salts
   fixed in 1.1.13
 
@@ -163,21 +163,21 @@ Credits for bug fixes et al after public release
   a friend locks the terminal, and then unlocks it by logging in again
   fixed in 1.2.1
 
-- Ove <ove@swedishchef.org> reported problems with building on Solaris
+- Ove <ove at swedishchef.org> reported problems with building on Solaris
 
-- Stephan van Beerschoten <stephanb@whacky.net> did testing of
+- Stephan van Beerschoten <stephanb at whacky.net> did testing of
   version 1.3.0 (development version) on Solaris 8
 
-- Shannon Prickett <binder@manjusri.org> suggested disabling certain
+- Shannon Prickett <binder at manjusri.org> suggested disabling certain
   features. Implemented through parameters in 1.2.3 (development version)
 
-- Russ Allbery <rra@bogus.example.com> wrote the alternative inet_aton()
+- Russ Allbery <rra at bogus.example.com> wrote the alternative inet_aton()
   implementation (which I called ipv4_aton() for convenience)
 
-- Stephan van Beerschoten <stephanb@whacky.net> suggested displayal of
+- Stephan van Beerschoten <stephanb at whacky.net> suggested displayal of
   'BBS birthdays'
 
-- Jeremy Stock <jstock@speedymail.org> for reporting problems on Mac OS X
+- Jeremy Stock <jstock at speedymail.org> for reporting problems on Mac OS X
   and providing me with a login on his Mac OS X machine
 
 Version 3.0:
@@ -187,7 +187,7 @@ Version 3.0:
 - The Ruiner of MatrixBBS reported a bug in forwarding messages to another
   user's Mail> room
 
-- Georbit <georbit@osuny.co.uk> found and fixed a problem with logging in
+- Georbit <georbit at osuny.co.uk> found and fixed a problem with logging in
 
 - Berlin of MatrixBBS suggested that empty rooms be 'cycled' when there
   are no new messages
@@ -215,15 +215,15 @@ Version 3.0:
 
 - WHYz came with the idea of auto-coloring
 
-- Mz Boobala pointed out that when being in Sysop or Room Aide mode, the
-  new message header doesn't reflect that status until you read the posted
-  message
+- English Buchanan pointed out that when being in Sysop or Room Aide mode,
+  the new message header doesn't reflect that status until you read the
+  posted message
 
 - WHYz suggested asking for a reason when going away, like on MalteBBS
 
-- Mz Boobala (among others) suggested using the caret ^ for color editing
-  and not just Ctrl-V. Although it tends to mess up ASCII art, I eventually
-  gave in
+- English Buchanan (among others) suggested using the caret ^ for color
+  editing and not just Ctrl-V. Although it tends to mess up ASCII art,
+  I eventually gave in
 
 - News reported a bug in the profile of an online Guest user
 
