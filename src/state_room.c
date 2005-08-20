@@ -848,21 +848,14 @@ char num_buf[MAX_NUMBER];
 					if (usr->runtime_flags & RTF_ROOMAIDE)
 						m->flags |= MSG_FROM_ROOMAIDE;
 
-				if (usr->message->subject[0])
-					cstrcpy(m->subject, usr->message->subject, MAX_LINE);
+				if (usr->message->subject && usr->message->subject[0])
+					m->subject = cstrdup(usr->message->subject);
 
 				if (usr->curr_room == usr->mail)
 					m->reply_number = 0UL;
 				else
 					m->reply_number = usr->message->number;
-/*
-				else
-					if (usr->curr_room != usr->mail) {
-						char num_buf[MAX_NUMBER];
 
-						bufprintf(m->subject, MAX_LINE, "<message #%s>", print_number(usr->message->number, num_buf, MAX_NUMBER));
-					}
-*/
 				destroy_Message(usr->new_message);
 				usr->new_message = m;
 				enter_the_message(usr);
@@ -882,8 +875,13 @@ char num_buf[MAX_NUMBER];
 
 			if (usr->curr_room == usr->mail) {
 				if (usr->new_message != NULL) {
-					if (!usr->new_message->subject[0])
-						bufprintf(usr->new_message->subject, MAX_LINE, "<mail message from %s>", usr->new_message->from);
+					if (usr->new_message->subject == NULL || !usr->new_message->subject[0]) {
+						char subject[MAX_LINE];
+
+						bufprintf(subject, MAX_LINE, "<mail message from %s>", usr->new_message->from);
+						Free(usr->new_message->subject);
+						usr->new_message->subject = cstrdup(subject);
+					}
 					cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
 					if (usr->runtime_flags & RTF_SYSOP)

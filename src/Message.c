@@ -54,6 +54,9 @@ void destroy_Message(Message *m) {
 	if (m == NULL)
 		return;
 
+	Free(m->subject);
+	Free(m->anon);
+	Free(m->deleted_by);
 	listdestroy_StringList(m->to);
 	destroy_StringIO(m->msg);
 	Free(m);
@@ -120,9 +123,9 @@ int ff1_continue;
 		FF1_PARSE;
 
 		FF1_LOAD_LEN("from", m->from, MAX_NAME);
-		FF1_LOAD_LEN("anon", m->anon, MAX_NAME);
-		FF1_LOAD_LEN("subject", m->subject, MAX_LINE);
-		FF1_LOAD_LEN("deleted_by", m->deleted_by, MAX_NAME);
+		FF1_LOAD_DUP("anon", m->anon);
+		FF1_LOAD_DUP("subject", m->subject);
+		FF1_LOAD_DUP("deleted_by", m->deleted_by);
 
 		FF1_LOAD_ULONG("reply_number", m->reply_number);
 		FF1_LOAD_ULONG("mtime", m->mtime);
@@ -187,21 +190,21 @@ char buf[MAX_LONGLINE];
 		goto err_load_message;
 
 	cstrip_line(buf);
-	cstrncpy(m->anon, buf, MAX_NAME);
+	m->anon = cstrdup(buf);
 
 /* deleted_by */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);
-	cstrncpy(m->deleted_by, buf, MAX_NAME);
+	m->deleted_by = cstrdup(buf);
 
 /* subject (may be empty) */
 	if (Fgets(f, buf, MAX_LINE) == NULL)
 		goto err_load_message;
 
 	cstrip_line(buf);
-	cstrncpy(m->subject, buf, MAX_LINE);
+	m->subject = cstrdup(buf);
 
 /* to */
 	listdestroy_StringList(m->to);

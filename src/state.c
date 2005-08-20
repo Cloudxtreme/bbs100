@@ -171,7 +171,7 @@ int fun_common(User *usr, char c) {
 			}
 			if (usr->message != NULL) {
 				listdestroy_StringList(usr->recipients);
-				if (usr->message->anon[0]) {
+				if (usr->message->anon != NULL && usr->message->anon[0]) {
 					if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))
 						usr->recipients = new_StringList(usr->message->from);
 					else
@@ -814,7 +814,7 @@ int r;
 			destroy_StringIO(u->info);
 			u->info = NULL;
 		}
-		if (usr->message != NULL && usr->message->anon[0]
+		if (usr->message != NULL && usr->message->anon != NULL && usr->message->anon[0]
 			&& !strcmp(usr->message->from, u->name)
 			&& strcmp(usr->message->from, usr->name))
 			log_msg("%s profiled anonymous post", usr->name);

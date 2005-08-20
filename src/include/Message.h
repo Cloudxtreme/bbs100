@@ -44,7 +44,7 @@ typedef struct {
 	time_t mtime, deleted;
 	unsigned int flags;
 
-	char from[MAX_NAME], anon[MAX_NAME], subject[MAX_LINE], deleted_by[MAX_NAME];
+	char from[MAX_NAME], *subject, *anon, *deleted_by;
 
 	StringList *to;
 	StringIO *msg;

@@ -138,9 +138,9 @@ void state_post_as_anon(User *usr, char c) {
 
 			if (usr->default_anon != NULL && usr->default_anon[0]) {
 				cstrlwr(usr->default_anon);
-				cstrcpy(usr->new_message->anon, usr->default_anon, MAX_NAME);
+				usr->new_message->anon = cstrdup(usr->default_anon);
 			} else
-				cstrcpy(usr->new_message->anon, "anonymous", MAX_NAME);
+				usr->new_message->anon = cstrdup("anonymous");
 
 			POP(usr);
 			enter_the_message(usr);
@@ -173,10 +173,10 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (!usr->edit_buf[0])
-			cstrcpy(usr->new_message->anon, "anonymous", MAX_NAME);
+			usr->new_message->anon = cstrdup("anonymous");
 		else {
-			cstrcpy(usr->new_message->anon, usr->edit_buf, MAX_NAME);
-			cstrlwr(usr->new_message->anon);
+			cstrlwr(usr->edit_buf);
+			usr->new_message->anon = cstrdup(usr->edit_buf);
 		}
 		POP(usr);
 		enter_the_message(usr);
@@ -238,7 +238,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (usr->edit_buf[0])
-			cstrcpy(usr->new_message->subject, usr->edit_buf, MAX_LINE);
+			usr->new_message->subject = cstrdup(usr->edit_buf);
 
 		Put(usr, "\n");
 		POP(usr);
@@ -254,7 +254,7 @@ void enter_the_message(User *usr) {
 	Enter(enter_the_message);
 
 	usr->new_message->mtime = rtc;
-	if (usr->new_message->anon[0])
+	if (usr->new_message->anon != NULL && usr->new_message->anon[0])
 		usr->new_message->flags &= ~(MSG_FROM_SYSOP | MSG_FROM_ROOMAIDE);
 
 	if (usr->runtime_flags & RTF_UPLOAD)
@@ -638,8 +638,8 @@ unsigned long msg_number;
 	if (usr->message->deleted != (time_t)0UL) {
 		Put(usr, "\n");
 
-		if (usr->message->flags & MSG_DELETED_BY_ANON)
-			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <cyan>- %s -<yellow>]\n",
+		if (usr->message->anon != NULL && usr->message->anon[0] && (usr->message->flags & MSG_DELETED_BY_ANON))
+			Print(usr, "<red> \b[Deleted on <yellow>%s<red> by <cyan>- %s <cyan>-<red> \b]\n",
 				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), usr->message->anon);
 		else {
 			char deleted_by[MAX_LINE];
@@ -653,9 +653,12 @@ unsigned long msg_number;
 
 			if (*deleted_by)
 				cstrcat(deleted_by, ": ", MAX_LINE);
-			cstrcat(deleted_by, usr->message->deleted_by, MAX_LINE);
+			if (usr->message->deleted_by != NULL && usr->message->deleted_by[0])
+				cstrcat(deleted_by, usr->message->deleted_by, MAX_LINE);
+			else
+				cstrcat(deleted_by, "<someone>", MAX_LINE);
 
-			Print(usr, "<yellow>[<red>Deleted on <yellow>%s<red> by <white>%s<yellow>]\n",
+			Print(usr, "<red> \b[Deleted on <yellow>%s<red> by<white> %s<red> \b]\n",
 				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), deleted_by);
 		}
 	} else {
@@ -694,7 +697,8 @@ int r;
 
 /* mark message as deleted */
 		usr->message->deleted = rtc;
-		cstrcpy(usr->message->deleted_by, usr->name, MAX_NAME);
+		Free(usr->message->deleted_by);
+		usr->message->deleted_by = cstrdup(usr->name);
 
 		if (usr->runtime_flags & RTF_SYSOP)
 			usr->message->flags |= MSG_DELETED_BY_SYSOP;
@@ -702,7 +706,7 @@ int r;
 			if (usr->runtime_flags & RTF_ROOMAIDE)
 				usr->message->flags |= MSG_DELETED_BY_ROOMAIDE;
 			else
-				if (usr->message->anon[0])
+				if (usr->message->anon != NULL && usr->message->anon[0])
 					usr->message->flags |= MSG_DELETED_BY_ANON;
 
 		if (usr->curr_room == usr->mail)
@@ -714,7 +718,7 @@ int r;
 		if (save_Message(usr->message, buf)) {
 			Perror(usr, "Failed to delete message");
 		} else
-			Put(usr, "<green>Message deleted\n\n");
+			Put(usr, "<green>Message deleted\n");
 	}
 	if (r == YESNO_UNDEF) {
 		CURRENT_STATE(usr);
@@ -744,11 +748,12 @@ char filename[MAX_PATHLEN];
 	if ((usr->curr_room != usr->mail
 		&& ((usr->message->flags & MSG_DELETED_BY_SYSOP) && !(usr->runtime_flags & RTF_SYSOP)))
 		|| ((usr->message->flags & MSG_DELETED_BY_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
-		|| (strcmp(usr->message->deleted_by, usr->name) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
+		|| (usr->message->deleted_by != NULL && strcmp(usr->message->deleted_by, usr->name) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
 		Put(usr, "<red>You are not allowed to undelete this message\n\n");
 		Return;
 	}
-	usr->message->deleted_by[0] = 0;
+	Free(usr->message->deleted_by);
+	usr->message->deleted_by = NULL;
 	usr->message->deleted = (time_t)0UL;
 	usr->message->flags &= ~(MSG_DELETED_BY_SYSOP | MSG_DELETED_BY_ROOMAIDE | MSG_DELETED_BY_ANON);
 
@@ -1259,14 +1264,15 @@ int r;
 				Return;
 			}
 		}
-		if (!usr->new_message->subject[0]) {
+		if (usr->new_message->subject == NULL || !usr->new_message->subject[0]) {
 			char buf[MAX_LONGLINE];
 
 			bufprintf(buf, MAX_LONGLINE, "<yellow> \b<forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
 				cstrcpy(buf + MAX_LINE - 5, "...>", 5);
 
-			cstrcpy(usr->new_message->subject, buf, MAX_LINE);
+			Free(usr->new_message->subject);
+			usr->new_message->subject = cstrdup(buf);
 		}
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
@@ -1545,7 +1551,7 @@ char buf[PRINT_BUF], c;
 		Perror(usr, "Out of memory");
 		Return;
 	}
-	cstrcpy(usr->new_message->subject, "<lost message>", MAX_LINE);
+	usr->new_message->subject = cstrdup("<lost message>");
 
 	free_StringIO(usr->text);
 	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
@@ -1614,7 +1620,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 	}
 /* print message header */
 
-	if (msg->anon[0])
+	if (msg->anon != NULL && msg->anon[0])
 		bufprintf(from, MAX_LINE, "<cyan>- %s <cyan>-", msg->anon);
 	else
 		if (msg->flags & MSG_FROM_SYSOP)
@@ -1633,7 +1639,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 		if (max_dl >= (MAX_LONGLINE-1))	/* MAX_LONGLINE is used buffer size */
 			max_dl = MAX_LONGLINE-1;
 
-		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && !msg->anon[0]) {
+		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && msg->anon == NULL) {
 			l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
@@ -1681,7 +1687,7 @@ void print_subject(User *usr, Message *msg) {
 	Enter(print_subject);
 
 	if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
-		if (msg->subject[0]) {
+		if (msg->subject != NULL && msg->subject[0]) {
 			if (msg->flags & MSG_FORWARDED)
 				Print(usr, "<cyan>Subject: <white>Fwd:<yellow> %s\n", msg->subject);
 			else
@@ -1699,11 +1705,11 @@ void print_subject(User *usr, Message *msg) {
 				Print(usr, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", msg->reply_number);
 		}
 	} else {
-		if ((msg->flags & MSG_FORWARDED) && msg->subject[0])
+		if ((msg->flags & MSG_FORWARDED) && msg->subject != NULL && msg->subject[0])
 			Print(usr, "<white>Fwd:<yellow> %s\n", msg->subject);
 		else {
 			if (msg->flags & MSG_REPLY) {			/* room without subject lines */
-				if (msg->subject[0])
+				if (msg->subject != NULL && msg->subject[0])
 					Print(usr, "<white>Re:<yellow> %s\n", msg->subject);
 				else
 					if (msg->reply_number)
