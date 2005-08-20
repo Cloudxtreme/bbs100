@@ -834,11 +834,12 @@ void state_config_terminal(User *usr, char c) {
 */
 			Print(usr,
 				"Always show hotkeys in <hotkey>uppercase     <white>%s<magenta>\n"
-				"Show angle brac<hotkey>kets around hotkeys   <white>%s<magenta>\n",
+				"Show angle brac<hotkey>kets around hotkeys   <white>%s<magenta>%s\n",
 
 				(usr->flags & USR_UPPERCASE_HOTKEYS) ? "Yes" : "No",
 				(((usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == (USR_ANSI|USR_HOTKEY_BRACKETS))
-					|| (usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == 0) ? "Yes" : "No"
+					|| (usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == 0) ? "Yes" : "No",
+				((usr->flags & (USR_ANSI|USR_HOTKEY_BRACKETS)) == USR_HOTKEY_BRACKETS) ? "  (Hit <key>k to enable)" : ""
 			);
 			Print(usr, "\n"
 				"<hotkey>Force screen width and height        <white>%s<magenta>\n"
@@ -857,6 +858,11 @@ void state_config_terminal(User *usr, char c) {
 				if (!(usr->flags & USR_DONT_AUTO_COLOR))
 					Print(usr, "Customize colors of s<hotkey>ymbols\n");
 			}
+			Print(usr, "\n"
+				"Hackerz m<hotkey>0de                         <white>%s<magenta>\n",
+
+				(usr->flags & USR_HACKERZ) ? "Oh Yeah" : "Off"
+			);
 			read_menu(usr);
 			Return;
 
@@ -962,6 +968,9 @@ void state_config_terminal(User *usr, char c) {
 				Return;
 			}
 			break;
+
+		case '0':
+			CONFIG_OPTION(USR_HACKERZ, "Hackerz mode");
 	}
 	Print(usr, "<yellow>\n[Config] Terminal%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -1647,41 +1656,35 @@ void state_config_options(User *usr, char c) {
 
 			Print(usr, "\n<magenta>"
 				"Beep on e<hotkey>Xpress message arrival      <white>%s<magenta>\n"
+				"Messages have <hotkey>sequence numbers       <white>%s<magenta>\n"
 				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
-				"Mult<hotkey>i message reception is ...       <white>%s<magenta>\n"
-				"<hotkey>Follow up mode (auto reply)          <white>%s<magenta>\n",
+				"Mult<hotkey>i message reception is ...       <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
+				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
 				(usr->flags & USR_X_DISABLED) ? "Disabled" : "Enabled",
-				(usr->flags & USR_DENY_MULTI) ? "Disabled" : "Enabled",
-				(usr->flags & USR_FOLLOWUP) ? "On" : "Off"
+				(usr->flags & USR_DENY_MULTI) ? "Disabled" : "Enabled"
 			);
 			Print(usr,
-				"<hotkey>Sequence number on received messages <white>%s<magenta>\n"
+				"<hotkey>Follow up mode (auto reply)          <white>%s<magenta>\n"
 				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n"
 				"Ask for a <hotkey>reason when going away     <white>%s<magenta>\n",
 
-				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
+				(usr->flags & USR_FOLLOWUP) ? "On" : "Off",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No",
 				(usr->flags & USR_DONT_ASK_REASON) ? "No" : "Yes"
 			);
-			Print(usr,
-				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
-				"\n"
-				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
-
-				(usr->flags & USR_FRIEND_NOTIFY) ? "On" : "Off",
-				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
-			);
 			Print(usr, "\n"
-				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n"
+				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
 				"\n"
-				"Hackerz m<hotkey>0de                         <white>%s<magenta>\n",
+				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
+				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n",
 
-				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No",
-				(usr->flags & USR_HACKERZ) ? "Oh Yeah" : "Off"
+				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_FRIEND_NOTIFY) ? "On" : "Off",
+				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No"
 			);
 			read_menu(usr);
 			Return;
@@ -1763,9 +1766,6 @@ void state_config_options(User *usr, char c) {
 		case 'p':
 		case 'P':
 			CONFIG_OPTION(USR_HIDE_INFO, "Hide profile information");
-
-		case '0':
-			CONFIG_OPTION(USR_HACKERZ, "Hackerz mode");
 	}
 	Print(usr, "<yellow>\n[Config] Options%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;

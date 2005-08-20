@@ -81,6 +81,7 @@ char *Str_leave_chatroom[] = {
 
 void state_room_prompt(User *usr, char c) {
 int i, idx;
+char numbuf[MAX_NUMBER];
 
 	if (usr == NULL)
 		return;
@@ -151,7 +152,13 @@ int i, idx;
 		case 'q':
 		case 'Q':
 			if (PARAM_HAVE_QUESTIONS) {
-				Put(usr, "<white>Question\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Question%s\n", numbuf);
+
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot ask questions\n", PARAM_NAME_GUEST);
 					break;
@@ -231,7 +238,12 @@ int i, idx;
 
 		case 'x':
 			if (PARAM_HAVE_XMSGS) {
-				Put(usr, "<white>eXpress Message\n<green>");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>eXpress Message%s\n", numbuf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send eXpress Messages\n", PARAM_NAME_GUEST);
 					break;
@@ -240,6 +252,7 @@ int i, idx;
 					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
+				Put(usr, "<green>");
 				enter_recipients(usr, STATE_X_PROMPT);
 				Return;
 			} else
@@ -259,7 +272,13 @@ int i, idx;
 		case '8':
 		case '9':
 			if (PARAM_HAVE_QUICK_X) {
-				Put(usr, "<white>Quick X\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Quick X%s\n", numbuf);
+
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send Quick eXpress Messages\n", PARAM_NAME_GUEST);
 					break;
@@ -302,7 +321,12 @@ int i, idx;
 		case ':':
 		case ';':
 			if (PARAM_HAVE_EMOTES) {
-				Put(usr, "<white>Emote\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Emote%s\n", numbuf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send emotes\n", PARAM_NAME_GUEST);
 					break;
@@ -321,7 +345,12 @@ int i, idx;
 
 		case '*':
 			if (PARAM_HAVE_FEELINGS) {
-				Put(usr, "<white>Feelings\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Feelings%s\n", numbuf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send feelings\n", PARAM_NAME_GUEST);
 					break;
@@ -340,7 +369,13 @@ int i, idx;
 
 		case 'v':
 			if (PARAM_HAVE_X_REPLY) {
-				Put(usr, "<white>Reply\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Reply%s\n", numbuf);
+
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
 					break;
@@ -349,6 +384,7 @@ int i, idx;
 					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
+				Put(usr, "<green>");
 				reply_x(usr, REPLY_X_ONE);
 				Return;
 			} else
@@ -358,7 +394,13 @@ int i, idx;
 
 		case 'V':
 			if (PARAM_HAVE_X_REPLY) {
-				Put(usr, "<white>Reply to all\n");
+				if (usr->flags & USR_XMSG_NUM)
+					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+				else
+					numbuf[0] = 0;
+
+				Print(usr, "<white>Reply to All%s\n", numbuf);
+
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
 					break;
@@ -367,6 +409,7 @@ int i, idx;
 					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
+				Put(usr, "<green>");
 				reply_x(usr, REPLY_X_ALL);
 				Return;
 			} else

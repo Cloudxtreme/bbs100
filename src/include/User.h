@@ -152,7 +152,7 @@ struct User_tag {
 	unsigned long logins, total_time, last_online_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, qsent, qansw, posted, read;
 	unsigned int flags, runtime_flags;
-	int colors[9], symbol_colors[8], color, xmsg_num;
+	int colors[9], symbol_colors[8], color, msg_seq_recv, msg_seq_sent;
 
 	char *quick[NUM_QUICK];
 

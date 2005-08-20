@@ -1020,6 +1020,7 @@ int r;
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+			usr->msg_seq_sent++;
 			usr->esent++;
 			if (usr->esent > stats.esent) {
 				stats.esent = usr->esent;
@@ -1105,6 +1106,7 @@ int r;
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+			usr->msg_seq_sent++;
 			usr->xsent++;
 			if (usr->xsent > stats.xsent) {
 				stats.xsent = usr->xsent;
@@ -1225,6 +1227,7 @@ int r;
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+			usr->msg_seq_sent++;
 			usr->fsent++;
 			if (usr->fsent > stats.fsent) {
 				stats.fsent = usr->fsent;
@@ -1309,7 +1312,7 @@ int r;
 		add_BufferedMsg(&usr->history, question);
 		recvMsg(u, usr, question);				/* the question is asked! */
 		stats.qsent_boot++;
-
+		usr->msg_seq_sent++;
 		usr->qsent++;
 		if (usr->qsent > stats.qsent) {
 			stats.qsent = usr->qsent;
@@ -1401,6 +1404,7 @@ int r;
 
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+			usr->msg_seq_sent++;
 			usr->qansw++;
 			if (usr->qansw > stats.qansw) {
 				stats.qansw = usr->qansw;
@@ -1940,7 +1944,7 @@ int msgtype;
 }
 
 void do_reply_x(User *usr, int flags) {
-char many_buf[MAX_LINE];
+char numbuf[MAX_NUMBER], many_buf[MAX_LINE];
 
 	if (usr == NULL)
 		return;
@@ -1951,10 +1955,16 @@ char many_buf[MAX_LINE];
 	usr->runtime_flags |= RTF_BUSY;
 	usr->edit_buf[0] = 0;
 
+	if (usr->flags & USR_XMSG_NUM)
+		bufprintf(numbuf, MAX_NUMBER, "(#%d) ", usr->msg_seq_sent+1);
+	else
+		numbuf[0] = 0;
+
 /* replying to just one person? */
 	if (usr->recipients->next == NULL && usr->recipients->prev == NULL) {
 		usr->runtime_flags &= ~RTF_MULTI;
-		Print(usr, "<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
+
+		Print(usr, "<green>Replying %sto%s\n", numbuf, print_many(usr, many_buf, MAX_LINE));
 
 		if ((flags & BUFMSG_TYPE) == BUFMSG_QUESTION) {
 			CALL(usr, STATE_EDIT_ANSWER);
@@ -1967,7 +1977,7 @@ char many_buf[MAX_LINE];
 		}
 	} else {
 /* replying to <many>, edit the recipient list */
-		Print(usr, "<green>Replying to%s", print_many(usr, many_buf, MAX_LINE));
+		Print(usr, "<green>Replying %sto%s", numbuf, print_many(usr, many_buf, MAX_LINE));
 
 		if ((flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
 			PUSH(usr, STATE_EMOTE_PROMPT);

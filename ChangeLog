@@ -1,6 +1,8 @@
 Changes as of August 20th 2005
 - fixed bug in name resolving (was an unterminated string)
-- config option: sequence numbers on received messages
+- config option: sequence numbers on messages
+- hotkeys without angle brackets on dumb terminal: warn that user can
+  hit <k> to enable brackets
 
 Changes as of August 18th 2005
 - parameter bind_address for binding to a specific interface

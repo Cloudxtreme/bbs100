@@ -906,7 +906,7 @@ Rcv_Remove_Recipient:
 			add_BufferedMsg(&usr->held_msgs, new_msg);
 		else {
 			add_BufferedMsg(&usr->history, new_msg);
-			usr->xmsg_num++;
+			usr->msg_seq_recv++;
 		}
 
 	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
@@ -1000,7 +1000,7 @@ int printed;
 
 		remove_BufferedMsg(&usr->held_msgs, m);
 		add_BufferedMsg(&usr->history, m);			/* remember this message */
-		usr->xmsg_num++;
+		usr->msg_seq_recv++;
 
 /* auto-reply is follow up or question */
 		if (strcmp(m->from, usr->name)
@@ -1052,16 +1052,16 @@ int from_me = 0;
 	sequence numbers can differ
 
 	held messages have not been counted yet, messages in usr->history
-	have been counted in usr->xmsg_num
+	have been counted in usr->msg_seq_recv
 */
 	if (usr->flags & USR_XMSG_NUM) {
 		PList *p;
 		BufferedMsg *m;
-		int msg_num;
+		int msg_num, msg_sent_num;
 
 		p = NULL;
 		if (usr->held_msgs != NULL) {
-			msg_num = usr->xmsg_num;
+			msg_num = usr->msg_seq_recv;
 			p = usr->held_msgs;
 			while(p != NULL) {
 				msg_num++;
@@ -1073,17 +1073,22 @@ int from_me = 0;
 			}
 		}
 		if (p == NULL) {
-			msg_num = usr->xmsg_num;
+			msg_num = usr->msg_seq_recv;
+			msg_sent_num = usr->msg_seq_sent+1;
 			p = unwind_PList(usr->history);
 			while(p != NULL) {
 				m = (BufferedMsg *)p->p;
-				if (m == msg)
+				if (m == msg) {
+					if (!strcmp(m->from, usr->name))
+						msg_num = msg_sent_num;
 					break;
-
+				}
 				p = p->prev;
 
 /* only count received messages, not the ones you sent yourself */
-				if (strcmp(m->from, usr->name))
+				if (!strcmp(m->from, usr->name))
+					msg_sent_num--;
+				else
 					msg_num--;
 			}
 		}
@@ -1142,7 +1147,7 @@ int from_me = 0;
 	else {
 		if (*msgtype) {
 			if (from_me)
-				bufprintf(buf, buflen, "<blue>***<cyan> You sent this %s%s<cyan> to<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, namebuf, frombuf, tm->tm_hour, tm->tm_min);
+				bufprintf(buf, buflen, "<blue>***<cyan> You sent this %s%s<cyan> %sto<yellow> %s<cyan> %sat <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, numbuf, namebuf, frombuf, tm->tm_hour, tm->tm_min);
 			else
 				bufprintf(buf, buflen, "<blue>***<cyan> %s%s<cyan> %sreceived from %s<cyan> at <white>%02d:%02d <blue>***<yellow>\n", multi, msgtype, numbuf, frombuf, tm->tm_hour, tm->tm_min);
 		}

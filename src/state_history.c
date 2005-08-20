@@ -79,7 +79,7 @@ BufferedMsg *m = NULL;
 StringList *sl;
 PList *pl;
 int n, remaining;
-char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], many_buf[MAX_LINE];
+char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER];
 
 	if (usr == NULL)
 		return;
@@ -218,20 +218,7 @@ History_Reply_Code:
 			if (usr->recipients == NULL)
 				break;
 
-			usr->edit_pos = 0;
-			usr->runtime_flags |= RTF_BUSY;
-			usr->edit_buf[0] = 0;
-
-			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
-				usr->runtime_flags &= ~RTF_MULTI;
-
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
-
-			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
-				CALL(usr, STATE_EDIT_EMOTE);
-			} else {
-				CALL(usr, STATE_EDIT_X);
-			}
+			do_reply_x(usr, m->flags);
 			Return;
 
 		case 'l':
@@ -488,7 +475,7 @@ StringList *sl;
 PList *pl, *pl_next;
 BufferedMsg *m;
 int printed, n, remaining;
-char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], many_buf[MAX_LINE];
+char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER];
 
 	if (usr == NULL)
 		return;
@@ -635,20 +622,7 @@ Held_History_Reply:
 			if (usr->recipients == NULL)
 				break;
 
-			usr->edit_pos = 0;
-			usr->runtime_flags |= RTF_BUSY;
-			usr->edit_buf[0] = 0;
-
-			if (usr->recipients->next == NULL && usr->recipients->prev == NULL)
-				usr->runtime_flags &= ~RTF_MULTI;
-
-			Print(usr, "\n<green>Replying to%s\n", print_many(usr, many_buf, MAX_LINE));
-
-			if ((m->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) {
-				CALL(usr, STATE_EDIT_EMOTE);
-			} else {
-				CALL(usr, STATE_EDIT_X);
-			}
+			do_reply_x(usr, m->flags);
 			Return;
 
 		case 'l':
@@ -687,7 +661,7 @@ Held_History_Reply:
 
 Exit_Held_History:
 			rewind_PList(usr->held_msgs);
-			usr->xmsg_num += list_Count(usr->held_msgs);
+			usr->msg_seq_recv += list_Count(usr->held_msgs);
 			concat_BufferedMsg(&usr->history, usr->held_msgs);
 			usr->held_msgs = usr->held_msgp = NULL;
 
