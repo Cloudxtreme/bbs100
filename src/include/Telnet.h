@@ -22,7 +22,11 @@
 
 #include "Conn.h"
 
-#define MAX_SUB_BUF			128
+/*
+	the value of 8 is ridiculously small, but OK for the BBS
+	it only cares for NAWS bytes and the "USER" environment variable
+*/
+#define MAX_SUB_BUF			8
 
 #define MAX_TERM			500
 

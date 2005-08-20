@@ -188,7 +188,7 @@ void usage(void) {
 }
 
 int main(int argc, char **argv) {
-int debugger = 0;
+int debugger = 0, i;
 char buf[MAX_LONGLINE];
 
 	if (argv[0][0] != '(') {
@@ -353,6 +353,9 @@ char buf[MAX_LONGLINE];
 		goto_background();
 	else
 		log_msg("running under debugger");
+
+	for(i = 0; i < NUM_TYPES; i++)
+		log_debug("init_Memory(): sizeof(%s) == %d", Types_table[i].type, Types_table[i].size);
 
 	init_ConnResolv();
 

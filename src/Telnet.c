@@ -267,9 +267,11 @@ char buf[MAX_TELNETBUF];
 				t->in_sub_buf[t->in_sub] = 0;
 			} else {
 				if (t->in_sub < MAX_SUB_BUF - 2) {
+/*
+	there's no point in saving it now
 					t->in_sub_buf[t->in_sub++] = c;
 					t->in_sub_buf[t->in_sub] = 0;
-
+*/
 /* setting username, let through */
 					if (!strcmp(t->in_sub_buf+1, "USER")) {
 						Return c;
