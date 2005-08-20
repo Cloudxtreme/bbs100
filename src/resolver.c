@@ -155,7 +155,7 @@ int s, n, un_len;
 			break;
 		}
 		request[n] = 0;
-
+		result[0] = 0;
 		if (resolv(request, result) < 0)
 			continue;
 

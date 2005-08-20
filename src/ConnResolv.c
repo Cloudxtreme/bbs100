@@ -134,6 +134,12 @@ char *p;
 		if (write_StringIO(s, &k, 1) != 1)
 			log_err("ConnResolv_process(): input lost");
 		return;
+	} else {
+		k = 0;
+		if (write_StringIO(s, &k, 1) != 1) {
+			log_err("ConnResolv_process(): input lost");
+			return;
+		}
 	}
 	if ((p = cstrchr(s->buf, ' ')) != NULL) {
 		*p = 0;
@@ -149,6 +155,7 @@ char *p;
 				cstrcpy(c->hostname, p, MAX_LINE);		/* fill in IP name */
 	}
 	rewind_StringIO(s);
+	shift_StringIO(s, MAX_LINE);
 }
 
 void ConnResolv_accept(Conn *conn) {
