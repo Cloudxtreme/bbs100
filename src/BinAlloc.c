@@ -373,7 +373,6 @@ int addr, type, size, n;
 	if (addr == 1) {				/* was allocated by malloc() */
 		unsigned long *ulptr, ulsize;
 
-		debug_breakpoint();
 		LD_WORD(p, 2, size);
 		if ((size & 0xff00) != 0xff00) {		/* check for corruption */
 			abort();
