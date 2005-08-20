@@ -85,6 +85,8 @@ void destroy_Conn(Conn *c) {
 		c->sock = -1;
 		c->state = 0;
 	}
+	Free(c->ipnum);
+	Free(c->hostname);
 	destroy_StringIO(c->input);
 	destroy_StringIO(c->output);
 	listdestroy_CallStack(c->callstack);

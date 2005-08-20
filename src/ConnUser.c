@@ -140,11 +140,12 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	optval = 1;
 	ioctl(new_conn->sock, FIONBIO, &optval);		/* set non-blocking */
 
-	if ((err = getnameinfo((struct sockaddr *)&client, client_len, new_conn->ipnum, MAX_LINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
+	if ((err = getnameinfo((struct sockaddr *)&client, client_len, buf, MAX_LONGLINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
 		log_warn("ConnUser_accept(): getnameinfo(): %s", inet_error(err));
-		cstrcpy(new_conn->ipnum, "0.0.0.0", MAX_LINE);
-	}
-	cstrcpy(new_conn->hostname, new_conn->ipnum, MAX_LINE);
+		new_conn->ipnum = cstrdup("0.0.0.0");
+	} else
+		new_conn->ipnum = cstrdup(buf);
+	new_conn->hostname = cstrdup(new_conn->ipnum);
 
 	if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(new_conn->ipnum, WRAPPER_ALL_USERS)) {
 		put_Conn(new_conn, "\nSorry, but you're connecting from a site that has been locked out of the BBS.\n\n");

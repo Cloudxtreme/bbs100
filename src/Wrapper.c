@@ -227,6 +227,9 @@ int allow_Wrapper(char *ipnum, int apply_all) {
 Wrapper *w;
 int addr[8], flags;
 
+	if (ipnum == NULL)
+		return 1;			/* bug or other problem; allow */
+
 	flags = 0;
 	if (read_inet_addr(ipnum, addr, &flags)) {
 		log_err("allow_Wrapper(): read_inet_addr(%s) failed (bug?), allowing connection", ipnum);

@@ -8,6 +8,7 @@ Changes as of August 20th 2005
 - chatroom messages arrive as you are editing, and they appear right
   above the edit line (so it looks much better this way)
 - reduced MAX_SUB_BUF to only 8 bytes; it doesn't need more space
+- Conn.ipnum and Conn.hostname are now dynamically allocated
 
 Changes as of August 18th 2005
 - parameter bind_address for binding to a specific interface

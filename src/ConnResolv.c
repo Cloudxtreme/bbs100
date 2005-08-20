@@ -31,6 +31,7 @@
 #include "util.h"
 #include "edit.h"
 #include "bufprintf.h"
+#include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -150,9 +151,12 @@ char *p;
 	if (p != NULL && strcmp(s->buf, p)) {
 		Conn *c;
 
-		for(c = AllConns; c != NULL; c = c->next)
-			if (!strcmp(c->ipnum, s->buf))
-				cstrcpy(c->hostname, p, MAX_LINE);		/* fill in IP name */
+		for(c = AllConns; c != NULL; c = c->next) {
+			if (c->ipnum != NULL && !strcmp(c->ipnum, s->buf)) {
+				Free(c->hostname);
+				c->hostname = cstrdup(p);		/* fill in IP name */
+			}
+		}
 	}
 	rewind_StringIO(s);
 	shift_StringIO(s, MAX_LINE);

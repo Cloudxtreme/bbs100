@@ -69,12 +69,11 @@ struct Conn_tag {
 
 	ConnType *conn_type;
 
-	int sock, state;
+	int sock, state;			/* state is one of CONN_xxx */
 	unsigned long loop_counter;
 
-	char ipnum[MAX_LINE], hostname[MAX_LINE];
-
-	StringIO *input, *output;
+	char *ipnum, *hostname;
+	StringIO *input, *output;	/* I/O buffers */
 
 	void *data;					/* connection specific data */
 	CallStack *callstack;
