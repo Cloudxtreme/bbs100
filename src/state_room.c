@@ -765,16 +765,16 @@ char num_buf[MAX_NUMBER];
 			if (usr->message != NULL && usr->message->from[0]) {
 /* delete message */
 				if (usr->message->deleted != (time_t)0UL) {
-					Put(usr, "<red>Message already has been deleted<yellow>..!\n\n");
+					Put(usr, "<red>Message already has been deleted<yellow>..!\n");
 					break;
 				}
 				if (((usr->message->flags & MSG_FROM_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
 					|| ((usr->message->flags & MSG_FROM_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
 					|| (usr->curr_room != usr->mail && strcmp(usr->name, usr->message->from) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
-					Put(usr, "<red>You are not allowed to delete this message\n\n");
+					Put(usr, "<red>You are not allowed to delete this message\n");
 					break;
 				}
-				CALL(usr, STATE_DEL_MSG_PROMPT);
+				CALL(usr, STATE_DELETE_MSG);
 				Return;
 			} else
 				Put(usr, "<red>No message to delete\n");
@@ -787,8 +787,24 @@ char num_buf[MAX_NUMBER];
 				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot undelete messages\n", PARAM_NAME_GUEST);
 				break;
 			}
-			undelete_msg(usr);
-			break;
+			if (usr->message == NULL) {
+				Put(usr, "<red>No message to undelete!\n");
+				break;
+			}
+			if (usr->message->deleted == (time_t)0UL) {
+				Put(usr, "<red>Message has not been deleted, so you can't undelete it..!\n");
+				break;
+			}
+			if ((usr->curr_room != usr->mail
+				&& ((usr->message->flags & MSG_DELETED_BY_SYSOP) && !(usr->runtime_flags & RTF_SYSOP)))
+				|| ((usr->message->flags & MSG_DELETED_BY_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
+				|| (usr->message->deleted_by != NULL && strcmp(usr->message->deleted_by, usr->name) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
+				Put(usr, "<red>You are not allowed to undelete this message\n");
+				break;
+			}
+			PUSH(usr, STATE_UNDELETE_MSG);
+			read_message(usr, usr->message, READ_DELETED);
+			Return;
 
 		case 'r':
 		case 'R':

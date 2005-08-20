@@ -61,6 +61,8 @@ There are a lot of new options in the Config menu:
   somewhere
 - it prints the online status after unlocking
 - chat rooms scroll messages in a better way
+- when undeleting a deleted message, you first get to read the message
+  and then you have the choice of undeleting it or not
 
 
 What's new to the admins?

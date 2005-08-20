@@ -595,7 +595,7 @@ void (*abort_func)(void *, char);
 }
 
 void readMsg(User *usr) {
-char filename[MAX_PATHLEN], date_buf[MAX_LINE];
+char filename[MAX_PATHLEN];
 Joined *j;
 unsigned long msg_number;
 
@@ -632,39 +632,55 @@ unsigned long msg_number;
 		RET(usr);
 		Return;
 	}
-	buffer_text(usr);
-	msg_header(usr, usr->message);
+	POP(usr);
+	read_message(usr, usr->message, 0);
+	Return;
+}
 
-	if (usr->message->deleted != (time_t)0UL) {
+/*
+	flag read_deleted can be READ_DELETED to be able to read deleted posts
+	or zero if not allowed to read deleted posts
+*/
+void read_message(User *usr, Message *msg, int read_deleted) {
+char date_buf[MAX_LINE];
+
+	if (usr == NULL || msg == NULL)
+		return;
+
+	buffer_text(usr);
+	msg_header(usr, msg);
+
+	if (msg->deleted != (time_t)0UL) {
 		Put(usr, "\n");
 
-		if (usr->message->anon != NULL && usr->message->anon[0] && (usr->message->flags & MSG_DELETED_BY_ANON))
+		if (msg->anon != NULL && msg->anon[0] && (msg->flags & MSG_DELETED_BY_ANON))
 			Print(usr, "<red> \b[Deleted on <yellow>%s<red> by <cyan>- %s <cyan>-<red> \b]\n",
-				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), usr->message->anon);
+				print_date(usr, msg->deleted, date_buf, MAX_LINE), msg->anon);
 		else {
 			char deleted_by[MAX_LINE];
 
 			deleted_by[0] = 0;
-			if (usr->message->flags & MSG_DELETED_BY_SYSOP)
+			if (msg->flags & MSG_DELETED_BY_SYSOP)
 				cstrcpy(deleted_by, PARAM_NAME_SYSOP, MAX_LINE);
 			else
-				if (usr->message->flags & MSG_DELETED_BY_ROOMAIDE)
+				if (msg->flags & MSG_DELETED_BY_ROOMAIDE)
 					cstrcpy(deleted_by, PARAM_NAME_ROOMAIDE, MAX_LINE);
 
 			if (*deleted_by)
 				cstrcat(deleted_by, ": ", MAX_LINE);
-			if (usr->message->deleted_by != NULL && usr->message->deleted_by[0])
-				cstrcat(deleted_by, usr->message->deleted_by, MAX_LINE);
+			if (msg->deleted_by != NULL && msg->deleted_by[0])
+				cstrcat(deleted_by, msg->deleted_by, MAX_LINE);
 			else
 				cstrcat(deleted_by, "<someone>", MAX_LINE);
 
 			Print(usr, "<red> \b[Deleted on <yellow>%s<red> by<white> %s<red> \b]\n",
-				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), deleted_by);
+				print_date(usr, msg->deleted, date_buf, MAX_LINE), deleted_by);
 		}
-	} else {
-		print_subject(usr, usr->message);
+	}
+	if (!msg->deleted || read_deleted) {
+		print_subject(usr, msg);
 		Put(usr, "<green>\n");
-		concat_StringIO(usr->text, usr->message->msg);
+		concat_StringIO(usr->text, msg->msg);
 
 		usr->read++;						/* update stats */
 		if (usr->read > stats.read) {
@@ -673,25 +689,24 @@ unsigned long msg_number;
 		}
 		stats.read_boot++;
 	}
-	POP(usr);
 	read_text(usr);
 	Return;
 }
 
-void state_del_msg_prompt(User *usr, char c) {
+void state_delete_msg(User *usr, char c) {
 int r;
 
 	if (usr == NULL)
 		return;
 
-	Enter(state_del_msg_prompt);
+	Enter(state_delete_msg);
 
 	if (c == INIT_STATE) {
-		Print(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
-	r = yesno(usr, c, 'Y');
+	r = yesno(usr, c, 'N');
 	if (r == YESNO_YES) {
 		char buf[MAX_PATHLEN];
 
@@ -729,44 +744,45 @@ int r;
 	Return;
 }
 
-void undelete_msg(User *usr) {
-char filename[MAX_PATHLEN];
+void state_undelete_msg(User *usr, char c) {
+int r;
 
 	if (usr == NULL)
 		return;
 
-	Enter(undelete_msg);
+	Enter(state_undelete_msg);
 
-	if (usr->message == NULL) {
-		Put(usr, "<red>No message to undelete!\n");
+	if (c == INIT_STATE) {
+		Put(usr, "\n<cyan>Undelete this message? (y/N): ");
+		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
-	if (usr->message->deleted == (time_t)0UL) {
-		Put(usr, "<red>Message has not been deleted, so you can't undelete it..!\n\n");
+	r = yesno(usr, c, 'N');
+	if (r == YESNO_YES) {
+		char filename[MAX_PATHLEN];
+
+		Free(usr->message->deleted_by);
+		usr->message->deleted_by = NULL;
+		usr->message->deleted = (time_t)0UL;
+		usr->message->flags &= ~(MSG_DELETED_BY_SYSOP | MSG_DELETED_BY_ROOMAIDE | MSG_DELETED_BY_ANON);
+
+		if (usr->curr_room == usr->mail)
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+		else
+			bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+		path_strip(filename);
+
+		if (save_Message(usr->message, filename)) {
+			Perror(usr, "Failed to undelete message");
+		} else
+			Put(usr, "<green>Message undeleted\n");
+	}
+	if (r == YESNO_UNDEF) {
+		CURRENT_STATE(usr);
 		Return;
 	}
-	if ((usr->curr_room != usr->mail
-		&& ((usr->message->flags & MSG_DELETED_BY_SYSOP) && !(usr->runtime_flags & RTF_SYSOP)))
-		|| ((usr->message->flags & MSG_DELETED_BY_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
-		|| (usr->message->deleted_by != NULL && strcmp(usr->message->deleted_by, usr->name) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
-		Put(usr, "<red>You are not allowed to undelete this message\n\n");
-		Return;
-	}
-	Free(usr->message->deleted_by);
-	usr->message->deleted_by = NULL;
-	usr->message->deleted = (time_t)0UL;
-	usr->message->flags &= ~(MSG_DELETED_BY_SYSOP | MSG_DELETED_BY_ROOMAIDE | MSG_DELETED_BY_ANON);
-
-	if (usr->curr_room == usr->mail)
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
-	else
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
-	path_strip(filename);
-
-	if (save_Message(usr->message, filename)) {
-		Perror(usr, "Failed to undelete message");
-	} else
-		Put(usr, "<green>Message undeleted\n");
+	usr->runtime_flags &= ~RTF_BUSY;
+	RET(usr);
 	Return;
 }
 

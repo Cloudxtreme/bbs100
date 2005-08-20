@@ -26,6 +26,8 @@
 #include "User.h"
 #include "BufferedMsg.h"
 
+#define READ_DELETED	1
+
 #define STATE_POST_AS_ANON				state_post_as_anon
 #define STATE_ENTER_ANONYMOUS			state_enter_anonymous
 #define STATE_ENTER_MAIL_RECIPIENTS		state_enter_mail_recipients
@@ -33,7 +35,8 @@
 #define STATE_EDIT_TEXT					state_edit_text
 #define STATE_SAVE_TEXT					state_save_text
 #define STATE_ABORT_TEXT				state_abort_text
-#define STATE_DEL_MSG_PROMPT			state_del_msg_prompt
+#define STATE_DELETE_MSG				state_delete_msg
+#define STATE_UNDELETE_MSG				state_undelete_msg
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
 #define STATE_PRESS_ANY_KEY				state_press_any_key
@@ -50,7 +53,8 @@ void state_enter_subject(User *, char);
 void state_edit_text(User *, char);
 void state_save_text(User *, char);
 void state_abort_text(User *, char);
-void state_del_msg_prompt(User *, char);
+void state_delete_msg(User *, char);
+void state_undelete_msg(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
 void state_press_any_key(User *, char);
@@ -62,13 +66,13 @@ void save_message(User *, char);
 void abort_message(User *, char);
 void read_more(User *);
 void readMsg(User *);
+void read_message(User *, Message *, int);
 void recvMsg(User *, User *, BufferedMsg *);
 char *buffered_msg_header(User *, BufferedMsg *, char *, int);
 void print_buffered_msg(User *, BufferedMsg *);
 void spew_BufferedMsg(User *);
 void expire_msg(Room *);
 void expire_mail(User *);
-void undelete_msg(User *);
 Room *next_unread_room(User *);
 Room *unread_room(User *, Room *);
 Joined *joined_room(User *, Room *);
