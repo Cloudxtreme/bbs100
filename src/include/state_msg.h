@@ -75,6 +75,7 @@ Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
 void msg_header(User *, Message *);
+void print_subject(User *, Message *);
 int setup_read_text(User *);
 void read_text(User *);
 void state_scroll_text(User *, char);

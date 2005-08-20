@@ -90,12 +90,8 @@ void enter_message(User *usr) {
 	else {
 		if (usr->curr_room->flags & ROOM_ANONYMOUS)
 			CALL(usr, STATE_POST_AS_ANON);
-		else {
-			if (usr->curr_room->flags & ROOM_SUBJECTS)
-				CALL(usr, STATE_ENTER_SUBJECT);
-			else
-				enter_the_message(usr);
-		}
+		else
+			enter_the_message(usr);
 	}
 	Return;
 }
@@ -124,12 +120,8 @@ void state_post_as_anon(User *usr, char c) {
 			Put(usr, "<white>Normal\n");
 			usr->runtime_flags &= ~(RTF_ANON | RTF_DEFAULT_ANON);
 
-			if (usr->curr_room->flags & ROOM_SUBJECTS)
-				JMP(usr, STATE_ENTER_SUBJECT);
-			else {
-				POP(usr);
-				enter_the_message(usr);
-			}
+			POP(usr);
+			enter_the_message(usr);
 			Return;
 
 		case 'a':
@@ -150,12 +142,8 @@ void state_post_as_anon(User *usr, char c) {
 			} else
 				cstrcpy(usr->new_message->anon, "anonymous", MAX_NAME);
 
-			if (usr->curr_room->flags & ROOM_SUBJECTS)
-				JMP(usr, STATE_ENTER_SUBJECT);
-			else {
-				POP(usr);
-				enter_the_message(usr);
-			}
+			POP(usr);
+			enter_the_message(usr);
 			Return;
 	}
 	Put(usr, "\n<green>You can post as: <hotkey>Normal, <hotkey>Anonymous, <hotkey>Default-anonymous: ");
@@ -190,12 +178,8 @@ int r;
 			cstrcpy(usr->new_message->anon, usr->edit_buf, MAX_NAME);
 			cstrlwr(usr->new_message->anon);
 		}
-		if (usr->curr_room->flags & ROOM_SUBJECTS)
-			JMP(usr, STATE_ENTER_SUBJECT);
-		else {
-			POP(usr);
-			enter_the_message(usr);
-		}
+		POP(usr);
+		enter_the_message(usr);
 	}
 	Return;
 }
@@ -229,7 +213,8 @@ void state_enter_mail_recipients(User *usr, char c) {
 			listdestroy_StringList(usr->recipients);
 			usr->recipients = NULL;
 
-			JMP(usr, STATE_ENTER_SUBJECT);
+			POP(usr);
+			enter_the_message(usr);
 	}
 	Return;
 }
@@ -243,7 +228,7 @@ int r;
 	Enter(state_enter_subject);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Subject: <yellow>");
+		Put(usr, "<cyan>Subject: <yellow>");
 
 	r = edit_line(usr, c);
 
@@ -255,8 +240,9 @@ int r;
 		if (usr->edit_buf[0])
 			cstrcpy(usr->new_message->subject, usr->edit_buf, MAX_LINE);
 
-		POP(usr);				/* pop this 'enter subject' call */
-		enter_the_message(usr);
+		Put(usr, "\n");
+		POP(usr);
+		edit_text(usr, save_message, abort_message);
 	}
 	Return;
 }
@@ -280,7 +266,15 @@ void enter_the_message(User *usr) {
 
 	msg_header(usr, usr->new_message);
 
-	edit_text(usr, save_message, abort_message);
+	if (usr->new_message->flags & MSG_REPLY) {
+		print_subject(usr, usr->new_message);
+		Put(usr, "\n");
+		edit_text(usr, save_message, abort_message);
+	} else
+		if (usr->curr_room->flags & ROOM_SUBJECTS)
+			CALL(usr, STATE_ENTER_SUBJECT);
+		else
+			edit_text(usr, save_message, abort_message);
 	Return;
 }
 
@@ -665,37 +659,7 @@ unsigned long msg_number;
 				print_date(usr, usr->message->deleted, date_buf, MAX_LINE), deleted_by);
 		}
 	} else {
-		if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
-			if (usr->message->subject[0]) {
-				if (usr->message->flags & MSG_FORWARDED)
-					Print(usr, "<cyan>Subject: <white>Fwd:<yellow> %s\n", usr->message->subject);
-				else
-					if (usr->message->flags & MSG_REPLY)
-						Print(usr, "<cyan>Subject: <white>Re:<yellow> %s\n", usr->message->subject);
-					else
-						Print(usr, "<cyan>Subject:<yellow> %s\n", usr->message->subject);
-			} else {
-/*
-	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
-	which is actually correct, because the reply_number would be different to each
-	recipient of the Mail> message
-*/
-				if (usr->message->flags & MSG_REPLY && usr->message->reply_number)
-					Print(usr, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", usr->message->reply_number);
-			}
-		} else {
-			if ((usr->message->flags & MSG_FORWARDED) && usr->message->subject[0])
-				Print(usr, "<white>Fwd:<yellow> %s\n", usr->message->subject);
-			else {
-				if (usr->message->flags & MSG_REPLY) {			/* room without subject lines */
-					if (usr->message->subject[0])
-						Print(usr, "<white>Re:<yellow> %s\n", usr->message->subject);
-					else
-						if (usr->message->reply_number)
-							Print(usr, "<white>Re:<yellow> <message #%lu>\n", usr->message->reply_number);
-				}
-			}
-		}
+		print_subject(usr, usr->message);
 		Put(usr, "<green>\n");
 		concat_StringIO(usr->text, usr->message->msg);
 
@@ -1297,7 +1261,7 @@ int r;
 		if (!usr->new_message->subject[0]) {
 			char buf[MAX_LONGLINE];
 
-			bufprintf(buf, MAX_LONGLINE, "<yellow><forwarded from %s>", usr->curr_room->name);
+			bufprintf(buf, MAX_LONGLINE, "<yellow> \b<forwarded from %s>", usr->curr_room->name);
 			if (strlen(buf) >= MAX_LINE)
 				cstrcpy(buf + MAX_LINE - 5, "...>", 5);
 
@@ -1706,6 +1670,46 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 		}
 	} else
 		Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
+	Return;
+}
+
+void print_subject(User *usr, Message *msg) {
+	if (usr == NULL || msg == NULL)
+		return;
+
+	Enter(print_subject);
+
+	if (usr->curr_room->flags & ROOM_SUBJECTS) {		/* room has subject lines */
+		if (msg->subject[0]) {
+			if (msg->flags & MSG_FORWARDED)
+				Print(usr, "<cyan>Subject: <white>Fwd:<yellow> %s\n", msg->subject);
+			else
+				if (msg->flags & MSG_REPLY)
+					Print(usr, "<cyan>Subject: <white>Re:<yellow> %s\n", msg->subject);
+				else
+					Print(usr, "<cyan>Subject:<yellow> %s\n", msg->subject);
+		} else {
+/*
+	Note: in Mail>, the reply_number is always 0 so this message is never displayed there
+	which is actually correct, because the reply_number would be different to each
+	recipient of the Mail> message
+*/
+			if (msg->flags & MSG_REPLY && msg->reply_number)
+				Print(usr, "<cyan>Subject:<white> Re:<yellow> <message #%lu>\n", msg->reply_number);
+		}
+	} else {
+		if ((msg->flags & MSG_FORWARDED) && msg->subject[0])
+			Print(usr, "<white>Fwd:<yellow> %s\n", msg->subject);
+		else {
+			if (msg->flags & MSG_REPLY) {			/* room without subject lines */
+				if (msg->subject[0])
+					Print(usr, "<white>Re:<yellow> %s\n", msg->subject);
+				else
+					if (msg->reply_number)
+						Print(usr, "<white>Re:<yellow> <message #%lu>\n", msg->reply_number);
+			}
+		}
+	}
 	Return;
 }
 
