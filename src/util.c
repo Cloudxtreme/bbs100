@@ -36,6 +36,7 @@
 #include "locale_system.h"
 #include "make_dir.h"
 #include "bufprintf.h"
+#include "state_room.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1289,19 +1290,18 @@ HH_is_online:
 	return u;
 }
 
-
 void system_broadcast(int overrule, char *msg) {
 User *u;
-void (*func)(User *, char *, ...);
+void (*say)(User *, char *, ...);
 char buf[PRINT_BUF];
 struct tm *tm;
 
 	log_info(msg);
 
 	if (overrule)
-		func = Print;
+		say = Print;
 	else
-		func = Tell;
+		say = Tell;
 
 	for(u = AllUsers; u != NULL; u = u->next) {
 		tm = user_time(u, (time_t)0UL);
@@ -1311,7 +1311,10 @@ struct tm *tm;
 		bufprintf(buf, PRINT_BUF, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
 			"%s\n", tm->tm_hour, tm->tm_min, msg);
 
-		func(u, buf);
+		if (u->curr_room != NULL && (u->curr_room->flags & ROOM_CHATROOM) && !(u->runtime_flags & RTF_BUSY))
+			chatroom_tell_user(u, buf);
+		else
+			say(u, buf);
 	}
 }
 

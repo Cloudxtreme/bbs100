@@ -207,8 +207,12 @@ char buf[PRINT_BUF];
 		put_StringIO(m->msg, buf);
 		write_StringIO(m->msg, "\n", 1);
 		add_BufferedMsg(&usr->held_msgs, m);
-	} else
-		Out(usr, buf);
+	} else {
+		if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM))
+			chatroom_tell_user(usr, buf);
+		else
+			Out(usr, buf);
+	}
 }
 
 void notify_friends(User *usr, char *msg, int force) {

@@ -45,10 +45,10 @@ There are a lot of new options in the Config menu:
 - when entering colors into a message, the colors are immediately displayed
 - color codes take up only 1 position
 - yet another notation of color codes is possible, using the caret or
-  the tilde (whatever you prefer)
-- Tab can be used to expand long color codes ...
+  the tilde (whichever you prefer)
+- Tab can be used to expand long color codes
 - the tab character can be used in messages, it expands to 4 spaces
-- on smaller terminals, the BBS will do correct word-wrapping
+- on smaller terminals, the BBS will do word-wrapping
 - on smaller terminals, the BBS will display --More-- prompts for menus
   that would otherwise scroll off the screen
 - the boss key hides what you're doing (for when the boss walks by)
@@ -59,7 +59,8 @@ There are a lot of new options in the Config menu:
 - if configured by the sysop, you won't be stuck in the Lobby> when
   there are no new messages, but be cycled around to urge you to post
   somewhere
-- print online status after unlocking
+- it prints the online status after unlocking
+- chat rooms scroll messages in a better way
 
 
 What's new to the admins?
@@ -71,9 +72,9 @@ What's new to the admins?
 - nologin shown more clearly in Sysop menu, when active
 - when entering a message as sysop or room aide, it shows it to the posting
   user in the header
-- param umask controls the umask (usually you don't want to touch it)
-- param bind_address allows you to bind to a specific interface
-  especially binding to localhost can be useful in certain situations
+- param umask controls the umask
+- param bind_address allows you to bind to a specific interface;
+  especially binding to localhost can be useful
 - configurable notification string for when a user uses Hold message mode
 - configurable minimum age for users that want to be a Helping Hand
 - option of keeping room info and profile info resident in memory or not
@@ -108,7 +109,8 @@ What's new internally?
 - MsgIndex in a room is now an array
   (less memory fragmentation)
 - Put() now calls Out(), which calls Out_text(), which does word-wrapping
-  and auto-coloring of symbols (slow, but it looks cool)
+  and auto-coloring of symbols
+  (slow, but it looks cool)
 - output can be buffered temporarily and then be displayed with a --More--
   prompt by a simple call to buffer_text()
 - CALLX() can directly call into a substate different from INIT_STATE

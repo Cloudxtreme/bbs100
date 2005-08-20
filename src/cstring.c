@@ -143,7 +143,17 @@ int i;
 	i--;
 	while(i >= 0 && (msg[i] == ' ' || msg[i] == '\r' || msg[i] == '\n'))
 		msg[i--] = 0;
-	return;
+}
+
+void ctrim_line(char *str) {
+int i;
+
+	if (str == NULL)
+		return;
+
+	i = strlen(str)-1;
+	while(i >= 0 && (str[i] == ' ' || str[i] == '\t' || str[i] == '\r' || str[i] == '\n'))
+		str[i--] = 0;
 }
 
 void cstrip_spaces(char *msg) {

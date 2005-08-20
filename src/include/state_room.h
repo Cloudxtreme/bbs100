@@ -54,6 +54,8 @@ void leave_chatroom(User *);
 void chatroom_say(User *, char *);
 void chatroom_tell(Room *, char *);
 void chatroom_msg(Room *, char *);
+void chatroom_tell_user(User *, char *);
+void chatroom_recvMsg(User *, BufferedMsg *);
 
 #endif	/* STATE_ROOM_H_WJ105 */
 

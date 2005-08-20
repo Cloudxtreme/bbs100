@@ -5,6 +5,8 @@ Changes as of August 20th 2005
   hit <k> to enable brackets
 - can also use ~ (tilde) for color editing
 - show message header and subject 'as is' when entering new message
+- chatroom messages arrive as you are editing, and they appear right
+  above the edit line (so it looks much better this way)
 
 Changes as of August 18th 2005
 - parameter bind_address for binding to a specific interface

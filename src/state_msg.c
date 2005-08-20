@@ -906,10 +906,13 @@ Rcv_Remove_Recipient:
 					Print(from, "<yellow>%s<green> is busy and will receive your %s<green> when done\n", usr->name, msg_type);
 		Return;
 	}
-	Put(usr, "<beep>");									/* alarm beep */
-	print_buffered_msg(usr, new_msg);
-	Put(usr, "\n");
-
+	if (usr->curr_room->flags & ROOM_CHATROOM)
+		chatroom_recvMsg(usr, new_msg);
+	else {
+		Put(usr, "<beep>");							/* alarm beep */
+		print_buffered_msg(usr, new_msg);
+		Put(usr, "\n");
+	}
 	Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
 
 /* auto-reply if FOLLOWUP or if it was a Question */

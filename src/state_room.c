@@ -81,7 +81,7 @@ char *Str_leave_chatroom[] = {
 
 void state_room_prompt(User *usr, char c) {
 int i, idx;
-char numbuf[MAX_NUMBER];
+char num_buf[MAX_NUMBER];
 
 	if (usr == NULL)
 		return;
@@ -93,9 +93,14 @@ char numbuf[MAX_NUMBER];
 */
 	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)
 		&& !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
+		char buf[MAX_LINE];
+
 		switch(c) {
 			case INIT_STATE:
-				edit_line(usr, EDIT_INIT);
+				Put(usr, "\n");
+			case INIT_PROMPT:
+				edit_chatline(usr, EDIT_INIT);
+/* note how you are not busy when editing a chat line */
 				usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
 				PrintPrompt(usr);
 				break;
@@ -108,17 +113,25 @@ char numbuf[MAX_NUMBER];
 				}
 
 			default:
-				i = edit_line(usr, c);
+				i = edit_chatline(usr, c);
 
-				if (i == EDIT_RETURN)
-					chatroom_say(usr, usr->edit_buf);
-
-				if (i == EDIT_RETURN || i == EDIT_BREAK) {
-					edit_line(usr, EDIT_INIT);
+				if (i == EDIT_BREAK) {
+					CURRENT_STATE_X(usr, INIT_PROMPT);
+					Return;
+				}
+				if (i == EDIT_RETURN) {
+					if (!usr->edit_buf[0]) {
+						CURRENT_STATE(usr);
+						Return;
+					}
+					wipe_line(usr);
+					cstrcpy(buf, usr->edit_buf, MAX_LINE);
+					edit_chatline(usr, EDIT_INIT);
 					usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
-					PrintPrompt(usr);
-				} else
-					usr->runtime_flags |= RTF_BUSY;
+/* Note: chatroom_say() will reprint the prompt for us */
+					chatroom_say(usr, buf);
+					Return;
+				}
 		}
 		Return;
 	}
@@ -153,11 +166,11 @@ char numbuf[MAX_NUMBER];
 		case 'Q':
 			if (PARAM_HAVE_QUESTIONS) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Question%s\n", numbuf);
+				Print(usr, "<white>Question%s\n", num_buf);
 
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot ask questions\n", PARAM_NAME_GUEST);
@@ -239,11 +252,11 @@ char numbuf[MAX_NUMBER];
 		case 'x':
 			if (PARAM_HAVE_XMSGS) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>eXpress Message%s\n", numbuf);
+				Print(usr, "<white>eXpress Message%s\n", num_buf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send eXpress Messages\n", PARAM_NAME_GUEST);
 					break;
@@ -273,11 +286,11 @@ char numbuf[MAX_NUMBER];
 		case '9':
 			if (PARAM_HAVE_QUICK_X) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Quick X%s\n", numbuf);
+				Print(usr, "<white>Quick X%s\n", num_buf);
 
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send Quick eXpress Messages\n", PARAM_NAME_GUEST);
@@ -322,11 +335,11 @@ char numbuf[MAX_NUMBER];
 		case ';':
 			if (PARAM_HAVE_EMOTES) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Emote%s\n", numbuf);
+				Print(usr, "<white>Emote%s\n", num_buf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send emotes\n", PARAM_NAME_GUEST);
 					break;
@@ -346,11 +359,11 @@ char numbuf[MAX_NUMBER];
 		case '*':
 			if (PARAM_HAVE_FEELINGS) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Feelings%s\n", numbuf);
+				Print(usr, "<white>Feelings%s\n", num_buf);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send feelings\n", PARAM_NAME_GUEST);
 					break;
@@ -370,11 +383,11 @@ char numbuf[MAX_NUMBER];
 		case 'v':
 			if (PARAM_HAVE_X_REPLY) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Reply%s\n", numbuf);
+				Print(usr, "<white>Reply%s\n", num_buf);
 
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
@@ -395,11 +408,11 @@ char numbuf[MAX_NUMBER];
 		case 'V':
 			if (PARAM_HAVE_X_REPLY) {
 				if (usr->flags & USR_XMSG_NUM)
-					bufprintf(numbuf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
+					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
-					numbuf[0] = 0;
+					num_buf[0] = 0;
 
-				Print(usr, "<white>Reply to All%s\n", numbuf);
+				Print(usr, "<white>Reply to All%s\n", num_buf);
 
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot send replies\n", PARAM_NAME_GUEST);
@@ -956,17 +969,20 @@ void PrintPrompt(User *usr) {
 /* print a short prompt for chatrooms */
 
 		if (usr->curr_room == NULL || (usr->curr_room->flags & ROOM_CHATROOM)) {
-			StringList *sl;
 
 /* spool the chat messages we didn't get while we were busy */
 
-			for(sl = usr->chat_history; sl != NULL; sl = sl->next)
-				Print(usr, "%s\n", sl->str);
+			if (usr->chat_history != NULL) {
+				StringList *sl;
 
-			listdestroy_StringList(usr->chat_history);
-			usr->chat_history = NULL;
+				Put(usr, "\n");
+				for(sl = usr->chat_history; sl != NULL; sl = sl->next)
+					Print(usr, "%s\n", sl->str);
 
-			Print(usr, "\n<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+				listdestroy_StringList(usr->chat_history);
+				usr->chat_history = NULL;
+			}
+			Print(usr, "<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 		} else {
 			char roomname[MAX_LINE];
 
@@ -1773,31 +1789,28 @@ char buf[MAX_LONGLINE], *str;
 */
 void chatroom_say(User *usr, char *str) {
 char buf[MAX_LONGLINE], from[MAX_LINE];
-int i;
 
 	if (usr == NULL || str == NULL || !*str)
 		return;
 
 	Enter(chatroom_say);
 
-	i = strlen(str)-1;
-	while(i >= 0 && (str[i] == ' ' || str[i] == '\t'))
-		str[i--] = 0;
+	ctrim_line(str);
 	if (!*str) {
 		Return;
 	}
 	if (usr->runtime_flags & RTF_SYSOP)
-		bufprintf(from, MAX_LINE, "<yellow>%s: <cyan>%s", PARAM_NAME_SYSOP, usr->name);
+		bufprintf(from, MAX_LINE, "<yellow>%s:<cyan> %s", PARAM_NAME_SYSOP, usr->name);
 	else
 		if (usr->runtime_flags & RTF_ROOMAIDE)
-			bufprintf(from, MAX_LINE, "<yellow>%s: <cyan>%s", PARAM_NAME_ROOMAIDE, usr->name);
+			bufprintf(from, MAX_LINE, "<yellow>%s:<cyan> %s", PARAM_NAME_ROOMAIDE, usr->name);
 		else
 			cstrcpy(from, usr->name, MAX_NAME);
 
 	if (*str == ' ')
-		bufprintf(buf, MAX_LONGLINE, "<cyan>%s<yellow>%s", from, str);
+		bufprintf(buf, MAX_LONGLINE, "<cyan>%s<yellow> %s", from, str+1);
 	else
-		bufprintf(buf, MAX_LONGLINE, "<white>[<cyan>%s<white>]: <yellow>%s", from, str);
+		bufprintf(buf, MAX_LONGLINE, "<cyan>%s:<yellow> %s", from, str);
 
 	chatroom_tell(usr->curr_room, buf);
 	Return;
@@ -1827,6 +1840,9 @@ void chatroom_tell(Room *r, char *str) {
 /*
 	send a message to everyone in the room, but keep it out of the history
 	Used for enter/leave messages
+
+	it reprints the line that users are editing on, so it also
+	reprints the prompt
 */
 void chatroom_msg(Room *r, char *str) {
 PList *p;
@@ -1845,13 +1861,64 @@ User *u;
 		if (u == NULL)
 			continue;
 
-		if (u->runtime_flags & RTF_BUSY)
-			add_StringList(&u->chat_history, new_StringList(str));
-		else {
-			Put(u, str);
-			Put(u, "\n");
-		}
+		chatroom_tell_user(u, str);
 	}
+	Return;
+}
+
+void chatroom_tell_user(User *u, char *str) {
+	if (u == NULL || str == NULL || !*str)
+		return;
+
+	Enter(chatroom_tell_user);
+
+	if (!(u->curr_room->flags & ROOM_CHATROOM)) {
+		Return;
+	}
+	if (u->runtime_flags & RTF_BUSY)
+		add_StringList(&u->chat_history, new_StringList(str));
+	else {
+/*
+	when not busy, pretty print the lines
+*/
+		wipe_line(u);
+		Put(u, str);
+		Put(u, "\n");
+
+		PrintPrompt(u);
+		if (u->runtime_flags & RTF_CHAT_ESCAPE)
+			Put(u, "<white>/");
+		else
+			Put(u, u->edit_buf);
+	}
+	Return;
+}
+
+/*
+	you're in a chatroom, but someone is sending you eXpress Messages
+	btw, if RTF_BUSY is set, then it is handled by recvMsg()
+*/
+void chatroom_recvMsg(User *usr, BufferedMsg *msg) {
+	if (usr == NULL || msg == NULL)
+		return;
+
+	Enter(chatroom_recvMsg);
+
+	if (!(usr->curr_room->flags & ROOM_CHATROOM)) {
+		Return;
+	}
+	wipe_line(usr);
+
+	Put(usr, "<beep>");						/* alarm beep */
+	print_buffered_msg(usr, msg);
+	Put(usr, "\n");
+
+	PrintPrompt(usr);
+	if (usr->runtime_flags & RTF_CHAT_ESCAPE)
+		Put(usr, "<white>/");
+	else
+		Put(usr, usr->edit_buf);
+
 	Return;
 }
 

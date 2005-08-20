@@ -32,6 +32,7 @@
 #include "copyright.h"
 #include "Param.h"
 #include "screens.h"
+#include "state_room.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,26 +55,32 @@ User *usr;
 }
 
 void user_timeout(void *v) {
+void (*say)(User *, char *);
 User *usr;
 
 	usr = (User *)v;
 	if (usr == NULL || usr->idle_timer == NULL)
 		return;
 
+	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM) && !(usr->runtime_flags & RTF_BUSY))
+		say = chatroom_tell_user;
+	else
+		say = Put;
+
 	switch(usr->idle_timer->restart) {
 		case TIMEOUT_USER:
-			Put(usr, "\n<beep><red>Hello? Is anybody out there?? You will be logged off in one minute unless\n"
+			say(usr, "\n<beep><red>Hello? Is anybody out there?? You will be logged off in one minute unless\n"
 				"you start looking more alive!\n");
 			usr->idle_timer->sleeptime = SECS_IN_MIN;
 			break;
 
 		case (TIMEOUT_USER-1):
-			Put(usr, "\n<beep><red>WAKE UP! You will be logged off NOW unless you show you're alive!\n");
+			say(usr, "\n<beep><red>WAKE UP! You will be logged off NOW unless you show you're alive!\n");
 			usr->idle_timer->sleeptime = 6;
 			break;
 
 		case (TIMEOUT_USER-2):
-			Put(usr, "\n<beep><red>You are being logged off due to inactivity\n");
+			say(usr, "\n<beep><red>You are being logged off due to inactivity\n");
 			notify_idle(usr);
 			log_auth("IDLE %s (%s)", usr->name, usr->conn->hostname);
 			close_connection(usr, "%s went idle", usr->name);

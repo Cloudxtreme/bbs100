@@ -33,7 +33,8 @@
 #define INIT_PROMPT	(char)-1
 #define LOOP_STATE	' '
 
-#define CURRENT_STATE(x)			(x)->conn->callstack->ip((x)->conn->data, (char)INIT_STATE)
+#define CURRENT_STATE(x)			CURRENT_STATE_X((x), INIT_STATE)
+#define CURRENT_STATE_X(x,y)		(x)->conn->callstack->ip((x)->conn->data, (char)(y))
 
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))

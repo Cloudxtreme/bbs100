@@ -812,6 +812,111 @@ int edit_line(User *usr, char c) {
 }
 
 /*
+	same as edit_line(), but it handles KEY_RETURN and word-wrapping
+	in a different way
+*/
+int edit_chatline(User *usr, char c) {
+	if (usr == NULL)
+		return 0;
+
+	if (c == EDIT_INIT) {
+		usr->runtime_flags |= RTF_BUSY;
+		usr->runtime_flags &= ~RTF_COLOR_EDITING;
+		usr->edit_pos = 0;
+		usr->edit_buf[0] = 0;
+		return 0;
+	}
+	if (usr->runtime_flags & RTF_COLOR_EDITING) {
+		edit_color(usr, c);
+		return 0;
+	}
+	switch(c) {
+/*
+		case EDIT_INIT:					already done (see above)
+			break;
+*/
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+			Put(usr, "\n");
+			return EDIT_BREAK;
+
+		case KEY_RETURN:
+/*			Put(usr, "\n");			*/
+			ctrim_line(usr->edit_buf);
+			return EDIT_RETURN;
+
+		case KEY_BS:
+			if (usr->edit_pos) {
+				usr->edit_pos--;
+				if (usr->edit_buf[usr->edit_pos] >= ' ' && usr->edit_buf[usr->edit_pos] <= '~')
+					Put(usr, "\b \b");
+				else
+					Put(usr, "<yellow>");
+				usr->edit_buf[usr->edit_pos] = 0;
+			}
+			break;
+
+		case KEY_CTRL('W'):
+			erase_word(usr);
+			break;
+
+		case KEY_ESC:
+		case KEY_CTRL('U'):
+		case KEY_CTRL('Y'):
+		case KEY_CTRL('X'):
+			erase_line(usr, usr->edit_buf);
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+			Put(usr, "<yellow>");
+			break;
+
+		case '^':
+		case '~':
+		case KEY_CTRL('V'):
+			usr->runtime_flags |= RTF_COLOR_EDITING;
+			break;
+
+		case KEY_TAB:
+			if (edit_tab_color(usr, edit_line))
+				break;
+
+			edit_tab_spaces(usr, edit_line);
+			break;
+
+		case '>':
+			edit_long_color(usr);
+			break;
+
+		case KEY_BACKTAB:
+			if (edit_backtab_color(usr, edit_line))
+				break;
+
+/* fall through */
+		default:
+			if (c < ' ' || c > '~')
+				break;
+
+			if (usr->edit_pos < MAX_LINE-1) {
+				usr->edit_buf[usr->edit_pos++] = c;
+				usr->edit_buf[usr->edit_pos] = 0;
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
+/*
+	wrap; return the line
+	this is not elegant when being in the middle of a long color code,
+	but it's hardly ever a real problem because strlen(usr->name)+5
+	usually is longer than the long color code
+*/
+				if (usr->edit_pos + strlen(usr->name) + 5 >= usr->display->term_width) {
+					ctrim_line(usr->edit_buf);
+					return EDIT_RETURN;
+				}
+			}
+	}
+	return 0;
+}
+
+/*
 	word wrapping for edit_x() and edit_msg()
 
 	The word wrap wraps on terminal width, but is also delimited by
