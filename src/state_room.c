@@ -929,6 +929,7 @@ char num_buf[MAX_NUMBER];
 			}
 	}
 	if (usr->curr_room->flags & ROOM_CHATROOM) {
+		Put(usr, "\n");
 		edit_line(usr, EDIT_INIT);
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING | RTF_BUSY_MAILING | RTF_CHAT_ESCAPE);
 	} else {
