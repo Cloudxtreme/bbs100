@@ -30,6 +30,7 @@
 #define add_StringList(x,y)			(StringList *)add_List((x), (y))
 #define concat_StringList(x,y)		(StringList *)concat_List((x), (y))
 #define remove_StringList(x,y)		(StringList *)remove_List((x), (y))
+#define pop_StringList(x)			(StringList *)pop_List(x)
 #define listdestroy_StringList(x)	listdestroy_List((x), destroy_StringList)
 #define rewind_StringList(x)		(StringList *)rewind_List(x)
 #define unwind_StringList(x)		(StringList *)unwind_List(x)

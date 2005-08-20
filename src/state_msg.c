@@ -876,13 +876,11 @@ Rcv_Remove_Recipient:
 	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
 		PList *pl;
 
-		pl = usr->history;						/* remove the head */
-		usr->history = usr->history->next;
-		usr->history->prev = NULL;
-
-		destroy_BufferedMsg((BufferedMsg *)pl->p);
-		pl->p = NULL;
-		destroy_PList(pl);
+		if ((pl = pop_PList(&usr->history)) != NULL) {
+			destroy_BufferedMsg((BufferedMsg *)pl->p);
+			pl->p = NULL;
+			destroy_PList(pl);
+		}
 	}
 	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
 		if ((usr->runtime_flags & RTF_BUSY_SENDING)

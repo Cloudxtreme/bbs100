@@ -1827,13 +1827,10 @@ void chatroom_tell(Room *r, char *str) {
 	Enter(chatroom_tell);
 
 	add_StringList(&r->chat_history, new_StringList(str));
-	if (list_Count(r->chat_history) > PARAM_MAX_CHAT_HISTORY) {
-		StringList *sl;
+	r->flags |= ROOM_DIRTY;
+	if (list_Count(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
+		destroy_StringList(pop_StringList(&r->chat_history));
 
-		sl = r->chat_history;
-		remove_StringList(&r->chat_history, sl);
-		destroy_StringList(sl);
-	}
 	chatroom_msg(r, str);
 	Return;
 }
