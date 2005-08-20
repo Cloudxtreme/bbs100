@@ -71,7 +71,7 @@
 	default symbols for auto-coloring
 	no '_', no '#', no '?' because they look ugly
 */
-#define DEFAULT_SYMBOLS			"!@$%^&*-+=()[]{}<>.,:;/'\"`\\|"
+#define DEFAULT_SYMBOLS			"!@$%^&*-+=()[]{}<>.,:;/'\"`\\|~"
 
 #define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color */
 

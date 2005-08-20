@@ -110,6 +110,7 @@ int pos, n, dont_auto_color, color, is_symbol;
 		is_symbol = 0;
 		pos++;
 		c = *str;
+
 		if ((usr->flags & USR_HACKERZ) && HACK_CHANCE)
 			c = hackerz_mode(c);
 

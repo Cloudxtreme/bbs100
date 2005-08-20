@@ -41,8 +41,11 @@
 /* tabsize must be a power of 2, preferred values are 4 and 8 */
 #define TABSIZE			4
 
+/*
+	charset1 breaks the line, charset2 wraps along
+*/
 #define WRAP_CHARSET1	" .:;,-+=*&^%!?>}])/"
-#define WRAP_CHARSET2	"<{[($'\"`#"
+#define WRAP_CHARSET2	"<{[($'\"`#~"
 
 int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);

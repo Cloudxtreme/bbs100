@@ -147,7 +147,6 @@ char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER];
 			Put(usr, "Again");
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
-
 			if (usr->history_p == NULL) {
 				Perror(usr, "Your history buffer is gone");
 				usr->runtime_flags &= ~RTF_BUSY;
@@ -553,7 +552,6 @@ char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER];
 			Put(usr, "Again");
 		case KEY_CTRL('L'):
 			Put(usr, "\n");
-
 			if (usr->held_msgp == NULL) {
 				Perror(usr, "Your history buffer is gone");
 				usr->runtime_flags &= ~RTF_BUSY;

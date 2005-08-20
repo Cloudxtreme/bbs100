@@ -102,7 +102,7 @@ It is possible to use colors in your messages. To enter colors, enter the name
 of the color enclosed in angle brackets <yellow>'<lt><yellow>'<green> and <yellow>'<gt><yellow>'<green>.
 To quicken typing, use<yellow> <Tab> and BackTab<yellow> <\><green> to expand the color names.
 It is also possible to hit either <yellow> <Ctrl-V><green> or<yellow> <^><green> (the caret)
-while editing, followed by a special color character. 
+or<yellow> <~> (tilde) while editing, followed by a special color character. 
 
   <lt>white<gt>  or <white>Ctrl-<key>V <key>w<green> for <white>White<green>      <lt>cyan<gt>    or <white>Ctrl-<key>V <key>c<green> for <cyan>Cyan<green>
   <lt>yellow<gt> or <white>Ctrl-<key>V <key>y<green> for <yellow>Yellow<green>     <lt>blue<gt>    or <white>Ctrl-<key>V <key>b<green> for <blue>Blue<green>
