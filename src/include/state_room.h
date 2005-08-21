@@ -45,7 +45,6 @@ void room_info(User *);
 void state_enter_msg_number(User *, char);
 void state_enter_minus_msg(User *, char);
 void state_enter_plus_msg(User *, char);
-void stop_reading(User *);
 void goto_room(User *, Room *);
 void enter_room(User *, Room *);
 void leave_room(User *);

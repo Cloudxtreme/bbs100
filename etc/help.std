@@ -45,7 +45,7 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
 <white>Ctrl-<key>Z<green>    Zap all rooms
      <key>i    Read room information
      <key>k    List all known rooms
-     <key>s    Stop reading a room
+     <key>s    Skip this room for now
      <key>b    Read backwards
      <key>a    Read current message again
      <key>r    Reply to message
@@ -55,7 +55,7 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
      <key>#    Read a specific message number
      <key>-    Read last <n> messages
      <key>+    Skip next <n> messages
-     <key>(    Read parent of a reply
+     <key>(    Read the parent of a reply
 
 <white>Ctrl-<key>G<green>    View the GNU General Public License
      <key>[    Display version information

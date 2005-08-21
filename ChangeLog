@@ -11,6 +11,7 @@ Changes as of August 20th 2005
 - Conn.ipnum and Conn.hostname are now dynamically allocated
 - Message.subject, .anon, .deleted_by are now dynamically allocated
 - undelete message shows the message text and prompts you for a choice
+- 's' skips the room rather than stopping
 
 Changes as of August 18th 2005
 - parameter bind_address for binding to a specific interface

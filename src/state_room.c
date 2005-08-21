@@ -614,9 +614,18 @@ char num_buf[MAX_NUMBER];
 			Return;
 
 		case 's':
-			if (usr->curr_msg >= 0) {
-				Put(usr, "<white>Stop\n");
-				stop_reading(usr);
+			if (!(usr->curr_room->flags & ROOM_CHATROOM)) {
+				Room *r;
+
+				Put(usr, "<white>Skip\n");
+
+				r = next_unread_room(usr);
+				if (r != usr->curr_room) {
+					Print(usr, "<white>Goto <yellow>%s<white>\n", r->name);
+					goto_room(usr, r);
+					Return;
+				}
+				Put(usr, "<red>No new messages\n");
 			}
 			break;
 
@@ -1607,27 +1616,6 @@ int r;
 
 		readMsg(usr);			/* readMsg() RET()s for us :P */
 	}
-	Return;
-}
-
-/*
-	Stop reading: pretend last message has been read
-*/
-void stop_reading(User *usr) {
-Joined *j;
-
-	if (usr == NULL)
-		return;
-
-	Enter(stop_reading);
-
-	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL) {
-		if (usr->curr_room->msgs != NULL && usr->curr_room->msg_idx > 0)
-			j->last_read = usr->curr_room->msgs[usr->curr_room->msg_idx - 1];
-		else
-			j->last_read = 0UL;
-	}
-	usr->curr_msg = -1;
 	Return;
 }
 

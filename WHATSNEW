@@ -63,6 +63,10 @@ There are a lot of new options in the Config menu:
 - chat rooms scroll messages in a better way
 - when undeleting a deleted message, you first get to read the message
   and then you have the choice of undeleting it or not
+- 's' skips the room so you get to read the messages later on
+  (this is a change; 's' used to be Stop reading, but it was annoying.
+  To stop reading, enter something like '+1000' to go to the last post
+  in the room)
 
 
 What's new to the admins?
