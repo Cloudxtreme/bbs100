@@ -144,7 +144,7 @@ Conn *conn;
 		}
 /*
 	This is commented out because you don't really want to restrict
-	BBS use to only IPv6 users
+	BBS use to IPv6-only users
 
 #ifdef IPV6_V6ONLY
 		optval = 1;
@@ -208,6 +208,13 @@ Conn *conn;
 		break;
 	}
 	freeaddrinfo(res);
+/*
+	it's actually possible to get here without a single error message being logged yet
+	(which happens if you specify an IPv6 address, but do not have it)
+	so just print a message if all is not well
+*/
+	if (retval)
+		log_err("failed to start network");
 	return retval;
 }
 

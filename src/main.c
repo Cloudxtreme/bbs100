@@ -334,10 +334,9 @@ char buf[MAX_LONGLINE];
 	}
 	init_crypt();					/* init salt table for passwd encryption */
 
-	if (init_ConnUser()) {			/* startup inet */
-		printf("failed\n");
+	if (init_ConnUser())			/* startup inet */
 		exit_program(SHUTDOWN);
-	}
+
 	if (debugger)
 		printf("running under debugger, signal handling disabled\n"
 			"running under debugger, not going to background\n"
