@@ -128,7 +128,7 @@ Process *proc;
 		return;
 	}
 	if (pid == (pid_t)0L) {
-		log_msg("SIGCHLD caught");
+		log_msg("SIGCHLD caught; waitpid() says no child available");
 		return;
 	}
 	for(pl = process_table; pl != NULL; pl = pl_next) {
@@ -145,8 +145,10 @@ Process *proc;
 					log_msg("%s stopped on signal %s", proc->name, sig_name(WSTOPSIG(status), signame_buf, MAX_SIGNAME));
 				else
 					log_msg("%s terminated, exit code %d", proc->name, WEXITSTATUS(status));
-
-/* destroy this plist, because restart_process() adds a new one if it succeeds */
+/*
+	destroy this plist, because restart_process() adds a new one if it succeeds
+	Note: do not destroy pl->p; it's pointing to static memory
+*/
 			remove_PList(&process_table, pl);
 			destroy_PList(pl);
 
@@ -154,7 +156,7 @@ Process *proc;
 			return;
 		}
 	}
-	log_msg("SIGCHLD caught");
+	log_msg("SIGCHLD caught; pid %lu not found in bbs internal process table", (unsigned long)pid);
 }
 
 /*
@@ -186,7 +188,7 @@ Process *proc;
 			proc->pid = (pid_t)-1L;
 		}
 	}
-	listdestroy_PList(process_table);	/* NOTE: it does not destroy pl->p */
+	listdestroy_PList(process_table);
 	process_table = NULL;
 }
 
