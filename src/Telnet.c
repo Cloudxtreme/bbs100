@@ -261,14 +261,12 @@ char buf[MAX_TELNETBUF];
 				if (!strcmp(t->in_sub_buf+1, "USER")) {		/* entered a user name */
 					t->in_sub = 1;
 					t->in_sub_buf[t->in_sub] = 0;
-					log_debug("Telnet: USER; return KEY_RETURN");
 					Return KEY_RETURN;
 				}
 				t->in_sub = 1;
 				t->in_sub_buf[t->in_sub] = 0;
 			} else {
 /* setting username, let through */
-				log_debug("Telnet: USER; [%c]", c);
 				if (!strcmp(t->in_sub_buf+1, "USER")) {
 					Return c;
 				}
