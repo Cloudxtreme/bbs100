@@ -149,6 +149,9 @@ int l;
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
 	bufvprintf(buf+l, MAX_LOGLINE - l, msg, ap);
 /*
+	This is nice but it causes deadly recursion when Malloc() is trying
+	to log something
+
 	if (internal_log_len > MAX_INTERNAL_LOG) {
 		StringList *sl;
 

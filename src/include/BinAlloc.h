@@ -17,7 +17,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	BinAlloc.h	WJ105
+	BinAlloc.h WJ105
 */
 
 #ifndef BINALLOC_H_WJ105
@@ -25,90 +25,56 @@
 
 #include "List.h"
 
-#define ROUND4(x)									\
-	do {											\
-		if (((x) & 3) > 0) {						\
-			(x) &= ~3;								\
-			(x) += 4;								\
-		}											\
-	} while(0)
+#define add_MemBin(x,y)			(MemBin *)add_List((x), (y))
+#define concat_MemBin(x,y)		(MemBin *)concat_List((x), (y))
+#define remove_MemBin(x,y)		(MemBin *)remove_List((x), (y))
+#define pop_MemBin(x)			(MemBin *)pop_List(x)
+#define listdestroy_MemBin(x)	listdestroy_List((x), destroy_MemBin)
+#define rewind_MemBin(x)		(MemBin *)rewind_List(x)
+#define unwind_MemBin(x)		(MemBin *)unwind_List(x)
+#define sort_MemBin(x, y)		(MemBin *)sort_List((x), (y))
 
-#define ST_WORD(x,y,z)								\
-	do {											\
-		((char *)(x))[(y)] = ((z) >> 8) & 0xff;		\
-		((char *)(x))[(y)+1] = (z) & 0xff;			\
-	} while(0)
+#define BIN_SIZE		256
+#define MARKER_SIZE		2
+#define MAX_BIN_FREE	(BIN_SIZE - sizeof(MemBin) - MARKER_SIZE)
+#define BIN_MEM_START	sizeof(MemBin)
+#define BIN_MEM_END		(BIN_SIZE - MARKER_SIZE)
 
-#define LD_WORD(x,y,z)								\
-	do {											\
-		(z) = (((char *)(x))[(y)] & 0xff) << 8;		\
-		(z) |= ((char *)(x))[(y)+1] & 0xff;			\
-	} while(0)
+#define LD_MARK(x,y)	(y) = (((char *)(x))[0] & 0xff)
+#define LD_TYPE(x,y)	(y) = (((char *)(x))[1] & 0xff)
 
-#define ASSERT_ADDR(x)								\
-	if ((x) < 0 || (x) >= (Chunk_Size >> 2)) {		\
-		abort();									\
-	}
+#define ST_MARK(x,y)	((char *)(x))[0] = (char)((y) & 0xff)
+#define ST_TYPE(x,y)	((char *)(x))[1] = (char)((y) & 0xff)
 
-#define ASSERT_SIZE(x)								\
-	if ((x) <= 0 || (x) >= (Chunk_Size >> 2)) {		\
-		abort();									\
-	}
-
-#define LD_ADDR(x,y,z)								\
-	do {											\
-		ASSERT_ADDR(y);								\
-		LD_WORD((x),(y) << 2,(z));					\
-		ASSERT_ADDR(z);								\
-	} while(0)
-
-#define LD_SIZE(x,y,z)								\
-	do {											\
-		ASSERT_ADDR(y);								\
-		LD_WORD((x),((y) << 2)+2,(z));				\
-		ASSERT_SIZE(z);								\
-	} while(0)
-
-#define ST_ADDR(x,y,z)								\
-	do {											\
-		ASSERT_ADDR(y);								\
-		ASSERT_ADDR(z);								\
-		ST_WORD((x),(y) << 2,(z));					\
-	} while(0)
-
-#define ST_SIZE(x,y,z)								\
-	do {											\
-		ASSERT_SIZE(y);								\
-		ASSERT_SIZE(z);								\
-		ST_WORD((x),((y) << 2)+2,(z));				\
-	} while(0)
-
-#define ST_ALLOC(x,y,z)			ST_WORD((x),(y) << 2,(0xff00) | ((z) & 0xff))
-
-#define OFFSET_CHUNK_SIZE		sizeof(BinChunk)
-#define OFFSET_BYTES_FREE		(OFFSET_CHUNK_SIZE + 2)
-#define OFFSET_FREE_LIST		(OFFSET_BYTES_FREE + 2)
-#define REAL_ADDRESS(x,y)		((char *)(x) + (((y)+1) << 2))
-
-#define CLEAR_MEM(x,y,z)		memset((char *)(x)+(((y)+1) << 2),0,(z) << 2)
-
-
-typedef struct BinChunk_tag BinChunk;
-
-struct BinChunk_tag {
-	List(BinChunk);
 /*
-	This is in here, but it's not in the structure to prevent possible
-	problems with struct padding that is done at compile time
-
-	BinWord chunk_size, bytes_free, free_list, unused;
+	markers
 */
-};
+#define MARK_FREE		0
+#define MARK_MALLOC		0xff
 
-extern BinChunk *root_chunk;
-extern unsigned long bin_use;
-extern unsigned long bin_foreign;
-extern int Chunk_Size;
+/*
+	treat strings as a collection of multiples of 16 chars
+*/
+#define SIZE_CHAR		16
+
+/*
+	this works as long as y is a power of 2
+*/
+#define ROUND_UP(x,y)				\
+	do {							\
+		if (((x) & ((y)-1)) > 0) {	\
+			(x) &= ~((y)-1);		\
+			(x) += (y);				\
+		}							\
+	} while(0)
+
+
+typedef struct MemBin_tag MemBin;
+
+struct MemBin_tag {
+	List(MemBin);
+	int free;				/* bytes free in this bin */
+};
 
 int init_BinAlloc(void);
 

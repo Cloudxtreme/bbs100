@@ -1,6 +1,10 @@
+Changes as of August 23rd 2005
+- new BinAlloc seems to be working alright
+
 Changes as of August 21st 2005
 - no error message would be given if bind_address was an IPv6 address, but
   the system was not IPv6 enabled
+- removed BinAlloc; going to try a different approach
 
 Changes as of August 20th 2005
 - fixed bug in name resolving (was an unterminated string)

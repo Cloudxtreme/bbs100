@@ -19,503 +19,304 @@
 /*
 	BinAlloc.c	WJ105
 
-	simple allocator that works with a linear freelist
+	The bin allocator tries to minimize fragmentation by using collections of the
+	same type.
 
-	While the bbs doesn't leak memory, the process tends to use
-	much more memory then it's reporting itself that it's using.
-	It's a problem that was very hard to put a finger on. The answer is
-	that the bbs fragments memory like crazy due to the many small
-	malloc()s that it does.
-	Unix malloc() will break blocks into smaller pieces and not reclaim
-	this memory until it's really needed to do so. As a result, the memory
-	becomes 'filled up' with only tiny free blocks that are not coalesced
-	into one large free block again => fragmentation.
-	When the bbs then allocates a larger piece, the process will grow, even
-	though the memory was really already free and available. malloc() didn't
-	see this because it's broken up the memory into hundreds of tiny pieces.
-	Theoretically, this goes until malloc() feels it's OK to do some
-	house-cleaning, and from then on the process size will remain
-	more or less stable.
+	Short description of the memory layout:
 
-	To fight this problem, I implemented this simple special purpose
-	allocator, that works with chunks of malloc()ed memory and uses
-	that as pool to hand out smaller sizes. It keeps track of free
-	space by putting a linked list in between the allocated blocks.
-	The advantage of using a linked list is that it's easy to find
-	a free block. A binary search tree, or an AVL tree perform better
-	when searching, but have more overhead otherwise.
-	The freelist is sorted by size to find a free block efficiently.
-	To be able to do free block coalescing, markers are used before
-	and after allocated/free blocks, so that adjacent blocks can
-	be combined.
-	To make allocating known data structures faster, it uses multiple
-	freelists; one for every type. The freelist of TYPE_CHAR is used
-	as pool (the "wilderness") to split off smaller blocks.
+		[ MemBin structure, slot, ... ]
 
-	Advantages: much lower memory consumption
-	Drawbacks:  it's slow
+		There is a MemBin for every type
+		There are MemBin.free bytes free in this bin
+		Minimum allocation is sizeof(type) + 1 byte marker + 1 byte type
+		(The type byte is used to make BinFree() a lot faster)
+		Minimum allocation for TYPE_CHAR is 16 (gets rounded)
 
-	Allocating a block:
-		check freelist for a best-fit block
-			- split the block if necessary
-			- if not found, allocate new chunk and point to it
-		set allocated bit + allocated size in marker preceding the block,
-		but don't link it in the freelist -- link it 'out' instead
-		if it was a split, set free size in next marker and link it in
-		return pointer
+		A slot begins with a 1-byte marker;
+		The mark has a meaning:
+		0     - slot is free
+		1     - slot is in use
+		n     - n slots in use; max is 254
+		0xff  - this memory was allocated using regular malloc()
 
-	Freeing a block:
-		determine what chunk this address is in by examining chunk addresses,
-		and get the freelist root pointer for this chunk
-		get size from preceding marker
-		check if next marker is free
-		if so, remove from freelist and join blocks
-		reinsert in freelist
-		if root freelist->next == NULL, entire chunk can be free()d
+		If malloc() was used (marked 0xff), there is an unsigned long before this
+		address, which is the size. The address of the unsigned long should be passed
+		to free() to free this allocation.
 
-	This allocator works with tiny structures, so we want to keep the
-	overhead as low as possible. The following rules apply:
-	- chunks can be small, like PAGE_SIZE, or larger, but no more than 256K
-	- a marker is 4 bytes
-	- sizes/addresses in the marker are divided by 4 ... this malloc
-	  rounds up sizes to the next quad
-	- if on the freelist, a marker is a 2-byte pointer to the next
-	  (sorted) free block in the chunk (addr/4) and a 2-byte size
-	  of the following free space
-	  NULL is invalid pointer because address 0 is in use by prev/next
-	  pointers to next chunk anyway
-	- if not on the freelist, a marker has the first byte set to the
-	  magic 0xff, the second is a memory type, and has a 2-byte size of the
-	  allocated block (size/4)   Mind that the check for 0xff is crude as
-	  it also represents a valid address if it were on the freelist
-	  and if you use a large chunk size
-	- address space is 2-bytes: 2^16 * 4 = 256K
-	- waste is 4 bytes per malloc
-	  Additionally there are 2 pointers for prev and next chunk, and 4 bytes for
-	  the root freelist pointer in every chunk
-	- allocs larger than (chunk_size - overhead) will be handled by malloc()
-	  and free() and will be marked with the magic marker 0001
-
-	Memory layout looks like this:
-
-	+----------------------------+----------------------------+
-	|  Chunk *prev               |  Chunk *next               |
-	+-------------+--------------+-------------+--------------+
-	|  chunksize  |  bytes_free  |  freelist * |  unused      |
-	+-------------+--------------+-------------+--------------+
-	|  marker     |  size        |  data ...                  |
-	+-------------+--------------+-------------+--------------+
-	|  data ...                  |  marker     |  size        |
-	+----------------------------+-------------+--------------+
-	|  data ...                                               |
-	+---------------------------------------------------------+
+	Note: all memory allocators in bbs100 MUST zero out the allocated block, or you will
+	      segfaults all over
 */
 
 #include "config.h"
-#include "debug.h"
 #include "BinAlloc.h"
+#include "debug.h"
 #include "Memory.h"
-#include "Param.h"
-#include "memset.h"
 #include "Types.h"
+#include "memset.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-BinChunk *root_chunk = NULL;
-int Chunk_Size = 16*1024;
-unsigned long bin_use = 0UL, bin_foreign = 0UL;
 
-static BinChunk *alloc_chunk(void);
-static void insert_freelist(BinChunk *, int, int);
-static void remove_freelist(BinChunk *, int);
+MemBin *bins[NUM_TYPES];
+
+
+static void *get_from_bin(unsigned long, int, int);
+static void *use_malloc(unsigned long, int);
 
 
 int init_BinAlloc(void) {
-	if ((root_chunk = alloc_chunk()) == NULL)
-		return -1;
-
+	memset(bins, 0, NUM_TYPES * sizeof(MemBin *));
 	Malloc = BinMalloc;
 	Free = BinFree;
 	return 0;
 }
 
-static BinChunk *alloc_chunk(void) {
-BinChunk *c;
-int max_free, hdr_size, start_addr;
+MemBin *new_MemBin(int type) {
+MemBin *bin;
+char *mem;
+int i, size;
 
-	ROUND4(Chunk_Size);
-
-	hdr_size = OFFSET_FREE_LIST+2;
-	ROUND4(hdr_size);
-
-/*
-	size of free space in this chunk
-	the -1 is because start of memory always begins with a marker
-*/
-	max_free = ((Chunk_Size - hdr_size) >> 2) - 1;
-	if (max_free <= 256)			/* need at least some space... */
+	if (type < 0 || type >= NUM_TYPES)
 		return NULL;
 
-	if ((c = (BinChunk *)malloc(Chunk_Size)) == NULL)
+	if (Types_table[type].size > MAX_BIN_FREE) {
+		log_warn("new_MemBin(): type %s (%d bytes) is too large to fit in a bin of %d (%d) bytes", Types_table[type].type, Types_table[type].size, BIN_SIZE, MAX_BIN_FREE);
+		return NULL;
+	}
+	if ((bin = (MemBin *)malloc(BIN_SIZE)) == NULL)
 		return NULL;
 
-	memory_total += Chunk_Size;
-	memset(c, 0, hdr_size);
+	memset(bin, 0, sizeof(MemBin));
 
-	ST_WORD(c, OFFSET_CHUNK_SIZE, Chunk_Size >> 2);		/* size of this chunk */
-	ST_WORD(c, OFFSET_BYTES_FREE, max_free);
+	bin->free = MAX_BIN_FREE;
 
-	start_addr = hdr_size >> 2;
-	ST_WORD(c, OFFSET_FREE_LIST, start_addr);	/* root freelist pointer for the pool */
+/* mark all slots as free */
+	mem = (char *)bin;
+	size = ((type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size) + MARKER_SIZE;
+	for(i = BIN_MEM_START; i < BIN_MEM_END; i += size) {
+		ST_MARK(mem + i, MARK_FREE);
+		ST_TYPE(mem + i, type);
+	}
+	return bin;
+}
 
-	ST_ADDR(c, start_addr, 0);			/* root->next = NULL */
-	ST_SIZE(c, start_addr, max_free);	/* fl->size = free space in this chunk */
-	return c;
+void destroy_MemBin(MemBin *bin) {
+	if (bin == NULL)
+		return;
+
+	if (bin->free < MAX_BIN_FREE) {
+		log_err("destroy_MemBin(): attempt to destroy a bin that is still in use");
+		return;
+	}
+	free(bin);
+}
+
+void *BinMalloc(unsigned long size, int type) {
+void *ptr;
+MemBin *bin;
+int n;
+
+	if (size <= 0UL)
+		return NULL;
+
+	if (type < 0 || type >= NUM_TYPES) {
+		log_warn("BinMalloc(): unknown type %d, using malloc()", type);
+		return use_malloc(size, TYPE_UNKNOWN);
+	}
+	if (type == TYPE_CHAR)
+		ROUND_UP(size, SIZE_CHAR);
+
+	if (size >= MAX_BIN_FREE)
+		return use_malloc(size, type);
+
+	n = size / ((type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size);
+	if (n <= 0)
+		n = 1;
+
+	if (n >= MARK_MALLOC)			/* this would clash with the special 0xff marker, so ... use malloc() */
+		return use_malloc(size, type);
+
+	if ((ptr = get_from_bin(size, n, type)) == NULL) {
+		if ((bin = new_MemBin(type)) == NULL)
+			return use_malloc(size, type);
+
+		add_MemBin(&bins[type], bin);
+
+		if ((ptr = get_from_bin(size, n, type)) == NULL) {
+			log_warn("BinMalloc(): failed even after adding a bin (size = %lu, n = %d, type = %s), using malloc()", size, n, Types_table[type].type);
+			return use_malloc(size, type);
+		}
+	}
+	return ptr;
 }
 
 /*
-	allocate memory
+	allocate 'n' slots in a bin of type 'type'
+	'size' is only needed when things don't work out well and use_malloc() needs to called anyway
 */
-void *BinMalloc(unsigned long size, int type) {
-char *p;
-int max_free, hdr_size, n;
-unsigned long *ulptr;
+static void *get_from_bin(unsigned long size, int n, int type) {
+MemBin *bin;
+int i, in_use, cont_free, type_size;
+unsigned long satisfied;
+char *mem, *startp;
 
-	if (type < 0 || type >= NUM_TYPES)
-		type = TYPE_CHAR;
+	if (n <= 0)
+		return NULL;
 
-	mem_balance[type]++;
-	alloc_balance++;
+	if (type < 0 || type >= NUM_TYPES) {
+		log_warn("get_from_bin(): unknown type %d, using malloc()", type);
+		return use_malloc(size, TYPE_UNKNOWN);
+	}
+	type_size = (type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size;
 
-	ROUND4(size);
-
-	hdr_size = OFFSET_FREE_LIST+2;
-	ROUND4(hdr_size);
-	max_free = Chunk_Size - hdr_size - 4;
-	if (size < max_free) {
+	for(bin = bins[type]; bin != NULL; bin = bin->next) {
 /*
-	small alloc: get from chunks
+	find enough free bytes; or n contiguous free slots
 */
-		BinChunk *c;
-		int chunk_size, bytes_free, prev_fl, fl_addr, fl_next, fl_size, fl_adj;
+		if (bin->free >= size) {
+			mem = (char *)bin;
+			startp = NULL;
+			cont_free = 0;
+			satisfied = 0UL;
 
-		size >>= 2;
-		max_free >>= 2;
-
-		for(c = root_chunk; c != NULL; c = c->next) {
-			LD_WORD(c, OFFSET_CHUNK_SIZE, chunk_size);
-			LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-			if (bytes_free < 0 || bytes_free > max_free)
-				abort();
-
-			if (bytes_free >= size) {
-/*
-	this is a 'good guess'; if the sum of the free space is enough, maybe
-	we can get a good malloc here
-*/
-				prev_fl = 0;
-				LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
-				while(fl_addr) {
-					LD_ADDR(c, fl_addr, fl_next);
-					LD_SIZE(c, fl_addr, fl_size);
-					if (size > max_free)
-						abort();
-/*
-	also satisfy for pieces that are just a bit bigger; splitting off a very
-	small size wouldn't pay off
-*/
-					if (fl_size == size || fl_size == size+1 || fl_size == size+2) {
-						if (prev_fl)						/* unlink this piece */
-							ST_ADDR(c, prev_fl, fl_next);
-						else
-							ST_WORD(c, OFFSET_FREE_LIST, fl_next);
-
-						ST_ALLOC(c, fl_addr, type);
-						n = (fl_size << 2) / Types_table[type].size;
-						mem_stats[type] += n;
-
-						bytes_free -= fl_size;
-						if (bytes_free < 0)
-							abort();
-						ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-
-						bin_use += (size << 2);
-
-						CLEAR_MEM(c, fl_addr, size);
-						return REAL_ADDRESS(c, fl_addr);
-					}
-/*
-	split a piece in two
-*/
-					if (fl_size > size) {
-						if (prev_fl)					/* unlink this piece */
-							ST_ADDR(c, prev_fl, fl_next);
-						else
-							ST_WORD(c, OFFSET_FREE_LIST, fl_next);
-
-						ST_ALLOC(c, fl_addr, type);		/* allocate */
-						ST_SIZE(c, fl_addr, size);
-						n = (size << 2) / Types_table[type].size;
-						mem_stats[type] += n;
-
-/* split the piece; the marker takes up 1 cell as well */
-						size++;
-						fl_addr += size;
-						fl_size -= size;
-
-						insert_freelist(c, fl_addr, fl_size);
-
-						bytes_free -= size;			/* we allocated size, and the marker takes 1 cell as well */
-						if (bytes_free < 0)
-							abort();
-						ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-
-						bin_use += ((size-1) << 2);
-
-						CLEAR_MEM(c, fl_addr - size, size-1);
-						return REAL_ADDRESS(c, fl_addr - size);
-					}
-/*
-	the piece is too small, but maybe it can be merged with the next one
-	mind to check for 'end of memory', or else it just overflows
-*/
-					if ((fl_addr + fl_size + 1) < chunk_size) {
-						LD_WORD(c, (fl_addr + fl_size+1) << 2, fl_adj);
-						if (fl_adj && (fl_adj & 0xff00) != 0xff00) {	/* prob for high addresses */
-							int merge_size;
-
-							LD_SIZE(c, fl_addr + fl_size+1, merge_size);
-
-							remove_freelist(c, fl_addr + fl_size+1);
-
-							fl_size++;
-							fl_size += merge_size;
-							ST_SIZE(c, fl_addr, fl_size);
-
-							bytes_free++;					/* marker space released */
-							if (bytes_free > max_free)
-								abort();
-							ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-/*
-	the freelist is sorted by size
-	therefore we must now reinsert this merged piece into the freelist
-*/
-							remove_freelist(c, fl_addr);
-							insert_freelist(c, fl_addr, fl_size);
-/*
-	because the list is sorted, we must restart the search from the beginning
-*/
-							prev_fl = 0;
-							LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
-							continue;
-						}
-					}
-					prev_fl = fl_addr;
-					fl_addr = fl_next;
+			for(i = BIN_MEM_START; i < BIN_MEM_END;) {
+				LD_MARK(mem + i, in_use);
+				if (in_use >= MARK_MALLOC) {
+					log_err("get_from_bin(): invalid marker in bin for type %s, disabling bin", Types_table[type].type);
+					bin->free = 0;			/* disable corrupted bin */
+					return use_malloc(size, type);
 				}
-			}
-/* out of chunks, allocate a new chunk */
-			if (c->next == NULL) {
-				if ((c->next = alloc_chunk()) == NULL)
-					return NULL;
+				if (in_use == MARK_FREE) {
+					if (startp == NULL)
+						startp = mem + i;
+/*
+	found a free slot
+	if n >= 0xff, BinFree() would interpret this as 'malloc() was used'
+	if n > 1, we are going across slot boundaries, which means we can also use the space
+	occupied by the marker
+*/
+					cont_free++;
+					if (cont_free > 1)
+						satisfied += MARKER_SIZE;
 
-				c->next->prev = c;
-				LD_WORD(c->next, OFFSET_BYTES_FREE, bytes_free);
-				if (bytes_free < size) {		/* well, that's odd ... this should never happen */
-					abort();
-					return NULL;
+					if (cont_free >= MARK_MALLOC)			/* prevent clashes with the special 'use malloc' marker */
+						return use_malloc(size, type);
+
+					satisfied += type_size;
+					if (i + MARKER_SIZE + type_size > BIN_MEM_END)		/* doesn't fit */
+						break;
+
+					if (satisfied >= size) {				/* found enough space */
+						bin->free -= satisfied;
+						if (bin->free < 0) {
+							log_err("get_from_bin(): bin->free < 0 for bin of type %s, using malloc()", Types_table[type].type);
+							return use_malloc(size, type);
+						}
+						ST_MARK(startp, cont_free);			/* this many slots in use */
+						ST_TYPE(startp, type);				/* set type for BinFree() */
+						startp = startp + MARKER_SIZE;
+						memset(startp, 0, size);
+						return (void *)startp;
+					}
+					i += type_size + MARKER_SIZE;
+				} else {
+					cont_free = 0;
+					startp = NULL;
+					satisfied = 0UL;
+					i += in_use * (type_size + MARKER_SIZE);	/* skip block that's in use */
 				}
 			}
 		}
-		abort();		/* should never get here */
 	}
-/*
-	requested size is too large to fit in a chunk, call standard malloc()
-*/
-	size += 4 + sizeof(unsigned long);
-	if ((ulptr = (unsigned long *)malloc(size)) == NULL)
+	return NULL;			/* no slots available */
+}
+
+static void *use_malloc(unsigned long size, int type) {
+unsigned long *ulptr;
+
+	if (!size || type < 0 || type >= NUM_TYPES)
+		return NULL;
+
+	if ((ulptr = (unsigned long *)malloc(size + sizeof(unsigned long) + MARKER_SIZE)) == NULL)
 		return NULL;
 
 	*ulptr = size;
 	ulptr++;
-	p = (char *)ulptr;
-	ST_ADDR(p, 0, 1);				/* 0001 means 'malloc() used'  */
-	ST_WORD(p, 2, 0xff00 | (type & 0xff));
-
-	memory_total += size;
-	bin_foreign += size;
-	n = size / Types_table[type].size;
-	mem_stats[type] += n;
-
-	p = p + 4;
-	size -= (sizeof(unsigned long) + 4);
-	memset(p, 0, size);
-	return (void *)p;
+	ST_MARK(ulptr, MARK_MALLOC);		/* malloc() was used */
+	ST_TYPE(ulptr, type);
+	memset((char *)ulptr + MARKER_SIZE, 0, size);
+	return (void *)((char *)ulptr + MARKER_SIZE);
 }
 
-/*
-	free allocated memory
-*/
 void BinFree(void *ptr) {
-char *p;
-int addr, type, size, n;
+MemBin *bin;
+char *mem;
+int in_use, type, type_size;
+unsigned long bin_start, bin_end;
 
 	if (ptr == NULL)
 		return;
 
-	alloc_balance--;
+	mem = (char *)ptr - MARKER_SIZE;
+	LD_MARK(mem, in_use);
+	if (in_use == MARK_FREE) {
+		log_err("BinFree(): memory was not marked as in use");
+		return;
+	}
+	if (in_use == MARK_MALLOC) {		/* allocated by use_malloc() */
+		unsigned long *ulptr;
 
-	p = (char *)ptr - 4;
-	LD_WORD(p, 0, addr);
-
-	if (addr == 1) {				/* was allocated by malloc() */
-		unsigned long *ulptr, ulsize;
-
-		LD_WORD(p, 2, size);
-		if ((size & 0xff00) != 0xff00) {		/* check for corruption */
-			abort();
-		}
-		type = size & 0xff;
-		if (type < 0 || type > NUM_TYPES)
-			type = TYPE_CHAR;
-		mem_balance[type]--;
-
-		ulptr = (unsigned long *)p;
+		debug_breakpoint();
+		ulptr = (unsigned long *)mem;
 		ulptr--;
-		ulsize = *ulptr;
-
-		memory_total -= ulsize;
-		bin_foreign -= ulsize;
-
-		n = ulsize / Types_table[type].size;
-		mem_stats[type] -= n;
-
 		free(ulptr);
 		return;
-	} else {
-		BinChunk *c;
-		int chunk_size, bytes_free, hdr_size;
-		char *end;
+	}
+	LD_TYPE(mem, type);
+	if (type < 0 || type >= NUM_TYPES) {
+		log_err("BinFree(): invalid type; the mark has been overwritten");
+		return;
+	}
+	type_size = (type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size;
 
-		if ((unsigned char)p[0] != 0xff) {		/* check for corruption */
-			abort();
-		}
-		type = p[1] & 0xff;
-		if (type < 0 || type > NUM_TYPES)
-			type = TYPE_CHAR;
-		mem_balance[type]--;
+/* find the particular bin that we're in */
 
-		LD_SIZE(p, 0, size);
-
-		n = (size << 2) / Types_table[type].size;
-		mem_stats[type] -= n;
-
-		for(c = root_chunk; c != NULL; c = c->next) {
-			LD_WORD(c, OFFSET_CHUNK_SIZE, chunk_size);
-			chunk_size <<= 2;
-			end = (char *)c + chunk_size;
-			if ((unsigned long)p > (unsigned long)c && (unsigned long)p < (unsigned long)end) {
-				addr = (unsigned long)p - (unsigned long)c;
-				if (addr % 4)				/* corrupted */
-					abort();
-
-				addr >>= 2;
-				insert_freelist(c, addr, size);
-
-				bin_use -= (size << 2);
-
-				LD_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-				bytes_free += size;
-				ST_WORD(c, OFFSET_BYTES_FREE, bytes_free);
-/*
-	see if this entire chunk is empty
-*/
-				if (c->prev != NULL) {
-					int max_free;
-
-					hdr_size = OFFSET_FREE_LIST+2;
-					ROUND4(hdr_size);
-					max_free = ((chunk_size - hdr_size) >> 2) - 1;
-					if (bytes_free > max_free)
-						abort();
-
-					if (bytes_free == max_free) {
-						c->prev->next = c->next;
-						c->prev = c->next = NULL;
-						free(c);
-						memory_total -= chunk_size;
-					}
-				}
+	for(bin = bins[type]; bin != NULL; bin = bin->next) {
+		bin_start = (unsigned long)bin + BIN_MEM_START;
+		bin_end = (unsigned long)bin + BIN_MEM_END;
+		if ((unsigned long)mem >= bin_start && (unsigned long)mem < bin_end) {
+			if (bin->free < 0) {
+				log_err("BinFree(): corrupted number of free bytes in %s bin", Types_table[type].type);
+				bin->free = 0;
 				return;
 			}
-		}
-	}
-	abort();	/* not found, problem */
-}
-
+			bin->free += in_use * (type_size + MARKER_SIZE);
 /*
-	freelists are sorted by size
+	marker space doesn't count for the first slot (confusing, I know, but it _is_ correct
 */
-static void insert_freelist(BinChunk *c, int addr, int size) {
-int prev_fl, fl_addr, fl_next, fl_size;
+			bin->free -= MARKER_SIZE;
 
-	if (c == NULL || !addr || size <= 0)
-		return;
-
-	ASSERT_ADDR(addr);
-	ASSERT_SIZE(size);
-
-	prev_fl = 0;
-	LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
-	while(fl_addr) {
-		LD_ADDR(c, fl_addr, fl_next);
-		LD_SIZE(c, fl_addr, fl_size);
-		if (fl_size >= size)
-			break;
-
-		prev_fl = fl_addr;
-		fl_addr = fl_next;
-	}
-	if (prev_fl)
-		ST_ADDR(c, prev_fl, addr);
-	else
-		ST_WORD(c, OFFSET_FREE_LIST, addr);
-
-	ST_ADDR(c, addr, fl_addr);
-	ST_SIZE(c, addr, size);
-}
-
-/*
-	remove a piece from the freelist
-	this routine is inefficient because there is no prev pointer in a marker,
-	so it walks the freelist from the start
-*/
-static void remove_freelist(BinChunk *c, int addr) {
-int prev_fl, fl_addr, fl_next, addr_next;
-
-	if (c == NULL)
-		return;
-
-	LD_ADDR(c, addr, addr_next);
-	ST_ADDR(c, addr, 0);
-
-	prev_fl = 0;
-	LD_WORD(c, OFFSET_FREE_LIST, fl_addr);
-	while(fl_addr) {
-		if (fl_addr == addr) {
-			if (prev_fl)
-				ST_ADDR(c, prev_fl, addr_next);
-			else
-				ST_WORD(c, OFFSET_FREE_LIST, addr_next);
+			if (bin->free <= 0 || bin->free > MAX_BIN_FREE) {
+				log_err("BinFree(): corrupted number of free bytes in %s bin", Types_table[type].type);
+				bin->free = 0;
+				return;
+			}
+			if (bin->free >= MAX_BIN_FREE) {		/* free unneeded bin */
+				remove_MemBin(&bins[type], bin);
+				destroy_MemBin(bin);
+			} else {
+				while(in_use > 0) {					/* free all occupied slots */
+					in_use--;
+					ST_MARK(mem, MARK_FREE);
+					mem = mem + type_size + MARKER_SIZE;
+				}
+			}
 			return;
 		}
-		prev_fl = fl_addr;
-		LD_ADDR(c, fl_addr, fl_next);
-		fl_addr = fl_next;
 	}
-	abort();		/* shouldn't get here */
+	log_err("BinFree(): originating bin does not exist");
 }
 
 /* EOB */

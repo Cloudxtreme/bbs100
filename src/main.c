@@ -237,7 +237,7 @@ char buf[MAX_LONGLINE];
 					usage();
 			}
 		}
-		if (param_file == NULL && optind <= argc)
+		if (param_file == NULL && optind < argc)
 			param_file = cstrdup(argv[optind]);
 	}
 	if (param_file == NULL)

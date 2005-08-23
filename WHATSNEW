@@ -86,6 +86,12 @@ What's new to the admins?
 - option of keeping room info and profile info resident in memory or not
 - memory object cache can be switched off in a live system
 - when locked, Sysops must use their Sysop password to unlock
+- sysop menu shows malloc() balance; balance is the number of allocs vs. the
+  number of free() calls; a positive balance means there are more allocs than
+  free()s (this can be because an object needs to be kept in memory), and
+  a negative value means there are more free()s than allocs (which never
+  happens). It helps detecting memory leaks if the balance goes off the
+  scale.
 
 
 What's new internally?

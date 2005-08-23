@@ -135,6 +135,7 @@ int n;
 */
 void *MemAlloc(unsigned long size, int memtype) {
 void *mem;
+unsigned long malloc_size;
 
 	if (size <= 0)
 		return NULL;
@@ -156,19 +157,29 @@ void *mem;
 			return (void *)((char *)mem + 2*sizeof(int));
 		}
 	}
-	if ((mem = (char *)malloc(size + 2*sizeof(int))) == NULL) {
+/*
+	malloc() likes nice sizes
+	(I bet it rounds sizes by itself as well though)
+*/
+	malloc_size = size + 2 * sizeof(int);
+
+	if ((malloc_size & 7) > 0) {		/* round up to 8 bytes */
+		malloc_size &= ~7;
+		malloc_size += 8;
+	}
+	if ((mem = (char *)malloc(malloc_size)) == NULL) {
 		log_err("MemAlloc(): out of memory allocating %d bytes for type %s", size + 2*sizeof(int), Types_table[memtype].type);
 		return NULL;
 	}
-	memset(mem, 0, size + 2*sizeof(int));		/* malloc() sets it to 0, yeah right! :P */
-	memory_total += (size + 2*sizeof(int));
+	memset(mem, 0, malloc_size);		/* malloc() sets it to 0, yeah right! :P */
+	memory_total += malloc_size;
 
 	if (memtype < NUM_TYPES) {
 		size /= Types_table[memtype].size;
 		mem_stats[memtype] += size;
 		mem_balance[memtype]++;
 	} else {
-		mem_stats[NUM_TYPES]++;		/* unknown type */
+		mem_stats[NUM_TYPES]++;			/* unknown type */
 		mem_balance[NUM_TYPES]++;
 	}
 	((int *)mem)[0] = (int)size;
@@ -209,7 +220,16 @@ int *mem, size;
 	}
 	mem[1] = 0UL;
 
-	memory_total -= (size + 2*sizeof(int));
+/*
+	this calculation is only to get a good value for memory_total
+*/
+	size += 2 * sizeof(int);
+
+	if ((size & 7) > 0) {		/* round up to 8 bytes */
+		size &= ~7;
+		size += 8;
+	}
+	memory_total -= size;
 	alloc_balance--;
 	free(mem);
 }

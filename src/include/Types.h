@@ -53,6 +53,8 @@
 #define TYPE_DISPLAY		27
 #define NUM_TYPES			28
 
+#define TYPE_UNKNOWN		NUM_TYPES		/* special case */
+
 typedef struct Typedef_tag Typedef;
 
 struct Typedef_tag {
