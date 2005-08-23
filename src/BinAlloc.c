@@ -58,19 +58,33 @@
 #include <stdlib.h>
 #include <string.h>
 
+static MemBin *bins[NUM_TYPES];
+static int use_bin_alloc = 0;
 
-MemBin *bins[NUM_TYPES];
-
+static MemInfo mem_info;
+static int type_balance[NUM_TYPES];
 
 static void *get_from_bin(unsigned long, int, int);
 static void *use_malloc(unsigned long, int);
 
-
 int init_BinAlloc(void) {
 	memset(bins, 0, NUM_TYPES * sizeof(MemBin *));
-	Malloc = BinMalloc;
-	Free = BinFree;
+	memset(&mem_info, 0, sizeof(MemInfo));
+	memset(type_balance, 0, sizeof(int) * NUM_TYPES);
+	enable_BinAlloc();
 	return 0;
+}
+
+void deinit_BinAlloc(void) {
+	disable_BinAlloc();
+}
+
+void enable_BinAlloc(void) {
+	use_bin_alloc = 1;
+}
+
+void disable_BinAlloc(void) {
+	use_bin_alloc = 0;
 }
 
 MemBin *new_MemBin(int type) {
@@ -85,11 +99,13 @@ int i, size;
 		log_warn("new_MemBin(): type %s (%d bytes) is too large to fit in a bin of %d (%d) bytes", Types_table[type].type, Types_table[type].size, BIN_SIZE, MAX_BIN_FREE);
 		return NULL;
 	}
-	if ((bin = (MemBin *)malloc(BIN_SIZE)) == NULL)
+/*
+	just use TYPE_CHAR because there is no TYPE_MEMBIN
+*/
+	if ((bin = (MemBin *)BinMalloc(BIN_SIZE, TYPE_CHAR)) == NULL)
 		return NULL;
 
 	memset(bin, 0, sizeof(MemBin));
-
 	bin->free = MAX_BIN_FREE;
 
 /* mark all slots as free */
@@ -110,13 +126,16 @@ void destroy_MemBin(MemBin *bin) {
 		log_err("destroy_MemBin(): attempt to destroy a bin that is still in use");
 		return;
 	}
-	free(bin);
+	BinFree(bin);
 }
 
 void *BinMalloc(unsigned long size, int type) {
 void *ptr;
 MemBin *bin;
 int n;
+
+	if (!use_bin_alloc)
+		return use_malloc(size, type);
 
 	if (size <= 0UL)
 		return NULL;
@@ -149,6 +168,8 @@ int n;
 			return use_malloc(size, type);
 		}
 	}
+	mem_info.balance++;
+	type_balance[type]++;
 	return ptr;
 }
 
@@ -214,6 +235,8 @@ char *mem, *startp;
 							log_err("get_from_bin(): bin->free < 0 for bin of type %s, using malloc()", Types_table[type].type);
 							return use_malloc(size, type);
 						}
+						mem_info.in_use += satisfied;
+
 						ST_MARK(startp, cont_free);			/* this many slots in use */
 						ST_TYPE(startp, type);				/* set type for BinFree() */
 						startp = startp + MARKER_SIZE;
@@ -233,14 +256,21 @@ char *mem, *startp;
 	return NULL;			/* no slots available */
 }
 
+/*
+	use standard malloc() to allocate memory
+*/
 static void *use_malloc(unsigned long size, int type) {
 unsigned long *ulptr;
 
 	if (!size || type < 0 || type >= NUM_TYPES)
 		return NULL;
 
-	if ((ulptr = (unsigned long *)malloc(size + sizeof(unsigned long) + MARKER_SIZE)) == NULL)
+	size += sizeof(unsigned long) + MARKER_SIZE;
+	if ((ulptr = (unsigned long *)malloc(size)) == NULL)
 		return NULL;
+
+	mem_info.malloc += size;
+	mem_info.balance++;
 
 	*ulptr = size;
 	ulptr++;
@@ -268,9 +298,10 @@ unsigned long bin_start, bin_end;
 	if (in_use == MARK_MALLOC) {		/* allocated by use_malloc() */
 		unsigned long *ulptr;
 
-		debug_breakpoint();
 		ulptr = (unsigned long *)mem;
 		ulptr--;
+		mem_info.malloc -= *ulptr;
+		mem_info.balance--;
 		free(ulptr);
 		return;
 	}
@@ -292,18 +323,24 @@ unsigned long bin_start, bin_end;
 				bin->free = 0;
 				return;
 			}
-			bin->free += in_use * (type_size + MARKER_SIZE);
 /*
 	marker space doesn't count for the first slot (confusing, I know, but it _is_ correct
 */
-			bin->free -= MARKER_SIZE;
+			bin->free += in_use * (type_size + MARKER_SIZE) - MARKER_SIZE;
 
 			if (bin->free <= 0 || bin->free > MAX_BIN_FREE) {
 				log_err("BinFree(): corrupted number of free bytes in %s bin", Types_table[type].type);
 				bin->free = 0;
 				return;
 			}
-			if (bin->free >= MAX_BIN_FREE) {		/* free unneeded bin */
+			mem_info.in_use -= in_use * (type_size + MARKER_SIZE) - MARKER_SIZE;
+			mem_info.balance--;
+			type_balance[type]--;
+/*
+	free unneeded bin if it is not the only one, because if it is the only one,
+	it is likely we will very soon need to add it again anyway
+*/
+			if (bin->free >= MAX_BIN_FREE && !(bins[type]->prev == NULL && bins[type]->next == NULL)) {
 				remove_MemBin(&bins[type], bin);
 				destroy_MemBin(bin);
 			} else {
@@ -317,6 +354,30 @@ unsigned long bin_start, bin_end;
 		}
 	}
 	log_err("BinFree(): originating bin does not exist");
+}
+
+int get_MemBinInfo(MemBinInfo *info, int type) {
+MemBin *bin;
+
+	if (info == NULL || type < 0 || type >= NUM_TYPES)
+		return -1;
+
+	info->bins = 0;
+	info->free = 0UL;
+	for(bin = bins[type]; bin != NULL; bin = bin->next) {
+		info->bins++;
+		info->free += bin->free;
+	}
+	info->balance = type_balance[type];
+	return 0;
+}
+
+int get_MemInfo(MemInfo *info) {
+	if (info == NULL)
+		return -1;
+
+	memcpy(info, &mem_info, sizeof(MemInfo));
+	return 0;
 }
 
 /* EOB */
