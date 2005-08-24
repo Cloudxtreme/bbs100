@@ -76,6 +76,12 @@ What's new to the admins?
 - rooms can be in a category
 - 'since boot' statistics in the Statistics screen
 - nologin shown more clearly in Sysop menu, when active
+- cancel reboot works with the same key as reboot
+  this kills the function of reprogramming a running reboot timer,
+  but hey ...
+- cancel shutdown works with the same key as shutdown
+  this kills the function of reprogramming a running shutdown timer,
+  but hey ...
 - when entering a message as sysop or room aide, it shows it to the posting
   user in the header
 - param umask controls the umask

@@ -28,8 +28,8 @@
 #define LOGIN_TIMEOUT		20		/* 20 secs at login */
 
 /*
-	Note: these timers are set to 10 (way too large) because they are not
-	removed in update_rtc() but in an other way (destroy_Timer in User and
+	Note: these timers have a restart of 10 (way too large) because they are
+	not removed in update_rtc() but in an other way (destroy_Timer in User and
 	by exit())
 */
 #define TIMEOUT_USER		10		/* restart value for 'timer states' */

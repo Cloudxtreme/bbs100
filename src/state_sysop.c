@@ -102,16 +102,14 @@ void state_sysop_menu(User *usr, char c) {
 				"<white>Ctrl-<hotkey>P<magenta>arameters                   Sysop <hotkey>Password\n"
 				"\n"
 			);
-			if (reboot_timer != NULL)
-				Print(usr, "<white>Ctrl-<hotkey>R<magenta>eboot <white>(in progress)<magenta>         Cancel Reb<hotkey>oot\n");
-			else
-				Put(usr, "<white>Ctrl-<hotkey>R<magenta>eboot\n");
-
-			if (shutdown_timer != NULL)
-				Print(usr, "<white>Ctrl-<hotkey>S<magenta>hutdown <white>(in progress)<magenta>       Cancel <hotkey>Shutdown\n");
-			else
-				Put(usr, "<white>Ctrl-<hotkey>S<magenta>hutdown\n");
-
+			Print(usr, "<white>%sCtrl-<hotkey>R<magenta>eboot %s            ",
+				(reboot_timer == NULL) ? "" : "Cancel ",
+				(reboot_timer == NULL) ? "          " : "<white>[!]"
+			);
+			Print(usr, "<white>%sCtrl-<hotkey>S<magenta>hutdown%s\n",
+				(shutdown_timer == NULL) ? "" : "Cancel ",
+				(shutdown_timer == NULL) ? "" : " <white>[!]<magenta>"
+			);
 			if (!nologin_active)
 				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
 			else
@@ -231,13 +229,10 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('R'):
-			Put(usr, "Reboot\n");
-			CALL(usr, STATE_REBOOT_TIME);
-			Return;
-
-		case 'o':
-		case 'O':
-			if (reboot_timer != NULL) {
+			if (reboot_timer == NULL) {
+				Put(usr, "Reboot\n");
+				CALL(usr, STATE_REBOOT_TIME);
+			} else {
 				Put(usr, "Cancel reboot\n"
 					"<red>Reboot cancelled\n"
 				);
@@ -248,18 +243,14 @@ void state_sysop_menu(User *usr, char c) {
 				system_broadcast(0, "Reboot cancelled");
 				log_msg("SYSOP %s cancelled reboot", usr->name);
 				CURRENT_STATE(usr);
-				Return;
 			}
-			break;
-
-		case KEY_CTRL('S'):
-			Put(usr, "Shutdown\n");
-			CALL(usr, STATE_SHUTDOWN_TIME);
 			Return;
 
-		case 's':
-		case 'S':
-			if (shutdown_timer != NULL) {
+		case KEY_CTRL('S'):
+			if (shutdown_timer == NULL) {
+				Put(usr, "Shutdown\n");
+				CALL(usr, STATE_SHUTDOWN_TIME);
+			} else {
 				Put(usr, "Cancel shutdown\n"
 					"<red>Shutdown cancelled\n"
 				);
@@ -270,9 +261,8 @@ void state_sysop_menu(User *usr, char c) {
 				system_broadcast(0, "Shutdown cancelled");
 				log_msg("SYSOP %s cancelled shutdown", usr->name);
 				CURRENT_STATE(usr);
-				Return;
 			}
-			break;
+			Return;
 
 		case 'n':
 		case 'N':
@@ -1259,6 +1249,7 @@ char total_buf[MAX_LINE];
 			Return;
 		}
 		if (reboot_timer != NULL) {
+/* this code is never reached any more */
 			remove_Timer(&timerq, reboot_timer);
 			reboot_timer->sleeptime = reboot_timer->maxtime = usr->read_lines;
 			reboot_timer->restart = TIMEOUT_REBOOT;
@@ -1286,14 +1277,13 @@ char total_buf[MAX_LINE];
 
 		if (reboot_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(usr->read_lines + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
 	}
 	Return;
 }
-
 
 void state_shutdown_time(User *usr, char c) {
 int r;
@@ -1369,6 +1359,7 @@ char total_buf[MAX_LINE];
 			Return;
 		}
 		if (shutdown_timer != NULL) {
+/* this code is never reached any more */
 			remove_Timer(&timerq, shutdown_timer);
 			shutdown_timer->sleeptime = shutdown_timer->maxtime = usr->read_lines;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
@@ -1395,7 +1386,7 @@ char total_buf[MAX_LINE];
 
 		if (shutdown_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(usr->read_lines + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);

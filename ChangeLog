@@ -1,3 +1,11 @@
+Changes as of August 24th 2005
+- cancel reboot works with same key as reboot
+  this kills the functionality of reprogramming a running reboot timer,
+  but hey ...
+- cancel shutdown works with same key as shutdown
+  this kills the functionality of reprogramming a running shutdown timer,
+  but hey ...
+
 Changes as of August 23rd 2005
 - new BinAlloc seems to be working alright
 
