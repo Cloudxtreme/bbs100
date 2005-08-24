@@ -23,6 +23,13 @@
 #ifndef TYPES_H_WJ100
 #define TYPES_H_WJ100		1
 
+/*
+	for strings, work with multiples of 16 bytes
+	it is very important for the memory allocator code that
+	sizeof(char) == 16 and not 1
+*/
+#define SIZE_CHAR			16
+
 #define TYPE_CHAR			0
 #define TYPE_INT			1
 #define TYPE_LONG			2
@@ -53,8 +60,6 @@
 #define TYPE_DISPLAY		27
 #define NUM_TYPES			28
 
-#define TYPE_UNKNOWN		NUM_TYPES		/* special case */
-
 typedef struct Typedef_tag Typedef;
 
 struct Typedef_tag {
@@ -62,7 +67,7 @@ struct Typedef_tag {
 	int size;
 };
 
-extern Typedef Types_table[NUM_TYPES+1];
+extern Typedef Types_table[NUM_TYPES];
 
 #endif	/* TYPES_H_WJ100 */
 

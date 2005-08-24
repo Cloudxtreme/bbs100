@@ -127,7 +127,7 @@ void KVPair_setstring(KVPair *kv, char *key, char *value) {
 	else
 		kv->value.s = cstrdup(value);
 
-	kv->destroy = Free;
+	kv->destroy = (void (*)(void *))cstrfree;
 }
 
 void KVPair_setpointer(KVPair *kv, char *key, void *value, void (*destroy)(void *)) {

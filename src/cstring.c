@@ -44,6 +44,10 @@ int len;
 	return p;
 }
 
+void cstrfree(char *s) {
+	Free(s);
+}
+
 char *cstrlwr(char *s) {
 char *p;
 

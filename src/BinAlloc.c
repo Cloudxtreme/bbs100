@@ -64,7 +64,7 @@ static int use_bin_alloc = 0;
 static MemInfo mem_info;
 static int type_balance[NUM_TYPES];
 
-static void *get_from_bin(unsigned long, int, int);
+static void *get_from_bin(unsigned long, int);
 static void *use_malloc(unsigned long, int);
 
 int init_BinAlloc(void) {
@@ -110,7 +110,7 @@ int i, size;
 
 /* mark all slots as free */
 	mem = (char *)bin;
-	size = ((type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size) + MARKER_SIZE;
+	size = Types_table[type].size + MARKER_SIZE;
 	for(i = BIN_MEM_START; i < BIN_MEM_END; i += size) {
 		ST_MARK(mem + i, MARK_FREE);
 		ST_TYPE(mem + i, type);
@@ -137,30 +137,30 @@ int n;
 	if (!use_bin_alloc)
 		return use_malloc(size, type);
 
-	if (size <= 0UL)
+	if (!size)
 		return NULL;
 
 	if (type < 0 || type >= NUM_TYPES) {
-		log_warn("BinMalloc(): unknown type %d, using malloc()", type);
-		return use_malloc(size, TYPE_UNKNOWN);
+		log_err("BinMalloc(): unknown type %d", type);
+		return NULL;
 	}
 	if (size >= MAX_BIN_FREE)
 		return use_malloc(size, type);
 
-	n = size / ((type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size);
-	if (n <= 0)
-		n = 1;
+	n = size / Types_table[type].size;
+	if (size % Types_table[type].size)
+		n++;
 
 	if (n >= MARK_MALLOC)			/* this would clash with the special 0xff marker, so ... use malloc() */
 		return use_malloc(size, type);
 
-	if ((ptr = get_from_bin(size, n, type)) == NULL) {
+	if ((ptr = get_from_bin(size, type)) == NULL) {
 		if ((bin = new_MemBin(type)) == NULL)
 			return use_malloc(size, type);
 
 		add_MemBin(&bins[type], bin);
 
-		if ((ptr = get_from_bin(size, n, type)) == NULL) {
+		if ((ptr = get_from_bin(size, type)) == NULL) {
 			log_warn("BinMalloc(): failed even after adding a bin (size = %lu, n = %d, type = %s), using malloc()", size, n, Types_table[type].type);
 			return use_malloc(size, type);
 		}
@@ -174,20 +174,17 @@ int n;
 	allocate 'n' slots in a bin of type 'type'
 	'size' is only needed when things don't work out well and use_malloc() needs to called anyway
 */
-static void *get_from_bin(unsigned long size, int n, int type) {
+static void *get_from_bin(unsigned long size, int type) {
 MemBin *bin;
 int i, in_use, cont_free, type_size;
 unsigned long satisfied;
 char *mem, *startp;
 
-	if (n <= 0)
-		return NULL;
-
 	if (type < 0 || type >= NUM_TYPES) {
-		log_warn("get_from_bin(): unknown type %d, using malloc()", type);
-		return use_malloc(size, TYPE_UNKNOWN);
+		log_err("get_from_bin(): unknown type %d", type);
+		return NULL;
 	}
-	type_size = (type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size;
+	type_size = Types_table[type].size;
 
 	for(bin = bins[type]; bin != NULL; bin = bin->next) {
 /*
@@ -258,6 +255,7 @@ char *mem, *startp;
 */
 static void *use_malloc(unsigned long size, int type) {
 unsigned long *ulptr;
+char *mem;
 
 	if (!size || type < 0 || type >= NUM_TYPES)
 		return NULL;
@@ -271,10 +269,12 @@ unsigned long *ulptr;
 
 	*ulptr = size;
 	ulptr++;
-	ST_MARK(ulptr, MARK_MALLOC);		/* malloc() was used */
-	ST_TYPE(ulptr, type);
-	memset((char *)ulptr + MARKER_SIZE, 0, size);
-	return (void *)((char *)ulptr + MARKER_SIZE);
+	mem = (char *)ulptr;
+	ST_MARK(mem, MARK_MALLOC);		/* malloc() was used */
+	ST_TYPE(mem, type);
+	mem = mem + MARKER_SIZE;
+	memset(mem, 0, size - sizeof(unsigned long) - MARKER_SIZE);
+	return (void *)mem;
 }
 
 void BinFree(void *ptr) {
@@ -307,7 +307,7 @@ unsigned long bin_start, bin_end;
 		log_err("BinFree(): invalid type; the mark has been overwritten");
 		return;
 	}
-	type_size = (type == TYPE_CHAR) ? SIZE_CHAR : Types_table[type].size;
+	type_size = Types_table[type].size;
 
 /* find the particular bin that we're in */
 

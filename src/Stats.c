@@ -468,8 +468,9 @@ unsigned long num;
 			Print(usr, "rate: <yellow>%lu%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
 		else
 			Print(usr, "rate: <yellow>%lu%%", 0UL);
-
+/*
 		Print(usr, "\n<green>Total memory in use:<yellow> %s <green>bytes\n", print_number(memory_total, date_buf, MAX_LINE));
+*/
 	}
 	Print(usr, "\n<yellow>User statistics\n");
 

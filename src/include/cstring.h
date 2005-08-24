@@ -54,6 +54,7 @@
 #define ctolower(x)			((((x) >= 'A') && ((x) <= 'Z')) ? ((x) + ' ') : (x))
 
 char *cstrdup(char *);
+void cstrfree(char *);
 char *cstrlwr(char *);
 char *cstrupr(char *);
 char *cstristr(char *, char *);

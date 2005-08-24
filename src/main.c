@@ -272,7 +272,7 @@ char buf[MAX_LONGLINE];
 	print_Param();
 
 	if (!PARAM_HAVE_MEMCACHE)
-		deinit_memcache();
+		deinit_MemCache();
 
 	umask(PARAM_UMASK);
 

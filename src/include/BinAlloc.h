@@ -52,11 +52,6 @@
 #define MARK_FREE		0
 #define MARK_MALLOC		0xff
 
-/*
-	treat strings as a collection of multiples of 16 chars
-*/
-#define SIZE_CHAR		16
-
 
 typedef struct MemBin_tag MemBin;
 

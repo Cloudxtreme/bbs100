@@ -1575,31 +1575,12 @@ char num_buf[MAX_NUMBER];
 			buffer_text(usr);
 
 			len = 0;
-			for(i = 0; i < NUM_TYPES+1; i++) {
+			for(i = 0; i < NUM_TYPES; i++) {
 				if (strlen(Types_table[i].type) > len)
 					len = strlen(Types_table[i].type);
 			}
 			Put(usr, "<white>Statistics<green>\n");
-			for(i = 0; i < NUM_TYPES+1; i++) {
-				if (i & 1)
-					Put(usr, "      ");
-
-				Print(usr, "%-*s :<white> %13s<green>%c", len, Types_table[i].type, print_number(mem_stats[i], num_buf, MAX_NUMBER), (i & 1) ? '\n' : ' ');
-			}
-			if (i & 1)
-				Put(usr, "      ");
-			Print(usr, "<yellow>%-*s :<white> %13s<green>\n", len, "total", print_number(memory_total, num_buf, MAX_NUMBER));
-
-			Put(usr, "\n<white>Balance<green>\n");
-			for(i = 0; i < NUM_TYPES+1; i++) {
-				if (i & 1)
-					Put(usr, "      ");
-
-				Print(usr, "%-*s :<white> %13d<green>%c", len, Types_table[i].type, mem_balance[i], (i & 1) ? '\n' : ' ');
-			}
-			if (i & 1)
-				Put(usr, "      ");
-			Print(usr, "<yellow>%-*s :<white> %13d<green>\n", len, "total", alloc_balance);
+/* TODO: fill this in */
 
 			read_menu(usr);
 			Return;
@@ -3216,9 +3197,9 @@ void state_features_menu(User *usr, char c) {
 		case 'B':
 			TOGGLE_FEAT(PARAM_HAVE_MEMCACHE, "Object cache");
 			if (PARAM_HAVE_MEMCACHE == PARAM_FALSE)
-				deinit_memcache();
+				deinit_MemCache();
 			else
-				init_memcache();
+				init_MemCache();
 			Return;
 
 		case 'f':

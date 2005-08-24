@@ -5,6 +5,7 @@ Changes as of August 24th 2005
 - cancel shutdown works with same key as shutdown
   this kills the functionality of reprogramming a running shutdown timer,
   but hey ...
+- changed memory object cache to work independently from memory allocator
 
 Changes as of August 23rd 2005
 - new BinAlloc seems to be working alright

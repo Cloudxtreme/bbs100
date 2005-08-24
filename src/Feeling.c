@@ -57,7 +57,7 @@ char *p;
 	else
 		p = filename;
 
-	KVPair_setpointer(kv, p, cstrdup(filename), Free);
+	KVPair_setpointer(kv, p, cstrdup(filename), (void (*)(void *))cstrfree);
 
 	while((p = cstrchr(kv->key, '_')) != NULL)
 		*p = ' ';

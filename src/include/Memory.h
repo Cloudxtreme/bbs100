@@ -27,24 +27,33 @@
 #include "Timer.h"
 #include "sys_time.h"
 
-#define NUM_FREELIST	5
+/*
+	all routines use Malloc() and Free()
+*/
+#define Malloc(x,y)		MemAlloc((x),(y))
+#define Free(x)			MemFree(x)
+
+/*
+	alloc/free functions called by MemAlloc() and MemFree()
+*/
+#define ALLOCATOR(x,y)	BinMalloc((x),(y))
+#define DEALLOCATOR(x)	BinFree(x)
+
+
+#define NUM_FREELIST	8
 
 typedef struct {
-	void *free[NUM_FREELIST];
+	void *slots[NUM_FREELIST];
+	int in_use;
 } MemFreeList;
 
-extern unsigned long memory_total;
-extern unsigned long mem_stats[NUM_TYPES+1];
-extern int mem_balance[NUM_TYPES+1];
-extern int alloc_balance;
-extern void *(*Malloc)(unsigned long, int);
-extern void (*Free)(void *);
-
 int init_Memory(void);
-int init_memcache(void);
-void deinit_memcache(void);
+int init_MemCache(void);
+void deinit_MemCache(void);
 void *MemAlloc(unsigned long, int);
 void MemFree(void *);
+
+int get_MemFreeListInfo(int *);
 
 #endif	/* MEMORY_H_WJ100 */
 
