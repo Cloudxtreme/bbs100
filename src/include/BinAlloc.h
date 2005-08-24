@@ -57,17 +57,6 @@
 */
 #define SIZE_CHAR		16
 
-/*
-	this works as long as y is a power of 2
-*/
-#define ROUND_UP(x,y)				\
-	do {							\
-		if (((x) & ((y)-1)) > 0) {	\
-			(x) &= ~((y)-1);		\
-			(x) += (y);				\
-		}							\
-	} while(0)
-
 
 typedef struct MemBin_tag MemBin;
 

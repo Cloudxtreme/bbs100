@@ -144,9 +144,6 @@ int n;
 		log_warn("BinMalloc(): unknown type %d, using malloc()", type);
 		return use_malloc(size, TYPE_UNKNOWN);
 	}
-	if (type == TYPE_CHAR)
-		ROUND_UP(size, SIZE_CHAR);
-
 	if (size >= MAX_BIN_FREE)
 		return use_malloc(size, type);
 
