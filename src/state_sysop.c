@@ -1593,12 +1593,9 @@ MemInfo mem_info;
 
 			Put(usr, "<yellow>Memory allocation status\n<green>");
 			get_MemInfo(&mem_info);
-			if (PARAM_HAVE_BINALLOC) {
-				Print(usr, "Total bin memory<yellow>  %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.total, num_buf1, MAX_NUMBER), mem_info.balance);
-				Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, MAX_NUMBER));
-				Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, MAX_NUMBER));
-			} else
-				Print(usr, "Total memory<yellow> %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.malloc, num_buf1, MAX_NUMBER), mem_info.balance);
+			Print(usr, "Total bin memory<yellow>  %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.total, num_buf1, MAX_NUMBER), mem_info.balance);
+			Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, MAX_NUMBER));
+			Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, MAX_NUMBER));
 
 			Print(usr, "\n<yellow>Statistics\n"
 				"%-16s  %6s  %16s  %7s\n", "type", "amount", "bytes", "balance");
