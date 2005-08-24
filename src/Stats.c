@@ -458,19 +458,19 @@ unsigned long num;
 		Put(usr, "<red>The system is shutting down\n");
 
 	if (usr->runtime_flags & RTF_SYSOP) {
-		Put(usr, "\n");
+		MemInfo mem_info;
 
-		Print(usr, "<green>Cache size: <yellow>%s", print_number(cache_size, date_buf, MAX_LINE));
+		Print(usr, "\n<green>Cache size: <yellow>%s", print_number(cache_size, date_buf, MAX_LINE));
 		Print(usr, "/%s<green>   ", print_number(num_cached, date_buf, MAX_LINE));
 		Print(usr, "hits: <yellow>%s<green>   ", print_number(stats.cache_hit, date_buf, MAX_LINE));
 		Print(usr, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf, MAX_LINE));
-		if ((stats.cache_hit + stats.cache_miss) > 0)
-			Print(usr, "rate: <yellow>%lu%%", 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss));
-		else
-			Print(usr, "rate: <yellow>%lu%%", 0UL);
-/*
-		Print(usr, "\n<green>Total memory in use:<yellow> %s <green>bytes\n", print_number(memory_total, date_buf, MAX_LINE));
-*/
+		Print(usr, "rate: <yellow>%lu%%\n", ((stats.cache_hit + stats.cache_miss) > 0) ? 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss) : 0UL);
+
+		get_MemInfo(&mem_info);
+		Print(usr, "\n<green>"
+				   "Total memory<yellow>   %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
+		Print(usr, "Memory in use<yellow>  %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
+		Print(usr, "Foreign memory<yellow> %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
 	}
 	Print(usr, "\n<yellow>User statistics\n");
 

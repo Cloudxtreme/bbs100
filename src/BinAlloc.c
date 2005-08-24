@@ -30,7 +30,7 @@
 		There are MemBin.free bytes free in this bin
 		Minimum allocation is sizeof(type) + 1 byte marker + 1 byte type
 		(The type byte is used to make BinFree() a lot faster)
-		Minimum allocation for TYPE_CHAR is 16 (gets rounded)
+		Minimum allocation for TYPE_CHAR is 16 (see size of TYPE_CHAR in Types.c)
 
 		A slot begins with a 1-byte marker;
 		The mark has a meaning:
@@ -44,7 +44,7 @@
 		to free() to free this allocation.
 
 	Note: all memory allocators in bbs100 MUST zero out the allocated block, or you will
-	      segfaults all over
+	      get segfaults all over
 */
 
 #include "config.h"
@@ -105,6 +105,8 @@ int i, size;
 	if ((bin = (MemBin *)BinMalloc(BIN_SIZE, TYPE_CHAR)) == NULL)
 		return NULL;
 
+	mem_info.total += (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE);
+
 	memset(bin, 0, sizeof(MemBin));
 	bin->free = MAX_BIN_FREE;
 
@@ -127,6 +129,8 @@ void destroy_MemBin(MemBin *bin) {
 		return;
 	}
 	BinFree(bin);
+
+	mem_info.total -= (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE);
 }
 
 void *BinMalloc(unsigned long size, int type) {
@@ -374,6 +378,7 @@ int get_MemInfo(MemInfo *info) {
 		return -1;
 
 	memcpy(info, &mem_info, sizeof(MemInfo));
+	info->malloc = mem_info.malloc - mem_info.total;
 	return 0;
 }
 
