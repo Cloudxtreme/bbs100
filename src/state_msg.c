@@ -1060,7 +1060,7 @@ int from_me = 0;
 		}
 		if (p == NULL) {
 			msg_num = usr->msg_seq_recv;
-			msg_sent_num = usr->msg_seq_sent+1;
+			msg_sent_num = usr->msg_seq_sent;
 			p = unwind_PList(usr->history);
 			while(p != NULL) {
 				m = (BufferedMsg *)p->p;
