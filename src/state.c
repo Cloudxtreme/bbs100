@@ -2236,6 +2236,7 @@ char buf[MAX_LONGLINE], *p;
 			"StringIO.c",
 			"Display.c",
 			"patchlist.c",
+			"BinAlloc.c",
 			"main.c",
 			NULL
 		};
