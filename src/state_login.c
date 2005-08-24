@@ -828,10 +828,10 @@ User *u;
 	}
 
 /* if booting/shutting down, inform the user */
-	if (shutdown_timer != NULL && shutdown_timer->maxtime <= SECS_IN_MIN)
+	if (shutdown_timer != NULL && shutdown_timer->maxtime <= 10*SECS_IN_MIN)
 		Put(usr, "\n<white>NOTE: <red>The system is shutting down\n");
 	else
-		if (reboot_timer != NULL && reboot_timer->maxtime <= SECS_IN_MIN)
+		if (reboot_timer != NULL && reboot_timer->maxtime <= 10*SECS_IN_MIN)
 			Put(usr, "\n<white>NOTE: <red>The system is rebooting\n");
 
 	if (nologin_active)
