@@ -5,6 +5,8 @@ Changes as of August 24th 2005
 - cancel shutdown works with same key as shutdown
   this kills the functionality of reprogramming a running shutdown timer,
   but hey ...
+- bugfix, shutdown/reboot broadcast message would sometimes print incorrect
+  time
 - changed memory object cache to work independently from memory allocator
 - new memory Stats
 - bugfix, Home> would not be visible in the known rooms list when chat
@@ -14,6 +16,7 @@ Changes as of August 24th 2005
   doesn't know the underlying allocator is aligning things;
   For stats, it was nice, but BinMalloc can display them too;
   BinMalloc works like an object cache that does preallocation
+- linked memory bins of the same size
 
 Changes as of August 23rd 2005
 - new BinAlloc seems to be working alright

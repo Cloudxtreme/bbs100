@@ -134,6 +134,7 @@ What's new internally?
 - bounds checking against buffer overruns with cstrcpy() and cstrcat()
 - hostmap is no longer permanently loaded, but works through the file cache
 - BinAlloc memory allocator minimizes fragmentation
+  (bins of a different type but the same size are linked together)
 - some bugs fixed ...
 
 

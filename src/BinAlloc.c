@@ -43,6 +43,9 @@
 		address, which is the size. The address of the unsigned long should be passed
 		to free() to free this allocation.
 
+	Some types have the same size. Using multiple bins for them is a waste,
+	so they are linked together by a mapping (named bin_mapping).
+
 	Note: all memory allocators in bbs100 MUST zero out the allocated block, or you will
 	      get segfaults all over
 */
@@ -59,18 +62,34 @@
 #include <string.h>
 
 static MemBin *bins[NUM_TYPES];
+static int bin_mapping[NUM_TYPES];
 static int use_bin_alloc = 0;
 
 static MemInfo mem_info;
-static int type_balance[NUM_TYPES];
+static MemStats mem_stats[NUM_TYPES];
 
 static void *get_from_bin(unsigned long, int);
 static void *use_malloc(unsigned long, int);
 
 int init_BinAlloc(void) {
+int i, j;
+
 	memset(bins, 0, NUM_TYPES * sizeof(MemBin *));
 	memset(&mem_info, 0, sizeof(MemInfo));
-	memset(type_balance, 0, sizeof(int) * NUM_TYPES);
+	memset(&mem_stats, 0, NUM_TYPES * sizeof(MemStats));
+
+	for(i = 0; i < NUM_TYPES; i++)
+		bin_mapping[i] = i;				/* initially map one-on-one */
+
+	for(i = 0; i < NUM_TYPES; i++) {
+		if (bin_mapping[i] != i)		/* already been remapped */
+			continue;
+
+		for(j = i+1; j < NUM_TYPES; j++) {
+			if (i != j && Types_table[i].size == Types_table[j].size)
+				bin_mapping[j] = i;		/* remap it */
+		}
+	}
 	enable_BinAlloc();
 	return 0;
 }
@@ -162,7 +181,7 @@ int n;
 		if ((bin = new_MemBin(type)) == NULL)
 			return use_malloc(size, type);
 
-		add_MemBin(&bins[type], bin);
+		add_MemBin(&bins[bin_mapping[type]], bin);
 
 		if ((ptr = get_from_bin(size, type)) == NULL) {
 			log_warn("BinMalloc(): failed even after adding a bin (size = %lu, n = %d, type = %s), using malloc()", size, n, Types_table[type].type);
@@ -170,7 +189,8 @@ int n;
 		}
 	}
 	mem_info.balance++;
-	type_balance[type]++;
+	mem_stats[type].num += n;
+	mem_stats[type].balance++;
 	return ptr;
 }
 
@@ -190,7 +210,7 @@ char *mem, *startp;
 	}
 	type_size = Types_table[type].size;
 
-	for(bin = bins[type]; bin != NULL; bin = bin->next) {
+	for(bin = bins[bin_mapping[type]]; bin != NULL; bin = bin->next) {
 /*
 	find enough free bytes; or n contiguous free slots
 */
@@ -260,9 +280,14 @@ char *mem, *startp;
 static void *use_malloc(unsigned long size, int type) {
 unsigned long *ulptr;
 char *mem;
+int num;
 
 	if (!size || type < 0 || type >= NUM_TYPES)
 		return NULL;
+
+	num = size / Types_table[type].size;
+	if (num < 0)
+		num = 0;
 
 	size += sizeof(unsigned long) + MARKER_SIZE;
 	if ((ulptr = (unsigned long *)malloc(size)) == NULL)
@@ -270,6 +295,8 @@ char *mem;
 
 	mem_info.malloc += size;
 	mem_info.balance++;
+	mem_stats[type].num += num;
+	mem_stats[type].balance++;
 
 	*ulptr = size;
 	ulptr++;
@@ -296,6 +323,11 @@ unsigned long bin_start, bin_end;
 		log_err("BinFree(): memory was not marked as in use");
 		return;
 	}
+	LD_TYPE(mem, type);
+	if (type < 0 || type >= NUM_TYPES) {
+		log_err("BinFree(): invalid type; the mark has been overwritten");
+		return;
+	}
 	if (in_use == MARK_MALLOC) {		/* allocated by use_malloc() */
 		unsigned long *ulptr;
 
@@ -303,19 +335,21 @@ unsigned long bin_start, bin_end;
 		ulptr--;
 		mem_info.malloc -= *ulptr;
 		mem_info.balance--;
+
+		in_use = *ulptr / Types_table[type].size;
+		if (in_use < 0)
+			in_use = 0;
+
+		mem_stats[type].num -= in_use;
+		mem_stats[type].balance--;
 		free(ulptr);
-		return;
-	}
-	LD_TYPE(mem, type);
-	if (type < 0 || type >= NUM_TYPES) {
-		log_err("BinFree(): invalid type; the mark has been overwritten");
 		return;
 	}
 	type_size = Types_table[type].size;
 
 /* find the particular bin that we're in */
 
-	for(bin = bins[type]; bin != NULL; bin = bin->next) {
+	for(bin = bins[bin_mapping[type]]; bin != NULL; bin = bin->next) {
 		bin_start = (unsigned long)bin + BIN_MEM_START;
 		bin_end = (unsigned long)bin + BIN_MEM_END;
 		if ((unsigned long)mem >= bin_start && (unsigned long)mem < bin_end) {
@@ -336,13 +370,14 @@ unsigned long bin_start, bin_end;
 			}
 			mem_info.in_use -= in_use * (type_size + MARKER_SIZE) - MARKER_SIZE;
 			mem_info.balance--;
-			type_balance[type]--;
+			mem_stats[type].num -= in_use;
+			mem_stats[type].balance--;
 /*
 	free unneeded bin if it is not the only one, because if it is the only one,
 	it is likely we will very soon need to add it again anyway
 */
-			if (bin->free >= MAX_BIN_FREE && !(bins[type]->prev == NULL && bins[type]->next == NULL)) {
-				remove_MemBin(&bins[type], bin);
+			if (bin->free >= MAX_BIN_FREE && !(bin->prev == NULL && bin->next == NULL)) {
+				remove_MemBin(&bins[bin_mapping[type]], bin);
 				destroy_MemBin(bin);
 			} else {
 				while(in_use > 0) {					/* free all occupied slots */
@@ -369,7 +404,14 @@ MemBin *bin;
 		info->bins++;
 		info->free += bin->free;
 	}
-	info->balance = type_balance[type];
+	return 0;
+}
+
+int get_MemStats(MemStats *stats, int type) {
+	if (stats == NULL || type < 0 || type >= NUM_TYPES)
+		return -1;
+
+	memcpy(stats, &mem_stats[type], sizeof(MemStats));
 	return 0;
 }
 

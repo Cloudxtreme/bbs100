@@ -61,7 +61,7 @@ struct MemBin_tag {
 };
 
 typedef struct {
-	int bins, balance;		/* # of bins in use for this type */
+	int bins;				/* # of bins in use for this type */
 	unsigned long free;		/* total free bytes */
 } MemBinInfo;
 
@@ -69,6 +69,10 @@ typedef struct {
 	unsigned long total, in_use, malloc;
 	int balance;
 } MemInfo;
+
+typedef struct {
+	int num, balance;
+} MemStats;
 
 int init_BinAlloc(void);
 void deinit_BinAlloc(void);
@@ -79,6 +83,7 @@ void *BinMalloc(unsigned long, int);
 void BinFree(void *);
 
 int get_MemBinInfo(MemBinInfo *, int);
+int get_MemStats(MemStats *, int);
 int get_MemInfo(MemInfo *);
 
 #endif	/* BINALLOC_H_WJ105 */

@@ -1571,10 +1571,11 @@ int r;
 	} while(0)
 
 void state_malloc_status(User *usr, char c) {
-int i, n, in_use, total_bins, total_free, total_obj, total_balance;
+int i, total_bins, total_free, total_obj, total_balance;
 char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], num_buf3[MAX_NUMBER], num_buf4[MAX_NUMBER], num_buf5[MAX_NUMBER];
 MemInfo mem_info;
 MemBinInfo membin_info;
+MemStats mem_stats;
 
 	if (usr == NULL)
 		return;
@@ -1610,17 +1611,10 @@ MemBinInfo membin_info;
 			total_bins = total_free = total_obj = total_balance = 0;
 			for(i = 0; i < NUM_TYPES; i++) {
 				get_MemBinInfo(&membin_info, i);
+				get_MemStats(&mem_stats, i);
 
-/* number of objects in the bin is a rough estimate ... */
-				in_use = membin_info.bins * MAX_BIN_FREE - membin_info.free;
-				n = in_use / (Types_table[i].size + MARKER_SIZE);
-				if (n < 0)
-					n = 0;
-				if (in_use % (Types_table[i].size + MARKER_SIZE))
-					n++;
-				in_use = n;
-				NUM_DASH(in_use, num_buf1);
-				NUM_DASH(membin_info.balance, num_buf2);
+				NUM_DASH(mem_stats.num, num_buf1);
+				NUM_DASH(mem_stats.balance, num_buf2);
 				NUM_DASH(membin_info.bins, num_buf3);
 
 				Print(usr, "<green>%-16s<white> %4d %6s %7s %6s %15s %15s\n",
@@ -1634,8 +1628,8 @@ MemBinInfo membin_info;
 				);
 				total_bins += membin_info.bins;
 				total_free += membin_info.free;
-				total_obj += in_use;
-				total_balance += membin_info.balance;
+				total_obj += mem_stats.num;
+				total_balance += mem_stats.balance;
 			}
 			NUM_DASH(total_obj, num_buf1);
 			NUM_DASH(total_balance, num_buf2);
