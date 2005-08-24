@@ -10,6 +10,10 @@ Changes as of August 24th 2005
 - bugfix, Home> would not be visible in the known rooms list when chat
   rooms are not enabled, but Home> rooms are. Homes are always chat rooms
 - bugfixes for when Lobby> is a chat room
+- removed memory object cache; it makes BinMalloc inefficient because it
+  doesn't know the underlying allocator is aligning things;
+  For stats, it was nice, but BinMalloc can display them too;
+  BinMalloc works like an object cache that does preallocation
 
 Changes as of August 23rd 2005
 - new BinAlloc seems to be working alright

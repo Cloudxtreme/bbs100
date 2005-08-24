@@ -104,7 +104,6 @@ have_category           yes
 have_cycle_rooms        yes
 have_wrapper_all        yes
 have_binalloc           yes
-have_memcache           yes
 have_filecache          yes
 have_resident_info      yes
 have_disabled_msg       yes

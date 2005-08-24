@@ -271,9 +271,6 @@ char buf[MAX_LONGLINE];
 	check_Param();
 	print_Param();
 
-	if (!PARAM_HAVE_MEMCACHE)
-		deinit_MemCache();
-
 	if (!PARAM_HAVE_BINALLOC)
 		disable_BinAlloc();
 

@@ -467,8 +467,9 @@ unsigned long num;
 		Print(usr, "rate: <yellow>%lu%%\n", ((stats.cache_hit + stats.cache_miss) > 0) ? 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss) : 0UL);
 
 		get_MemInfo(&mem_info);
-		Print(usr, "\n<green>"
-			"Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
+		Print(usr, "<green>\n"
+			"Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, date_buf, MAX_LINE));
+		Print(usr, "Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
 		Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
 		Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
 	}

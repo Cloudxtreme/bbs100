@@ -1571,11 +1571,10 @@ int r;
 	} while(0)
 
 void state_malloc_status(User *usr, char c) {
-int i, total_num, total_balance;
-unsigned long total_size;
-char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], num_buf3[MAX_NUMBER];
-MemStats mem_stats;
+int i, n, in_use, total_bins, total_free, total_obj, total_balance;
+char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], num_buf3[MAX_NUMBER], num_buf4[MAX_NUMBER], num_buf5[MAX_NUMBER];
 MemInfo mem_info;
+MemBinInfo membin_info;
 
 	if (usr == NULL)
 		return;
@@ -1593,89 +1592,64 @@ MemInfo mem_info;
 
 			Put(usr, "<yellow>Memory allocation status\n<green>");
 			get_MemInfo(&mem_info);
+			Print(usr, "Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, num_buf1, MAX_NUMBER));
 			Print(usr, "Total bin memory<yellow>  %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.total, num_buf1, MAX_NUMBER), mem_info.balance);
 			Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, MAX_NUMBER));
 			Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, MAX_NUMBER));
 
-			Print(usr, "\n<yellow>Statistics\n"
-				"%-16s  %6s  %16s  %7s\n", "type", "amount", "bytes", "balance");
-			total_num = total_balance = 0;
-			total_size = 0UL;
-			for(i = 0; i < NUM_TYPES; i++) {
-				get_MemStats(&mem_stats, i);
-
-				NUM_DASH(mem_stats.num, num_buf1);
-				NUM_DASH(mem_stats.balance, num_buf3);
-				Print(usr, "<green>%-16s<white>  %6s  %16s  %7s\n", Types_table[i].type, num_buf1,
-					print_number(mem_stats.size, num_buf2, MAX_NUMBER), num_buf3);
-
-				total_num += mem_stats.num;
-				total_balance += mem_stats.balance;
-				total_size += mem_stats.size;
-			}
-			NUM_DASH(total_num, num_buf1);
-			NUM_DASH(total_balance, num_buf3);
-			Print(usr, "<yellow>%-16s  %6s  %16s  %7s\n", "total", num_buf1,
-				print_number(total_size, num_buf2, MAX_NUMBER), num_buf3);
-
-			if (PARAM_HAVE_BINALLOC) {
-				char num_buf4[MAX_NUMBER];
-				MemBinInfo membin_info;
-				int total_bins, total_free;
-
-				Print(usr, "\n<yellow>Bin allocator status (bin size: %d bytes)\n", BIN_SIZE);
-				Print(usr, "<yellow>%-16s  %6s  %16s  %16s  %7s\n", "type", "bins",
-					"total", "free", "balance");
-
-				total_balance = total_bins = total_free = 0;
-				for(i = 0; i < NUM_TYPES; i++) {
-					get_MemBinInfo(&membin_info, i);
-
-					NUM_DASH(membin_info.bins, num_buf1);
-					NUM_DASH(membin_info.balance, num_buf4);
-
-					Print(usr, "<green>%-16s<white>  %6s  %16s  %16s  %7s\n",
-						Types_table[i].type, num_buf1,
-						print_number(membin_info.bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf2, MAX_NUMBER),
-						print_number(membin_info.free, num_buf3, MAX_NUMBER),
-						num_buf4
-					);
-					total_balance += membin_info.balance;
-					total_bins += membin_info.bins;
-					total_free += membin_info.free;
-				}
-				NUM_DASH(total_bins, num_buf1);
-				NUM_DASH(total_balance, num_buf4);
-
-				Print(usr, "<yellow>%-16s  %6s  %16s  %16s  %7s\n",
-					"total", num_buf1,
-					print_number(total_bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf2, MAX_NUMBER),
-					print_number(total_free, num_buf3, MAX_NUMBER),
-					num_buf4
+			if (!PARAM_HAVE_BINALLOC)
+				Put(usr, "<red>\nThe bin allocator is currently not active\n"
+					"<green>What you see here is the residue from when it was still enabled\n"
+					"Further allocations will use 'foreign' memory\n"
 				);
+
+			Print(usr, "\n<yellow>Bin allocator status (bin size: %d bytes, usable: %d bytes)\n", BIN_SIZE, MAX_BIN_FREE);
+			Print(usr, "<yellow>%-16s %4s %6s %7s %6s %15s %15s\n",
+				"type", "size", "number", "balance", "bins", "total", "free");
+
+			total_bins = total_free = total_obj = total_balance = 0;
+			for(i = 0; i < NUM_TYPES; i++) {
+				get_MemBinInfo(&membin_info, i);
+
+/* number of objects in the bin is a rough estimate ... */
+				in_use = membin_info.bins * MAX_BIN_FREE - membin_info.free;
+				n = in_use / (Types_table[i].size + MARKER_SIZE);
+				if (n < 0)
+					n = 0;
+				if (in_use % (Types_table[i].size + MARKER_SIZE))
+					n++;
+				in_use = n;
+				NUM_DASH(in_use, num_buf1);
+				NUM_DASH(membin_info.balance, num_buf2);
+				NUM_DASH(membin_info.bins, num_buf3);
+
+				Print(usr, "<green>%-16s<white> %4d %6s %7s %6s %15s %15s\n",
+					Types_table[i].type,
+					Types_table[i].size + MARKER_SIZE,
+					num_buf1,
+					num_buf2,
+					num_buf3,
+					print_number(membin_info.bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, MAX_NUMBER),
+					print_number(membin_info.free, num_buf5, MAX_NUMBER)
+				);
+				total_bins += membin_info.bins;
+				total_free += membin_info.free;
+				total_obj += in_use;
+				total_balance += membin_info.balance;
 			}
-			if (PARAM_HAVE_MEMCACHE) {
-				int free_list[NUM_TYPES], total_in_use;
+			NUM_DASH(total_obj, num_buf1);
+			NUM_DASH(total_balance, num_buf2);
+			NUM_DASH(total_bins, num_buf3);
 
-				Print(usr, "\n<yellow>Memory object cache (%d slots per type)\n", NUM_FREELIST);
-				Print(usr, "<yellow>%-16s  %6s  %6s\n", "type", "in use", "free");
-				get_MemFreeListInfo(free_list);
-
-				total_in_use = 0;
-				for(i = 0; i < NUM_TYPES; i++) {
-					NUM_DASH(free_list[i], num_buf1);
-					NUM_DASH(NUM_FREELIST - free_list[i], num_buf2);
-
-					Print(usr, "<green>%-16s<white>  %6s  %6s\n", Types_table[i].type,
-						num_buf1, num_buf2);
-					total_in_use += free_list[i];
-				}
-				NUM_DASH(total_in_use, num_buf1);
-				NUM_DASH(NUM_TYPES * NUM_FREELIST - total_in_use, num_buf2);
-
-				Print(usr, "<yellow>%-16s  %6s  %6s\n", "total",
-					num_buf1, num_buf2);
-			}
+			Print(usr, "<yellow>%-16s %4s %6s %7s %6s %15s %15s\n",
+				"total",
+				"",
+				num_buf1,
+				num_buf2,
+				num_buf3,
+				print_number(total_bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, MAX_NUMBER),
+				print_number(total_free, num_buf5, MAX_NUMBER)
+			);
 			read_menu(usr);
 			Return;
 
@@ -3172,7 +3146,7 @@ void state_features_menu(User *usr, char c) {
 			Print(usr,
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
 				"Resident <hotkey>info         <white>%-3s<magenta>      <hotkey>File cache              <white>%s<magenta>\n"
-				"Mem <hotkey>Object cache      <white>%-3s<magenta>      Bin <hotkey>Allocator           <white>%s<magenta>\n"
+				"<hotkey>Bin allocator         <white>%-3s<magenta>      Wrapper a<hotkey>pply to All    <white>%s<magenta>\n"
 				"Wrapper a<hotkey>pply to All  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
@@ -3181,10 +3155,9 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_FILECACHE == PARAM_FALSE) ? "off" : "on",
 
-				(PARAM_HAVE_MEMCACHE == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_BINALLOC == PARAM_FALSE) ? "off" : "on",
-
 				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
+
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			read_menu(usr);
@@ -3231,6 +3204,7 @@ void state_features_menu(User *usr, char c) {
 			TOGGLE_FEATURE(PARAM_HAVE_TALKEDTO, "Talked To lists");
 
 		case 'o':
+		case 'O':
 			TOGGLE_FEATURE(PARAM_HAVE_HOLD, "Hold message mode");
 
 		case 'u':
@@ -3303,15 +3277,8 @@ void state_features_menu(User *usr, char c) {
 				init_FileCache();
 			Return;
 
-		case 'O':
-			TOGGLE_FEAT(PARAM_HAVE_MEMCACHE, "Object cache");
-			if (PARAM_HAVE_MEMCACHE == PARAM_FALSE)
-				deinit_MemCache();
-			else
-				init_MemCache();
-			Return;
-
-		case 'A':
+		case 'b':
+		case 'B':
 			TOGGLE_FEAT(PARAM_HAVE_BINALLOC, "Bin allocator");
 			if (PARAM_HAVE_BINALLOC == PARAM_FALSE)
 				disable_BinAlloc();

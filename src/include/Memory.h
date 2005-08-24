@@ -24,42 +24,16 @@
 #define MEMORY_H_WJ100
 
 #include "Types.h"
-#include "Timer.h"
-#include "sys_time.h"
+#include "BinAlloc.h"
 
 /*
 	all routines use Malloc() and Free()
 */
-#define Malloc(x,y)		MemAlloc((x),(y))
-#define Free(x)			MemFree(x)
-
-/*
-	alloc/free functions called by MemAlloc() and MemFree()
-*/
-#define ALLOCATOR(x,y)	BinMalloc((x),(y))
-#define DEALLOCATOR(x)	BinFree(x)
-
-
-#define NUM_FREELIST	8
-
-typedef struct {
-	void *slots[NUM_FREELIST];
-	int in_use;
-} MemFreeList;
-
-typedef struct {
-	int num, balance;
-	unsigned long size;
-} MemStats;
+#define Malloc(x,y)		BinMalloc((x),(y))
+#define Free(x)			BinFree(x)
 
 int init_Memory(void);
-int init_MemCache(void);
-void deinit_MemCache(void);
-void *MemAlloc(unsigned long, int);
-void MemFree(void *);
-
-int get_MemStats(MemStats *, int);
-int get_MemFreeListInfo(int *);
+void deinit_Memory(void);
 
 #endif	/* MEMORY_H_WJ100 */
 

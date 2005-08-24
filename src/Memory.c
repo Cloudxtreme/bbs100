@@ -19,14 +19,8 @@
 /*
 	Memory.c	WJ100
 
-	Memory allocation in bbs100 has a staged design;
-	- routines call Malloc() and Free()
-	- Malloc() and Free() are defined to MemAlloc() and MemFree()
-	- MemAlloc() and MemFree() can be configured to use a memory object cache; a 'free list' to
-	  speed up allocation of single objects (such as StringLists, StringIO objects, PLists, etc)
-	- MemAlloc() and MemFree() use a generic ALLOCATOR and DEALLOCTOR function to get that memory
-	- ALLOCATOR() and DEALLOCATOR() are defined to BinMalloc() and BinFree()
-	- in turn, BinMalloc() and BinFree() can be configured to directly call malloc() and free()
+	This file used to contain useful code, but currently it's just
+	a placeholder for BinAlloc
 */
 
 #include "config.h"
@@ -40,194 +34,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-static MemFreeList *free_list = NULL;
-static MemStats mem_stats[NUM_TYPES];
-
 int init_Memory(void) {
-	memset(mem_stats, 0, NUM_TYPES * sizeof(MemStats));
-
-	init_BinAlloc();
-/*	init_MemCache();	TD TODO debug this	*/
-	return 0;
+	return init_BinAlloc();
 }
 
-int init_MemCache(void) {
-	if (free_list != NULL)
-		return -1;
-/*
-	it's not really TYPE_POINTER, but I'm cheating here because I don't really want
-	to make	a TYPE_MEMFREELIST (as it would be useless to have it)
-*/
-	if ((free_list = (MemFreeList *)Malloc(NUM_TYPES * sizeof(MemFreeList), TYPE_POINTER)) == NULL)
-		return -1;
-
-	return 0;
-}
-
-void deinit_MemCache(void) {
-int n, memtype;
-
-	if (free_list == NULL)
-		return;
-
-	for(memtype = 0; memtype < NUM_TYPES; memtype++) {
-		for(n = 0; n < NUM_FREELIST; n++) {
-			if (free_list[memtype].slots[n] != NULL)
-				Free(free_list[memtype].slots[n]);
-		}
-	}
-	Free(free_list);
-	free_list = NULL;
-}
-
-
-/*
-	get something from the freelist
-*/
-static void *get_freelist(int memtype) {
-void *mem;
-int n;
-
-	if (free_list == NULL || memtype < 0 || memtype >= NUM_TYPES
-		|| free_list[memtype].in_use <= 0)
-		return NULL;
-
-	for(n = 0; n < NUM_FREELIST; n++) {
-		if (free_list[memtype].slots[n] != NULL) {
-			mem = free_list[memtype].slots[n];
-			free_list[memtype].slots[n] = NULL;
-			free_list[memtype].in_use--;
-			if (free_list[memtype].in_use < 0) {
-				log_err("get_freelist(): corrupted free_list for type %s", Types_table[memtype].type);
-				memset(&free_list[memtype], 0, sizeof(MemFreeList));
-				return NULL;
-			}
-			return mem;
-		}
-	}
-	return NULL;
-}
-
-/*
-	put something on the freelist
-*/
-static int put_freelist(void *mem, int memtype) {
-int n;
-
-	if (free_list == NULL || mem == NULL || memtype < 0 || memtype >= NUM_TYPES
-		|| free_list[memtype].in_use >= NUM_FREELIST)
-		return -1;
-
-	for(n = 0; n < NUM_FREELIST; n++) {
-		if (free_list[memtype].slots[n] == NULL) {
-			free_list[memtype].slots[n] = mem;
-			free_list[memtype].in_use++;
-			if (free_list[memtype].in_use > NUM_FREELIST) {
-				log_err("put_freelist(): corrupted free_list for type %s", Types_table[memtype].type);
-				memset(&free_list[memtype], 0, sizeof(MemFreeList));
-				return -1;
-			}
-			memset(mem, 0, Types_table[memtype].size);	/* zero it out */
-			return 0;
-		}
-	}
-	return -1;
-}
-
-/*
-	allocate memory
-	try getting it from the free_list, if active
-*/
-void *MemAlloc(unsigned long size, int memtype) {
-unsigned long *ulptr;
-char *mem;
-int n;
-
-	if (!size || memtype < 0 || memtype >= NUM_TYPES)
-		return NULL;
-/*
-	asked for 1 item; search it in the free_list
-*/
-	if (free_list != NULL && size == Types_table[memtype].size
-		&& (mem = get_freelist(memtype)) != NULL)
-		return mem;
-
-	if ((ulptr = (unsigned long *)ALLOCATOR(size + 1 + sizeof(unsigned long), memtype)) == NULL)
-		return NULL;
-
-	n = size / Types_table[memtype].size;
-	if (size % Types_table[memtype].size)
-		n++;
-
-	mem_stats[memtype].num += n;
-	mem_stats[memtype].balance++;
-	mem_stats[memtype].size += (size + 1 + sizeof(unsigned long));
-
-	*ulptr = size;
-	ulptr++;
-	mem = (char *)ulptr;
-	*mem = (char)(memtype & 0xff);
-	return (void *)(mem + 1);
-}
-
-/*
-	free memory that was allocated with MemAlloc()
-	if it was just a single object, put it on the freelist
-*/
-void MemFree(void *ptr) {
-unsigned long *ulptr, size;
-char *mem;
-int type, n;
-
-	if (ptr == NULL)
-		return;
-
-	mem = (char *)ptr;
-	mem--;
-	type = *mem & 0xff;
-	if (type < 0 || type >= NUM_TYPES) {
-		log_err("MemFree(): invalid type, corrupted");
-		return;
-	}
-	ulptr = (unsigned long *)mem;
-	ulptr--;
-	size = *ulptr;
-	n = size / Types_table[type].size;
-	if (size % Types_table[type].size)
-		n++;
-
-	if (free_list != NULL && n == 1 && !put_freelist(ptr, type))
-		return;
-
-	mem_stats[type].num -= n;
-	mem_stats[type].balance--;
-	mem_stats[type].size -= (size + 1 + sizeof(unsigned long));
-
-	DEALLOCATOR(ulptr);
-}
-
-int get_MemStats(MemStats *stats, int type) {
-	if (stats == NULL || type < 0 || type >= NUM_TYPES)
-		return -1;
-
-	memcpy(stats, &mem_stats[type], sizeof(MemStats));
-	return 0;
-}
-
-/*
-	return number of slots in use
-	arr should be at least NUM_TYPES in size
-*/
-int get_MemFreeListInfo(int *arr) {
-	if (free_list == NULL)
-		memset(arr, 0, NUM_TYPES * sizeof(int));
-	else {
-		int i;
-
-		for(i = 0; i < NUM_TYPES; i++)
-			arr[i] = free_list[i].in_use;
-	}
-	return 0;
+void deinit_Memory(void) {
+	deinit_BinAlloc();
 }
 
 /* EOB */
