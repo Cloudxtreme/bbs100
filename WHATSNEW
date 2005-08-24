@@ -98,7 +98,7 @@ What's new to the admins?
   a negative value means there are more free()s than allocs (which never
   happens). It helps detecting memory leaks if the balance goes off the
   scale.
-
+- Lobby> can be a chat room without problems
 
 What's new internally?
 - IPv6 capable networking code

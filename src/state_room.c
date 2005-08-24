@@ -88,11 +88,17 @@ char num_buf[MAX_NUMBER];
 
 	Enter(state_room_prompt);
 
+	if (usr->curr_room == NULL)
+		usr->curr_room = Lobby_room;
+
+	if ((usr->curr_room->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS
+		&& usr->curr_room->number != HOME_ROOM)
+		usr->curr_room->flags &= ~ROOM_CHATROOM;
+
 /*
 	First check for chat rooms (they're a rather special case)
 */
-	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)
-		&& !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
+	if ((usr->curr_room->flags & ROOM_CHATROOM)	&& !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
 		char buf[MAX_LINE];
 
 		switch(c) {
@@ -432,7 +438,7 @@ char num_buf[MAX_NUMBER];
 
 		case 'l':
 		case 'L':
-			if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)) {
+			if ((usr->curr_room->flags & ROOM_CHATROOM) && usr->curr_room->number != LOBBY_ROOM) {
 				Put(usr, "<white>Leave\n");
 				goto_room(usr, Lobby_room);
 			} else {
