@@ -193,8 +193,10 @@ int version;
 			if (r->max_msgs < 1)
 				r->max_msgs = PARAM_MAX_MESSAGES;
 
-		if ((r->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS && r->number != HOME_ROOM)
+		if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM) && r->number != HOME_ROOM) {
 			r->flags &= ~ROOM_CHATROOM;
+			r->flags |= ROOM_DIRTY;
+		}
 		return r;
 	}
 	destroy_Room(r);

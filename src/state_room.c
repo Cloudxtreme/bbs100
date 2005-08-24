@@ -91,14 +91,14 @@ char num_buf[MAX_NUMBER];
 	if (usr->curr_room == NULL)
 		usr->curr_room = Lobby_room;
 
-	if ((usr->curr_room->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS
-		&& usr->curr_room->number != HOME_ROOM)
+	if ((usr->curr_room->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS && usr->curr_room->number != HOME_ROOM) {
 		usr->curr_room->flags &= ~ROOM_CHATROOM;
-
+		usr->curr_room->flags |= ROOM_DIRTY;
+	}
 /*
 	First check for chat rooms (they're a rather special case)
 */
-	if ((usr->curr_room->flags & ROOM_CHATROOM)	&& !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
+	if ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
 		char buf[MAX_LINE];
 
 		switch(c) {
@@ -977,6 +977,9 @@ void PrintPrompt(User *usr) {
 
 	Enter(PrintPrompt);
 
+	if (usr->curr_room == NULL)
+		usr->curr_room = Lobby_room;
+
 /*
 	do housekeeping: free up memory that we're not going to use anyway
 */
@@ -998,7 +1001,7 @@ void PrintPrompt(User *usr) {
 
 /* print a short prompt for chatrooms */
 
-		if (usr->curr_room == NULL || (usr->curr_room->flags & ROOM_CHATROOM)) {
+		if (usr->curr_room->flags & ROOM_CHATROOM) {
 
 /* spool the chat messages we didn't get while we were busy */
 
