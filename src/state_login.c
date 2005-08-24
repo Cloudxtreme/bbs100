@@ -511,10 +511,9 @@ int i, new_mail;
 		} else
 			online_for[0] = 0;
 
-		if (usr->tmpbuf[TMP_FROM_HOST]) {
-			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for);
-			Print(usr, "<green>From host: <yellow>%s\n", usr->tmpbuf[TMP_FROM_HOST]);
-		} else
+		if (usr->tmpbuf[TMP_FROM_HOST] != NULL && usr->tmpbuf[TMP_FROM_HOST][0])
+			Print(usr, "\n<green>Last login was on <cyan>%s%s<green> from host<yellow> %s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for, usr->tmpbuf[TMP_FROM_HOST]);
+		else
 			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for);
 	}
 /* free the tmp buffers as they won't be used anymore for a long time */
