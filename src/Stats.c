@@ -468,9 +468,9 @@ unsigned long num;
 
 		get_MemInfo(&mem_info);
 		Print(usr, "\n<green>"
-				   "Total memory<yellow>   %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
-		Print(usr, "Memory in use<yellow>  %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
-		Print(usr, "Foreign memory<yellow> %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
+			"Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
+		Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
+		Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
 	}
 	Print(usr, "\n<yellow>User statistics\n");
 

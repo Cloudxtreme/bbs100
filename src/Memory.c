@@ -41,10 +41,13 @@
 #include <string.h>
 
 static MemFreeList *free_list = NULL;
+static MemStats mem_stats[NUM_TYPES];
 
 int init_Memory(void) {
+	memset(mem_stats, 0, NUM_TYPES * sizeof(MemStats));
+
 	init_BinAlloc();
-/*	init_MemCache();		TD TODO uncomment this		*/
+/*	init_MemCache();	TD TODO debug this	*/
 	return 0;
 }
 
@@ -136,6 +139,7 @@ int n;
 	try getting it from the free_list, if active
 */
 void *MemAlloc(unsigned long size, int memtype) {
+unsigned long *ulptr;
 char *mem;
 int n;
 
@@ -148,27 +152,32 @@ int n;
 		&& (mem = get_freelist(memtype)) != NULL)
 		return mem;
 
-	if ((mem = (char *)ALLOCATOR(size+1, memtype)) == NULL)
+	if ((ulptr = (unsigned long *)ALLOCATOR(size + 1 + sizeof(unsigned long), memtype)) == NULL)
 		return NULL;
 
 	n = size / Types_table[memtype].size;
 	if (size % Types_table[memtype].size)
 		n++;
 
-	if (n == 1)
-		*mem = (char)(memtype & 0xff);		/* candidate for free_list, later */
-	else
-		*mem = 0xff;
+	mem_stats[memtype].num += n;
+	mem_stats[memtype].balance++;
+	mem_stats[memtype].size += (size + 1 + sizeof(unsigned long));
+
+	*ulptr = size;
+	ulptr++;
+	mem = (char *)ulptr;
+	*mem = (char)(memtype & 0xff);
 	return (void *)(mem + 1);
 }
 
 /*
 	free memory that was allocated with MemAlloc()
-	put it on the free_list, if active
+	if it was just a single object, put it on the freelist
 */
 void MemFree(void *ptr) {
+unsigned long *ulptr, size;
 char *mem;
-int type;
+int type, n;
 
 	if (ptr == NULL)
 		return;
@@ -176,11 +185,33 @@ int type;
 	mem = (char *)ptr;
 	mem--;
 	type = *mem & 0xff;
+	if (type < 0 || type >= NUM_TYPES) {
+		log_err("MemFree(): invalid type, corrupted");
+		return;
+	}
+	ulptr = (unsigned long *)mem;
+	ulptr--;
+	size = *ulptr;
+	n = size / Types_table[type].size;
+	if (size % Types_table[type].size)
+		n++;
 
-	if (free_list != NULL && type < NUM_TYPES && !put_freelist(ptr, type))
+	if (free_list != NULL && n == 1 && !put_freelist(ptr, type))
 		return;
 
-	DEALLOCATOR(mem);
+	mem_stats[type].num -= n;
+	mem_stats[type].balance--;
+	mem_stats[type].size -= (size + 1 + sizeof(unsigned long));
+
+	DEALLOCATOR(ulptr);
+}
+
+int get_MemStats(MemStats *stats, int type) {
+	if (stats == NULL || type < 0 || type >= NUM_TYPES)
+		return -1;
+
+	memcpy(stats, &mem_stats[type], sizeof(MemStats));
+	return 0;
 }
 
 /*

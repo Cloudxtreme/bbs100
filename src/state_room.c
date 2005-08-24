@@ -1735,9 +1735,9 @@ StringList *sl;
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);
 		else
-			Print(usr, "\n<magenta>Welcome to <yellow>%s%c\n", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+			Print(usr, "\n<magenta>Welcome to <yellow>%s>\n", buf);
 	} else
-		Print(usr, "\n<yellow>%s%c\n", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+		Print(usr, "\n<yellow>%s>\n", usr->curr_room->name);
 
 	if (STRING_CHANCE)
 		str = PARAM_NOTIFY_ENTER_CHAT;

@@ -78,7 +78,7 @@ void disable_BinAlloc(void);
 void *BinMalloc(unsigned long, int);
 void BinFree(void *);
 
-int get_BinInfo(MemBinInfo *, int);
+int get_MemBinInfo(MemBinInfo *, int);
 int get_MemInfo(MemInfo *);
 
 #endif	/* BINALLOC_H_WJ105 */

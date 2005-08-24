@@ -274,6 +274,9 @@ char buf[MAX_LONGLINE];
 	if (!PARAM_HAVE_MEMCACHE)
 		deinit_MemCache();
 
+	if (!PARAM_HAVE_BINALLOC)
+		disable_BinAlloc();
+
 	umask(PARAM_UMASK);
 
 	if (chdir(PARAM_BASEDIR)) {

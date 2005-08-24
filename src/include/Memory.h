@@ -47,12 +47,18 @@ typedef struct {
 	int in_use;
 } MemFreeList;
 
+typedef struct {
+	int num, balance;
+	unsigned long size;
+} MemStats;
+
 int init_Memory(void);
 int init_MemCache(void);
 void deinit_MemCache(void);
 void *MemAlloc(unsigned long, int);
 void MemFree(void *);
 
+int get_MemStats(MemStats *, int);
 int get_MemFreeListInfo(int *);
 
 #endif	/* MEMORY_H_WJ100 */
