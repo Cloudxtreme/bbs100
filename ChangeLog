@@ -7,6 +7,8 @@ Changes as of August 24th 2005
   but hey ...
 - changed memory object cache to work independently from memory allocator
 - new memory Stats
+- bugfix, Home> would not be visible in the known rooms list when chat
+  rooms are not enabled, but Home> rooms are. Homes are always chat rooms
 
 Changes as of August 23rd 2005
 - new BinAlloc seems to be working alright

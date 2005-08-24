@@ -766,11 +766,8 @@ Room *r;
 			if (!PARAM_HAVE_HOMEROOM)
 				break;
 
-			if ((r = find_Home(usr->name)) != NULL) {
-				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
-					return NULL;
+			if ((r = find_Home(usr->name)) != NULL)
 				return r;
-			}
 			break;
 
 		default:
