@@ -17,9 +17,7 @@
      <key>p    Change <yellow>Super User<green> mode password
 
 <white>Ctrl-<key>R<green>    Schedule a reboot
-     <key>r    Cancel scheduled reboot
 <white>Ctrl-<key>S<green>    Schedule shutdown
-     <key>s    Cancel scheduled shutdown
      <key>n    Toggle nologin status; when set, nobody can login
      <key>$    Drop out of Sysop mode
 
