@@ -43,7 +43,8 @@ struct Joined_tag {
 	List(Joined);
 
 	unsigned int zapped, number, roominfo_read;
-	unsigned long generation, last_read;
+	unsigned long generation;
+	long last_read;
 };
 
 Joined *new_Joined(void);

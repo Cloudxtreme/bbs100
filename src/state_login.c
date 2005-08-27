@@ -460,11 +460,15 @@ int i, new_mail;
 	fix last_read field if too large (fix screwed up mail rooms)
 */
 	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL) {
-		if (usr->mail->msgs == NULL || usr->mail->msg_idx <= 0)
+		if (usr->mail->head_msg <= 0)
 			j->last_read = 0UL;
-		else
-			if (j->last_read > usr->mail->msgs[usr->mail->msg_idx-1])
-				j->last_read = usr->mail->msgs[usr->mail->msg_idx-1];
+		else {
+			if (j->last_read > usr->mail->head_msg) {
+				j->last_read = usr->mail->head_msg;
+				if (j->last_read < usr->mail->tail_msg)
+					j->last_read = usr->mail->tail_msg;
+			}
+		}
 	}
 	usr->runtime_flags &= ~RTF_BUSY;
 	usr->edit_buf[0] = 0;
@@ -838,7 +842,7 @@ User *u;
 
 	new_mail = 0;
 	if (PARAM_HAVE_MAILROOM && usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
-		&& newMsgs(usr->mail, j->last_read) >= 0) {
+		&& newMsgs(usr->mail, j->last_read) > j->last_read) {
 		new_mail = 1;
 		Put(usr, "\n<beep><cyan>You have new mail\n");
 	}

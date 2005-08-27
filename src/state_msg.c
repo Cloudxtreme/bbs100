@@ -375,7 +375,7 @@ StringIO *tmp;
 				Print(usr, "<green>Sending mail to <yellow>%s\n", sl->str);
 
 				if (u != NULL) {
-					newMsg(u->mail, usr->new_message->number, u);
+					newMsg(u->mail, u);
 					if (PARAM_HAVE_MAILROOM)
 						Tell(u, "<beep><cyan>You have new mail\n");
 				}
@@ -395,7 +395,7 @@ StringIO *tmp;
 				if (save_Message(usr->new_message, filename))
 					err++;
 				else
-					newMsg(usr->mail, usr->new_message->number, usr);
+					newMsg(usr->mail, usr);
 			}
 			if (err) {
 				Perror(usr, "Error sending mail");
@@ -425,7 +425,7 @@ StringIO *tmp;
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename)) {
-			newMsg(usr->curr_room, usr->new_message->number, usr);
+			newMsg(usr->curr_room, usr);
 			room_beep(usr, usr->curr_room);
 		} else {
 			err++;
@@ -597,37 +597,39 @@ void (*abort_func)(void *, char);
 void readMsg(User *usr) {
 char filename[MAX_PATHLEN];
 Joined *j;
-unsigned long msg_number;
 
 	if (usr == NULL)
 		return;
 
 	Enter(readMsg);
 
-	if (usr->curr_msg < 0 || usr->curr_msg >= usr->curr_room->msg_idx || usr->curr_room->msgs == NULL) {
-		Perror(usr, "The message you were attempting to read has all of a sudden vaporized");
-		RET(usr);
-		Return;
+	if (usr->curr_msg < usr->curr_room->tail_msg || usr->curr_msg > usr->curr_room->head_msg) {
+		usr->curr_msg = usr->curr_room->tail_msg;
+
+		if (usr->curr_msg == usr->curr_room->head_msg || usr->curr_room->head_msg <= 0L) {
+			Perror(usr, "The message you were attempting to read has all of a sudden vaporized");
+			RET(usr);
+			Return;
+		}
 	}
 	if ((j = in_Joined(usr->rooms, usr->curr_room->number)) == NULL) {
-		Perror(usr, "Suddenly you haven't joined this room ?");
+		Perror(usr, "Suddenly you haven't joined this room?");
 		RET(usr);
 		Return;
 	}
-	msg_number = usr->curr_room->msgs[usr->curr_msg];
-	if (msg_number > j->last_read)
-		j->last_read = msg_number;
+	if (usr->curr_msg > j->last_read)
+		j->last_read = usr->curr_msg;
 
 /* construct filename */
 	if (usr->curr_room == usr->mail)
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, msg_number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->curr_msg);
 	else
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, msg_number);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->curr_msg);
 	path_strip(filename);
 
 /* load the message */
 	destroy_Message(usr->message);
-	if ((usr->message = load_Message(filename, msg_number)) == NULL) {
+	if ((usr->message = load_Message(filename, usr->curr_msg)) == NULL) {
 		Perror(usr, "The message vaporizes as you attempt to read it");
 		RET(usr);
 		Return;
@@ -1408,8 +1410,10 @@ Joined *j;
 				j->generation = usr->mail->generation;
 			add_Joined(&usr->rooms, j);
 		}
-		if (usr->mail->msgs != NULL && usr->mail->msg_idx > 0 && usr->mail->msgs[usr->mail->msg_idx-1] > j->last_read)
+		if (usr->mail->head_msg > j->last_read) {
+			log_debug("mail->head == %ld, last_read == %ld, jumping to Mail>", usr->mail->head_msg, j->last_read);
 			return usr->mail;
+		}
 	}
 /*
 	scan for next unread rooms
@@ -1461,7 +1465,7 @@ Joined *j;
 	if ((j = joined_room(usr, r)) == NULL) {
 		Return NULL;
 	}
-	if (r->msgs != NULL && r->msg_idx > 0 && r->msgs[r->msg_idx-1] > j->last_read) {
+	if (r->head_msg > j->last_read) {
 		Return r;
 	}
 	Return NULL;

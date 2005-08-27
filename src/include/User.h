@@ -138,7 +138,7 @@ struct User_tag {
 
 	Conn *conn;
 
-	int edit_pos, curr_msg, read_lines, total_lines, crashed;
+	int edit_pos, read_lines, total_lines, crashed;
 	char edit_buf[MAX_LINE];
 
 	char name[MAX_NAME];
@@ -151,6 +151,7 @@ struct User_tag {
 	time_t birth, login_time, last_logout, online_timer, idle_time;
 	unsigned long logins, total_time, last_online_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, qsent, qansw, posted, read;
+	long curr_msg;
 	unsigned int flags, runtime_flags;
 	int colors[9], symbol_colors[8], color, msg_seq_recv, msg_seq_sent;
 

@@ -61,7 +61,6 @@ void destroy_Room(Room *r) {
 
 	Free(r->name);
 	Free(r->category);
-	Free(r->msgs);
 
 	listdestroy_StringList(r->room_aides);
 	listdestroy_StringList(r->kicked);
@@ -502,86 +501,73 @@ char buf[PRINT_BUF];
 }
 
 /*
-	this assumes msgs are sorted by number
 	returns first new message in the room (usr->curr_msg should be set to this)
 */
-int newMsgs(Room *r, unsigned long num) {
-int i;
+long newMsgs(Room *r, long num) {
+	if (r == NULL || r->head_msg <= 0L)
+		return -1L;
 
-	if (r == NULL || r->msg_idx <= 0)
-		return -1;
+	log_debug("newMsgs(): %s %ld %ld %ld", r->name, r->tail_msg, r->head_msg, num);
+	if (num < r->tail_msg)
+		return r->tail_msg;
 
-	if (num >= r->msgs[r->msg_idx-1])
-		return -1;
-/*
-	the search is backwards so that it is optimized for speed
-*/
-	for(i = r->msg_idx - 1; i >= 0; i--) {
-		if (r->msgs[i] <= num) {
-			i++;
-			return i;
-		}
-	}
-	return 0;
+	num++;
+	if (num > r->head_msg)
+		return -1L;
+
+	log_debug("newMsgs(): %s returning %ld", r->name, num);
+	return num;
 }
 
-void newMsg(Room *r, unsigned long number, User *usr) {
+/*
+	expire oldest message
+*/
+void expire_msg(Room *r, User *usr) {
 char filename[MAX_PATHLEN];
 
 	if (r == NULL)
-		return;
-
-	if (r->msgs == NULL && (r->msgs = (unsigned long *)Malloc(sizeof(unsigned long) * r->max_msgs, TYPE_LONG)) == NULL)
 		return;
 
 	if (r->number == MAIL_ROOM) {
 		if (usr == NULL)
 			filename[0] = 0;
 		else
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, r->msgs[0]);
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%ld", PARAM_USERDIR, usr->name[0], usr->name, r->tail_msg);
 	} else
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, r->number, r->msgs[0]);
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%ld", PARAM_ROOMDIR, r->number, r->tail_msg);
 
-	if (r->msg_idx >= r->max_msgs) {
+	if (r->head_msg - r->tail_msg > r->max_msgs) {
 		if (filename[0] && unlink_file(filename) == -1)
-			log_err("newMsg(): failed to delete file %s", filename);
+			log_err("expire_msg(): failed to delete file %s", filename);
 
-		memmove(r->msgs, &r->msgs[1], (r->max_msgs - 1) * sizeof(unsigned long));
-		r->msg_idx = r->max_msgs - 1;
+		r->tail_msg++;
+		r->flags |= ROOM_DIRTY;
 	}
-	r->msgs[r->msg_idx++] = number;
+}
+
+/*
+	post a new message and expire the oldest one
+*/
+void newMsg(Room *r, User *usr) {
+	if (r == NULL)
+		return;
+
+	expire_msg(r, usr);
+	r->head_msg++;
 	r->flags |= ROOM_DIRTY;
 }
 
 /*
 	size the maximum amount of messages in a Room
 */
-void resize_Room(Room *r, int newsize, User *usr) {
-unsigned long *old_idx, *new_idx;
-
-	if (r == NULL || newsize <= 0 || newsize == r->max_msgs)
+void resize_Room(Room *r, long newsize, User *usr) {
+	if (r == NULL || newsize <= 0L || newsize == r->max_msgs)
 		return;
 
-	if ((new_idx = (unsigned long *)Malloc(sizeof(unsigned long) * newsize, TYPE_LONG)) != NULL) {
-		int old_msg_idx;
+	r->max_msgs = newsize;
+	while(r->head_msg - r->tail_msg > r->max_msgs)
+		expire_msg(r, usr);
 
-		old_idx = r->msgs;
-		old_msg_idx = r->msg_idx;
-		r->msgs = new_idx;
-		r->msg_idx = 0;
-		r->max_msgs = newsize;
-/*
-	recurse; the only easy way to safely migrate to the new size
-*/
-		if (old_idx != NULL) {
-			int i;
-
-			for(i = 0; i < old_msg_idx; i++)
-				newMsg(r, old_idx[i], usr);
-
-			Free(old_idx);
-		}
-	}
 	r->flags |= ROOM_DIRTY;
 }
 
@@ -611,13 +597,13 @@ void room_readroomdir(Room *r, char *dirname, int buflen) {
 DIR *dirp;
 struct dirent *direntp;
 char *bufp;
-unsigned long num;
+long num;
 int len;
 
 	if (r == NULL || dirname == NULL || buflen <= 0)
 		return;
 
-	r->msg_idx = 0;
+	r->tail_msg = r->head_msg = 0L;
 	len = strlen(dirname);
 	bufp = dirname+len;
 
@@ -627,25 +613,23 @@ int len;
 	while((direntp = readdir(dirp)) != NULL) {
 		if (direntp->d_name[0] >= '0' && direntp->d_name[0] <= '9') {
 			cstrcpy(bufp, direntp->d_name, buflen - len);
-			num = cstrtoul(bufp, 10);
+			num = (long)cstrtoul(bufp, 10);
 
-			newMsg(r, num, NULL);
+			if (!r->tail_msg)
+				r->tail_msg = num;
+
+			if (num < r->tail_msg)
+				r->tail_msg = num;
+
+			if (num > r->head_msg)
+				r->head_msg = num;
 		}
 	}
 	closedir(dirp);
-	qsort(r->msgs, r->msg_idx, sizeof(unsigned long), (int (*)(const void *, const void *))msgs_sort_func);
-
-/*
-	newMsg() sets ROOM_DIRTY, but we're only just loading here
-*/
-	r->flags &= ~ROOM_DIRTY;
 }
 
-unsigned long room_top(Room *r) {
-	if (r == NULL || r->msgs == NULL || r->msg_idx <= 0)
-		return 0UL;
-
-	return r->msgs[r->msg_idx-1];
+long room_top(Room *r) {
+	return (r == NULL) ? 0L : r->head_msg;
 }
 
 Room *find_Room(User *usr, char *name) {

@@ -1,5 +1,7 @@
 Changes as of August 27th 2005
 - Read New shows number of new messages
+- removed room->msgs and changed it into a head and tail pointer
+  this saves memory and is hyper-efficient
 
 Changes as of August 24th 2005
 - cancel reboot works with same key as reboot

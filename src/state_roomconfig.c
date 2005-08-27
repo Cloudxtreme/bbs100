@@ -1043,7 +1043,7 @@ void state_remove_all_posts(User *usr, char c) {
 
 void remove_all_posts(Room *room) {
 char buf[MAX_PATHLEN];
-int idx;
+long num;
 User *u;
 
 	if (room == NULL)
@@ -1051,17 +1051,16 @@ User *u;
 
 	Enter(remove_all_posts);
 
-	for(idx = 0; idx < room->msg_idx; idx++) {
-		bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, room->msgs[idx]);
+	for(num = room->tail_msg; num <= room->head_msg; num++) {
+		bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, num);
 		path_strip(buf);
 		unlink_file(buf);
 
-		for(u = AllUsers; u != NULL; u = u->next)
-			if (u->curr_room == room && u->curr_msg == idx)
-				u->curr_msg = -1;
 	}
-	Free(room->msgs);
-	room->msgs = NULL;
+	for(u = AllUsers; u != NULL; u = u->next) {
+		if (u->curr_room == room)
+			u->curr_msg = -1L;
+	}
 	Return;
 }
 

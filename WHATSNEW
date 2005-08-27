@@ -119,8 +119,6 @@ What's new internally?
   (this saves memory)
 - ROOM_DIRTY flag prevents unnecessary saving of rooms
   (this is more efficient)
-- MsgIndex in a room is now an array
-  (less memory fragmentation)
 - Put() now calls Out(), which calls Out_text(), which does word-wrapping
   and auto-coloring of symbols
   (slow, but it looks cool)
@@ -136,6 +134,9 @@ What's new internally?
 - hostmap is no longer permanently loaded, but works through the file cache
 - BinAlloc memory allocator minimizes fragmentation
   (bins of a different type but the same size are linked together)
+- rooms no longer keep an index of messages, but only a head and tail
+  pointer
+  (this saves memory and is much, much faster)
 - some bugs fixed ...
 
 

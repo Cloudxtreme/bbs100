@@ -80,8 +80,9 @@ struct Room_tag {
 	List(Room);
 
 	char *name, *category;
-	unsigned int number, flags, roominfo_changed, msg_idx, max_msgs;
-	unsigned long generation, *msgs;
+	unsigned int number, flags, roominfo_changed;
+	unsigned long generation;
+	long tail_msg, head_msg, max_msgs;
 	StringList *room_aides, *kicked, *invited, *chat_history;
 	StringIO *info;
 	PList *inside;		/* list of pointers to online users (chat room only) */
@@ -105,13 +106,13 @@ int load_roominfo(Room *, char *);
 int save_Room(Room *);
 int save_Room_version1(File *, Room *);
 
-void newMsg(Room *, unsigned long, User *);
-int newMsgs(Room *, unsigned long);
-void resize_Room(Room *, int, User *);
+void newMsg(Room *, User *);
+long newMsgs(Room *, long);
+void resize_Room(Room *, long, User *);
 void room_readdir(Room *);
 void room_readmaildir(Room *, char *);
 void room_readroomdir(Room *, char *, int);
-unsigned long room_top(Room *);
+long room_top(Room *);
 
 int init_Room(void);
 Room *find_Room(User *, char *);

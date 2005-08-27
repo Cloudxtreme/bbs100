@@ -420,7 +420,7 @@ char signame_buf[MAX_SIGNAME];
 */
 void sig_mail(int sig) {
 User *u;
-unsigned long old_mail, new_mail;
+unsigned long old_mail;
 
 	if (!PARAM_HAVE_MAILROOM)
 		return;
@@ -431,20 +431,11 @@ unsigned long old_mail, new_mail;
 		if (u->mail == NULL)
 			continue;
 
-		old_mail = 0UL;	
-		if (u->mail->msgs != NULL && u->mail->msg_idx > 0)
-			old_mail = u->mail->msgs[u->mail->msg_idx-1];
-
-		Free(u->mail->msgs);
-		u->mail->msgs = NULL;
+		old_mail = u->mail->head_msg;	
 
 		room_readmaildir(u->mail, u->name);
 
-		new_mail = 0UL;	
-		if (u->mail->msgs != NULL && u->mail->msg_idx > 0)
-			new_mail = u->mail->msgs[u->mail->msg_idx-1];
-
-		if (old_mail != new_mail)
+		if (old_mail != u->mail->head_msg)
 			Tell(u, "<beep><cyan>You have new mail\n");
 	}
 	Return;

@@ -521,12 +521,13 @@ int term_width, term_height, ff1_continue;
 			Room *r;
 			char zapped;
 			unsigned int number, roominfo_read;
-			unsigned long generation, last_read;
+			unsigned long generation;
+			long last_read;
 /*
 	When loading joined rooms, we have to check whether the room still exists,
 	whether the room has changed or not, and whether we're still welcome there
 */
-			if (sscanf(p, "%c %u %lu %lu %u", &zapped, &number, &generation,
+			if (sscanf(p, "%c %u %lu %ld %u", &zapped, &number, &generation,
 				&last_read, &roominfo_read) != 5)
 				FF1_ERROR;
 
@@ -539,11 +540,10 @@ int term_width, term_height, ff1_continue;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			if (r->msgs == NULL || r->msg_idx <= 0)
-				last_read = 0UL;
-			else
-				if (last_read > r->msgs[r->msg_idx-1])
-					last_read = r->msgs[r->msg_idx-1];
+			if (last_read < r->tail_msg)
+				last_read = r->tail_msg;
+			if (last_read > r->head_msg)
+				last_read = r->head_msg;
 
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
@@ -798,7 +798,8 @@ int i;
 		Room *r;
 		char zapped;
 		unsigned int number, roominfo_read;
-		unsigned long generation, last_read;
+		unsigned long generation;
+		long last_read;
 		int load_room_flags;
 
 		listdestroy_Joined(usr->rooms);
@@ -822,7 +823,7 @@ int i;
 			if (!*buf)
 				break;
 
-			if (sscanf(buf, "%c %u %lu %lu %u", &zapped, &number, &generation,
+			if (sscanf(buf, "%c %u %lu %ld %u", &zapped, &number, &generation,
 				&last_read, &roominfo_read) != 5)
 				goto err_load_User;
 
@@ -835,11 +836,10 @@ int i;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			if (r->msgs == NULL || r->msg_idx <= 0)
-				last_read = 0UL;
-			else
-				if (last_read > r->msgs[r->msg_idx-1])
-					last_read = r->msgs[r->msg_idx-1];
+			if (last_read < r->tail_msg)
+				last_read = r->tail_msg;
+			if (last_read > r->head_msg)
+				last_read = r->head_msg;
 
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
@@ -1131,7 +1131,7 @@ char buf[PRINT_BUF];
 			Fprintf(f, "quick=%d %s", i, usr->quick[i]);
 
 	for(j = usr->rooms; j != NULL; j = j->next)
-		Fprintf(f, "rooms=%c %u %lu %lu %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
+		Fprintf(f, "rooms=%c %u %lu %ld %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
 			j->generation, j->last_read, j->roominfo_read);
 
 	FF1_SAVE_STRINGLIST("friends", usr->friends);
