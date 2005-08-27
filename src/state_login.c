@@ -758,7 +758,7 @@ int r;
 }
 
 int print_user_status(User *usr) {
-int num_users = 0, num_friends = 0, new_mail;
+int num_users, num_friends, all_users, new_mail;
 Joined *j;
 User *u;
 
@@ -772,11 +772,13 @@ User *u;
 			Put(usr, "<magenta>You are available to help others\n");
 	}
 /* count number of users online */
+	num_users = num_friends = all_users = 0;
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u == usr)
 			continue;
 
 		if (u->name[0]) {
+			all_users++;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
@@ -803,6 +805,8 @@ User *u;
 				Print(usr, "<green>There are <yellow>%d<green> other users online\n", num_users);
 		}
 	}
+	log_info("%d users online", all_users);
+
 	if (usr->flags & USR_X_DISABLED)
 		Put(usr, "<magenta>Message reception is turned off\n");
 

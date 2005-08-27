@@ -731,7 +731,6 @@ char num_buf[MAX_NUMBER];
 					Perror(usr, "All of a sudden you haven't joined the current room ?");
 					break;
 				}
-				log_debug("checking NewMsgs()");
 				if ((usr->curr_msg = newMsgs(usr->curr_room, j->last_read)) >= 0L) {
 					long new_msgs;
 
@@ -744,7 +743,6 @@ char num_buf[MAX_NUMBER];
 					Room *r;
 
 					r = next_unread_room(usr);
-					log_debug("next unread room == %s", (r == NULL) ? "(null)" : r->name);
 					if (r != usr->curr_room) {
 						Print(usr, "<white>Goto <yellow>%s<white>\n", r->name);
 						goto_room(usr, r);
@@ -753,12 +751,10 @@ char num_buf[MAX_NUMBER];
 				}
 			} else {
 				usr->curr_msg++;
-				log_debug("read: curr_msg == %ld, head == %ld", usr->curr_msg, usr->curr_room->head_msg);
 				if (usr->curr_msg <= usr->curr_room->head_msg) {
 					Put(usr, "<white>Read Next\n");
 					PUSH(usr, STATE_ROOM_PROMPT);
 					readMsg(usr);
-					log_debug("read: curr_msg == %ld afterwards", usr->curr_msg);
 					Return;
 				} else {
 					usr->curr_msg = -1L;

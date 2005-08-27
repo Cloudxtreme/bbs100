@@ -507,7 +507,6 @@ long newMsgs(Room *r, long num) {
 	if (r == NULL || r->head_msg <= 0L)
 		return -1L;
 
-	log_debug("newMsgs(): %s %ld %ld %ld", r->name, r->tail_msg, r->head_msg, num);
 	if (num < r->tail_msg)
 		return r->tail_msg;
 
@@ -515,7 +514,6 @@ long newMsgs(Room *r, long num) {
 	if (num > r->head_msg)
 		return -1L;
 
-	log_debug("newMsgs(): %s returning %ld", r->name, num);
 	return num;
 }
 
