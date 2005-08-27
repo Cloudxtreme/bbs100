@@ -31,13 +31,17 @@
 #define WHO_LIST_SHORT	0
 #define WHO_LIST_LONG	1
 
+#define PROFILE_LONG	0
+#define PROFILE_SHORT	1
+
 #define STATE_DUMMY						state_dummy
 #define STATE_X_PROMPT					state_x_prompt
 #define STATE_RECIPIENTS_ERR			state_recipients_err
 #define STATE_EMOTE_PROMPT				state_emote_prompt
 #define STATE_FEELINGS_PROMPT			state_feelings_prompt
 #define STATE_PING_PROMPT				state_ping_prompt
-#define STATE_PROFILE_USER				state_profile_user
+#define STATE_SHORT_PROFILE				state_short_profile
+#define STATE_LONG_PROFILE				state_long_profile
 #define STATE_EDIT_EMOTE				state_edit_emote
 #define STATE_EDIT_X					state_edit_x
 #define STATE_EDIT_QUESTION				state_edit_question
@@ -66,7 +70,9 @@ void state_ansi_prompt(User *, char);
 void state_emote_prompt(User *, char);
 void state_feelings_prompt(User *, char);
 void state_ping_prompt(User *, char);
-void state_profile_user(User *, char);
+void print_profile(User *, int);
+void state_short_profile(User *, char);
+void state_long_profile(User *, char);
 void state_su_prompt(User *, char);
 void state_lock_password(User *, char);
 void state_boss(User *, char);

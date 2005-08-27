@@ -1632,7 +1632,7 @@ void state_config_options(User *usr, char c) {
 				"Beep on e<hotkey>Xpress message arrival      <white>%s<magenta>\n"
 				"Messages have <hotkey>sequence numbers       <white>%s<magenta>\n"
 				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
-				"Mult<hotkey>i message reception is ...       <white>%s<magenta>\n",
+				"M<hotkey>ulti message reception is ...       <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
 				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
@@ -1650,14 +1650,18 @@ void state_config_options(User *usr, char c) {
 			);
 			Print(usr, "\n"
 				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
-				"\n"
-				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
-				"Hide <hotkey>profile info from enemies       <white>%s<magenta>\n",
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
 
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
+			);
+			Print(usr, "\n"
+				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
+				"Default <hotkey>profile info is ...          <white>%s<magenta>\n"
+				"Hide profile <hotkey>info from enemies       <white>%s<magenta>\n",
+
 				(usr->flags & USR_FRIEND_NOTIFY) ? "On" : "Off",
+				(usr->flags & USR_SHORT_PROFILE) ? "Short" : "Long",
 				(usr->flags & USR_HIDE_INFO) ? "Yes" : "No"
 			);
 			read_menu(usr);
@@ -1693,8 +1697,8 @@ void state_config_options(User *usr, char c) {
 			CURRENT_STATE(usr);
 			Return;
 
-		case 'i':
-		case 'I':
+		case 'u':
+		case 'U':
 			usr->flags ^= USR_DENY_MULTI;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Print(usr, "%s multi message reception\n", (usr->flags & USR_DENY_MULTI) ? "Disable" : "Enable");
@@ -1739,6 +1743,10 @@ void state_config_options(User *usr, char c) {
 
 		case 'p':
 		case 'P':
+			CONFIG_OPTION(USR_SHORT_PROFILE, "Profile");
+
+		case 'i':
+		case 'I':
 			CONFIG_OPTION(USR_HIDE_INFO, "Hide profile information");
 	}
 	Print(usr, "<yellow>\n[Config] Options%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');

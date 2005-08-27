@@ -179,7 +179,10 @@ int fun_common(User *usr, char c) {
 				} else
 					usr->recipients = new_StringList(usr->message->from);
 			}
-			enter_name(usr, STATE_PROFILE_USER);
+			if (c == 'p')
+				enter_name(usr, STATE_LONG_PROFILE);
+			else
+				enter_name(usr, STATE_SHORT_PROFILE);
 			Return 1;
 
 		case 'X':
@@ -590,49 +593,45 @@ void loop_ping(User *usr, char c) {
 	Return;
 }
 
-void state_profile_user(User *usr, char c) {
-int r;
+/*
+	flags are not really flags, but it's either PROFILE_LONG or PROFILE_SHORT
+*/
+void print_profile(User *usr, int flags) {
+User *u = NULL;
+int allocated = 0, visible;
+char total_buf[MAX_LINE], *hidden;
 
 	if (usr == NULL)
 		return;
 
-	Enter(state_profile_user);
+	Enter(print_profile);
 
-	r = edit_tabname(usr, c);
-	if (r == EDIT_BREAK) {
+	if (!usr->edit_buf[0]) {
 		RET(usr);
 		Return;
 	}
-	if (r == EDIT_RETURN) {
-		User *u = NULL;
-		int allocated = 0, visible;
-		char total_buf[MAX_LINE], *hidden;
-
-		if (!usr->edit_buf[0]) {
-			RET(usr);
-			Return;
-		}
-		if (!strcmp(usr->edit_buf, "Sysop") || !strcmp(usr->edit_buf, PARAM_NAME_SYSOP)) {
-			if (su_passwd == NULL)
-				Print(usr, "<red>There are no %ss on this BBS <white>(!)\n", PARAM_NAME_SYSOP);
+	if (!strcmp(usr->edit_buf, "Sysop") || !strcmp(usr->edit_buf, PARAM_NAME_SYSOP)) {
+		if (su_passwd == NULL)
+			Print(usr, "<red>There are no %ss on this BBS <white>(!)\n", PARAM_NAME_SYSOP);
+		else {
+			if (su_passwd->next == NULL)
+				Print(usr, "<yellow>%s is: %s\n", PARAM_NAME_SYSOP, su_passwd->key);
 			else {
-				if (su_passwd->next == NULL)
-					Print(usr, "<yellow>%s is: %s\n", PARAM_NAME_SYSOP, su_passwd->key);
-				else {
-					KVPair *su;
+				KVPair *su;
 
-					Print(usr, "<yellow>%ss are: ", PARAM_NAME_SYSOP);
-					for(su = su_passwd; su != NULL && su->next != NULL; su = su->next)
-						Print(usr, "%s, ", su->key);
-					Print(usr, "%s\n", su->key);
-				}
+				Print(usr, "<yellow>%ss are: ", PARAM_NAME_SYSOP);
+				for(su = su_passwd; su != NULL && su->next != NULL; su = su->next)
+					Print(usr, "%s, ", su->key);
+				Print(usr, "%s\n", su->key);
 			}
-			RET(usr);
-			Return;
 		}
-		if (is_guest(usr->edit_buf)) {
-			Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
+		RET(usr);
+		Return;
+	}
+	if (is_guest(usr->edit_buf)) {
+		Print(usr, "<green>The <yellow>%s<green> user is a visitor from far away\n", PARAM_NAME_GUEST);
 
+		if (flags == PROFILE_LONG) {
 			if ((u = is_online(usr->edit_buf)) != NULL) {
 				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf, MAX_LINE));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
@@ -644,67 +643,69 @@ int r;
 				if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
 					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, total_buf);
 			}
+		}
+		RET(usr);
+		Return;
+	}
+	if (!user_exists(usr->edit_buf)) {
+		Put(usr, "<red>No such user\n");
+
+		listdestroy_StringList(usr->recipients);
+		usr->recipients = NULL;
+
+		RET(usr);
+		Return;
+	}
+	if ((u = is_online(usr->edit_buf)) == NULL) {
+		listdestroy_StringList(usr->recipients);	/* don't put name in history */
+		usr->recipients = NULL;
+
+		if ((u = new_User()) == NULL) {
+			Perror(usr, "Out of memory");
 			RET(usr);
 			Return;
 		}
-		if (!user_exists(usr->edit_buf)) {
-			Put(usr, "<red>No such user\n");
-
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
-
+		if ((u->conn = new_Conn()) == NULL) {
+			destroy_User(u);
+			Perror(usr, "Out of memory");
 			RET(usr);
 			Return;
 		}
-		if ((u = is_online(usr->edit_buf)) == NULL) {
-			listdestroy_StringList(usr->recipients);	/* don't put name in history */
-			usr->recipients = NULL;
+		allocated = 1;
 
-			if ((u = new_User()) == NULL) {
-				Perror(usr, "Out of memory");
-				RET(usr);
-				Return;
-			}
-			if ((u->conn = new_Conn()) == NULL) {
-				destroy_User(u);
-				Perror(usr, "Out of memory");
-				RET(usr);
-				Return;
-			}
-			allocated = 1;
-
-			if (load_User(u, usr->edit_buf,
-				LOAD_USER_ALL & ~(LOAD_USER_ROOMS | LOAD_USER_PASSWORD | LOAD_USER_QUICKLIST))) {
-				Print(usr, "<red>Error loading user <yellow>%s\n", usr->edit_buf);
-				log_err("state_profile_user(): failed to load user %s", usr->edit_buf);
-				RET(usr);
-				Return;
-			}
+		if (load_User(u, usr->edit_buf,
+			LOAD_USER_ALL & ~(LOAD_USER_ROOMS | LOAD_USER_PASSWORD | LOAD_USER_QUICKLIST))) {
+			Print(usr, "<red>Error loading user <yellow>%s\n", usr->edit_buf);
+			log_err("state_profile_user(): failed to load user %s", usr->edit_buf);
+			RET(usr);
+			Return;
+		}
 /* load the proper hostname */
-			cstrcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST], MAX_LINE);
-		} else {
-			load_profile_info(u);
+		cstrcpy(u->conn->hostname, u->tmpbuf[TMP_FROM_HOST], MAX_LINE);
+	} else {
+		load_profile_info(u);
 
-			listdestroy_StringList(usr->recipients);		/* place entered name in history */
-			usr->recipients = new_StringList(usr->edit_buf);
-		}
+		listdestroy_StringList(usr->recipients);		/* place entered name in history */
+		usr->recipients = new_StringList(usr->edit_buf);
+	}
 /*
 	make the profile
 */
-		buffer_text(usr);
-		Put(usr, "<white>");
+	buffer_text(usr);
+	Put(usr, "<white>");
 
-		if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
-			char fmt[16];
+	if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
+		char fmt[16];
 
-			bufprintf(fmt, 16, "%%-%ds", MAX_NAME + 10);
-			Print(usr, fmt, u->name);
-			Print(usr, "<magenta>* <white>%s <magenta>*", u->vanity);
-		} else
-			Put(usr, u->name);
+		bufprintf(fmt, 16, "%%-%ds", MAX_NAME + 10);
+		Print(usr, fmt, u->name);
+		Print(usr, "<magenta>* <white>%s <magenta>*", u->vanity);
+	} else
+		Put(usr, u->name);
 
-		Put(usr, "\n");
+	Put(usr, "\n");
 
+	if (flags == PROFILE_LONG) {
 		visible = 1;
 		hidden = "";
 		if (((u->flags & USR_HIDE_ADDRESS) && in_StringList(u->friends, usr->name) == NULL)
@@ -754,24 +755,29 @@ int r;
 			else
 				Print(usr, "<green>Doing: <yellow>%s <cyan>%s\n", u->name, u->doing);
 		}
-		if (allocated) {
-			char date_buf[MAX_LINE], online_for[MAX_LINE+10];
+	}
+	if (allocated) {
+		char date_buf[MAX_LINE], online_for[MAX_LINE+10];
 
-			if (u->last_online_time > 0UL) {
-				int l;
+		if (u->last_online_time > 0UL) {
+			int l;
 
-				l = bufprintf(online_for, MAX_LINE+10, "%c for %c", color_by_name("green"), color_by_name("yellow"));
-				print_total_time(u->last_online_time, online_for+l, MAX_LINE+10-l);
-			} else
-				online_for[0] = 0;
+			l = bufprintf(online_for, MAX_LINE+10, "%c for %c", color_by_name("green"), color_by_name("yellow"));
+			print_total_time(u->last_online_time, online_for+l, MAX_LINE+10-l);
+		} else
+			online_for[0] = 0;
 
-			Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf, MAX_LINE), online_for);
+		Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf, MAX_LINE), online_for);
+
+		if (flags == PROFILE_LONG) {
 			if (usr->runtime_flags & RTF_SYSOP)
 				Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
 
 			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
 				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, total_buf);
-		} else {
+		}
+	} else {
+		if (flags == PROFILE_LONG) {
 /*
 	display for how long someone is online
 */
@@ -785,48 +791,93 @@ int r;
 			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
 				Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, total_buf);
 		}
-		if (!allocated)
-			update_stats(u);
+	}
+	if (!allocated)
+		update_stats(u);
+
+	if (flags == PROFILE_LONG)
 		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf, MAX_LINE));
 
-		if (u->flags & USR_X_DISABLED)
-			Print(usr, "<red>%s has message reception turned off\n", u->name);
+	if (u->flags & USR_X_DISABLED)
+		Print(usr, "<red>%s has message reception turned off\n", u->name);
 
+	if (flags == PROFILE_LONG) {
 		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
 
 			bufprintf(namebuf, MAX_NAME+20, "<yellow>%s<green>", u->name);
 			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf, MAX_LINE));
 		}
-		visible = 1;
-		if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
-			&& (u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)
-			visible = 0;
-
-		if (visible && in_StringList(u->enemies, usr->name) != NULL)
-			Print(usr, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
-
-		if (visible && u->info != NULL && u->info->buf != NULL) {
-			Put(usr, "<green>\n");
-			concat_StringIO(usr->text, u->info);
-		}
-		if (!PARAM_HAVE_RESIDENT_INFO) {
-			destroy_StringIO(u->info);
-			u->info = NULL;
-		}
-		if (usr->message != NULL && usr->message->anon != NULL && usr->message->anon[0]
-			&& !strcmp(usr->message->from, u->name)
-			&& strcmp(usr->message->from, usr->name))
-			log_msg("%s profiled anonymous post", usr->name);
-
-		if (allocated) {
-			destroy_Conn(u->conn);
-			u->conn = NULL;
-			destroy_User(u);
-		}
-		POP(usr);
-		read_text(usr);
 	}
+	visible = 1;
+	if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
+		&& (u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)
+		visible = 0;
+
+	if (visible && in_StringList(u->enemies, usr->name) != NULL)
+		Print(usr, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
+
+	if (visible && u->info != NULL && u->info->buf != NULL) {
+		Put(usr, "<green>\n");
+		concat_StringIO(usr->text, u->info);
+	}
+	if (!PARAM_HAVE_RESIDENT_INFO) {
+		destroy_StringIO(u->info);
+		u->info = NULL;
+	}
+	if (usr->message != NULL && usr->message->anon != NULL && usr->message->anon[0]
+		&& !strcmp(usr->message->from, u->name)
+		&& strcmp(usr->message->from, usr->name))
+		log_msg("%s profiled anonymous post", usr->name);
+
+	if (allocated) {
+		destroy_Conn(u->conn);
+		u->conn = NULL;
+		destroy_User(u);
+	}
+	POP(usr);
+	read_text(usr);
+	Return;
+}
+
+void state_short_profile(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_short_profile);
+
+	r = edit_tabname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+/*
+	mind that a long profile is default
+*/
+	if (r == EDIT_RETURN)
+		print_profile(usr, (usr->flags & USR_SHORT_PROFILE) ? PROFILE_LONG : PROFILE_SHORT);
+
+	Return;
+}
+
+void state_long_profile(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_long_profile);
+
+	r = edit_tabname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN)
+		print_profile(usr, (usr->flags & USR_SHORT_PROFILE) ? PROFILE_SHORT : PROFILE_LONG);
+
 	Return;
 }
 
