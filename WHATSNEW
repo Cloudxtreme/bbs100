@@ -67,6 +67,7 @@ There are a lot of new options in the Config menu:
   (this is a change; 's' used to be Stop reading, but it was annoying.
   To stop reading, enter something like '+1000' to go to the last post
   in the room)
+- Read New shows the number of new messages
 
 
 What's new to the admins?

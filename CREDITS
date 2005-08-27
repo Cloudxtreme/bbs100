@@ -233,3 +233,6 @@ Version 3.0:
 - Cancel reboot/shutdown work with the same keys as reboot/shutdown
   This is really an idea by News (although he never did make the
   suggestion to implement it as such in bbs100)
+
+- English Buchanan suggested that Read New shows the number of new
+  messages

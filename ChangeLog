@@ -1,3 +1,6 @@
+Changes as of August 27th 2005
+- Read New shows number of new messages
+
 Changes as of August 24th 2005
 - cancel reboot works with same key as reboot
   this kills the functionality of reprogramming a running reboot timer,

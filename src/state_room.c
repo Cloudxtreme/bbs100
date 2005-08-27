@@ -741,7 +741,7 @@ char num_buf[MAX_NUMBER];
 					break;
 				}
 				if ((usr->curr_msg = newMsgs(usr->curr_room, j->last_read)) >= 0) {
-					Put(usr, "<white>Read New\n");
+					Print(usr, "<white>Read New (%d new messages)\n", usr->curr_room->msg_idx - usr->curr_msg);
 					PUSH(usr, STATE_ROOM_PROMPT);
 					readMsg(usr);
 					Return;
