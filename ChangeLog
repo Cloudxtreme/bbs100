@@ -4,6 +4,7 @@ Changes as of August 27th 2005
   this saves memory and is hyper-efficient
 - fixed bug; no new rooms could be created when room list was sorted by
   category
+- who list room for sysops removed (could be used to spy on users)
 
 Changes as of August 24th 2005
 - cancel reboot works with same key as reboot

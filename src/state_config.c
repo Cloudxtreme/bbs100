@@ -299,7 +299,7 @@ char buf[MAX_LONGLINE];
 			Print(usr, "<hotkey>WWW       :%s<magenta>\n",	print_address(usr->www, " WWW address", buf, MAX_LONGLINE));
 
 			Print(usr, "\n"
-				"<hotkey>Hide address from non-friends...  <white>%s<magenta>\n",
+				"<hotkey>Hide address from non-friends     <white>%s<magenta>\n",
 
 				(usr->flags & USR_HIDE_ADDRESS) ? "Yes" : "No"
 			);
@@ -1555,11 +1555,6 @@ void state_config_who(User *usr, char c) {
 				"Show online <hotkey>enemies          <white>%s<magenta>\n",
 				(usr->flags & USR_SHOW_ENEMIES)    ? "Yes"        : "No"
 			);
-			if (usr->runtime_flags & RTF_SYSOP)
-				Print(usr, "\n"
-					"<magenta><hotkey>Who is in this room         <white> (for %ss only)<magenta>\n", PARAM_NAME_SYSOP
-				);
-
 			read_menu(usr);
 			Return;
 
@@ -1606,27 +1601,6 @@ void state_config_who(User *usr, char c) {
 			usr->flags ^= USR_SHOW_ENEMIES;
 			Print(usr, "%s enemies\n", (usr->flags & USR_SHOW_ENEMIES) ? "Show" : "Don't show");
 			CURRENT_STATE(usr);
-			Return;
-
-		case 'w':
-		case KEY_CTRL('W'):
-			if (!(usr->runtime_flags & RTF_SYSOP))
-				break;
-
-			PUSH(usr, state_config_who_sysop);
-
-			Put(usr, "Who\n");
-			who_list(usr, WHO_LIST_LONG | WHO_LIST_ROOM);
-			Return;
-
-		case 'W':
-			if (!(usr->runtime_flags & RTF_SYSOP))
-				break;
-
-			PUSH(usr, state_config_who_sysop);
-
-			Put(usr, "Who\n");
-			who_list(usr, WHO_LIST_SHORT | WHO_LIST_ROOM);
 			Return;
 	}
 	Print(usr, "<yellow>\n[Config] Who%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');

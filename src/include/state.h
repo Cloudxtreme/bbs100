@@ -30,7 +30,6 @@
 
 #define WHO_LIST_SHORT	0
 #define WHO_LIST_LONG	1
-#define WHO_LIST_ROOM	2
 
 #define STATE_DUMMY						state_dummy
 #define STATE_X_PROMPT					state_x_prompt

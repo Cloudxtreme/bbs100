@@ -1572,10 +1572,10 @@ int total;
 
 	Enter(who_list);
 
-/* construct PList of Users (optimized for speed) */
+/* construct PList of Users */
 
-	if ((format & WHO_LIST_ROOM) || (usr->curr_room != NULL
-		&& (usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
+	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)
+		&& !(usr->flags & USR_SHOW_ALL)) {
 		PList *p;
 
 		for(p = usr->curr_room->inside; p != NULL; p = p->next) {
@@ -1853,7 +1853,7 @@ struct tm *tm;
 	if ((usr->flags & USR_12HRCLOCK) && (tm->tm_hour > 12))
 		tm->tm_hour -= 12;
 
-	if ((drawline & WHO_LIST_ROOM) || ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL))) {
+	if ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->flags & USR_SHOW_ALL)) {
 		if (total == 1)
 			Print(usr, "<green>You are the only one in <yellow>%s>\n", usr->curr_room->name);
 		else

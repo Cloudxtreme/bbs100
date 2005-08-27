@@ -94,6 +94,8 @@ What's new to the admins?
 - when locked, Sysops must use their Sysop password to unlock
 - sysop menu shows extensive information on the BinAlloc memory allocator
 - Lobby> can be a chat room without problems
+- who-list for a room has been removed to respect the privacy of the users
+
 
 What's new internally?
 - IPv6 capable networking code
