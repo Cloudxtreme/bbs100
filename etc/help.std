@@ -27,6 +27,7 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
      <key>0-<key>9  Quick send eXpress Message
 <white>Ctrl-<key>Q<green>    Quickview quicklist
      <key>p    Profile user
+     <key>P    Short profile user
      <key>>    Edit friend list
      <key><    Block users; edit enemy list
      <key>t    Time and date
