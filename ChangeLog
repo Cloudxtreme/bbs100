@@ -7,6 +7,7 @@ Changes as of August 27th 2005
 - who list room for sysops removed (could be used to spy on users)
 - log # of users online
 - long/short profile info
+- sysop can see user 'BBS birth date' in profile
 
 Changes as of August 24th 2005
 - cancel reboot works with same key as reboot

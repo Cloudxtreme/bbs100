@@ -97,6 +97,8 @@ What's new to the admins?
 - sysop menu shows extensive information on the BinAlloc memory allocator
 - Lobby> can be a chat room without problems
 - who-list for a room has been removed to respect the privacy of the users
+- long profile shows user's BBS birth date
+  (users can see theirs in the Statistics screen)
 
 
 What's new internally?

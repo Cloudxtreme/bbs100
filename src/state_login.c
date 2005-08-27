@@ -516,7 +516,7 @@ int i, new_mail;
 			online_for[0] = 0;
 
 		if (usr->tmpbuf[TMP_FROM_HOST] != NULL && usr->tmpbuf[TMP_FROM_HOST][0])
-			Print(usr, "\n<green>Last login was on <cyan>%s%s<green> from host<yellow> %s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for, usr->tmpbuf[TMP_FROM_HOST]);
+			Print(usr, "\n<green>Last login was on <cyan>%s%s<green> from<yellow> %s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for, usr->tmpbuf[TMP_FROM_HOST]);
 		else
 			Print(usr, "\n<green>Last login was on <cyan>%s%s\n", print_date(usr, usr->last_logout, date_buf, MAX_LINE), online_for);
 	}

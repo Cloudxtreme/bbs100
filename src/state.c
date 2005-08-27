@@ -633,15 +633,17 @@ char total_buf[MAX_LINE], *hidden;
 
 		if (flags == PROFILE_LONG) {
 			if ((u = is_online(usr->edit_buf)) != NULL) {
-				Print(usr, "<green>Online for <cyan>%s\n", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf, MAX_LINE));
+				Print(usr, "<green>Online for <cyan>%s", print_total_time((unsigned long)rtc - (unsigned long)u->login_time, total_buf, MAX_LINE));
 				if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 					if (usr->runtime_flags & RTF_SYSOP)
-						Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
+						Print(usr, "<green> from<yellow> %s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
 					else
-						Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
-				}
+						Print(usr, "<green> from<yellow> %s\n", u->conn->hostname);
+				} else
+					Put(usr, "\n");
+
 				if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
-					Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", usr->edit_buf, total_buf);
+					Print(usr, "<yellow>%s<green> is connected from<yellow> %s\n", usr->edit_buf, total_buf);
 			}
 		}
 		RET(usr);
@@ -767,37 +769,42 @@ char total_buf[MAX_LINE], *hidden;
 		} else
 			online_for[0] = 0;
 
-		Print(usr, "<green>Last online: <cyan>%s%s\n", print_date(usr, (time_t)u->last_logout, date_buf, MAX_LINE), online_for);
+		Print(usr, "<green>Last online: <cyan>%s%s", print_date(usr, (time_t)u->last_logout, date_buf, MAX_LINE), online_for);
+		if (usr->runtime_flags & RTF_SYSOP)
+			Print(usr, "<green> from<yellow> %s<white> [%s]\n", u->tmpbuf[TMP_FROM_HOST], u->tmpbuf[TMP_FROM_IP]);
+		else
+			Put(usr, "\n");
 
 		if (flags == PROFILE_LONG) {
-			if (usr->runtime_flags & RTF_SYSOP)
-				Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->tmpbuf[TMP_FROM_IP]);
-
-			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
-				Print(usr, "<yellow>%s<green> was connected from <yellow>%s\n", u->name, total_buf);
+			if (site_description(u->tmpbuf[TMP_FROM_IP], total_buf, MAX_LINE) != NULL)
+				Print(usr, "<yellow>%s<green> was connected from<yellow> %s\n", u->name, total_buf);
 		}
 	} else {
 		if (flags == PROFILE_LONG) {
 /*
 	display for how long someone is online
 */
-			Print(usr, "<green>Online for <cyan>%s\n", print_total_time(rtc - u->login_time, total_buf, MAX_LINE));
+			Print(usr, "<green>Online for <cyan>%s", print_total_time(rtc - u->login_time, total_buf, MAX_LINE));
 			if (u == usr || (usr->runtime_flags & RTF_SYSOP)) {
 				if (usr->runtime_flags & RTF_SYSOP)
-					Print(usr, "<green>From host: <yellow>%s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
+					Print(usr, "<green> from<yellow> %s<white> [%s]\n", u->conn->hostname, u->conn->ipnum);
 				else
-					Print(usr, "<green>From host: <yellow>%s\n", u->conn->hostname);
-			}
+					Print(usr, "<green> from<yellow> %s\n", u->conn->hostname);
+			} else
+				Put(usr, "\n");
+
 			if (site_description(u->conn->ipnum, total_buf, MAX_LINE) != NULL)
-				Print(usr, "<yellow>%s<green> is connected from <yellow>%s\n", u->name, total_buf);
+				Print(usr, "<yellow>%s<green> is connected from<yellow> %s\n", u->name, total_buf);
 		}
 	}
 	if (!allocated)
 		update_stats(u);
 
-	if (flags == PROFILE_LONG)
+	if (flags == PROFILE_LONG) {
+		if (usr->runtime_flags & RTF_SYSOP)
+			Print(usr, "<green>First login was on <cyan>%s\n", print_date(usr, u->birth, total_buf, MAX_LINE));
 		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf, MAX_LINE));
-
+	}
 	if (u->flags & USR_X_DISABLED)
 		Print(usr, "<red>%s has message reception turned off\n", u->name);
 
