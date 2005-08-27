@@ -41,7 +41,7 @@ int r;
 	Enter(change_int_param);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
+		Print(usr, "<green>Enter new value<white> [%d]: <yellow>", *var);
 
 	r = edit_number(usr, c);
 
@@ -78,7 +78,7 @@ int r;
 	Enter(change_int_param);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new value <white>[%d]: <yellow>", *var);
+		Print(usr, "<green>Enter new value<white> [%d]: <yellow>", *var);
 
 	r = edit_number(usr, c);
 
@@ -116,7 +116,7 @@ int r;
 	Enter(change_octal_param);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter new octal value <white>[0%02o]: <yellow>", *var);
+		Print(usr, "<green>Enter new octal value<white> [0%02o]: <yellow>", *var);
 
 	r = edit_octal_number(usr, c);
 

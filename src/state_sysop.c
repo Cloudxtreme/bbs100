@@ -82,7 +82,7 @@ void state_sysop_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Put(usr, "<magenta>\n"
-				"Create new <hotkey>Room");
+				"Create new <hotkey>room");
 
 			if (usr->curr_room->number >= SPECIAL_ROOMS)
 				Put(usr, "                   <white>Ctrl-<hotkey>D<magenta>elete Room\n");
@@ -96,11 +96,14 @@ void state_sysop_menu(User *usr, char c) {
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
 				"<hotkey>Banish user                       Edit <hotkey>wrappers\n"
 			);
-			Put(usr,
-				"<hotkey>Uncache file                      <hotkey>Memory allocation status\n"
+			if (PARAM_HAVE_FILECACHE)
+				Put(usr, "<hotkey>Uncache file                      ");
+
+			Print(usr, "<hotkey>Memory allocation status\n"
 				"\n"
-				"<white>Ctrl-<hotkey>P<magenta>arameters                   Sysop <hotkey>Password\n"
-				"\n"
+				"<white>Ctrl-<hotkey>P<magenta>arameters                   %s <hotkey>password\n"
+				"\n",
+				PARAM_NAME_SYSOP
 			);
 			Print(usr, "<white>%sCtrl-<hotkey>R<magenta>eboot %s            ",
 				(reboot_timer == NULL) ? "" : "Cancel ",
@@ -1674,13 +1677,13 @@ void state_parameters_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Put(usr, "<magenta>\n"
-				"System <hotkey>Configuration\n"
-				"Configure locations of <hotkey>Files\n"
-				"Configure <hotkey>Maximums and timeouts\n"
-				"Configure <hotkey>Strings and messages\n"
+				"System <hotkey>configuration\n"
+				"Configure locations of <hotkey>files\n"
+				"Configure <hotkey>maximums and timeouts\n"
+				"Configure <hotkey>strings and messages\n"
 			);
 			Print(usr,
-				"Configure <hotkey>Log rotation\n"
+				"Configure <hotkey>log rotation\n"
 				"<hotkey>Toggle features\n"
 				"<hotkey>Reload screens and help files\n"
 				"\n"
@@ -1795,7 +1798,7 @@ void state_system_config_menu(User *usr, char c) {
 				"to correctly re-initialize the BBS\n"
 			);
 			Print(usr, "<magenta>\n"
-				"BBS <hotkey>Name           <white> %s<magenta>\n"
+				"BBS <hotkey>name           <white> %s<magenta>\n"
 				"Bind <hotkey>address       <white> %s<magenta>\n"
 				"P<hotkey>ort number        <white> %s<magenta>\n"
 				"<hotkey>Param file         <white> %s<magenta>\n",
@@ -2198,7 +2201,7 @@ void state_config_files_menu(User *usr, char c) {
 
 		case 's':
 		case 'S':
-			Put(usr, "Sysop help\n");
+			Print(usr, "%s help\n", PARAM_NAME_SYSOP);
 			CALL(usr, STATE_PARAM_HELP_SYSOP);
 			Return;
 
@@ -2573,7 +2576,7 @@ void state_maximums_menu(User *usr, char c) {
 
 			Print(usr, "<magenta>\n"
 				"Max number of <hotkey>cached files            <white>%6u<magenta>\n"
-				"Max number of messages kept in a <hotkey>Room <white>%6u<magenta>\n"
+				"Max number of messages kept in a <hotkey>room <white>%6u<magenta>\n"
 				"Max number of messages kept in <hotkey>Mail>  <white>%6u<magenta>\n"
 				"Max number of lines in an <hotkey>X message   <white>%6u<magenta>\n"
 				"Max number of <hotkey>lines in a message      <white>%6u<magenta>\n",
@@ -2840,10 +2843,10 @@ void state_strings_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Print(usr, "\n"
-				"<magenta>Name <hotkey>Sysop               <white>%s<magenta>\n"
-				"<magenta>Name Room <hotkey>Aide           <white>%s<magenta>\n"
-				"<magenta>Name <hotkey>Helper              <white>%s<magenta>\n"
-				"<magenta>Name <hotkey>Guest               <white>%s<magenta>\n",
+				"<magenta>Name <hotkey>sysop               <white>%s<magenta>\n"
+				"<magenta>Name Room <hotkey>aide           <white>%s<magenta>\n"
+				"<magenta>Name <hotkey>helper              <white>%s<magenta>\n"
+				"<magenta>Name <hotkey>guest               <white>%s<magenta>\n",
 
 				PARAM_NAME_SYSOP,
 				PARAM_NAME_ROOMAIDE,
