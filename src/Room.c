@@ -995,25 +995,6 @@ Room *r1, *r2;
 	return 0;
 }
 
-int msgs_sort_func(void *v1, void *v2) {
-unsigned long number1, number2;
-
-	if (v1 == NULL || v2 == NULL)
-		return 0;
-
-	number1 = *(unsigned long *)v1;
-	number2 = *(unsigned long *)v2;
-
-	if (number1 < number2)
-		return -1;
-
-	if (number1 > number2)
-		return 1;
-
-	return 0;
-}
-
-
 /*
 	load all rooms definitions at startup
 	Note that room #1 and room #2 are 'shadow' rooms for Mail> and Home>

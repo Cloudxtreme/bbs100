@@ -125,7 +125,6 @@ int roomnumber_exists(unsigned int);
 void unload_Room (Room *);
 int room_sort_by_category(void *, void *);
 int room_sort_by_number(void *, void *);
-int msgs_sort_func(void *, void *);
 
 #endif	/* ROOM_H_WJ99 */
 

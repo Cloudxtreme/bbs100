@@ -351,7 +351,14 @@ int r;
 		room->generation = (unsigned long)rtc;
 		room->flags = (ROOM_HIDDEN | ROOM_READONLY | ROOM_SUBJECTS | ROOM_INVITE_ONLY);
 
-/* find a room number */
+/*
+	find the lowest possible unused room number
+	this only works when the rooms are sorted by room number, so if we have categories,
+	we must resort the list
+*/
+		if (PARAM_HAVE_CATEGORY)
+			AllRooms = sort_Room(AllRooms, room_sort_by_number);
+
 		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
 		for(rm = AllRooms; rm != NULL; rm = rm->next) {
 			if (room->number == rm->number)
@@ -360,6 +367,9 @@ int r;
 				if (room->number < rm->number)
 					break;
 		}
+		if (PARAM_HAVE_CATEGORY)
+			AllRooms = sort_Room(AllRooms, room_sort_by_category);
+
 		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
 		if (make_dir(buf, (mode_t)0750) < 0) {
