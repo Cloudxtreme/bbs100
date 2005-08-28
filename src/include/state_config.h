@@ -37,7 +37,7 @@
 #define STATE_CHANGE_PHONE				state_change_phone
 #define STATE_CHANGE_EMAIL				state_change_email
 #define STATE_CHANGE_WWW				state_change_www
-#define STATE_CHANGE_PROFILE			state_change_profile
+#define STATE_CONFIG_PROFILE			state_config_profile
 #define STATE_CONFIG_VANITY				state_config_vanity
 #define STATE_CONFIG_DOING				state_config_doing
 #define STATE_CONFIG_XMSG_HEADER		state_config_xmsg_header
@@ -74,13 +74,13 @@ void state_change_country(User *, char);
 void state_change_phone(User *, char);
 void state_change_email(User *, char);
 void state_change_www(User *, char);
+void state_config_profile(User *, char);
 void state_config_vanity(User *, char);
 void state_config_doing(User *, char);
 void state_config_xmsg_header(User *, char);
 void state_config_reminder(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
-void state_change_profile(User *, char);
 void state_quicklist_prompt(User *, char);
 void state_edit_quicklist(User *, char);
 void state_config_terminal(User *, char);
@@ -107,6 +107,7 @@ void select_tz_city(User *);
 
 void save_profile(User *, char);
 void abort_profile(User *, char);
+
 void change_config(User *, char, char **, char *);
 
 #endif	/* STATE_CONFIG_H_WJ99 */

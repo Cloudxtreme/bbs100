@@ -133,23 +133,7 @@ void state_config_menu(User *usr, char c) {
 		case 'i':
 		case 'I':
 			Put(usr, "Profile info\n");
-
-			load_profile_info(usr);
-
-			if (usr->info != NULL && usr->info->buf != NULL) {
-				Put(usr, "<cyan>Your current profile info is:\n<green>");
-				copy_StringIO(usr->text, usr->info);
-
-				if (!PARAM_HAVE_RESIDENT_INFO) {
-					destroy_StringIO(usr->info);		/* don't keep it resident */
-					usr->info = NULL;
-				}
-				PUSH(usr, STATE_CHANGE_PROFILE);
-				read_text(usr);
-			} else {
-				Put(usr, "<cyan>Your current profile info is empty\n<green>");
-				CALL(usr, STATE_CHANGE_PROFILE);
-			}
+			CALL(usr, STATE_CONFIG_PROFILE);
 			Return;
 
 		case 'v':
@@ -434,6 +418,125 @@ void state_change_www(User *usr, char c) {
 }
 
 
+void state_config_profile(User *usr, char c) {
+	Enter(state_config_profile);
+
+	switch(c) {
+		case INIT_STATE:
+			break;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "Config menu\n");
+
+			if (!PARAM_HAVE_RESIDENT_INFO) {
+				destroy_StringIO(usr->info);
+				usr->info = NULL;
+			}
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'v':
+		case 'V':
+			Put(usr, "View\n");
+			load_profile_info(usr);
+			if (usr->info == NULL || usr->info->buf == NULL) {
+				Put(usr, "<cyan>Your current profile info is empty\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			copy_StringIO(usr->text, usr->info);
+			Put(usr, "<green>");
+			read_text(usr);
+			Return;
+
+		case 'e':
+		case 'E':
+			Put(usr, "Edit\n"
+				"<green>\n"
+				"Enter new profile info, press <yellow><return><green> twice or press <yellow><Ctrl-C><green> to end\n"
+			);
+			edit_text(usr, save_profile, abort_profile);
+			Return;
+
+		case 'u':
+		case 'U':
+			Put(usr, "Upload\n"
+				"<green>\n"
+				"Upload new profile info, press <yellow><Ctrl-C><green> to end\n"
+			);
+			usr->runtime_flags |= RTF_UPLOAD;
+			edit_text(usr, save_profile, abort_profile);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "Download\n");
+			load_profile_info(usr);
+			if (usr->info == NULL || usr->info->buf == NULL) {
+				Put(usr, "<cyan>Your current profile info is empty\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			copy_StringIO(usr->text, usr->info);
+			CALL(usr, STATE_DOWNLOAD_TEXT);
+			Return;
+	}
+	Put(usr, "<magenta>\n<hotkey>View, <hotkey>Edit, <hotkey>Upload, <hotkey>Download: <white>");
+	Return;
+}
+
+void save_profile(User *usr, char c) {
+StringIO *tmp;
+
+	if (usr == NULL)
+		return;
+
+	Enter(save_profile);
+
+	destroy_StringIO(usr->info);
+	usr->info = NULL;
+
+	if ((tmp = new_StringIO()) == NULL) {
+		Perror(usr, "Failed to save profile");
+		RET(usr);
+		Return;
+	}
+	usr->info = usr->text;
+	usr->text = tmp;
+/*
+	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
+*/
+	save_User(usr);
+	usr->runtime_flags &= ~RTF_CONFIG_EDITED;
+
+	RET(usr);
+	Return;
+}
+
+void abort_profile(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(abort_profile);
+
+	free_StringIO(usr->text);
+	RET(usr);
+	Return;
+}
+
 void state_config_vanity(User *usr, char c) {
 	Enter(state_config_vanity);
 
@@ -516,74 +619,6 @@ int r;
 				Put(usr, "<red>Not changed\n");
 		RET(usr);
 	}
-	Return;
-}
-
-
-void state_change_profile(User *usr, char c) {
-	if (usr == NULL)
-		return;
-
-	Enter(state_change_profile);
-
-	if (c == INIT_STATE) {
-		Put(usr, "\n<cyan>Are you sure you wish to change this? (Y/n): ");
-		usr->runtime_flags |= RTF_BUSY;
-	} else {
-		switch(yesno(usr, c, 'Y')) {
-			case YESNO_YES:
-				POP(usr);			/* discard current state */
-				usr->runtime_flags |= RTF_UPLOAD;
-				Print(usr, "\n<green>Upload new profile info, press<yellow> <Ctrl-C><green> to end\n");
-				edit_text(usr, save_profile, abort_profile);
-				break;
-
-			case YESNO_NO:
-				RET(usr);
-				break;
-
-			case YESNO_UNDEF:
-				CURRENT_STATE(usr);
-		}
-	}
-	Return;
-}
-
-void save_profile(User *usr, char c) {
-StringIO *tmp;
-
-	if (usr == NULL)
-		return;
-
-	Enter(save_profile);
-
-	destroy_StringIO(usr->info);
-	usr->info = NULL;
-
-	if ((tmp = new_StringIO()) == NULL) {
-		Perror(usr, "Failed to save profile");
-		RET(usr);
-		Return;
-	}
-	usr->info = usr->text;
-	usr->text = tmp;
-/*
-	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
-*/
-	save_User(usr);
-	usr->runtime_flags &= ~RTF_CONFIG_EDITED;
-	RET(usr);
-	Return;
-}
-
-void abort_profile(User *usr, char c) {
-	if (usr == NULL)
-		return;
-
-	Enter(abort_profile);
-
-	free_StringIO(usr->text);
-	RET(usr);
 	Return;
 }
 

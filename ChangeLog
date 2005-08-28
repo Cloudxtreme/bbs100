@@ -3,6 +3,7 @@ Changes as of August 28th 2005
 - fixed case in which word-wrap didn't look so good
 - option show short/long color codes in downloaded text
 - option show pager for downloaded text
+- upload/download profile info
 
 Changes as of August 27th 2005
 - Read New shows number of new messages

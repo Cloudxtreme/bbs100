@@ -565,7 +565,7 @@ void (*abort_func)(void *, char);
 	Enter(state_abort_text);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'N')) {
