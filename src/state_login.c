@@ -418,6 +418,7 @@ File *f;
 		Fclose(f);
 
 		PUSH(usr, STATE_GO_ONLINE);
+		Put(usr, "<green>");
 		read_text(usr);						/* read with --More-- prompt */
 		Return;
 	}
