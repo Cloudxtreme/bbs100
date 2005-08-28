@@ -2645,4 +2645,51 @@ void drop_sysop_privs(User *usr) {
 	}
 }
 
+void state_download_text(User *usr, char c) {
+char buf[MAX_LONGLINE], *p;
+int lines, n;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_download_text);
+
+	switch(c) {
+		case INIT_STATE:
+			rewind_StringIO(usr->text);
+			Put(usr, "<green>");
+
+		default:
+			lines = 0;
+			while(read_StringIO(usr->text, buf, MAX_LONGLINE) > 0) {
+				n = 0;
+				p = buf;
+				while(*p) {
+					if (*p == '\n') {
+						lines++;
+						n++;
+						if (lines >= usr->display->term_height) {
+							seek_StringIO(usr->text, strlen(p) - n, STRINGIO_CUR);
+							Put(usr, "<white>\n[Press a key]<green>");
+							Return;
+						} else
+							write_StringIO(usr->conn->output, "\r\n", 2);
+					} else {
+						if (*p < ' ') {
+							char colorbuf[MAX_COLORBUF];
+
+							short_color_to_long(*p, colorbuf, MAX_COLORBUF);
+							put_StringIO(usr->conn->output, colorbuf);
+						} else
+							write_StringIO(usr->conn->output, p, 1);
+					}
+					n++;
+					p++;
+				}
+			}
+			JMP(usr, STATE_PRESS_ANY_KEY);
+	}
+	Return;
+}
+
 /* EOB */

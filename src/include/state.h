@@ -52,6 +52,7 @@
 #define STATE_LOCK_PASSWORD				state_lock_password
 #define STATE_BOSS						state_boss
 #define STATE_ASK_AWAY_REASON			state_ask_away_reason
+#define STATE_DOWNLOAD_TEXT				state_download_text
 
 #define LOOP_PING						loop_ping
 #define LOOP_SEND_MSG					loop_send_msg
@@ -95,17 +96,15 @@ void who_list(User *, int);
 int long_who_list(User *, PList *);
 int short_who_list(User *, PList *, int);
 void who_list_header(User *, int, int);
-
 void reply_x(User *, int);
 void do_reply_x(User *, int);
-
 void online_friends_list(User *);
 void talked_list(User *);
 void print_quicklist(User *);
-
 void print_calendar(User *);
-
 void drop_sysop_privs(User *);
+
+void state_download_text(User *, char);
 
 #endif	/* STATE_H_WJ99 */
 

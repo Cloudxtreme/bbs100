@@ -98,6 +98,7 @@
 
 #define STATE_FEATURES_MENU				state_features_menu
 #define STATE_RELOAD_FILES_MENU			state_reload_files_menu
+#define STATE_DOWNLOAD_FILES_MENU		state_download_files_menu
 #define STATE_UPLOAD_FILES_MENU			state_upload_files_menu
 #define STATE_UPLOAD_YESNO				state_upload_yesno
 
@@ -138,7 +139,6 @@
 #define STATE_PARAM_AUTHLOG				state_param_authlog
 #define STATE_PARAM_ARCHIVEDIR			state_param_archivedir
 #define STATE_PARAM_CRASHDIR			state_param_crashdir
-
 
 void state_sysop_menu(User *, char);
 void state_categories_menu(User *, char);
@@ -210,6 +210,8 @@ void state_param_def_timezone(User *, char);
 
 void state_features_menu(User *, char);
 void state_reload_files_menu(User *, char);
+void state_download_files_menu(User *, char);
+void download_file(User *, char *, char *);
 void state_upload_files_menu(User *, char);
 void upload_file(User *, char *, char *);
 void state_upload_yesno(User *, char);

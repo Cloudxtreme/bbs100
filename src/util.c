@@ -916,6 +916,67 @@ int len = 0, i;
 }
 
 /*
+	convert key code to long color code
+	some key codes do not have a long equivalent
+*/
+int short_color_to_long(char c, char *buf, int max_len) {
+int i;
+
+	if (buf == NULL || max_len <= 0)
+		return -1;
+
+	buf[0] = 0;
+	switch(c) {
+		case KEY_CTRL('Q'):				/* don't auto-color this string */
+			break;
+
+		case KEY_CTRL('X'):
+			break;
+
+		case KEY_CTRL('A'):
+			cstrcpy(buf, "<beep>", max_len);
+			break;
+
+		case KEY_CTRL('L'):				/* clear screen */
+			break;
+
+		case KEY_CTRL('Z'):
+		case KEY_CTRL('R'):
+		case KEY_CTRL('G'):
+		case KEY_CTRL('Y'):
+		case KEY_CTRL('B'):
+		case KEY_CTRL('M'):
+		case KEY_CTRL('C'):
+		case KEY_CTRL('W'):
+		case KEY_CTRL('K'):
+			for(i = 0; i < NUM_COLORS; i++) {
+				if (color_table[i].key == c) {
+					bufprintf(buf, max_len, "^%c", c + 'A' - 1);
+/*					bufprintf(buf, max_len, "<%s>", color_table);
+					cstrlwr(buf); */
+					break;
+				}
+			}
+			break;
+
+		case KEY_CTRL('N'):
+			cstrcpy(buf, "<normal>", max_len);
+			break;
+
+		case KEY_CTRL('D'):
+			cstrcpy(buf, "<default>", max_len);
+			break;
+
+		default:
+			if (c >= ' ' && c <= '~' && max_len >= 2) {
+				buf[0] = c;
+				buf[1] = 0;
+			}
+	}
+	return 0;
+}
+
+/*
 	return the 'wide' index of a 'screen' position within a color coded string
 	e.g.
 			buf[color_index(buf, 79)] = 0;
