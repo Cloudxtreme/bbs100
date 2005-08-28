@@ -320,11 +320,10 @@ int word_len(char *str) {
 int len;
 
 	len = 0;
-
 	while(*str) {
 		switch(*str) {
 			case '<':
-				str += skip_long_color_code(str);
+				str += skip_long_color_code(str)-1;
 				break;
 
 			case KEY_CTRL('X'):
@@ -334,11 +333,14 @@ int len;
 			case ' ':
 			case '\n':
 			case '\t':
-			case '-':				/* OK to break on a dash */
 				return len;
 
 			default:
-				if (cstrchr(Wrap_Charset1, *str) != NULL || cstrchr(Wrap_Charset2, *str) != NULL)
+				if (cstrchr(Wrap_Charset1, *str) != NULL) {
+					len++;
+					return len;
+				}
+				if (cstrchr(Wrap_Charset2, *str) != NULL)
 					return len;
 
 /* count as printable character (this is NOT always the case, however) */
