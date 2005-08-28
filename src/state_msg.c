@@ -1363,7 +1363,7 @@ void state_press_any_key(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		usr->runtime_flags |= RTF_BUSY;
-		Put(usr, "<red>");
+		Put(usr, "<cyan>");
 		Put(usr, "-- Press any key to continue --");
 	} else {
 		wipe_line(usr);

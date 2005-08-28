@@ -42,6 +42,8 @@
 #define STATE_DELETE_ROOM_NAME			state_delete_room_name
 #define STATE_UNCACHE_FILE				state_uncache_file
 #define STATE_MALLOC_STATUS				state_malloc_status
+#define STATE_SCREENS_MENU				state_screens_menu
+#define STATE_SCREEN_ACTION				state_screen_action
 #define STATE_PARAMETERS_MENU			state_parameters_menu
 #define STATE_SU_PASSWD					state_su_passwd
 #define STATE_CHANGE_SU_PASSWD			state_change_su_passwd
@@ -97,11 +99,6 @@
 #define STATE_PARAM_DEF_TIMEZONE		state_param_def_timezone
 
 #define STATE_FEATURES_MENU				state_features_menu
-#define STATE_RELOAD_FILES_MENU			state_reload_files_menu
-#define STATE_DOWNLOAD_FILES_MENU		state_download_files_menu
-#define STATE_UPLOAD_FILES_MENU			state_upload_files_menu
-#define STATE_UPLOAD_YESNO				state_upload_yesno
-
 #define STATE_MAXIMUMS_MENU				state_maximums_menu
 #define STATE_PARAM_CACHED				state_param_cached
 #define STATE_PARAM_MESSAGES			state_param_messages
@@ -157,6 +154,16 @@ void state_create_room(User *, char);
 void state_delete_room_name(User *, char);
 void state_uncache_file(User *, char);
 void state_malloc_status(User *, char);
+void state_screens_menu(User *usr, char);
+void state_screen_action(User *usr, char);
+void screen_menu(User *, char *, char *);
+void view_file(User *, char *, char *);
+void reload_file(User *, char *, char *);
+void download_file(User *, char *, char *);
+void upload_file(User *, char *, char *);
+void upload_save(User *, char);
+void upload_abort(User *, char);
+
 void state_parameters_menu(User *, char);
 void state_su_passwd(User *, char);
 void state_change_su_passwd(User *, char);
@@ -209,15 +216,6 @@ void state_param_hostmap_file(User *, char);
 void state_param_def_timezone(User *, char);
 
 void state_features_menu(User *, char);
-void state_reload_files_menu(User *, char);
-void state_download_files_menu(User *, char);
-void download_file(User *, char *, char *);
-void state_upload_files_menu(User *, char);
-void upload_file(User *, char *, char *);
-void state_upload_yesno(User *, char);
-void upload_save(User *, char);
-void upload_abort(User *, char);
-
 void state_maximums_menu(User *, char);
 void state_param_cached(User *, char);
 void state_param_messages(User *, char);
