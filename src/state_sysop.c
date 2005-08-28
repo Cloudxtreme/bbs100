@@ -125,7 +125,6 @@ void state_sysop_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-		case KEY_CTRL('C'):
 			Put(usr, "\n");
 			RET(usr);
 			Return;
@@ -452,7 +451,8 @@ void state_categories_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+
 			if (usr->runtime_flags & RTF_CATEGORY_EDITED) {
 				if (save_Category()) {
 					Perror(usr, "failed to save categories file");
@@ -957,7 +957,7 @@ char buf[MAX_LINE];
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
 
 			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
 				if (save_Wrapper(AllWrappers, PARAM_HOSTS_ACCESS_FILE))
@@ -1713,7 +1713,7 @@ void state_screens_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
 			RET(usr);
 			Return;
 
@@ -1829,11 +1829,9 @@ void state_screen_action(User *usr, char c) {
 			break;
 
 		case ' ':
-		case KEY_CTRL('C'):
-		case KEY_CTRL('D'):
 		case KEY_BS:
 		case KEY_RETURN:
-			Put(usr, "\n");
+			Put(usr, "Screens menu\n");
 
 			Free(usr->tmpbuf[TMP_NAME]);
 			usr->tmpbuf[TMP_NAME] = NULL;
@@ -1841,6 +1839,15 @@ void state_screen_action(User *usr, char c) {
 			usr->tmpbuf[TMP_PASSWD] = NULL;
 
 			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		case 'v':
@@ -1889,13 +1896,6 @@ void view_file(User *usr, char *desc, char *filename) {
 		CURRENT_STATE_X(usr, KEY_RETURN);
 		Return;
 	}
-	Free(usr->tmpbuf[TMP_NAME]);
-	usr->tmpbuf[TMP_NAME] = NULL;
-/*	Free(usr->tmpbuf[TMP_PASSWD]);		don't free the 'const' pointer */
-	usr->tmpbuf[TMP_PASSWD] = NULL;
-
-	POP(usr);
-	PUSH(usr, STATE_PRESS_ANY_KEY);
 	Put(usr, "<green>");
 	read_text(usr);
 	Return;
@@ -1922,7 +1922,7 @@ void reload_file(User *usr, char *desc, char *filename) {
 		remove_Cache_filename(filename);
 		Print(usr, "File %s uncached\n", filename);
 	}
-	CURRENT_STATE_X(usr, KEY_RETURN);
+	CURRENT_STATE(usr);
 	Return;
 }
 
@@ -1943,12 +1943,6 @@ void download_file(User *usr, char *desc, char *filename) {
 		CURRENT_STATE_X(usr, KEY_RETURN);
 		Return;
 	}
-	Free(usr->tmpbuf[TMP_NAME]);
-	usr->tmpbuf[TMP_NAME] = NULL;
-/*	Free(usr->tmpbuf[TMP_PASSWD]);		don't free the 'const' pointer */
-	usr->tmpbuf[TMP_PASSWD] = NULL;
-
-	POP(usr);
 	CALL(usr, STATE_DOWNLOAD_TEXT);
 	Return;
 }
@@ -1969,7 +1963,6 @@ void upload_file(User *usr, char *desc, char *filename) {
 		CURRENT_STATE_X(usr, KEY_RETURN);
 		Return;
 	}
-	POP(usr);
 	usr->runtime_flags |= RTF_UPLOAD;
 	Print(usr, "\n<green>Upload new %s, press<yellow> <Ctrl-C><green> to end\n", usr->tmpbuf[TMP_PASSWD]);
 	edit_text(usr, upload_save, upload_abort);
@@ -1984,12 +1977,7 @@ void upload_save(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
-/*	Free(usr->tmpbuf[TMP_PASSWD]);		this is a const pointer */
-	usr->tmpbuf[TMP_PASSWD] = NULL;
-
 	if (usr->tmpbuf[TMP_NAME] == NULL || !usr->tmpbuf[TMP_NAME][0]) {
-		Free(usr->tmpbuf[TMP_NAME]);
-		usr->tmpbuf[TMP_NAME] = NULL;
 		Perror(usr, "The filename has disappeared, unable to save");
 		RET(usr);
 		return;
@@ -2004,16 +1992,11 @@ void upload_save(User *usr, char c) {
 		if (load_StringIO(crash_screen, PARAM_CRASH_SCREEN) < 0)
 			Perror(usr, "Failed to reload crash screen");
 	}
-	Free(usr->tmpbuf[TMP_NAME]);
-	usr->tmpbuf[TMP_NAME] = NULL;
 	RET(usr);
 }
 
 void upload_abort(User *usr, char c) {
 	free_StringIO(usr->text);
-	Free(usr->tmpbuf[TMP_NAME]);
-/*	Free(usr->tmpbuf[TMP_PASSWD]);		this is a const pointer */
-	usr->tmpbuf[TMP_NAME] = usr->tmpbuf[TMP_PASSWD] = NULL;
 	RET(usr);
 }
 
@@ -2051,7 +2034,8 @@ void state_parameters_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+
 			if (usr->runtime_flags & RTF_PARAM_EDITED) {
 				if (save_Param(param_file))
 					Perror(usr, "failed to save param file");
@@ -2202,7 +2186,7 @@ void state_system_config_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 			RET(usr);
 			Return;
 
@@ -2456,7 +2440,7 @@ void state_config_files_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 			RET(usr);
 			Return;
 
@@ -2806,7 +2790,7 @@ void state_maximums_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 /*
 	PARAM_CACHE_TIMEOUT was changed, so we need to reset the timer
 	I'm actually abusing the RTF_WRAPPER_EDITED flag for this
@@ -3081,7 +3065,7 @@ void state_strings_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 			RET(usr);
 			Return;
 
@@ -3353,7 +3337,7 @@ void state_features_menu(User *usr, char c) {
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 			RET(usr);
 			Return;
 
@@ -3527,7 +3511,7 @@ char *new_val;
 		case ' ':
 		case KEY_RETURN:
 		case KEY_BS:
-			Put(usr, "\n");
+			Put(usr, "Parameters\n");
 /*
 	if edited, re-initialize logging
 */
