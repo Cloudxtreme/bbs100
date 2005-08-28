@@ -660,6 +660,86 @@ int edit_roomname(User *usr, char c) {
 	Return 0;
 }
 
+int edit_caps_line(User *usr, char c) {
+	if (usr == NULL)
+		return 0;
+
+	Enter(edit_caps_line);
+
+	switch(c) {
+		case EDIT_INIT:
+			usr->runtime_flags |= RTF_BUSY;
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+			break;
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+			erase_name(usr);
+			Put(usr, "\n");
+			Return EDIT_BREAK;
+
+		case KEY_RETURN:
+			if (usr->edit_pos > 0 && usr->edit_buf[usr->edit_pos-1] == ' ') {
+				usr->edit_pos--;
+				usr->edit_buf[usr->edit_pos] = 0;
+			}
+			Put(usr, "\n");
+			Return EDIT_RETURN;
+
+/* the rest of this func is the same as edit_name(), except for the MAX_LINE */
+		case KEY_BS:
+			if (usr->edit_pos) {
+				usr->edit_pos--;
+				usr->edit_buf[usr->edit_pos] = 0;
+				Put(usr, "\b \b");
+
+				if (!usr->edit_pos)
+					usr->runtime_flags &= ~RTF_NUMERIC_ROOMNAME;
+			}
+			break;
+
+		case KEY_ESC:
+		case KEY_CTRL('U'):
+		case KEY_CTRL('Y'):
+		case KEY_CTRL('X'):
+			erase_name(usr);
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+			break;
+
+		case ' ':
+			if (!usr->edit_pos)
+				break;
+
+			if (usr->edit_pos >= MAX_LINE-1)
+				break;
+
+			if (usr->edit_buf[usr->edit_pos-1] == ' ')
+				break;
+
+			usr->edit_buf[usr->edit_pos++] = ' ';
+			usr->edit_buf[usr->edit_pos] = 0;
+			Put(usr, " ");
+			break;
+
+		default:
+			if (c < ' ' || c > '~')
+				break;
+
+			if (usr->edit_pos < MAX_LINE-1) {
+				if ((!usr->edit_pos || usr->edit_buf[usr->edit_pos-1] == ' ')
+					&& c >= 'a' && c <= 'z')
+					c -= ' ';						/* auto uppercase */
+
+				usr->edit_buf[usr->edit_pos++] = c;
+				usr->edit_buf[usr->edit_pos] = 0;
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
+			}
+	}
+	Return 0;
+}
+
 int edit_password(User *usr, char c) {
 	if (usr == NULL)
 		return 0;

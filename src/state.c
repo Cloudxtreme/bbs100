@@ -2710,10 +2710,7 @@ int cpos, lines;
 					}
 				}
 			}
-			if (usr->flags & USR_NOPAGE_DOWNLOADS)
-				JMP(usr, STATE_PRESS_ANY_KEY);
-			else
-				RET(usr);
+			JMP(usr, STATE_PRESS_ANY_KEY);
 	}
 	Return;
 }

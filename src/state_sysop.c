@@ -215,7 +215,7 @@ void state_sysop_menu(User *usr, char c) {
 		case 'F':
 			if (PARAM_HAVE_FEELINGS) {
 				Put(usr, "Feelings\n");
-/*	TODO		CALL(usr, STATE_FEELINGS_MENU);		*/
+				CALL(usr, STATE_FEELINGS_MENU);
 				Return;
 			}
 			break;
@@ -1998,6 +1998,334 @@ void upload_save(User *usr, char c) {
 void upload_abort(User *usr, char c) {
 	free_StringIO(usr->text);
 	RET(usr);
+}
+
+
+void state_feelings_menu(User *usr, char c) {
+StringIO *s;
+
+	Enter(state_feelings_menu);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			if ((s = new_StringIO()) == NULL) {
+				Perror(usr, "Out of memory");
+				RET(usr);
+				Return;
+			}
+			make_feelings_screen(s, usr->display->term_width);
+			buffer_text(usr);
+			Put(usr, "\n");
+			display_text(usr, s);
+			destroy_StringIO(s);
+
+			Put(usr, "<magenta>\n"
+				"<hotkey>Add feeling"
+			);
+			if (feelings != NULL) {
+				Put(usr, "                       <hotkey>View feeling\n"
+					"<hotkey>Remove feeling                    <hotkey>Download\n"
+				);
+			} else
+				Put(usr, "\n");
+			read_menu(usr);
+			Return;
+
+		case ' ':
+		case KEY_BS:
+		case KEY_RETURN:
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "Add\n");
+			CALL(usr, STATE_ADD_FEELING);
+			Return;
+
+		case 'r':
+		case 'R':
+			if (feelings == NULL)
+				break;
+
+			Put(usr, "Remove\n");
+			CALL(usr, STATE_REMOVE_FEELING);
+			Return;
+
+		case 'v':
+		case 'V':
+			if (feelings == NULL)
+				break;
+
+			Put(usr, "View\n");
+			CALL(usr, STATE_VIEW_FEELING);
+			Return;
+
+		case 'd':
+		case 'D':
+			if (feelings == NULL)
+				break;
+
+			Put(usr, "Download\n");
+			CALL(usr, STATE_DOWNLOAD_FEELING);
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Feelings# <white>", PARAM_NAME_SYSOP);
+	Return;
+}
+
+void state_add_feeling(User *usr, char c) {
+int r;
+char *p;
+KVPair *f;
+
+	Enter(state_add_feeling);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<green>Enter name: <yellow>");
+		edit_caps_line(usr, EDIT_INIT);
+		Return;
+	}
+	r = edit_caps_line(usr, c);
+	switch(r) {
+		case EDIT_BREAK:
+			RET(usr);
+			break;
+
+		case EDIT_RETURN:
+			cstrip_line(usr->edit_buf);
+			if (!usr->edit_buf[0]) {
+				RET(usr);
+				Return;
+			}
+			if (cstrchr(usr->edit_buf, '/') != NULL) {
+				Put(usr, "<red>Invalid name\n");
+				RET(usr);
+				Return;
+			}
+			while((p = cstrchr(usr->edit_buf, '_')) != NULL)
+				*p = ' ';
+			cstrip_spaces(usr->edit_buf);
+
+			for(f = feelings; f != NULL; f = f->next) {
+				if (!cstricmp(usr->edit_buf, f->key)) {
+					Put(usr, "<red>Feeling already exists\n");
+					RET(usr);
+					Return;
+				}
+			}
+			Free(usr->tmpbuf[TMP_NAME]);
+			if ((usr->tmpbuf[TMP_NAME] = cstrdup(usr->edit_buf)) == NULL) {
+				Perror(usr, "Out of memory");
+				RET(usr);
+				Return;
+			}
+			Print(usr, "<green>\n"
+				"Upload feeling, press <yellow><Ctrl-C><green> to end\n");
+			POP(usr);
+			edit_text(usr, save_feeling, abort_feeling);
+	}
+	Return;
+}
+
+void save_feeling(User *usr, char c) {
+char filename[MAX_PATHLEN], *p;
+KVPair *f;
+
+	if (usr->tmpbuf[TMP_NAME] == NULL || !usr->tmpbuf[TMP_NAME][0]) {
+		Free(usr->tmpbuf[TMP_NAME]);
+		usr->tmpbuf[TMP_NAME] = NULL;
+		Perror(usr, "The feeling has faded");
+		RET(usr);
+		Return;
+	}
+	if ((f = new_KVPair()) == NULL) {
+		Perror(usr, "Out of memory");
+		RET(usr);
+		Return;
+	}
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	p = filename + strlen(PARAM_FEELINGSDIR);
+	while((p = cstrchr(filename, ' ')) != NULL)
+		*p = '_';
+
+	KVPair_setstring(f, usr->tmpbuf[TMP_NAME], filename);
+	Free(usr->tmpbuf[TMP_NAME]);
+	usr->tmpbuf[TMP_NAME] = NULL;
+
+	if (save_StringIO(usr->text, filename) < 0) {
+		Put(usr, "<red>Failed to save feeling\n");
+		log_err("failed to save feeling as %s", filename);
+
+		free_StringIO(usr->text);
+		destroy_KVPair(f);
+		RET(usr);
+		Return;
+	}
+	free_StringIO(usr->text);
+
+	add_KVPair(&feelings, f);
+	feelings = sort_KVPair(feelings, feeling_sort_func);
+
+	RET(usr);
+}
+
+void abort_feeling(User *usr, char c) {
+	Free(usr->tmpbuf[TMP_NAME]);
+	usr->tmpbuf[TMP_NAME] = NULL;
+	RET(usr);
+}
+
+void state_remove_feeling(User *usr, char c) {
+	feelings_menu(usr, c, do_remove_feeling);
+}
+
+void feelings_menu(User *usr, char c, void (*func)(User *, KVPair *)) {
+int r;
+KVPair *f;
+
+	if (usr == NULL || func == NULL)
+		return;
+
+	Enter(state_remove_feeling);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<green>Enter number: <yellow>");
+		edit_number(usr, EDIT_INIT);
+		Return;
+	}
+	r = edit_number(usr, c);
+	switch(r) {
+		case EDIT_BREAK:
+			RET(usr);
+			Return;
+
+		case EDIT_RETURN:
+			if (!usr->edit_buf[0]) {
+				RET(usr);
+				Return;
+			}
+			r = atoi(usr->edit_buf);
+			if (r <= 0) {
+				Put(usr, "<red>No such feeling\n");
+				RET(usr);
+				Return;
+			}
+			usr->read_lines = r;
+			f = feelings;
+			r--;
+			while(r > 0 && f != NULL) {
+				r--;
+				f = f->next;
+			}
+			if (f == NULL) {
+				Put(usr, "<red>No such feeling\n");
+				RET(usr);
+				Return;
+			}
+/*
+	I use this construction with func because this all would be duplicate code
+*/
+			func(usr, f);
+			Return;
+	}
+	Return;
+}
+
+/*
+	usr->read_lines is the number of the feeling
+*/
+void do_remove_feeling(User *usr, KVPair *f) {
+	JMP(usr, STATE_REMOVE_FEELING_YESNO);
+}
+
+/*
+	usr->read_lines is the number of the feeling
+*/
+void state_remove_feeling_yesno(User *usr, char c) {
+KVPair *f;
+int r;
+
+	Enter(state_remove_feeling_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			r = usr->read_lines;
+			f = feelings;
+			r--;
+			while(r > 0 && f != NULL) {
+				r--;
+				f = f->next;
+			}
+			if (f == NULL) {
+				Put(usr, "<red>No such feeling\n");
+				RET(usr);
+				Return;
+			}
+			if (unlink_file((char *)KVPair_getpointer(f)) < 0)
+				Perror(usr, "Failed to delete feeling");
+			else {
+				remove_KVPair(&feelings, f);
+				destroy_KVPair(f);
+			}
+			RET(usr);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		case YESNO_UNDEF:
+			Put(usr, "<cyan>Delete this feeling, yes or no? (y/N): <white>");
+	}
+	Return;
+}
+
+void state_view_feeling(User *usr, char c) {
+	feelings_menu(usr, c, do_view_feeling);
+}
+
+void do_view_feeling(User *usr, KVPair *f) {
+	free_StringIO(usr->text);
+	if (load_StringIO(usr->text, (char *)KVPair_getpointer(f)) < 0) {
+		Perror(usr, "Failed to load feeling");
+		RET(usr);
+		Return;
+	}
+	POP(usr);
+	PUSH(usr, STATE_PRESS_ANY_KEY);
+	read_text(usr);
+}
+
+void state_download_feeling(User *usr, char c) {
+	feelings_menu(usr, c, do_download_feeling);
+}
+
+void do_download_feeling(User *usr, KVPair *f) {
+	free_StringIO(usr->text);
+	if (load_StringIO(usr->text, (char *)KVPair_getpointer(f)) < 0) {
+		Perror(usr, "Failed to load feeling");
+		RET(usr);
+		Return;
+	}
+	JMP(usr, STATE_DOWNLOAD_TEXT);
 }
 
 

@@ -51,6 +51,7 @@ int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);
 int edit_tabname(User *, char);
 int edit_roomname(User *, char);
+int edit_caps_line(User *, char);
 int edit_password(User *, char);
 int edit_line(User *, char);
 int edit_chatline(User *, char);

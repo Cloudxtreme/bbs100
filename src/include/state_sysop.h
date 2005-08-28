@@ -44,6 +44,12 @@
 #define STATE_MALLOC_STATUS				state_malloc_status
 #define STATE_SCREENS_MENU				state_screens_menu
 #define STATE_SCREEN_ACTION				state_screen_action
+#define STATE_FEELINGS_MENU				state_feelings_menu
+#define STATE_ADD_FEELING				state_add_feeling
+#define STATE_REMOVE_FEELING			state_remove_feeling
+#define STATE_REMOVE_FEELING_YESNO		state_remove_feeling_yesno
+#define STATE_VIEW_FEELING				state_view_feeling
+#define STATE_DOWNLOAD_FEELING			state_download_feeling
 #define STATE_PARAMETERS_MENU			state_parameters_menu
 #define STATE_SU_PASSWD					state_su_passwd
 #define STATE_CHANGE_SU_PASSWD			state_change_su_passwd
@@ -163,6 +169,18 @@ void download_file(User *, char *, char *);
 void upload_file(User *, char *, char *);
 void upload_save(User *, char);
 void upload_abort(User *, char);
+void state_feelings_menu(User *, char);
+void state_add_feeling(User *, char);
+void save_feeling(User *, char);
+void abort_feeling(User *, char);
+void state_remove_feeling(User *, char);
+void do_remove_feeling(User *, KVPair *);
+void state_remove_feeling_yesno(User *, char);
+void state_view_feeling(User *, char);
+void do_view_feeling(User *, KVPair *);
+void state_download_feeling(User *, char);
+void do_download_feeling(User *, KVPair *);
+void feelings_menu(User *, char, void (*)(User *, KVPair *));
 
 void state_parameters_menu(User *, char);
 void state_su_passwd(User *, char);
