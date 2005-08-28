@@ -65,8 +65,8 @@ void state_room_config_menu(User *usr, char c) {
 			}
 			buffer_text(usr);
 
-			Put(usr, "\n"
-				"<hotkey>E<magenta>dit room info                 <hotkey>Help\n");
+			Put(usr, "<magenta>\n"
+				"<hotkey>Room info                      <hotkey>Help\n");
 
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY)
 				Put(usr, "<hotkey>Invite/uninvite                Show <hotkey>invited\n");
@@ -106,7 +106,7 @@ void state_room_config_menu(User *usr, char c) {
 							"<hotkey>Maximum amount of messages     <white>%d<magenta>\n", usr->curr_room->max_msgs);
 
 					Put(usr, "\n"
-						"<hotkey>Reset creation date            (all users unjoin)\n"
+						"Reset creation <hotkey>date            (all users unjoin)\n"
 						"<white>Ctrl-<hotkey>R<magenta>emove all posts          <white>Ctrl-<hotkey>D<magenta>elete room\n"
 					);
 				}
@@ -187,26 +187,10 @@ void state_room_config_menu(User *usr, char c) {
 			read_text(usr);
 			Return;
 
-		case 'e':
-		case 'E':
-			Put(usr, "Edit room info\n");
-
-			load_roominfo(usr->curr_room, usr->name);
-
-			if (usr->curr_room->info != NULL && usr->curr_room->info->buf != NULL) {
-				Put(usr, "<cyan>The current room info is:\n<green>");
-				copy_StringIO(usr->text, usr->curr_room->info);
-
-				if (!PARAM_HAVE_RESIDENT_INFO) {
-					destroy_StringIO(usr->curr_room->info);
-					usr->curr_room->info = NULL;
-				}
-				PUSH(usr, STATE_CHANGE_ROOMINFO);
-				read_text(usr);
-			} else {
-				Put(usr, "<cyan>Currently, the room info is empty\n<green>");
-				CALL(usr, STATE_CHANGE_ROOMINFO);
-			}
+		case 'r':
+		case 'R':
+			Put(usr, "Room info\n");
+			CALL(usr, STATE_CHANGE_ROOMINFO);
 			Return;
 
 		case 'I':
@@ -315,8 +299,8 @@ void state_room_config_menu(User *usr, char c) {
 			}
 			break;
 
-		case 'r':
-		case 'R':
+		case 'd':
+		case 'D':
 			if (usr->curr_room->flags & ROOM_HOME)
 				break;
 
@@ -537,27 +521,80 @@ void state_change_roominfo(User *usr, char c) {
 
 	Enter(state_change_roominfo);
 
-	if (c == INIT_STATE) {
-		Put(usr, "\n<cyan>Are you sure you wish to change this? (Y/n): ");
-		usr->runtime_flags |= RTF_BUSY;
-	} else {
-		switch(yesno(usr, c, 'Y')) {
-			case YESNO_YES:
-				POP(usr);
-				usr->runtime_flags &= ~RTF_ROOM_EDITED;
-				usr->runtime_flags |= RTF_UPLOAD;
-				Print(usr, "\n<green>Upload new room info, press<yellow> <Ctrl-C><green> to end\n");
-				edit_text(usr, save_roominfo, abort_roominfo);
-				break;
+	switch(c) {
+		case INIT_STATE:
+			break;
 
-			case YESNO_NO:
-				RET(usr);
-				break;
+		case ' ':
+		case KEY_RETURN:
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_BS:
+			Put(usr, "Room config menu\n");
 
-			case YESNO_UNDEF:
+			if (!PARAM_HAVE_RESIDENT_INFO) {
+				destroy_StringIO(usr->curr_room->info);
+				usr->curr_room->info = NULL;
+			}
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'v':
+		case 'V':
+			Put(usr, "View\n");
+			load_roominfo(usr->curr_room, usr->name);
+			if (usr->curr_room->info == NULL || usr->curr_room->info->buf == NULL) {
+				Put(usr, "<cyan>The room info is currently empty\n");
 				CURRENT_STATE(usr);
-		}
+				Return;
+			}
+			copy_StringIO(usr->text, usr->curr_room->info);
+			Put(usr, "<green>");
+			read_text(usr);
+			Return;
+
+		case 'e':
+		case 'E':
+			Put(usr, "Edit\n"
+				"<green>\n"
+				"Enter new room info, press <yellow><return><green> twice or press <yellow><Ctrl-C><green> to end\n"
+			);
+			edit_text(usr, save_roominfo, abort_roominfo);
+			Return;
+
+		case 'u':
+		case 'U':
+			Put(usr, "Upload\n"
+				"<green>\n"
+				"Upload new room info, press <yellow><Ctrl-C><green> to end\n"
+			);
+			usr->runtime_flags |= RTF_UPLOAD;
+			edit_text(usr, save_roominfo, abort_roominfo);
+			Return;
+
+		case 'd':
+		case 'D':
+			Put(usr, "Download\n");
+			load_roominfo(usr->curr_room, usr->name);
+			if (usr->curr_room->info == NULL || usr->curr_room->info->buf == NULL) {
+				Put(usr, "<cyan>The room info is currently empty\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			copy_StringIO(usr->text, usr->curr_room->info);
+			CALL(usr, STATE_DOWNLOAD_TEXT);
+			Return;
 	}
+	Put(usr, "<magenta>\n<hotkey>View, <hotkey>Edit, <hotkey>Upload, <hotkey>Download: <white>");
 	Return;
 }
 

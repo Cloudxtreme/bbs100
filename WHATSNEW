@@ -72,9 +72,11 @@ There are a lot of new options in the Config menu:
   To stop reading, enter something like '+1000' to go to the last post
   in the room)
 - Read New shows the number of new messages
+- profile info can be downloaded
 
 
 What's new to the admins?
+- room aides can download the room info
 - IPv6 wrappers; IPv4 wrappers are also still available
 - option 'wrapper apply to all' or 'wrapper applies to new users only'
 - per-room maximum of messages
