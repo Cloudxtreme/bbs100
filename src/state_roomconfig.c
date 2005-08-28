@@ -1100,7 +1100,7 @@ void (*func)(User *, char *, ...);
 	Enter(delete_room);
 
 	if (room->number == LOBBY_ROOM || room->number == MAIL_ROOM || room->number == HOME_ROOM) {
-		Print(usr, "<red>The <yellow>%s><red> room is special and cannot be deleted\n", room->name);
+		Print(usr, "<red>The<yellow> %s><red> room is special and cannot be deleted\n", room->name);
 		Return;
 	}
 	remove_Room(&AllRooms, room);
@@ -1121,7 +1121,7 @@ void (*func)(User *, char *, ...);
 			}
 			u->curr_room = Lobby_room;
 			usr->runtime_flags &= ~RTF_ROOMAIDE;
-			u->curr_msg = -1;
+			u->curr_msg = -1L;
 		}
 	}
 /* move room to trash/ directory */

@@ -82,18 +82,13 @@ void state_sysop_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Put(usr, "<magenta>\n"
-				"Create new <hotkey>room");
-
-			if (usr->curr_room->number >= SPECIAL_ROOMS)
-				Put(usr, "                   <white>Ctrl-<hotkey>D<magenta>elete Room\n");
-			else
-				Put(usr, "\n");
+				"Create new <hotkey>room                   <white>Ctrl-<hotkey>D<magenta>elete room\n");
 
 			if (PARAM_HAVE_CATEGORY)
 				Put(usr, "Manage <hotkey>categories\n");
 
 			Put(usr,
-				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke User\n"
+				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke user\n"
 				"<hotkey>Banish user                       Edit <hotkey>wrappers\n"
 			);
 			if (PARAM_HAVE_FILECACHE)
@@ -160,12 +155,9 @@ void state_sysop_menu(User *usr, char c) {
 			Return;
 
 		case KEY_CTRL('D'):
-			if (usr->curr_room->number >= SPECIAL_ROOMS) {
-				Put(usr, "Delete room\n");
-				CALL(usr, STATE_DELETE_ROOM_NAME);
-				Return;
-			}
-			break;
+			Put(usr, "Delete room\n");
+			CALL(usr, STATE_DELETE_ROOM_NAME);
+			Return;
 
 		case 'c':
 		case 'C':
