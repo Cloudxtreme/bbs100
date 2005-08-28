@@ -171,7 +171,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	we don't have that input yet, and we're surely not going to wait for it
 */
 	display_screen(new_user, PARAM_LOGIN_SCREEN);
-	Print(new_user, "        %s\n", print_copyright(SHORT, NULL, buf, MAX_LONGLINE));
+	Print(new_user, "<center>%s\n", print_copyright(SHORT, NULL, buf, MAX_LONGLINE));
 
 	CALL(new_user, STATE_LOGIN_PROMPT);
 	Return;
