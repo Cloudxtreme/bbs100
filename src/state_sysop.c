@@ -1684,11 +1684,13 @@ void state_parameters_menu(User *usr, char c) {
 				"Configure <hotkey>maximums and timeouts\n"
 				"Configure <hotkey>strings and messages\n"
 			);
-			Print(usr,
+			Put(usr,
 				"Configure <hotkey>log rotation\n"
 				"<hotkey>Toggle features\n"
+				"<hotkey>Upload screens and help files\n"
 				"<hotkey>Reload screens and help files\n"
-				"\n"
+			);
+			Print(usr, "\n"
 				"<white>Ctrl-<hotkey>R<magenta>eload param file<white> %s\n", param_file);
 
 			read_menu(usr);
@@ -1752,6 +1754,12 @@ void state_parameters_menu(User *usr, char c) {
 			CALL(usr, STATE_FEATURES_MENU);
 			Return;
 
+		case 'u':
+		case 'U':
+			Put(usr, "Upload screens and help files\n");
+			CALL(usr, STATE_UPLOAD_FILES_MENU);
+			Return;
+
 		case 'r':
 		case 'R':
 			Put(usr, "Reload screens and help files\n");
@@ -1774,6 +1782,7 @@ void state_parameters_menu(User *usr, char c) {
 			Return;
 	}
 	Print(usr, "<yellow>\n[%s] Parameters# <white>", PARAM_NAME_SYSOP);
+	Return;
 }
 
 
@@ -2422,6 +2431,8 @@ void state_reload_files_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
+	Enter(state_reload_files_menu);
+
 	switch(c) {
 		case INIT_PROMPT:
 			break;
@@ -2437,14 +2448,13 @@ void state_reload_files_menu(User *usr, char c) {
 				"Reload <hotkey>motd screen              Reload <hotkey>config menu help\n"
 			);
 			Put(usr,
-				"Reload cr<hotkey>edits screen           Reload <hotkey>room config menu help\n"
+				"Reload cr<hotkey>ash screen             Reload <hotkey>room config menu help\n"
 				"Reload <hotkey>boss screen              Reload <hotkey>sysop menu help\n"
-				"Reload cr<hotkey>ash screen             Reload <hotkey>nologin screen\n"
+				"Reload <hotkey>hostmap                  Reload <hotkey>nologin screen\n"
 			);
-			Put(usr,
-				"\n"
-				"Reload <hotkey>hostmap                  Reload <hotkey>feelings\n"
-				"Reload <hotkey>local mods               Reload <hotkey>GPL\n"
+			Put(usr, "\n"
+				"Reload <hotkey>local mods               Reload <hotkey>feelings\n"
+				"Reload cr<hotkey>edits screen           Reload <hotkey>GPL\n"
 			);
 			read_menu(usr);
 			Return;
@@ -2536,6 +2546,7 @@ void state_reload_files_menu(User *usr, char c) {
 			Return;
 
 		case 'l':
+		case 'L':
 		case ']':
 			Put(usr, "Reload local modifications file\n");
 			UNCACHE_FILE(PARAM_MODS_SCREEN);
@@ -2558,6 +2569,235 @@ void state_reload_files_menu(User *usr, char c) {
 			UNCACHE_FILE(PARAM_GPL_SCREEN);
 	}
 	Print(usr, "<yellow>\n[%s] Reload# <white>", PARAM_NAME_SYSOP);
+	Return;
+}
+
+/*
+	Note how upload GPL is disabled
+	Feelings are managed by a different menu
+*/
+void state_upload_files_menu(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_upload_files_menu);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
+			Put(usr, "<magenta>\n"
+				"Upload log<hotkey>in screen             Upload <hotkey>1st login screen\n"
+				"Upload log<hotkey>out screen            Upload <hotkey>user help\n"
+				"Upload <hotkey>motd screen              Upload <hotkey>config menu help\n"
+			);
+			Put(usr,
+				"Upload cr<hotkey>ash screen             Upload <hotkey>room config menu help\n"
+				"Upload <hotkey>boss screen              Upload <hotkey>sysop menu help\n"
+				"Upload <hotkey>hostmap                  Upload <hotkey>nologin screen\n"
+			);
+			Put(usr,
+				"Upload <hotkey>local mods\n"
+			);
+			read_menu(usr);
+			Return;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "\n");
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'i':
+		case 'I':
+			Put(usr, "Upload login screen\n");
+			upload_file(usr, "login screen", PARAM_LOGIN_SCREEN);
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "Upload logout screen\n");
+			upload_file(usr, "logout screen", PARAM_LOGOUT_SCREEN);
+			Return;
+
+		case 'm':
+		case 'M':
+			Put(usr, "Upload motd\n");
+			upload_file(usr, "message of the day", PARAM_MOTD_SCREEN);
+			Return;
+
+		case 'b':
+		case 'B':
+			Put(usr, "Upload boss screen\n");
+			upload_file(usr, "boss screen", PARAM_BOSS_SCREEN);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "Upload crash screen\n");
+			upload_file(usr, "crash screen", PARAM_CRASH_SCREEN);
+			Return;
+
+		case 'n':
+		case 'N':
+			Put(usr, "Upload nologin screen\n");
+			upload_file(usr, "nologin screen", PARAM_NOLOGIN_SCREEN);
+			Return;
+
+		case '1':
+			Put(usr, "Upload 1st login screen\n");
+			upload_file(usr, "1st login screen", PARAM_FIRST_LOGIN);
+			Return;
+
+		case 'u':
+		case 'U':
+			Put(usr, "Upload user help\n");
+			upload_file(usr, "user help", PARAM_HELP_STD);
+			Return;
+
+		case 'c':
+		case 'C':
+			Put(usr, "Upload config menu help\n");
+			upload_file(usr, "config menu help", PARAM_HELP_CONFIG);
+			Return;
+
+		case 'r':
+		case 'R':
+			Put(usr, "Upload room config menu help\n");
+			upload_file(usr, "room config menu help", PARAM_HELP_ROOMCONFIG);
+			Return;
+
+		case 's':
+		case 'S':
+			Put(usr, "Upload sysop menu help\n");
+			upload_file(usr, "sysop menu help", PARAM_HELP_SYSOP);
+			Return;
+
+		case 'h':
+		case 'H':
+			Put(usr, "Upload hostmap\n");
+			upload_file(usr, "hostmap", PARAM_HOSTMAP_FILE);
+			Return;
+
+		case 'l':
+		case 'L':
+		case ']':
+			Put(usr, "Upload local modifications file\n");
+			upload_file(usr, "local modifications", PARAM_MODS_SCREEN);
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Upload# <white>", PARAM_NAME_SYSOP);
+	Return;
+}
+
+void upload_file(User *usr, char *desc, char *filename) {
+	if (usr == NULL || desc == NULL || filename == NULL)
+		return;
+
+	Enter(upload_file);
+
+	if (!*filename) {
+		Print(usr, "<red>The filename for the <yellow>%s<red> has not been configured yet\n", desc);
+		Return;
+	}
+	free_StringIO(usr->text);
+	load_StringIO(usr->text, filename);
+
+	Print(usr, "<cyan>The current %s is:\n<green>", desc);
+
+	usr->tmpbuf[TMP_NAME] = cstrdup(filename);
+	usr->tmpbuf[TMP_PASSWD] = cstrdup(desc);
+
+	PUSH(usr, STATE_UPLOAD_YESNO);
+	read_text(usr);
+	Return;
+}
+
+/*
+	tmpbuf[TMP_NAME] is the filename
+	tmpbuf[TMP_PASSWD] is the description
+*/
+void state_upload_yesno(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_upload_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Do you want to change this? (y/N): ");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			POP(usr);
+			usr->runtime_flags |= RTF_UPLOAD;
+			Print(usr, "\n<green>Upload new %s, press<yellow> <Ctrl-C><green> to end\n", usr->tmpbuf[TMP_PASSWD]);
+			edit_text(usr, upload_save, upload_abort);
+			break;
+
+		case YESNO_NO:
+			RET(usr);
+			break;
+
+		case YESNO_UNDEF:
+			Put(usr, "<cyan>Change it, yes or no? (y/N): ");
+	}
+	Return;
+}
+
+/*
+	tmpbuf[TMP_NAME] is the filename
+	tmpbuf[TMP_PASSWD] is the description
+*/
+void upload_save(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Free(usr->tmpbuf[TMP_PASSWD]);
+	usr->tmpbuf[TMP_PASSWD] = NULL;
+
+	if (usr->tmpbuf[TMP_NAME] == NULL || !usr->tmpbuf[TMP_NAME][0]) {
+		Free(usr->tmpbuf[TMP_NAME]);
+		usr->tmpbuf[TMP_NAME] = NULL;
+		Perror(usr, "The filename has disappeared, unable to save");
+		RET(usr);
+		return;
+	}
+	remove_Cache_filename(usr->tmpbuf[TMP_NAME]);
+	if (save_StringIO(usr->text, usr->tmpbuf[TMP_NAME]) < 0) {
+		Print(usr, "<red>Failed to save file<white> %s\n", usr->tmpbuf[TMP_NAME]);
+		log_err("upload_save(): failed to save file %s", usr->tmpbuf[TMP_NAME]);
+	}
+	if (usr->tmpbuf[TMP_NAME] == PARAM_CRASH_SCREEN) {
+		free_StringIO(crash_screen);
+		if (load_StringIO(crash_screen, PARAM_CRASH_SCREEN) < 0) {
+			Perror(usr, "Failed to reload crash screen");
+		}
+	}
+	Free(usr->tmpbuf[TMP_NAME]);
+	usr->tmpbuf[TMP_NAME] = NULL;
+	RET(usr);
+}
+
+void upload_abort(User *usr, char c) {
+	free_StringIO(usr->text);
+	usr->tmpbuf[TMP_NAME] = usr->tmpbuf[TMP_PASSWD] = NULL;
+	RET(usr);
 }
 
 

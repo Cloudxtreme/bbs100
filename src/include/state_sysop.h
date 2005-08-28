@@ -98,6 +98,8 @@
 
 #define STATE_FEATURES_MENU				state_features_menu
 #define STATE_RELOAD_FILES_MENU			state_reload_files_menu
+#define STATE_UPLOAD_FILES_MENU			state_upload_files_menu
+#define STATE_UPLOAD_YESNO				state_upload_yesno
 
 #define STATE_MAXIMUMS_MENU				state_maximums_menu
 #define STATE_PARAM_CACHED				state_param_cached
@@ -208,6 +210,11 @@ void state_param_def_timezone(User *, char);
 
 void state_features_menu(User *, char);
 void state_reload_files_menu(User *, char);
+void state_upload_files_menu(User *, char);
+void upload_file(User *, char *, char *);
+void state_upload_yesno(User *, char);
+void upload_save(User *, char);
+void upload_abort(User *, char);
 
 void state_maximums_menu(User *, char);
 void state_param_cached(User *, char);
