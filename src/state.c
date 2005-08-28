@@ -2669,7 +2669,7 @@ int cpos, lines;
 			Put(usr, "<green>");
 
 		default:
-			if (c != INIT_STATE)
+			if (c != INIT_STATE && !(usr->flags & USR_NOPAGE_DOWNLOADS))
 				Put(usr, "<green>\n");
 
 			cpos = lines = 0;
@@ -2684,7 +2684,7 @@ int cpos, lines;
 						if (*p < ' ') {
 							char colorbuf[MAX_COLORBUF];
 
-							short_color_to_long(*p, colorbuf, MAX_COLORBUF);
+							short_color_to_long(*p, colorbuf, MAX_COLORBUF, usr->flags & USR_SHORT_DL_COLORS);
 							put_StringIO(usr->conn->output, colorbuf);
 
 							cpos += strlen(colorbuf);
@@ -2702,7 +2702,7 @@ int cpos, lines;
 						}
 					}
 					p++;
-					if (lines >= usr->display->term_height-1) {
+					if (!(usr->flags & USR_NOPAGE_DOWNLOADS) && lines >= usr->display->term_height-1) {
 						seek_StringIO(usr->text, -strlen(p), STRINGIO_CUR);
 						Put(usr, "<white>");
 						Put(usr, "[Press a key]");

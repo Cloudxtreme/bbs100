@@ -918,8 +918,11 @@ int len = 0, i;
 /*
 	convert key code to long color code
 	some key codes do not have a long equivalent
+
+	flags can be USR_SHORT_DL_COLORS, which means that the color codes should be
+	represented in short format
 */
-int short_color_to_long(char c, char *buf, int max_len) {
+int short_color_to_long(char c, char *buf, int max_len, int flags) {
 int i;
 
 	if (buf == NULL || max_len <= 0)
@@ -948,15 +951,30 @@ int i;
 		case KEY_CTRL('M'):
 		case KEY_CTRL('C'):
 		case KEY_CTRL('W'):
-		case KEY_CTRL('K'):
 			for(i = 0; i < NUM_COLORS; i++) {
 				if (color_table[i].key == c) {
-					bufprintf(buf, max_len, "^%c", c + 'A' - 1);
-/*					bufprintf(buf, max_len, "<%s>", color_table);
-					cstrlwr(buf); */
+					if (flags & USR_SHORT_DL_COLORS) {
+/*
+	black is Ctrl-Z, but actually has to entered as Ctrl-K
+	see also edit_color() in edit.c
+
+	(this is confusing, but black is blacK, while the K is for hotkeys)
+*/
+						if (c == KEY_CTRL('Z'))
+							c = KEY_CTRL('K');
+
+						bufprintf(buf, max_len, "^%c", c + 'A' - 1);
+					} else {
+						bufprintf(buf, max_len, "<%s>", color_table[i].name);
+						cstrlwr(buf);
+					}
 					break;
 				}
 			}
+			break;
+
+		case KEY_CTRL('K'):
+			cstrcpy(buf, "<hotkey>", max_len);
 			break;
 
 		case KEY_CTRL('N'):

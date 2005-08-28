@@ -96,7 +96,7 @@ void expand_hline(char *, char *, int, int);
 void expand_center(char *, char *, int, int);
 int skip_long_color_code(char *);
 int color_strlen(char *);
-int short_color_to_long(char, char *, int);
+int short_color_to_long(char, char *, int, int);
 int color_index(char *, int);
 void auto_color(User *, char *, int);
 void restore_colorbuf(User *, int, char *, int);

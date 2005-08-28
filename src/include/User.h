@@ -83,7 +83,9 @@
 #define USR_BOLD_HOTKEYS		0x2000000	/* print hotkeys bold; Warning: complex meaning for this flag (see util.c, function print_hotkey()) */
 #define USR_XMSG_NUM			0x4000000	/* put sequence numbers in received messages */
 #define USR_SHORT_PROFILE		0x8000000	/* default profile info listing is short */
-#define USR_ALL					0xfffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+#define USR_SHORT_DL_COLORS		0x10000000	/* show short color codes in downloaded text */
+#define USR_NOPAGE_DOWNLOADS	0x20000000	/* don't show pager for downloaded text */
+#define USR_ALL					0x3fffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */

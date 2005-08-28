@@ -39,6 +39,8 @@ There are a lot of new options in the Config menu:
     lock the terminal or go into Hold message mode
   - users may choose whether a room generates a beep when someone makes
     a new post in that room
+  - choose whether downloaded text shows color codes in long or short format
+  - choose whether downloads pause every screen or not
   - 'verbose friend notification' shows even more friend notifications
   - choose whether 'p' shows long or short profile
   - users may choose to hide their profile info from enemies

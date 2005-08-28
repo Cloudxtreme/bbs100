@@ -1656,6 +1656,13 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
 			);
 			Print(usr, "\n"
+				"<hotkey>Downloads pause every page           <white>%s<magenta>\n"
+				"<hotkey>Color codes in downloads are ...     <white>%s<magenta>\n",
+
+				(usr->flags & USR_NOPAGE_DOWNLOADS) ? "No" : "Yes",
+				(usr->flags & USR_SHORT_DL_COLORS) ? "Short" : "Long"
+			);
+			Print(usr, "\n"
 				"<hotkey>Verbose friend notifications         <white>%s<magenta>\n"
 				"Default <hotkey>profile info is ...          <white>%s<magenta>\n"
 				"Hide profile <hotkey>info from enemies       <white>%s<magenta>\n",
@@ -1728,6 +1735,14 @@ void state_config_options(User *usr, char c) {
 			Print(usr, "%s for a reason\n", (usr->flags & USR_DONT_ASK_REASON) ? "Don't ask" : "Ask");
 			CURRENT_STATE(usr);
 			Return;
+
+		case 'd':
+		case 'D':
+			CONFIG_OPTION(USR_NOPAGE_DOWNLOADS, "Downloads page");
+
+		case 'c':
+		case 'C':
+			CONFIG_OPTION(USR_SHORT_DL_COLORS, "Color codes in downloads");
 
 		case 'v':
 		case 'V':
