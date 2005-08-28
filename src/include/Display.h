@@ -28,15 +28,11 @@
 typedef struct {
 	StringIO *buf;
 	int term_width, term_height;
-	int cpos, line, more_prompt;
+	int cpos, line;
 } Display;
-
 
 Display *new_Display(void);
 void destroy_Display(Display *);
-
-void enable_more_prompt(Display *);
-void disable_more_prompt(Display *);
 
 #endif	/* DISPLAY_H_WJ105 */
 

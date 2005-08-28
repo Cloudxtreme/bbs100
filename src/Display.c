@@ -53,20 +53,4 @@ void destroy_Display(Display *d) {
 	Free(d);
 }
 
-void enable_more_prompt(Display *d) {
-	if (d == NULL)
-		return;
-
-	free_StringIO(d->buf);
-	d->more_prompt = 1;
-}
-
-void disable_more_prompt(Display *d) {
-	if (d == NULL)
-		return;
-
-	free_StringIO(d->buf);
-	d->more_prompt = 0;
-}
-
 /* EOB */
