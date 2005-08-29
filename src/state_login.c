@@ -366,7 +366,7 @@ void state_ansi_prompt(User *usr, char c) {
 	Enter(state_ansi_prompt);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<yellow>Are you on an ANSI terminal? (Y/n): ");
+		Put(usr, "Are you on an ANSI terminal? (Y/n): ");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -381,7 +381,7 @@ void state_ansi_prompt(User *usr, char c) {
 			break;
 
 		default:
-			Put(usr, "\n<yellow>Are you on an ANSI terminal, <hotkey>Yes or <hotkey>No? (Y/n): ");
+			Put(usr, "\nAre you on an ANSI terminal, <hotkey>yes or <hotkey>no? (Y/n): ");
 			Return;
 	}
 	if (load_screen(usr->text, PARAM_FIRST_LOGIN) >= 0) {

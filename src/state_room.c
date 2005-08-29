@@ -1123,7 +1123,8 @@ int r;
 }
 
 void state_zap_prompt(User *usr, char c) {
-int r;
+Room *room;
+Joined *j;
 
 	if (usr == NULL)
 		return;
@@ -1153,30 +1154,32 @@ int r;
 			RET(usr);
 			Return;
 		}
-		Put(usr, "<cyan>Are you sure? (Y/n): ");
+		Put(usr, "<cyan>Are you sure? (Y/n): <white>");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
-	r = yesno(usr, c, 'Y');
-	if (r == YESNO_YES) {
-		Room *room;
-		Joined *j;
+	switch(yesno(usr, c, 'Y')) {
+		case YESNO_YES:
+			if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
+				j->zapped = 1;
 
-		if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
-			j->zapped = 1;
-
-		room = next_unread_room(usr);
-		if (room != usr->curr_room) {
-			POP(usr);
-			goto_room(usr, room);
+			room = next_unread_room(usr);
+			if (room != usr->curr_room) {
+				POP(usr);
+				goto_room(usr, room);
+				Return;
+			}
+			RET(usr);
 			Return;
-		}
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		case YESNO_UNDEF:
+			Print(usr, "<cyan>Forget about <yellow>%s>,<cyan> <hotkey>yes or <hotkey>no? (Y/n): <white>", usr->curr_room->name);
+			Return;
 	}
-	if (r == YESNO_UNDEF) {
-		CURRENT_STATE(usr);
-		Return;
-	}
-	RET(usr);
 	Return;
 }
 
