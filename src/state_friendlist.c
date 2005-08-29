@@ -58,11 +58,8 @@ StringList *sl;
 				Put(usr, "\n");
 				print_columns(usr, usr->friends, 0);
 			}
-			Put(usr, "<magenta>\n"
-				"<hotkey>Add friend\n");
-
-			if (usr->friends != NULL)
-				Put(usr, "<hotkey>Remove friend\n");
+			Print(usr, "<magenta>\n"
+				"<hotkey>Add friend%s", (usr->enemies == NULL) ? "\n" : "                   <hotkey>Remove friend\n");
 
 			Put(usr, "Switch to <hotkey>enemy list\n");
 			read_menu(usr);
@@ -254,11 +251,8 @@ StringList *sl;
 				Put(usr, "\n");
 				print_columns(usr, usr->enemies, 0);
 			}
-			Put(usr, "<magenta>\n"
-				"<hotkey>Add enemy\n");
-
-			if (usr->enemies != NULL)
-				Put(usr, "<hotkey>Remove enemy\n");
+			Print(usr, "<magenta>\n"
+				"<hotkey>Add enemy%s", (usr->enemies == NULL) ? "\n" : "                    <hotkey>Remove enemy\n");
 
 			Put(usr, "Switch to <hotkey>friend list\n");
 			read_menu(usr);
