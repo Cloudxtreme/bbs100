@@ -73,6 +73,8 @@ There are a lot of new options in the Config menu:
   in the room)
 - Read New shows the number of new messages
 - profile info can be downloaded
+- users can send eXpress messages to themselves again, which is especially
+  nice if you want to see what a specific Feeling looks like
 
 
 What's new to the admins?
@@ -149,6 +151,8 @@ What's new internally?
 - rooms no longer keep an index of messages, but only a head and tail
   pointer
   (this saves memory and is much, much faster)
+- patches may be listed in patchlist.c so that everyone can see which
+  patches have been applied
 - some bugs fixed ...
 
 

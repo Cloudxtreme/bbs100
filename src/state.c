@@ -895,6 +895,11 @@ void loop_send_msg(User *usr, char c) {
 	Enter(loop_send_msg);
 
 	if (c == INIT_STATE) {
+/*
+	EDIT_INIT resets the edit line, which is important when sending yourself messages
+	from within a chat room ... (otherwise the line annoyingly gets reprinted)
+*/
+		edit_line(usr, EDIT_INIT);
 		LOOP(usr, list_Count(usr->recipients));
 /*
 	the message that you send to yourself won't be received... but you do
@@ -943,8 +948,10 @@ void loop_send_msg(User *usr, char c) {
 			if (recv_it)
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
 			else {
-				if (PARAM_HAVE_MAILROOM)
+				if (PARAM_HAVE_MAILROOM) {
 					CALL(usr, STATE_MAIL_SEND_MSG);
+					Return;
+				}
 			}
 		}
 		if (!usr->conn->loop_counter) {
@@ -970,7 +977,7 @@ StringList *sl;
 		usr->conn->state = CONN_ESTABLISHED;
 		usr->runtime_flags |= RTF_BUSY;
 
-		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): ");
+		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'Y')) {
@@ -982,13 +989,11 @@ StringList *sl;
 			break;
 
 		case YESNO_UNDEF:
-			CURRENT_STATE(usr);
+			Put(usr, "<cyan>Send the message as <yellow>Mail>, <hotkey>yes or <hotkey>no? (Y/n): <white>");
 			Return;
 	}
 /*
 	The user was already gone, so remove it from the recipient list
-	This actually works and does not give any problems, but only because the
-	loop is done from end to beginning
 */
 	sl = usr->recipients;
 	if (sl != NULL) {
@@ -1071,14 +1076,15 @@ int r;
 			msg->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, msg);
+		expire_history(usr);
 
 		destroy_BufferedMsg(usr->send_msg);
 		usr->send_msg = ref_BufferedMsg(msg);
+		usr->msg_seq_sent++;
 
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
-			usr->msg_seq_sent++;
 			usr->esent++;
 			if (usr->esent > stats.esent) {
 				stats.esent = usr->esent;
@@ -1157,14 +1163,15 @@ int r;
 			xmsg->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, xmsg);
+		expire_history(usr);
 
 		destroy_BufferedMsg(usr->send_msg);
 		usr->send_msg = ref_BufferedMsg(xmsg);
+		usr->msg_seq_sent++;
 
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
-			usr->msg_seq_sent++;
 			usr->xsent++;
 			if (usr->xsent > stats.xsent) {
 				stats.xsent = usr->xsent;
@@ -1278,14 +1285,15 @@ int r;
 			msg->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, msg);
+		expire_history(usr);
 
 		destroy_BufferedMsg(usr->send_msg);
 		usr->send_msg = ref_BufferedMsg(msg);
+		usr->msg_seq_sent++;
 
 /* update stats */
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
-			usr->msg_seq_sent++;
 			usr->fsent++;
 			if (usr->fsent > stats.fsent) {
 				stats.fsent = usr->fsent;
@@ -1368,6 +1376,8 @@ int r;
 			question->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, question);
+		expire_history(usr);
+
 		recvMsg(u, usr, question);				/* the question is asked! */
 		stats.qsent_boot++;
 		usr->msg_seq_sent++;
@@ -1456,13 +1466,14 @@ int r;
 			xmsg->flags |= BUFMSG_SYSOP;
 
 		add_BufferedMsg(&usr->history, xmsg);
+		expire_history(usr);
 
 		destroy_BufferedMsg(usr->send_msg);
 		usr->send_msg = ref_BufferedMsg(xmsg);
+		usr->msg_seq_sent++;
 
 		if (usr->recipients != NULL
 			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
-			usr->msg_seq_sent++;
 			usr->qansw++;
 			if (usr->qansw > stats.qansw) {
 				stats.qansw = usr->qansw;

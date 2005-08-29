@@ -723,4 +723,26 @@ void state_held_plus(User *usr, char c) {
 	generic_history_plus(usr, c, &usr->held_msgp);
 }
 
+/*
+	there is a maximum number of remembered messages
+	call directly after adding a BufferedMsg to the history
+
+	it is inefficient because it has to count the list every time
+	maybe it should keep a seperate count in the List object ...
+*/
+void expire_history(User *usr) {
+	if (usr == NULL)
+		return;
+
+	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
+		PList *pl;
+
+		if ((pl = pop_PList(&usr->history)) != NULL) {
+			destroy_BufferedMsg((BufferedMsg *)pl->p);
+			pl->p = NULL;
+			destroy_PList(pl);
+		}
+	}
+}
+
 /* EOB */

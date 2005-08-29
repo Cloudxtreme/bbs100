@@ -1,3 +1,7 @@
+Changes as of August 29th 2005
+- Yes/No prompts inconsistencies fixed
+- users can X to themselves again, esp. nice for checking out Feelings
+
 Changes as of August 28th 2005
 - sysop can upload files and screens
 - fixed case in which word-wrap didn't look so good

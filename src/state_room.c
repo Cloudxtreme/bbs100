@@ -141,6 +141,8 @@ char num_buf[MAX_NUMBER];
 		}
 		Return;
 	}
+	usr->runtime_flags &= ~RTF_CHAT_ESCAPE;
+
 /*
 	Now handle the more 'normal' DOC-style rooms
 */

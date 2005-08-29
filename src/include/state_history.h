@@ -46,6 +46,8 @@ void state_held_msg_number(User *, char);
 void state_held_minus(User *, char);
 void state_held_plus(User *, char);
 
+void expire_history(User *);
+
 #endif	/* STATE_HISTORY_H_WJ105 */
 
 /* EOB */

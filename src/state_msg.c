@@ -24,6 +24,7 @@
 #include "defines.h"
 #include "state_msg.h"
 #include "state_room.h"
+#include "state_history.h"
 #include "state.h"
 #include "edit.h"
 #include "access.h"
@@ -796,33 +797,35 @@ void recvMsg(User *usr, User *from, BufferedMsg *msg) {
 BufferedMsg *new_msg;
 char msg_type[MAX_LINE];
 StringList *sl;
+int remove;
 
 	if (usr == NULL || from == NULL || msg == NULL || msg->msg == NULL || msg->msg->buf == NULL)
 		return;
 
 	Enter(recvMsg);
 
-	if (usr == from) {			/* talking to yourself is a no-no, because of kludgy code :P */
-		Return;
-	}
-	if (usr->runtime_flags & RTF_LOCKED) {
-		Print(from, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", usr->name);
-		goto Rcv_Remove_Recipient;
-	}
-	if (!(from->runtime_flags & RTF_SYSOP)) {
-		if ((sl = in_StringList(usr->enemies, from->name)) != NULL) {
-			Print(from, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages from you any longer\n", usr->name);
-			goto Rcv_Remove_Recipient;
+	if (usr != from) {
+		remove = 0;
+		if (usr->runtime_flags & RTF_LOCKED) {
+			Print(from, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", usr->name);
+			remove = 1;
 		}
-		if ((usr->flags & USR_DENY_MULTI) && msg->to != NULL && msg->to->next != NULL) {
-			Print(from, "<yellow>%s<green> doesn't wish to receive multi messages\n", usr->name);
-			goto Rcv_Remove_Recipient;
+		if (!remove && !(from->runtime_flags & RTF_SYSOP)) {
+			if ((sl = in_StringList(usr->enemies, from->name)) != NULL) {
+				Print(from, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages from you any longer\n", usr->name);
+				remove = 1;
+			}
+			if (!remove && (usr->flags & USR_DENY_MULTI) && msg->to != NULL && msg->to->next != NULL) {
+				Print(from, "<yellow>%s<green> doesn't wish to receive multi messages\n", usr->name);
+				remove = 1;
+			}
+			if (!remove && (usr->flags & USR_X_DISABLED)
+				&& (in_StringList(usr->friends, from->name) == NULL)) {
+				Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
+				remove = 1;
+			}
 		}
-		if ((usr->flags & USR_X_DISABLED)
-			&& (in_StringList(usr->friends, from->name) == NULL)) {
-			Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
-
-Rcv_Remove_Recipient:
+		if (remove) {
 			if ((sl = in_StringList(from->recipients, usr->name)) != NULL) {
 				remove_StringList(&from->recipients, sl);
 				destroy_StringList(sl);
@@ -865,67 +868,70 @@ Rcv_Remove_Recipient:
 					}
 					stats.frecv_boot++;
 				}
-			} else
+			} else {
 				if ((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION)
 					cstrcpy(msg_type, "Question", MAX_LINE);
 				else {
 					if ((msg->flags & BUFMSG_TYPE) == BUFMSG_ANSWER)
 						cstrcpy(msg_type, "Answer", MAX_LINE);
 					else {
-						log_err("recvMsg(): BUG ! Unknown message type %d", (msg->flags & BUFMSG_TYPE));
+						log_err("recvMsg(): BUG ! unknown message type %d", (msg->flags & BUFMSG_TYPE));
 						cstrcpy(msg_type, "Message", MAX_LINE);
 					}
 				}
+			}
 		}
 	}
-	if ((new_msg = ref_BufferedMsg(msg)) == NULL) {
-		Perror(from, "Out of memory");
-		Print(from, "<red>%s<red> was not received by <yellow>%s\n", msg_type, usr->name);
-		Return;
-	}
+	if (usr == from)
+		new_msg = msg;
+	else {
 /*
-	put the new copy of the message on the correct list
+	put a reference to the message in the receiver's history or held buffer
 */
-	if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
-		add_BufferedMsg(&usr->held_msgs, new_msg);
-	else
-		if (usr->runtime_flags & RTF_BUSY)
+		if ((new_msg = ref_BufferedMsg(msg)) == NULL) {
+			Perror(from, "Out of memory");
+			Print(from, "<red>%s<red> was not received by <yellow>%s\n", msg_type, usr->name);
+			Return;
+		}
+		if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))
 			add_BufferedMsg(&usr->held_msgs, new_msg);
 		else {
-			add_BufferedMsg(&usr->history, new_msg);
-			usr->msg_seq_recv++;
-		}
-
-	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
-		PList *pl;
-
-		if ((pl = pop_PList(&usr->history)) != NULL) {
-			destroy_BufferedMsg((BufferedMsg *)pl->p);
-			pl->p = NULL;
-			destroy_PList(pl);
+			if (usr->runtime_flags & RTF_BUSY)
+				add_BufferedMsg(&usr->held_msgs, new_msg);
+			else {
+				add_BufferedMsg(&usr->history, new_msg);
+				expire_history(usr);
+				usr->msg_seq_recv++;
+			}
 		}
 	}
-	if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
-		if ((usr->runtime_flags & RTF_BUSY_SENDING)
-			&& in_StringList(usr->recipients, from->name) != NULL)
 /*
-	warn follow-up mode by Richard of MatrixBBS
+	print if the receiver is currently busy or on hold
+	when sending to yourself, the message is always immediately received regardless
 */
-			Print(from, "<yellow>%s<green> is busy sending you a message%s\n", usr->name,
-				(PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
-		else
-			if ((usr->runtime_flags & RTF_BUSY_MAILING)
+	if (usr != from) {
+		if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
+			if ((usr->runtime_flags & RTF_BUSY_SENDING)
 				&& in_StringList(usr->recipients, from->name) != NULL)
-				Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
-			else
-				if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
-					if (usr->away != NULL && usr->away[0])
-						Print(from, "<yellow>%s<green> has put messages on hold; %s\n", usr->name, usr->away);
-					else
-						Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
-				} else
-					Print(from, "<yellow>%s<green> is busy and will receive your %s<green> when done\n", usr->name, msg_type);
-		Return;
+/* warn follow-up mode by Richard of MatrixBBS */
+				Print(from, "<yellow>%s<green> is busy sending you a message%s\n", usr->name,
+					(PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
+			else {
+				if ((usr->runtime_flags & RTF_BUSY_MAILING)
+					&& in_StringList(usr->recipients, from->name) != NULL)
+					Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
+				else {
+					if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
+						if (usr->away != NULL && usr->away[0])
+							Print(from, "<yellow>%s<green> has put messages on hold; %s\n", usr->name, usr->away);
+						else
+							Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
+					} else
+						Print(from, "<yellow>%s<green> is busy and will receive your %s<green> when done\n", usr->name, msg_type);
+				}
+			}
+			Return;
+		}
 	}
 	if (usr->curr_room->flags & ROOM_CHATROOM)
 		chatroom_recvMsg(usr, new_msg);
@@ -936,16 +942,20 @@ Rcv_Remove_Recipient:
 	}
 	Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
 
-/* auto-reply if FOLLOWUP or if it was a Question */
-
-	if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
-		|| (((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
-		listdestroy_StringList(usr->recipients);
-		if ((usr->recipients = new_StringList(msg->from)) == NULL) {
-			Perror(usr, "Out of memory");
-			Return;
+	if (usr != from) {
+/*
+	auto-reply if FOLLOWUP or if it was a Question
+	auto-reply is ignored when sending to yourself
+*/
+		if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
+			|| (((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
+			listdestroy_StringList(usr->recipients);
+			if ((usr->recipients = new_StringList(msg->from)) == NULL) {
+				Perror(usr, "Out of memory");
+				Return;
+			}
+			do_reply_x(usr, msg->flags);
 		}
-		do_reply_x(usr, msg->flags);
 	}
 	Return;
 }
@@ -988,6 +998,7 @@ int printed;
 
 		remove_BufferedMsg(&usr->held_msgs, m);
 		add_BufferedMsg(&usr->history, m);			/* remember this message */
+		expire_history(usr);
 		usr->msg_seq_recv++;
 
 /* auto-reply is follow up or question */
