@@ -1187,7 +1187,7 @@ int r;
 	Enter(state_zapall_prompt);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -1221,7 +1221,7 @@ int r;
 		}
 	}
 	if (r == YESNO_UNDEF) {
-		CURRENT_STATE(usr);
+		Put(usr, "<cyan>Zap all rooms, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		Return;
 	}
 	RET(usr);

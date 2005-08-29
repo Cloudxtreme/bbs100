@@ -232,7 +232,7 @@ void state_new_account_yesno(User *usr, char c) {
 			break;
 
 		case YESNO_UNDEF:
-			CURRENT_STATE(usr);
+			Put(usr, "Create a new user, <hotkey>yes or <hotkey>no? (y/N): ");
 	}
 	Return;
 }
@@ -332,7 +332,7 @@ char buf[MAX_LINE];
 		}
 		bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 		Put(usr, buf);
-		Put(usr, "(y/N): ");
+		Put(usr, "(y/N): <white>");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -354,7 +354,7 @@ char buf[MAX_LINE];
 		default:
 			bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
 			Put(usr, buf);
-			Put(usr, "(y/N): ");
+			Put(usr, "(y/N): <white>");
 	}
 	Return;
 }

@@ -588,7 +588,7 @@ void (*abort_func)(void *, char);
 			break;
 
 		case YESNO_UNDEF:
-			CURRENT_STATE(usr);
+			Put(usr, "<cyan>Abort, <hotkey>yes or <hotkey>no? (y/N): <white>");
 			break;
 	}
 	Return;
@@ -704,7 +704,7 @@ int r;
 	Enter(state_delete_msg);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -738,7 +738,7 @@ int r;
 			Put(usr, "<green>Message deleted\n");
 	}
 	if (r == YESNO_UNDEF) {
-		CURRENT_STATE(usr);
+		Put(usr, "<cyan>Delete message, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		Return;
 	}
 	usr->runtime_flags &= ~RTF_BUSY;
@@ -755,7 +755,7 @@ int r;
 	Enter(state_undelete_msg);
 
 	if (c == INIT_STATE) {
-		Put(usr, "\n<cyan>Undelete this message? (y/N): ");
+		Put(usr, "\n<cyan>Undelete this message? (y/N): <white>");
 		usr->runtime_flags |= RTF_BUSY;
 		Return;
 	}
@@ -780,7 +780,7 @@ int r;
 			Put(usr, "<green>Message undeleted\n");
 	}
 	if (r == YESNO_UNDEF) {
-		CURRENT_STATE(usr);
+		Put(usr, "<cyan>Undelete this message, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		Return;
 	}
 	usr->runtime_flags &= ~RTF_BUSY;

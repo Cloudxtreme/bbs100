@@ -680,7 +680,7 @@ char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
 	Enter(state_nuke_yesno);
 
 	if (c == INIT_STATE) {
-		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'N')) {
@@ -728,7 +728,7 @@ char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
 			Return;
 
 		default:
-			Print(usr, "<cyan>Delete user <white>%s<cyan>? (y/N): ", usr->edit_buf);
+			Print(usr, "<cyan>Delete user <white>%s<cyan>? (y/N): <white>", usr->edit_buf);
 	}
 	Return;
 }
@@ -2293,7 +2293,7 @@ int r;
 			Return;
 
 		case YESNO_UNDEF:
-			Put(usr, "<cyan>Delete this feeling, yes or no? (y/N): <white>");
+			Put(usr, "<cyan>Delete this feeling, <hotkey>yes or <hotkey>no? (y/N): <white>");
 	}
 	Return;
 }

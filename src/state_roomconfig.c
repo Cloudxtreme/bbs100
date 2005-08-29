@@ -1024,7 +1024,7 @@ void state_reset_creation_date(User *usr, char c) {
 		Put(usr, "\n"
 			"<yellow>Resetting the creation date makes all users unjoin the room.\n"
 			"\n"
-			"<cyan>Are you sure you wish to reset the creation date? (y/N): "
+			"<cyan>Are you sure you wish to reset the creation date? (y/N): <white>"
 		);
 	} else {
 		switch(yesno(usr, c, 'N')) {
@@ -1037,7 +1037,7 @@ void state_reset_creation_date(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Reset creation date, <hotkey>Yes or <hotkey>No? (y/N): ");
+				Put(usr, "<cyan>Reset creation date, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		}
 	}
 	Return;
@@ -1059,7 +1059,7 @@ void state_remove_all_posts(User *usr, char c) {
 "<red>Warning:<yellow> After removing all posts, you should also reset the creation date of\n"
 "the room. This makes everyone unjoin (bad for invite-only rooms)\n");
 
-		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? (y/N): ");
+		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? (y/N): <white>");
 	} else {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
@@ -1072,7 +1072,7 @@ void state_remove_all_posts(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Remove all posts, <hotkey>Yes or <hotkey>No? (y/N): ");
+				Put(usr, "<cyan>Remove all posts, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		}
 	}
 	Return;
@@ -1108,7 +1108,7 @@ void state_delete_room(User *usr, char c) {
 	Enter(state_delete_room);
 
 	if (c == INIT_STATE)
-		Put(usr, "<cyan>Are you sure? (y/N): ");
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 	else {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
@@ -1119,7 +1119,7 @@ void state_delete_room(User *usr, char c) {
 				break;
 
 			case YESNO_UNDEF:
-				Put(usr, "<cyan>Delete this room, <hotkey>Yes or <hotkey>No? (y/N): ");
+				Put(usr, "<cyan>Delete this room, <hotkey>yes or <hotkey>no? (y/N): <white>");
 		}
 	}
 	Return;

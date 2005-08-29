@@ -906,6 +906,7 @@ void loop_send_msg(User *usr, char c) {
 		StringList *sl;
 		User *u;
 		unsigned long i;
+		int recv_it;
 
 		if (usr->send_msg == NULL) {
 			Perror(usr, "The message has disappeared!");
@@ -922,37 +923,31 @@ void loop_send_msg(User *usr, char c) {
 			}
 		}
 		if (sl != NULL) {
+			recv_it = 1;
 			if ((u = is_online(sl->str)) == NULL) {
 				Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
-				if (PARAM_HAVE_MAILROOM)
-					CALL(usr, STATE_MAIL_SEND_MSG);
-				Return;
+				recv_it = 0;
 			} else {
 				if (u->runtime_flags & RTF_LOCKED) {
 					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
-					if (PARAM_HAVE_MAILROOM)
-						CALL(usr, STATE_MAIL_SEND_MSG);
-					Return;
+					recv_it = 0;
 				} else {
 					if (!(usr->runtime_flags & RTF_SYSOP)
 						&& (u->flags & USR_X_DISABLED)
 						&& (in_StringList(u->friends, usr->name) == NULL)) {
 						Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
-						if (PARAM_HAVE_MAILROOM)
-							CALL(usr, STATE_MAIL_SEND_MSG);
-						Return;
+						recv_it = 0;
 					}
 				}
+			}
+			if (recv_it)
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
+			else {
+				if (PARAM_HAVE_MAILROOM)
+					CALL(usr, STATE_MAIL_SEND_MSG);
 			}
 		}
 		if (!usr->conn->loop_counter) {
-/*
-	destroy the copy of the message we just sent
-	there are conditions in which this code is never reached... while this is
-	considered a bug, it doesn't really matter because usr->send_msg is
-	destroyed in other places as well
-*/
 			destroy_BufferedMsg(usr->send_msg);
 			usr->send_msg = NULL;
 		}
@@ -1010,6 +1005,11 @@ StringList *sl;
 		}
 	}
 	POP(usr);
+
+	if (!usr->conn->loop_counter) {
+		destroy_BufferedMsg(usr->send_msg);
+		usr->send_msg = NULL;
+	}
 	LOOP(usr, usr->conn->loop_counter);
 	Return;
 }
