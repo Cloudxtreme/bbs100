@@ -69,14 +69,7 @@ void state_config_menu(User *usr, char c) {
 
 			Put(usr, "<magenta>\n"
 				"<hotkey>Address                      <hotkey>Help\n"
-				"Profile <hotkey>info                 "
-			);
-			if (PARAM_HAVE_VANITY)
-				Put(usr, "\n"
-					"Profile <hotkey>vanity flag          "
-				);
-
-			Put(usr, "<hotkey>Terminal settings\n"
+				"Profile <hotkey>info                 <hotkey>Terminal settings\n"
 				"<hotkey>Doing                        Customize <hotkey>Who list\n"
 				"<hotkey>Reminder                     <hotkey>Options\n"
 			);
@@ -135,15 +128,6 @@ void state_config_menu(User *usr, char c) {
 			Put(usr, "Profile info\n");
 			CALL(usr, STATE_CONFIG_PROFILE);
 			Return;
-
-		case 'v':
-		case 'V':
-			if (PARAM_HAVE_VANITY) {
-				Put(usr, "Vanity flag\n");
-				CALL(usr, STATE_CONFIG_VANITY);
-				Return;
-			}
-			break;
 
 		case 'd':
 		case 'D':
@@ -423,6 +407,19 @@ void state_config_profile(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
+			Put(usr, "<magenta>\n"
+				"<hotkey>View current                 <hotkey>Upload\n"
+				"<hotkey>Enter new                    <hotkey>Download\n"
+			);
+			if (PARAM_HAVE_VANITY) {
+				Put(usr, "\n"
+					"Vanit<hotkey>y"
+				);
+				if (usr->vanity != NULL && usr->vanity[0])
+					Print(usr, "                       <magenta>*<white> %s <magenta>*\n", usr->vanity);
+				else
+					Put(usr, "                       <white>None\n");
+			}
 			break;
 
 		case ' ':
@@ -458,6 +455,7 @@ void state_config_profile(User *usr, char c) {
 				Return;
 			}
 			copy_StringIO(usr->text, usr->info);
+			PUSH(usr, STATE_PRESS_ANY_KEY);
 			Put(usr, "<green>");
 			read_text(usr);
 			Return;
@@ -466,7 +464,7 @@ void state_config_profile(User *usr, char c) {
 		case 'E':
 			Put(usr, "Edit\n"
 				"<green>\n"
-				"Enter new profile info, press <yellow><return><green> twice or press <yellow><Ctrl-C><green> to end\n"
+				"Enter new profile info, press<yellow> <return><green> twice or press<yellow> <Ctrl-C><green> to end\n"
 			);
 			edit_text(usr, save_profile, abort_profile);
 			Return;
@@ -475,7 +473,7 @@ void state_config_profile(User *usr, char c) {
 		case 'U':
 			Put(usr, "Upload\n"
 				"<green>\n"
-				"Upload new profile info, press <yellow><Ctrl-C><green> to end\n"
+				"Upload new profile info, press<yellow> <Ctrl-C><green> to end\n"
 			);
 			usr->runtime_flags |= RTF_UPLOAD;
 			edit_text(usr, save_profile, abort_profile);
@@ -493,8 +491,17 @@ void state_config_profile(User *usr, char c) {
 			copy_StringIO(usr->text, usr->info);
 			CALL(usr, STATE_DOWNLOAD_TEXT);
 			Return;
+
+		case 'y':
+		case 'Y':
+			if (PARAM_HAVE_VANITY) {
+				Put(usr, "Vanity\n");
+				CALL(usr, STATE_CONFIG_VANITY);
+				Return;
+			}
+			break;
 	}
-	Put(usr, "<magenta>\n<hotkey>View, <hotkey>Edit, <hotkey>Upload, <hotkey>Download: <white>");
+	Print(usr, "<yellow>\n[Config] Profile%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
