@@ -39,7 +39,7 @@
 
 #define UserError(a,b,c,d,e,f)												\
 	do {																	\
-		Put((a), "<red>ERROR: <yellow>" b "\n\n");							\
+		Put((a), "<red>ERROR: " b "\n\n");							\
 		log_err("%d %s %s%s: [%s] %s", (c), (d), (e), (f), (a)->name, (b));	\
 	} while(0)
 

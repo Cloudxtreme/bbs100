@@ -1,3 +1,6 @@
+Changes as of August 30th 2005
+- rewrote loop_send_msg() a bit
+
 Changes as of August 29th 2005
 - Yes/No prompts inconsistencies fixed
 - users can X to themselves again, esp. nice for checking out Feelings

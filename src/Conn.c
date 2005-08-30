@@ -227,12 +227,12 @@ void close_Conn(Conn *conn) {
 	conn->state = CONN_CLOSED;
 }
 
-void loop_Conn(Conn *conn, int iter) {
+void loop_Conn(Conn *conn, unsigned long iter) {
 	if (conn == NULL)
 		return;
 
 	conn->loop_counter = iter;
-	conn->state = (iter > 0) ? CONN_LOOPING : CONN_ESTABLISHED;
+	conn->state = (iter > 0UL) ? CONN_LOOPING : CONN_ESTABLISHED;
 }
 
 /* EOB */

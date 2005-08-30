@@ -901,12 +901,6 @@ void loop_send_msg(User *usr, char c) {
 */
 		edit_line(usr, EDIT_INIT);
 		LOOP(usr, list_Count(usr->recipients));
-/*
-	the message that you send to yourself won't be received... but you do
-	get a copy in your X history buffer
-*/
-		if (usr->conn->loop_counter == 1 && !strcmp(usr->recipients->str, usr->name))
-			Print(usr, "<green>Talking to yourself, are you?\n");
 	} else {
 		StringList *sl;
 		User *u;
@@ -929,19 +923,24 @@ void loop_send_msg(User *usr, char c) {
 		}
 		if (sl != NULL) {
 			recv_it = 1;
-			if ((u = is_online(sl->str)) == NULL) {
-				Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
-				recv_it = 0;
+			if (!strcmp(sl->str, usr->name)) {
+				Put(usr, "<green>Talking to yourself, are you?\n");
+				u = usr;
 			} else {
-				if (u->runtime_flags & RTF_LOCKED) {
-					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
+				if ((u = is_online(sl->str)) == NULL) {
+					Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
 					recv_it = 0;
 				} else {
-					if (!(usr->runtime_flags & RTF_SYSOP)
-						&& (u->flags & USR_X_DISABLED)
-						&& (in_StringList(u->friends, usr->name) == NULL)) {
-						Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
+					if (u->runtime_flags & RTF_LOCKED) {
+						Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
 						recv_it = 0;
+					} else {
+						if (!(usr->runtime_flags & RTF_SYSOP)
+							&& (u->flags & USR_X_DISABLED)
+							&& (in_StringList(u->friends, usr->name) == NULL)) {
+							Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
+							recv_it = 0;
+						}
 					}
 				}
 			}
@@ -957,6 +956,7 @@ void loop_send_msg(User *usr, char c) {
 		if (!usr->conn->loop_counter) {
 			destroy_BufferedMsg(usr->send_msg);
 			usr->send_msg = NULL;
+			Return;
 		}
 	}
 	Return;
@@ -1010,12 +1010,11 @@ StringList *sl;
 		}
 	}
 	POP(usr);
-
-	if (!usr->conn->loop_counter) {
-		destroy_BufferedMsg(usr->send_msg);
-		usr->send_msg = NULL;
-	}
 	LOOP(usr, usr->conn->loop_counter);
+	if (!usr->conn->loop_counter) {
+		POP(usr);
+		RET(usr);
+	}
 	Return;
 }
 
