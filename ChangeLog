@@ -3,6 +3,7 @@ Changes as of September 3rd 2005
 - bugfix; enter homeroom would display wrong room name to invited users
 - usr->chat_history is now a StringQueue
 - usr->recipients is now a StringQueue
+- usr->tablist is now a StringQueue
 
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit

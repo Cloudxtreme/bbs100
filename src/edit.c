@@ -1811,20 +1811,19 @@ User *u;
 	if (usr == NULL)
 		return;
 
+	deinit_StringQueue(usr->tablist);
+
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (!u->name[0] || (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL))
 			continue;
 
 		if (!usr->edit_pos || !strncmp(u->name, usr->edit_buf, usr->edit_pos))
-			add_StringList(&usr->tablist, new_StringList(u->name));
+			add_StringQueue(usr->tablist, new_StringList(u->name));
 	}
 /* now link end to beginning and beginning to end, forming a cyclic chain */
-	if (usr->tablist != NULL) {
-		StringList *sl;
-
-		for(sl = usr->tablist; sl->next != NULL; sl = sl->next);
-		sl->next = usr->tablist;
-		usr->tablist->prev = sl;
+	if (Queue_count(usr->tablist) > 0) {
+		usr->tablist->head->next = usr->tablist->tail;
+		usr->tablist->tail->prev = usr->tablist->head;
 	}
 }
 
@@ -1837,8 +1836,7 @@ Joined *j;
 
 	Enter(make_rooms_tablist);
 
-	listdestroy_StringList(usr->tablist);
-	usr->tablist = NULL;
+	deinit_StringQueue(usr->tablist);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -1859,18 +1857,15 @@ Joined *j;
 			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
 
 			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos) || cstristr(r->name, usr->edit_buf) != NULL)
-				add_StringList(&usr->tablist, new_StringList(r->name));
+				add_StringQueue(usr->tablist, new_StringList(r->name));
 		}
 		if (r->number == HOME_ROOM)
 			unload_Room(r);
 	}
 /* now link end to beginning and beginning to end, forming a cyclic chain */
-	if (usr->tablist != NULL) {
-		StringList *sl;
-
-		for(sl = usr->tablist; sl->next != NULL; sl = sl->next);
-		sl->next = usr->tablist;
-		usr->tablist->prev = sl;
+	if (Queue_count(usr->tablist) > 0) {
+		usr->tablist->head->next = usr->tablist->tail;
+		usr->tablist->tail->prev = usr->tablist->head;
 	}
 	Return;
 }
@@ -1894,16 +1889,16 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 
 	Enter(tab_list);
 
-	if (usr->tablist == NULL)
+	if (!Queue_count(usr->tablist))
 		make_tablist(usr);
 	else
-		usr->tablist = usr->tablist->next;
+		usr->tablist->head = usr->tablist->head->next;
 
-	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+	if (usr->tablist->head != NULL) {
 		erase_tabname(usr);
-		cstrcpy(usr->edit_buf, usr->tablist->str, MAX_LINE);
-		usr->edit_pos = strlen(usr->tablist->str);
-		Put(usr, usr->tablist->str);
+		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->head)->str, MAX_LINE);
+		usr->edit_pos = strlen(((StringList *)usr->tablist->head)->str);
+		Put(usr, ((StringList *)usr->tablist->head)->str);
 	}
 	Return;
 }
@@ -1912,16 +1907,16 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 	if (usr == NULL)
 		return;
 
-	if (usr->tablist == NULL)
+	if (!Queue_count(usr->tablist))
 		make_tablist(usr);
 	else
-		usr->tablist = usr->tablist->prev;
+		usr->tablist->head = usr->tablist->head->prev;
 
-	if (usr->tablist != NULL && usr->tablist->str != NULL) {
+	if (usr->tablist->head != NULL) {
 		erase_tabname(usr);
-		cstrcpy(usr->edit_buf, usr->tablist->str, MAX_LINE);
-		usr->edit_pos = strlen(usr->tablist->str);
-		Put(usr, usr->tablist->str);
+		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->head)->str, MAX_LINE);
+		usr->edit_pos = strlen(((StringList *)usr->tablist->head)->str);
+		Put(usr, ((StringList *)usr->tablist->head)->str);
 	}
 }
 
@@ -1929,13 +1924,11 @@ void reset_tablist(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
-	if (c != KEY_TAB && c != KEY_BACKTAB && usr->tablist != NULL) {
-		if (usr->tablist->prev != NULL) {		/* break the cyclic chain */
-			usr->tablist->prev->next = NULL;
-			usr->tablist->prev = NULL;
-		}
-		listdestroy_StringList(usr->tablist);
-		usr->tablist = NULL;
+	if (c != KEY_TAB && c != KEY_BACKTAB && usr->tablist->tail != NULL) {
+		usr->tablist->head = usr->tablist->tail->prev;	/* break the cyclic chain */
+		usr->tablist->tail->prev = NULL;
+		usr->tablist->head->next = NULL;
+		deinit_StringQueue(usr->tablist);
 	}
 }
 

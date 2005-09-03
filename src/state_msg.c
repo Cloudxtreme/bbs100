@@ -1561,7 +1561,7 @@ char buf[PRINT_BUF], c;
 	}
 	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
-	sl = usr->recipients->tail;
+	sl = (StringList *)usr->recipients->tail;
 	if (sl != NULL) {
 		unsigned long i;
 
