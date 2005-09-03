@@ -117,6 +117,8 @@ What's new internally?
 - much use of new type StringIO, which are automatically growing buffers
   rather than lists of strings
   (less memory fragmentation)
+- much use of new type Queue, which is a foundation for lists. It does
+  adding, prepending, and counting of objects in an efficient way
 - much use of new type KVPair (key-value pair)
 - messages in the X History are reference counted rather than copied;
   (this is fast and saves memory)

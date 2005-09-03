@@ -1,3 +1,6 @@
+Changes as of September 3rd 2005
+- added Queue type; it does efficient adding, prepending, and counting
+
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit
 
