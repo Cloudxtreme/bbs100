@@ -30,21 +30,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Queue *new_Queue(void (*destroy_func)(ListType *)) {
-Queue *q;
-
-	if ((q = (Queue *)Malloc(sizeof(Queue), TYPE_QUEUE)) == NULL)
-		return NULL;
-
-	q->destroy = destroy_func;
-	return q;
+Queue *new_Queue(void) {
+	return (Queue *)Malloc(sizeof(Queue), TYPE_QUEUE);
 }
 
-void destroy_Queue(Queue *q) {
-	if (q == NULL)
+void destroy_Queue(Queue *q, void (*destroy_func)(ListType *)) {
+	if (q == NULL || destroy_func == NULL)
 		return;
 
-	listdestroy_List(q->tail, q->destroy);
+	listdestroy_List(q->tail, destroy_func);
 	Free(q);
 }
 
@@ -101,6 +95,27 @@ ListType *ret;
 		}
 	}
 	return ret;
+}
+
+ListType *pop_Queue(Queue *q) {
+ListType *ret;
+
+	if (q == NULL)
+		return NULL;
+
+	ret = pop_List(&q->tail);
+	if (q->tail == NULL)
+		q->head = NULL;
+	return ret;
+}
+
+void concat_Queue(Queue *q, ListType *l) {
+	if (q == NULL || l == NULL)
+		return;
+
+	concat_List(&q->head, l);
+	if (q->tail == NULL)
+		q->tail = rewind_List(q->head);
 }
 
 void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {

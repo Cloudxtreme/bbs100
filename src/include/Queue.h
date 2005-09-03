@@ -27,16 +27,17 @@
 
 typedef struct {
 	ListType *head, *tail;
-	void (*destroy)(ListType *);
 	int count;
 } Queue;
 
-Queue *new_Queue(void (*)(ListType *));
-void destroy_Queue(Queue *);
+Queue *new_Queue(void);
+void destroy_Queue(Queue *, void (*)(ListType *));
 
 ListType *add_Queue(Queue *, ListType *);
 ListType *prepend_Queue(Queue *, ListType *);
 ListType *remove_Queue(Queue *, ListType *);
+ListType *pop_Queue(Queue *);
+void concat_Queue(Queue *, ListType *);
 void sort_Queue(Queue *, int (*)(void *, void *));
 int Queue_count(Queue *);
 

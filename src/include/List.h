@@ -20,8 +20,8 @@
 	List.h	WJ99
 */
 
-#ifndef _LIST_H_WJ99
-#define _LIST_H_WJ99 1
+#ifndef LIST_H_WJ99
+#define LIST_H_WJ99	1
 
 #define List(x)		x *prev, *next
 
@@ -42,6 +42,6 @@ ListType *rewind_List(void *);
 ListType *unwind_List(void *);
 ListType *sort_List(void *, int (*)(void *, void *));
 
-#endif	/* _LIST_H_WJ99 */
+#endif	/* LIST_H_WJ99 */
 
 /* EOB */
