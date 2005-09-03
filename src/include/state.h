@@ -93,8 +93,8 @@ int sort_who_desc_byname(void *, void *);
 int sort_who_desc_bytime(void *, void *);
 
 void who_list(User *, int);
-int long_who_list(User *, PList *);
-int short_who_list(User *, PList *, int);
+int long_who_list(User *, PQueue *);
+int short_who_list(User *, PQueue *, int);
 void who_list_header(User *, int, int);
 void reply_x(User *, int);
 void do_reply_x(User *, int);

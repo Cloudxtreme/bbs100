@@ -34,6 +34,16 @@
 #define unwind_PList(x)			(PList *)unwind_List(x)
 #define sort_PList(x,y)			(PList *)sort_List((x), (y))
 
+#define PQueue					Queue
+#define new_PQueue				new_Queue
+#define add_PQueue(x,y)			(PList *)add_Queue((x), (y))
+#define concat_PQueue(x,y)		(PList *)concat_Queue((x), (y))
+#define remove_PQueue(x,y)		(PList *)remove_Queue((x), (y))
+#define pop_PQueue(x)			(PList *)pop_Queue(x)
+#define destroy_PQueue(x)		destroy_Queue((x), destroy_PList)
+#define deinit_PQueue(x)		deinit_Queue((x), destroy_PList)
+#define sort_PQueue(x,y)		sort_Queue((x), (y))
+
 typedef struct PList_tag PList;
 
 struct PList_tag {

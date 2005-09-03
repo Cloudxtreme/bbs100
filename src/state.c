@@ -1624,7 +1624,7 @@ User *u1, *u2;
 }
 
 void who_list(User *usr, int format) {
-PList *proot = NULL;
+PQueue *pq;
 User *u;
 int (*sort_func)(void *, void *);
 int total;
@@ -1634,8 +1634,12 @@ int total;
 
 	Enter(who_list);
 
-/* construct PList of Users */
+/* construct PQueue of Users */
 
+	if ((pq = new_PQueue()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	}
 	if (usr->curr_room != NULL && (usr->curr_room->flags & ROOM_CHATROOM)
 		&& !(usr->flags & USR_SHOW_ALL)) {
 		PList *p;
@@ -1654,7 +1658,7 @@ int total;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL)
 				continue;
 
-			proot = add_PList(&proot, new_PList(u));
+			add_PQueue(pq, new_PList(u));
 		}
 	} else {
 		for(u = AllUsers; u != NULL; u = u->next) {
@@ -1664,10 +1668,9 @@ int total;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL)
 				continue;
 
-			proot = add_PList(&proot, new_PList(u));
+			add_PQueue(pq, new_PList(u));
 		}
 	}
-	proot = rewind_PList(proot);
 
 /* sort the list */
 
@@ -1682,19 +1685,19 @@ int total;
 		else
 			sort_func = sort_who_asc_bytime;
 	}
-	proot = sort_PList(proot, sort_func);
+	sort_PQueue(pq, sort_func);
 
 	buffer_text(usr);
 
-	total = list_Count(proot);
+	total = Queue_count(pq);
 	who_list_header(usr, total, format);
 
 	if (format & WHO_LIST_LONG)
-		long_who_list(usr, proot);
+		long_who_list(usr, pq);
 	else
-		short_who_list(usr, proot, total);
+		short_who_list(usr, pq, total);
 
-	listdestroy_PList(proot);		/* destroy temp list */
+	destroy_PQueue(pq);			/* destroy temp list */
 
 	read_text(usr);					/* display the who list */
 	Return;
@@ -1703,20 +1706,22 @@ int total;
 /*
 	construct a long format who list
 */
-int long_who_list(User *usr, PList *pl) {
+int long_who_list(User *usr, PQueue *pq) {
+PList *pl;
 int hrs, mins, l, c, width;
 unsigned long time_now;
 time_t t;
 char buf[PRINT_BUF], buf2[PRINT_BUF], col, stat;
 User *u;
 
-	if (usr == NULL)
+	if (usr == NULL || pq == NULL || pq->tail == NULL)
 		return 0;
 
 	Enter(long_who_list);
 
 	time_now = rtc;
 
+	pl = (PList *)pq->tail;
 	while(pl != NULL) {
 		u = (User *)pl->p;
 
@@ -1803,13 +1808,13 @@ User *u;
 
 	total should equal list_Count(pl)
 */
-int short_who_list(User *usr, PList *pl, int total) {
+int short_who_list(User *usr, PQueue *pq, int total) {
 int i, j, buflen = 0, cols, rows;
 char buf[PRINT_BUF], col, stat;
 User *u;
-PList *pl_cols[16];
+PList *pl, *pl_cols[16];
 
-	if (usr == NULL || pl == NULL || pl->p == NULL)
+	if (usr == NULL || pq == NULL || pq->tail == NULL)
 		return 0;
 
 	Enter(short_who_list);
@@ -1829,6 +1834,7 @@ PList *pl_cols[16];
 
 /* fill in array of pointers to columns */
 
+	pl = (PList *)pq->tail;
 	for(i = 0; i < cols; i++) {
 		pl_cols[i] = pl;
 		for(j = 0; j < rows; j++) {
@@ -2355,7 +2361,7 @@ void online_friends_list(User *usr) {
 User *u;
 struct tm *tm;
 StringList *sl;
-PList *pl = NULL;
+PQueue *pq;
 int total;
 
 	if (usr == NULL)
@@ -2368,23 +2374,24 @@ int total;
 		CURRENT_STATE(usr);
 		Return;
 	}
+	if ((pq = new_PQueue()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	}
 	for(sl = (StringList *)usr->friends->tail; sl != NULL; sl = sl->next) {
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
-/*
-		if (in_StringQueue(usr->enemies, u->name) != NULL)
-			continue;
-*/
-		pl = add_PList(&pl, new_PList(u));
+
+		add_PList(pq, new_PList(u));
 	}
-	if (pl == NULL) {
+	if (!Queue_count(pq)) {
 		Put(usr, "<red>None of your friends are online\n");
+		destroy_PQueue(pq);
 		CURRENT_STATE(usr);
 		Return;
 	}
-	pl = rewind_PList(pl);
-	pl = sort_PList(pl, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-	total = list_Count(pl);
+	sort_PQueue(pq, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
+	total = Queue_count(pq);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);
@@ -2396,9 +2403,9 @@ int total;
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
-	short_who_list(usr, pl, total);
+	short_who_list(usr, pq, total);
 
-	listdestroy_PList(pl);
+	destroy_PQueue(pq);
 
 	read_text(usr);
 	Return;
@@ -2416,7 +2423,7 @@ void talked_list(User *usr) {
 User *u;
 struct tm *tm;
 StringList *talked_to, *sl;
-PList *pl = NULL;
+PQueue *pq;
 int total;
 
 	if (usr == NULL)
@@ -2429,20 +2436,24 @@ int total;
 		CURRENT_STATE(usr);
 		Return;
 	}
+	if ((pq = new_PQueue()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	}
 	for(sl = talked_to; sl != NULL; sl = sl->next) {
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
 
-		pl = add_PList(&pl, new_PList(u));
+		add_PQueue(pq, new_PList(u));
 	}
-	if (pl == NULL) {
+	if (!Queue_count(pq)) {
 		Put(usr, "<red>Nobody you talked to is online anymore\n");
+		destroy_PQueue(pq);
 		CURRENT_STATE(usr);
 		Return;
 	}
-	pl = rewind_PList(pl);
-	pl = sort_PList(pl, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-	total = list_Count(pl);
+	sort_PQueue(pq, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
+	total = Queue_count(pq);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);
@@ -2454,9 +2465,9 @@ int total;
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 
-	short_who_list(usr, pl, total);
+	short_who_list(usr, pq, total);
 
-	listdestroy_PList(pl);
+	destroy_PQueue(pq);
 	listdestroy_StringList(talked_to);
 
 	read_text(usr);

@@ -6,6 +6,7 @@ Changes as of September 3rd 2005
 - usr->tablist is now a StringQueue
 - usr->friends is now a StringQueue
 - usr->enemies is now a StringQueue
+- who list works with PQueue
 
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit
