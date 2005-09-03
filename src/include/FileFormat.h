@@ -154,6 +154,17 @@
 		}														\
 	} while(0)
 
+#define FF1_LOAD_STRINGQUEUE(x,y)							\
+	do {													\
+		if (ff1_continue)									\
+			break;											\
+		if (!strcmp(buf, (x))) {							\
+			if (*p)											\
+				add_StringQueue((y), new_StringList(p));	\
+			ff1_continue = 1;								\
+		}													\
+	} while(0)
+
 #define FF1_LOAD_STRINGIO(x,y)										\
 	do {															\
 		if (ff1_continue)											\
@@ -174,10 +185,8 @@
 		if (ff1_continue)													\
 			break;															\
 		if (!strcmp(buf, (x))) {											\
-			if (*p && user_exists(p) && in_StringList((y), p) == NULL) {	\
-				(y) = add_StringList(&(y), new_StringList(p));				\
-				(y) = rewind_StringList((y));								\
-			}																\
+			if (*p && user_exists(p) && in_StringQueue((y), p) == NULL)		\
+				add_StringQueue((y), new_StringList(p));					\
 			ff1_continue = 1;												\
 		}																	\
 	} while(0)
@@ -222,6 +231,12 @@
 		(y) = rewind_StringList((y));				\
 		for(sl = (y); sl != NULL; sl = sl->next)	\
 			FF1_SAVE_STR((x), sl->str);				\
+	} while(0)
+
+#define FF1_SAVE_STRINGQUEUE(x,y)										\
+	do {																\
+		for(sl = (StringList *)(y)->tail; sl != NULL; sl = sl->next)	\
+			FF1_SAVE_STR((x), sl->str);									\
 	} while(0)
 
 #define FF1_SAVE_STRINGIO(x,y)									\

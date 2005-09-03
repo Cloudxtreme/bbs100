@@ -45,7 +45,7 @@
 #define new_StringQueue				new_Queue
 #define destroy_StringQueue(x)		destroy_Queue((x), destroy_StringList)
 #define deinit_StringQueue(x)		deinit_Queue((x), destroy_StringList)
-#define sort_StringQueue(x, y)		(StringList *)sort_Queue((x), (y))
+#define sort_StringQueue(x, y)		sort_Queue((x), (y))
 
 typedef struct StringList_tag StringList;
 

@@ -4,6 +4,8 @@ Changes as of September 3rd 2005
 - usr->chat_history is now a StringQueue
 - usr->recipients is now a StringQueue
 - usr->tablist is now a StringQueue
+- usr->friends is now a StringQueue
+- usr->enemies is now a StringQueue
 
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit

@@ -52,14 +52,14 @@ StringList *sl;
 
 			buffer_text(usr);
 
-			if (usr->friends == NULL)
+			if (!Queue_count(usr->friends))
 				Put(usr, "<cyan>\nYour friends list is empty\n");
 			else {
 				Put(usr, "\n");
-				print_columns(usr, usr->friends, 0);
+				print_columns(usr, (StringList *)usr->friends->tail, 0);
 			}
 			Print(usr, "<magenta>\n"
-				"<hotkey>Add friend%s", (usr->enemies == NULL) ? "\n" : "                   <hotkey>Remove friend\n");
+				"<hotkey>Add friend%s", (!Queue_count(usr->friends)) ? "\n" : "                   <hotkey>Remove friend\n");
 
 			Put(usr, "Switch to <hotkey>enemy list\n");
 			read_menu(usr);
@@ -89,7 +89,7 @@ StringList *sl;
 		case '+':
 		case '=':
 			Put(usr, "Add friend\n");
-			if (list_Count(usr->friends) >= PARAM_MAX_FRIEND) {
+			if (Queue_count(usr->friends) >= PARAM_MAX_FRIEND) {
 				Print(usr, "<red>You already have %d friends defined\n", PARAM_MAX_FRIEND);
 				break;
 			}
@@ -107,7 +107,7 @@ StringList *sl;
 		case 'r':
 		case '-':
 		case '_':
-			if (usr->friends == NULL)
+			if (!Queue_count(usr->friends))
 				break;
 
 			Put(usr, "Remove friend\n");
@@ -165,15 +165,15 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (in_StringList(usr->friends, usr->edit_buf) != NULL) {
+		if (in_StringQueue(usr->friends, usr->edit_buf) != NULL) {
 			Print(usr, "<yellow>%s<red> already is on your friend list\n", usr->edit_buf);
 			RET(usr);
 			Return;
 		}
-		if ((new_friend = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->enemies, new_friend);
-			add_StringList(&usr->friends, new_friend);
-			usr->friends = sort_StringList(usr->friends, alphasort_StringList);
+		if ((new_friend = in_StringQueue(usr->enemies, usr->edit_buf)) != NULL) {
+			remove_StringQueue(usr->enemies, new_friend);
+			add_StringQueue(usr->friends, new_friend);
+			sort_StringQueue(usr->friends, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your enemy to friend list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -183,8 +183,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		add_StringList(&(usr->friends), new_friend);
-		usr->friends = sort_StringList(usr->friends, alphasort_StringList);
+		add_StringQueue(usr->friends, new_friend);
+		sort_StringQueue(usr->friends, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -216,8 +216,8 @@ int r;
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Stopped being friends with yourself? How sad and lonely...\n");
 		else {
-			if ((rm_friend = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->friends, rm_friend);
+			if ((rm_friend = in_StringQueue(usr->friends, usr->edit_buf)) != NULL) {
+				remove_StringQueue(usr->friends, rm_friend);
 				destroy_StringList(rm_friend);
 			} else
 				Put(usr, "<red>There is no such person on your friend list\n");
@@ -245,14 +245,14 @@ StringList *sl;
 			
 			buffer_text(usr);
 
-			if (usr->enemies == NULL)
+			if (!Queue_count(usr->enemies))
 				Put(usr, "<cyan>\nYour enemy list is empty\n");
 			else {
 				Put(usr, "\n");
-				print_columns(usr, usr->enemies, 0);
+				print_columns(usr, (StringList *)usr->enemies->tail, 0);
 			}
 			Print(usr, "<magenta>\n"
-				"<hotkey>Add enemy%s", (usr->enemies == NULL) ? "\n" : "                    <hotkey>Remove enemy\n");
+				"<hotkey>Add enemy%s", (!Queue_count(usr->enemies)) ? "\n" : "                    <hotkey>Remove enemy\n");
 
 			Put(usr, "Switch to <hotkey>friend list\n");
 			read_menu(usr);
@@ -282,7 +282,7 @@ StringList *sl;
 		case '+':
 		case '=':
 			Put(usr, "Add enemy\n");
-			if (list_Count(usr->enemies) >= PARAM_MAX_ENEMY) {
+			if (Queue_count(usr->enemies) >= PARAM_MAX_ENEMY) {
 				Print(usr, "<red>You already have %d enemies defined\n", PARAM_MAX_ENEMY);
 				break;
 			}
@@ -302,7 +302,7 @@ StringList *sl;
 		case 'D':
 		case '-':
 		case '_':
-			if (usr->enemies == NULL)
+			if (!Queue_count(usr->enemies))
 				break;
 
 			Put(usr, "Remove enemy\n");
@@ -360,15 +360,15 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (in_StringList(usr->enemies, usr->edit_buf) != NULL) {
+		if (in_StringQueue(usr->enemies, usr->edit_buf) != NULL) {
 			Print(usr, "<yellow>%s<red> already is on your enemy list\n", usr->edit_buf);
 			RET(usr);
 			Return;
 		}
-		if ((new_enemy = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->friends, new_enemy);
-			add_StringList(&usr->enemies, new_enemy);
-			usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
+		if ((new_enemy = in_StringQueue(usr->friends, usr->edit_buf)) != NULL) {
+			remove_StringQueue(usr->friends, new_enemy);
+			add_StringQueue(usr->enemies, new_enemy);
+			sort_StringQueue(usr->enemies, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your friend to enemy list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -378,8 +378,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		add_StringList(&(usr->enemies), new_enemy);
-		usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
+		add_StringQueue(usr->enemies, new_enemy);
+		sort_StringQueue(usr->enemies, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -416,8 +416,8 @@ int r;
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Time to come to peace with yourself?\n");
 		else {
-			if ((rm_enemy = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->enemies, rm_enemy);
+			if ((rm_enemy = in_StringQueue(usr->enemies, usr->edit_buf)) != NULL) {
+				remove_StringQueue(usr->enemies, rm_enemy);
 				destroy_StringList(rm_enemy);
 			} else
 				Put(usr, "<red>There is no such person on your enemy list\n");
