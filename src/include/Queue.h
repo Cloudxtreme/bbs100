@@ -32,6 +32,7 @@ typedef struct {
 
 Queue *new_Queue(void);
 void destroy_Queue(Queue *, void *);
+void deinit_Queue(Queue *, void *);
 
 ListType *add_Queue(Queue *, void *);
 ListType *prepend_Queue(Queue *, void *);

@@ -38,8 +38,17 @@ void destroy_Queue(Queue *q, void *destroy_func) {
 	if (q == NULL || destroy_func == NULL)
 		return;
 
-	listdestroy_List(q->tail, (void (*)(ListType *))destroy_func);
+	deinit_Queue(q, destroy_func);
 	Free(q);
+}
+
+void deinit_Queue(Queue *q, void *destroy_func) {
+	if (q == NULL || destroy_func == NULL)
+		return;
+
+	listdestroy_List(q->tail, (void (*)(ListType *))destroy_func);
+	q->head = q->tail = NULL;
+	q->count = 0;
 }
 
 ListType *add_Queue(Queue *q, void *l) {
@@ -103,9 +112,12 @@ ListType *ret;
 	if (q == NULL)
 		return NULL;
 
-	ret = pop_List(&q->tail);
+	if ((ret = pop_List(&q->tail)) != NULL)
+		q->count--;
+
 	if (q->tail == NULL)
 		q->head = NULL;
+
 	return ret;
 }
 
@@ -116,6 +128,11 @@ void concat_Queue(Queue *q, void *l) {
 	concat_List(&q->head, (ListType *)l);
 	if (q->tail == NULL)
 		q->tail = rewind_List(q->head);
+
+	while(l != NULL) {
+		l = ((ListType *)l)->next;
+		q->count++;
+	}
 }
 
 void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {
