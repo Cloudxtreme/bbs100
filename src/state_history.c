@@ -211,7 +211,7 @@ History_Reply_Code:
 					add_StringList(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (!Queue_count(usr->recipients))
+			if (!count_Queue(usr->recipients))
 				break;
 
 			do_reply_x(usr, m->flags);
@@ -611,7 +611,7 @@ Held_History_Reply:
 					add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (!Queue_count(usr->recipients))
+			if (!count_Queue(usr->recipients))
 				break;
 
 			do_reply_x(usr, m->flags);
@@ -653,7 +653,7 @@ Held_History_Reply:
 
 Exit_Held_History:
 			rewind_PList(usr->held_msgs);
-			usr->msg_seq_recv += list_Count(usr->held_msgs);
+			usr->msg_seq_recv += count_List(usr->held_msgs);
 			concat_BufferedMsg(&usr->history, usr->held_msgs);
 			usr->held_msgs = usr->held_msgp = NULL;
 
@@ -728,7 +728,7 @@ void expire_history(User *usr) {
 	if (usr == NULL)
 		return;
 
-	if (usr->history_p != usr->history && list_Count(usr->history) > PARAM_MAX_HISTORY) {
+	if (usr->history_p != usr->history && count_List(usr->history) > PARAM_MAX_HISTORY) {
 		PList *pl;
 
 		if ((pl = pop_PList(&usr->history)) != NULL) {

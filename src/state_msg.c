@@ -197,7 +197,7 @@ void state_enter_mail_recipients(User *usr, char c) {
 			break;
 
 		case EDIT_RETURN:
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -1180,7 +1180,7 @@ StringIO *tmp;
 			break;
 
 		case EDIT_RETURN:
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -1806,7 +1806,7 @@ int pos, len;
 	}
 	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
 	usr->read_lines = 0;
-	usr->total_lines = list_Count(usr->scroll) - 1;
+	usr->total_lines = count_List(usr->scroll) - 1;
 
 /* going to display usr->text, so don't buffer it */
 	usr->runtime_flags &= ~RTF_BUFFER_TEXT;

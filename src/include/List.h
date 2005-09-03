@@ -37,7 +37,7 @@ void listdestroy_List(void *, void *);
 ListType *concat_List(void *, void *);
 ListType *remove_List(void *, void *);
 ListType *pop_List(void *);
-int list_Count(void *);
+int count_List(void *);
 ListType *rewind_List(void *);
 ListType *unwind_List(void *);
 ListType *sort_List(void *, int (*)(void *, void *));

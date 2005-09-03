@@ -180,7 +180,7 @@ ListType **root, *l;
 	return l;
 }
 
-int list_Count(void *v) {
+int count_List(void *v) {
 ListType *l;
 int c = 0;
 

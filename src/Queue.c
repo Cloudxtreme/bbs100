@@ -19,7 +19,7 @@
 /*
 	Queue.c	WJ105
 
-	Queues are convenient when having to list_Count() the list often
+	Queues are convenient when having to count_List() the list often
 	Adding and prepending to a Queue is efficient
 */
 
@@ -147,7 +147,7 @@ void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {
 	q->head = unwind_List(q->tail);
 }
 
-int Queue_count(Queue *q) {
+int count_Queue(Queue *q) {
 	if (q == NULL)
 		return -1;
 

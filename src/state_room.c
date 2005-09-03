@@ -999,7 +999,7 @@ void PrintPrompt(User *usr) {
 
 /* spool the chat messages we didn't get while we were busy */
 
-			if (Queue_count(usr->chat_history) > 0) {
+			if (count_Queue(usr->chat_history) > 0) {
 				StringList *sl;
 
 				Put(usr, "\n");
@@ -1825,7 +1825,7 @@ void chatroom_tell(Room *r, char *str) {
 
 	add_StringList(&r->chat_history, new_StringList(str));
 	r->flags |= ROOM_DIRTY;
-	if (list_Count(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
+	if (count_List(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
 		destroy_StringList(pop_StringList(&r->chat_history));
 
 	chatroom_msg(r, str);

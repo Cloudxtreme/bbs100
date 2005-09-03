@@ -52,14 +52,14 @@ StringList *sl;
 
 			buffer_text(usr);
 
-			if (!Queue_count(usr->friends))
+			if (!count_Queue(usr->friends))
 				Put(usr, "<cyan>\nYour friends list is empty\n");
 			else {
 				Put(usr, "\n");
 				print_columns(usr, (StringList *)usr->friends->tail, 0);
 			}
 			Print(usr, "<magenta>\n"
-				"<hotkey>Add friend%s", (!Queue_count(usr->friends)) ? "\n" : "                   <hotkey>Remove friend\n");
+				"<hotkey>Add friend%s", (!count_Queue(usr->friends)) ? "\n" : "                   <hotkey>Remove friend\n");
 
 			Put(usr, "Switch to <hotkey>enemy list\n");
 			read_menu(usr);
@@ -89,7 +89,7 @@ StringList *sl;
 		case '+':
 		case '=':
 			Put(usr, "Add friend\n");
-			if (Queue_count(usr->friends) >= PARAM_MAX_FRIEND) {
+			if (count_Queue(usr->friends) >= PARAM_MAX_FRIEND) {
 				Print(usr, "<red>You already have %d friends defined\n", PARAM_MAX_FRIEND);
 				break;
 			}
@@ -107,7 +107,7 @@ StringList *sl;
 		case 'r':
 		case '-':
 		case '_':
-			if (!Queue_count(usr->friends))
+			if (!count_Queue(usr->friends))
 				break;
 
 			Put(usr, "Remove friend\n");
@@ -149,7 +149,7 @@ int r;
 		StringList *new_friend;
 
 		if (!usr->edit_buf[0]) {
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
@@ -207,7 +207,7 @@ int r;
 		StringList *rm_friend;
 
 		if (!usr->edit_buf[0]) {
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
@@ -245,14 +245,14 @@ StringList *sl;
 			
 			buffer_text(usr);
 
-			if (!Queue_count(usr->enemies))
+			if (!count_Queue(usr->enemies))
 				Put(usr, "<cyan>\nYour enemy list is empty\n");
 			else {
 				Put(usr, "\n");
 				print_columns(usr, (StringList *)usr->enemies->tail, 0);
 			}
 			Print(usr, "<magenta>\n"
-				"<hotkey>Add enemy%s", (!Queue_count(usr->enemies)) ? "\n" : "                    <hotkey>Remove enemy\n");
+				"<hotkey>Add enemy%s", (!count_Queue(usr->enemies)) ? "\n" : "                    <hotkey>Remove enemy\n");
 
 			Put(usr, "Switch to <hotkey>friend list\n");
 			read_menu(usr);
@@ -282,7 +282,7 @@ StringList *sl;
 		case '+':
 		case '=':
 			Put(usr, "Add enemy\n");
-			if (Queue_count(usr->enemies) >= PARAM_MAX_ENEMY) {
+			if (count_Queue(usr->enemies) >= PARAM_MAX_ENEMY) {
 				Print(usr, "<red>You already have %d enemies defined\n", PARAM_MAX_ENEMY);
 				break;
 			}
@@ -302,7 +302,7 @@ StringList *sl;
 		case 'D':
 		case '-':
 		case '_':
-			if (!Queue_count(usr->enemies))
+			if (!count_Queue(usr->enemies))
 				break;
 
 			Put(usr, "Remove enemy\n");
@@ -344,7 +344,7 @@ int r;
 		StringList *new_enemy;
 
 		if (!usr->edit_buf[0]) {
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
@@ -407,7 +407,7 @@ int r;
 		StringList *rm_enemy;
 
 		if (!usr->edit_buf[0]) {
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				Return;
 			}

@@ -874,7 +874,7 @@ int i;
 
 			set_Wrapper(w, 0, addr, mask, NULL);
 			add_Wrapper(&AllWrappers, w);
-			usr->read_lines = list_Count(AllWrappers) - 1;
+			usr->read_lines = count_List(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		} else {
 			j = 2;

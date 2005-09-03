@@ -347,10 +347,10 @@ void enter_recipients(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_recipients);
 
-	if (!Queue_count(usr->recipients))
+	if (!count_Queue(usr->recipients))
 		Put(usr, "<green>Enter recipient: <yellow>");
 	else {
-		if (Queue_count(usr->recipients) == 1)
+		if (count_Queue(usr->recipients) == 1)
 			Print(usr, "<green>Enter recipient <white>[<yellow>%s<white>]:<yellow> ", ((StringList *)usr->recipients->head)->str);
 		else
 			Put(usr, "<green>Enter recipient <white>[<green><many<green>><white>]:<yellow> ");
@@ -368,10 +368,10 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_name);
 
-	if (!Queue_count(usr->recipients))
+	if (!count_Queue(usr->recipients))
 		Put(usr, "<green>Enter name: <yellow>");
 	else {
-		if (Queue_count(usr->recipients) > 1) {
+		if (count_Queue(usr->recipients) > 1) {
 			usr->recipients->tail->next->prev = NULL;
 			listdestroy_StringList(usr->recipients->tail->next);
 			usr->recipients->tail->next = NULL;
@@ -401,7 +401,7 @@ void state_x_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -441,7 +441,7 @@ void state_emote_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -463,7 +463,7 @@ void state_feelings_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -484,7 +484,7 @@ void state_ping_prompt(User *usr, char c) {
 			break;
 
 		case EDIT_RETURN:
-			if (!Queue_count(usr->recipients)) {
+			if (!count_Queue(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -500,7 +500,7 @@ void loop_ping(User *usr, char c) {
 	Enter(loop_ping);
 
 	if (c == INIT_STATE) {
-		LOOP(usr, Queue_count(usr->recipients));
+		LOOP(usr, count_Queue(usr->recipients));
 	} else {
 		StringList *sl;
 		User *u;
@@ -894,7 +894,7 @@ void loop_send_msg(User *usr, char c) {
 	from within a chat room ... (otherwise the line annoyingly gets reprinted)
 */
 		edit_line(usr, EDIT_INIT);
-		LOOP(usr, Queue_count(usr->recipients));
+		LOOP(usr, count_Queue(usr->recipients));
 	} else {
 		StringList *sl;
 		User *u;
@@ -1076,8 +1076,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (Queue_count(usr->recipients) > 0
-			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
+		if (count_Queue(usr->recipients) > 0
+			&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->esent++;
 			if (usr->esent > stats.esent) {
 				stats.esent = usr->esent;
@@ -1163,8 +1163,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (Queue_count(usr->recipients) > 0
-			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
+		if (count_Queue(usr->recipients) > 0
+			&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->xsent++;
 			if (usr->xsent > stats.xsent) {
 				stats.xsent = usr->xsent;
@@ -1285,8 +1285,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (Queue_count(usr->recipients) > 0
-			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
+		if (count_Queue(usr->recipients) > 0
+			&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->fsent++;
 			if (usr->fsent > stats.fsent) {
 				stats.fsent = usr->fsent;
@@ -1465,8 +1465,8 @@ int r;
 		usr->send_msg = ref_BufferedMsg(xmsg);
 		usr->msg_seq_sent++;
 
-		if (Queue_count(usr->recipients) > 0
-			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
+		if (count_Queue(usr->recipients) > 0
+			&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->qansw++;
 			if (usr->qansw > stats.qansw) {
 				stats.qansw = usr->qansw;
@@ -1689,7 +1689,7 @@ int total;
 
 	buffer_text(usr);
 
-	total = Queue_count(pq);
+	total = count_Queue(pq);
 	who_list_header(usr, total, format);
 
 	if (format & WHO_LIST_LONG)
@@ -1824,7 +1824,7 @@ PList *pl, *pl_cols[16];
 		if (cols > 15)
 			cols = 15;
 
-	total = Queue_count(pq);
+	total = count_Queue(pq);
 	rows = total / cols;
 	if (total % cols)
 		rows++;
@@ -1999,7 +1999,7 @@ int msgtype;
 			check_recipients(usr);
 		}
 	}
-	if (!Queue_count(usr->recipients)) {
+	if (!count_Queue(usr->recipients)) {
 		CURRENT_STATE(usr);
 		Return;
 	}
@@ -2025,7 +2025,7 @@ char numbuf[MAX_NUMBER], many_buf[MAX_LINE];
 		numbuf[0] = 0;
 
 /* replying to just one person? */
-	if (Queue_count(usr->recipients) == 1) {
+	if (count_Queue(usr->recipients) == 1) {
 		usr->runtime_flags &= ~RTF_MULTI;
 
 		Print(usr, "<green>Replying %sto%s\n", numbuf, print_many(usr, many_buf, MAX_LINE));
@@ -2321,7 +2321,7 @@ char buf[MAX_LONGLINE], *p;
 	}
 	if (!strcmp(cmd, "uptime")) {
 		Print(usr, "up %s, ", print_total_time(rtc - stats.uptime, buf, MAX_LONGLINE));
-		i = list_Count(AllUsers);
+		i = count_List(AllUsers);
 		Print(usr, "%d user%s\n", i, (i == 1) ? "" : "s");
 		Return 0;
 	}
@@ -2368,7 +2368,7 @@ int total;
 
 	Enter(online_friends_list);
 
-	if (!Queue_count(usr->friends)) {
+	if (!count_Queue(usr->friends)) {
 		Put(usr, "<red>You have no friends\n");
 		CURRENT_STATE(usr);
 		Return;
@@ -2383,14 +2383,14 @@ int total;
 
 		add_PList(pq, new_PList(u));
 	}
-	if (!Queue_count(pq)) {
+	if (!count_Queue(pq)) {
 		Put(usr, "<red>None of your friends are online\n");
 		destroy_PQueue(pq);
 		CURRENT_STATE(usr);
 		Return;
 	}
 	sort_PQueue(pq, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-	total = Queue_count(pq);
+	total = count_Queue(pq);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);
@@ -2445,14 +2445,14 @@ int total;
 
 		add_PQueue(pq, new_PList(u));
 	}
-	if (!Queue_count(pq)) {
+	if (!count_Queue(pq)) {
 		Put(usr, "<red>Nobody you talked to is online anymore\n");
 		destroy_PQueue(pq);
 		CURRENT_STATE(usr);
 		Return;
 	}
 	sort_PQueue(pq, (usr->flags & USR_SORT_DESCENDING) ? sort_who_desc_byname : sort_who_asc_byname);
-	total = Queue_count(pq);
+	total = count_Queue(pq);
 
 /* construct header */
 	tm = user_time(usr, (time_t)0UL);

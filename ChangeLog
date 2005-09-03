@@ -7,6 +7,7 @@ Changes as of September 3rd 2005
 - usr->friends is now a StringQueue
 - usr->enemies is now a StringQueue
 - who list works with PQueue
+- list_Count() is now called count_List(), analog to count_Queue()
 
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit

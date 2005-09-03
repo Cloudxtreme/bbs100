@@ -40,7 +40,7 @@ ListType *remove_Queue(Queue *, void *);
 ListType *pop_Queue(Queue *);
 ListType *concat_Queue(Queue *, void *);
 void sort_Queue(Queue *, int (*)(void *, void *));
-int Queue_count(Queue *);
+int count_Queue(Queue *);
 
 #endif	/* QUEUE_H_WJ105 */
 
