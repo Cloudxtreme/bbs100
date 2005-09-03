@@ -55,7 +55,7 @@ INCLUDE = include
 	@echo '  CC       ' $@
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
 
-OBJS = List.o PList.o Hash.o StringList.o CallStack.o \
+OBJS = List.o PList.o Hash.o Queue.o StringList.o CallStack.o \
 	debug.o cstring.o cstrcpy.o bufprintf.o cstrerror.o log.o inet.o \
 	crc32.o screens.o edit.o edit_param.o util.o access.o copyright.o \
 	User.o OnlineUser.o Wrapper.o Process.o CachedFile.o AtomicFile.o \

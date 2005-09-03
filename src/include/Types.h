@@ -58,7 +58,8 @@
 #define TYPE_KVPAIR			25
 #define TYPE_STRINGIO		26
 #define TYPE_DISPLAY		27
-#define NUM_TYPES			28
+#define TYPE_QUEUE			28
+#define NUM_TYPES			29
 
 typedef struct Typedef_tag Typedef;
 
