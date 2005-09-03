@@ -8,6 +8,7 @@ Changes as of September 3rd 2005
 - usr->enemies is now a StringQueue
 - who list works with PQueue
 - list_Count() is now called count_List(), analog to count_Queue()
+- room chat history is now a StringQueue
 
 Changes as of August 30th 2005
 - rewrote loop_send_msg() a bit

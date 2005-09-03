@@ -413,6 +413,10 @@ void state_room_config_menu(User *usr, char c) {
 					Put(usr, "7 (chat)\n");
 					usr->curr_room->flags ^= ROOM_CHATROOM;
 					usr->runtime_flags |= RTF_ROOM_EDITED;
+
+					if (usr->curr_room->chat_history == NULL)
+						usr->curr_room->chat_history = new_StringQueue();
+
 					CURRENT_STATE(usr);
 					Return;
 				}
@@ -1007,7 +1011,7 @@ void state_reset_creation_date(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
-	Enter(state_remove_all_posts);
+	Enter(state_reset_creation_date);
 
 	if (c == INIT_STATE) {
 		if (usr->curr_room->number == MAIL_ROOM) {
@@ -1024,6 +1028,7 @@ void state_reset_creation_date(User *usr, char c) {
 		switch(yesno(usr, c, 'N')) {
 			case YESNO_YES:
 				usr->curr_room->generation = (unsigned long)rtc;
+				deinit_StringQueue(usr->chat_history);
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 
 			case YESNO_NO:
@@ -1050,8 +1055,8 @@ void state_remove_all_posts(User *usr, char c) {
 			Return;
 		}
 		Put(usr, "\n"
-"<red>Warning:<yellow> After removing all posts, you should also reset the creation date of\n"
-"the room. This makes everyone unjoin (bad for invite-only rooms)\n");
+			"<red>Warning:<yellow> After removing all posts, you should also reset the creation date of\n"
+			"the room. This makes everyone unjoin (bad for invite-only rooms)\n");
 
 		Put(usr, "\n<cyan>Are you sure you wish to remove all posts? (y/N): <white>");
 	} else {
@@ -1086,8 +1091,9 @@ User *u;
 		bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, num);
 		path_strip(buf);
 		unlink_file(buf);
-
 	}
+	deinit_StringQueue(room->chat_history);
+
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u->curr_room == room)
 			u->curr_msg = -1L;

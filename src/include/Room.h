@@ -83,7 +83,8 @@ struct Room_tag {
 	unsigned int number, flags, roominfo_changed;
 	unsigned long generation;
 	long tail_msg, head_msg, max_msgs;
-	StringList *room_aides, *kicked, *invited, *chat_history;
+	StringList *room_aides, *kicked, *invited;
+	StringQueue *chat_history;
 	StringIO *info;
 	PList *inside;		/* list of pointers to online users (chat room only) */
 };

@@ -1747,9 +1747,9 @@ StringList *sl;
 		else
 			bufprintf(buf, MAX_LONGLINE, "<yellow>%s <magenta>%s<white>", usr->name, str);
 
-	if (usr->curr_room->chat_history != NULL) {
+	if (count_Queue(usr->curr_room->chat_history) > 0) {
 		Put(usr, "\n");
-		for(sl = usr->curr_room->chat_history; sl != NULL; sl = sl->next)
+		for(sl = (StringList *)usr->curr_room->chat_history->tail; sl != NULL; sl = sl->next)
 			Print(usr, "%s\n", sl->str);
 		Put(usr, "<white>--\n");
 	}
@@ -1823,10 +1823,10 @@ void chatroom_tell(Room *r, char *str) {
 
 	Enter(chatroom_tell);
 
-	add_StringList(&r->chat_history, new_StringList(str));
+	add_StringQueue(r->chat_history, new_StringList(str));
 	r->flags |= ROOM_DIRTY;
-	if (count_List(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
-		destroy_StringList(pop_StringList(&r->chat_history));
+	if (count_Queue(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
+		destroy_StringList(pop_StringQueue(r->chat_history));
 
 	chatroom_msg(r, str);
 	Return;

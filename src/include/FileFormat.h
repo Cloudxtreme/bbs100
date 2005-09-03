@@ -233,10 +233,11 @@
 			FF1_SAVE_STR((x), sl->str);				\
 	} while(0)
 
-#define FF1_SAVE_STRINGQUEUE(x,y)										\
-	do {																\
-		for(sl = (StringList *)(y)->tail; sl != NULL; sl = sl->next)	\
-			FF1_SAVE_STR((x), sl->str);									\
+#define FF1_SAVE_STRINGQUEUE(x,y)											\
+	do {																	\
+		if ((y) != NULL)													\
+			for(sl = (StringList *)(y)->tail; sl != NULL; sl = sl->next)	\
+				FF1_SAVE_STR((x), sl->str);									\
 	} while(0)
 
 #define FF1_SAVE_STRINGIO(x,y)									\

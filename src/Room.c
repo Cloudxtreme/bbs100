@@ -65,7 +65,7 @@ void destroy_Room(Room *r) {
 	listdestroy_StringList(r->room_aides);
 	listdestroy_StringList(r->kicked);
 	listdestroy_StringList(r->invited);
-	listdestroy_StringList(r->chat_history);
+	destroy_StringQueue(r->chat_history);
 	destroy_StringIO(r->info);
 	listdestroy_PList(r->inside);
 
@@ -192,6 +192,9 @@ int version;
 			if (r->max_msgs < 1)
 				r->max_msgs = PARAM_MAX_MESSAGES;
 
+		if (PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM) && r->chat_history == NULL)
+			r->chat_history = new_StringQueue();
+
 		if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM) && r->number != HOME_ROOM) {
 			r->flags &= ~ROOM_CHATROOM;
 			r->flags |= ROOM_DIRTY;
@@ -241,9 +244,12 @@ int ff1_continue;
 		else
 			FF1_SKIP("kicked");
 
-		if (flags & LOAD_ROOM_CHAT_HISTORY)
-			FF1_LOAD_STRINGLIST("chat_history", r->chat_history);
-		else
+		if (flags & LOAD_ROOM_CHAT_HISTORY) {
+			if (!strcmp(buf, "chat_history") && r->chat_history == NULL)
+				r->chat_history = new_StringQueue();
+
+			FF1_LOAD_STRINGQUEUE("chat_history", r->chat_history);
+		} else
 			FF1_SKIP("chat_history");
 
 		if (PARAM_HAVE_RESIDENT_INFO || (flags & LOAD_ROOM_INFO))
@@ -256,18 +262,22 @@ int ff1_continue;
 	return 0;
 }
 
-#define LOAD_ROOM_SKIPLINES(x)								\
-	for(i = 0; i < (x); i++) {								\
-		if (Fgets(f, buf, MAX_LINE) == NULL)				\
-			goto err_load_room;								\
-	}
+#define LOAD_ROOM_SKIPLINES(x)						\
+	do {											\
+		for(i = 0; i < (x); i++) {					\
+			if (Fgets(f, buf, MAX_LINE) == NULL)	\
+				goto err_load_room;					\
+		}											\
+	} while(0)
 
-#define LOAD_ROOM_SKIPLIST									\
-	while(Fgets(f, buf, MAX_LINE) != NULL) {				\
-		cstrip_line(buf);									\
-		if (!*buf)											\
-			break;											\
-	}
+#define LOAD_ROOM_SKIPLIST							\
+	do {											\
+		while(Fgets(f, buf, MAX_LINE) != NULL) {	\
+			cstrip_line(buf);						\
+			if (!*buf)								\
+				break;								\
+		}											\
+	} while(0)
 
 
 int load_RoomData_version0(File *f, Room *r, int flags) {
@@ -374,9 +384,16 @@ int i;
 	} else
 		LOAD_ROOM_SKIPLIST;
 
-	if ((flags & LOAD_ROOM_CHAT_HISTORY) && (r->flags & ROOM_CHATROOM))
-		r->chat_history = Fgetlist(f);
-	else
+/* chat history */
+	if ((flags & LOAD_ROOM_CHAT_HISTORY) && (r->flags & ROOM_CHATROOM)) {
+		if (r->chat_history == NULL && (r->chat_history = new_StringQueue()) == NULL)
+			LOAD_ROOM_SKIPLIST;
+		else {
+			r->chat_history->tail = (ListType *)Fgetlist(f);
+			r->chat_history->head = (ListType *)unwind_StringList((StringList *)r->chat_history->tail);
+			r->chat_history->count = count_List(r->chat_history->tail);
+		}
+	} else
 		LOAD_ROOM_SKIPLIST;
 
 	return 0;
@@ -494,7 +511,7 @@ char buf[PRINT_BUF];
 	FF1_SAVE_STRINGLIST("room_aides", r->room_aides);
 	FF1_SAVE_STRINGLIST("invited", r->invited);
 	FF1_SAVE_STRINGLIST("kicked", r->kicked);
-	FF1_SAVE_STRINGLIST("chat_history", r->chat_history);
+	FF1_SAVE_STRINGQUEUE("chat_history", r->chat_history);
 	FF1_SAVE_STRINGIO("info", r->info);
 
 	return 0;
