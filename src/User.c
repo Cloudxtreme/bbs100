@@ -70,6 +70,10 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
+	if ((usr->chat_history = new_StringQueue()) == NULL) {
+		destroy_User(usr);
+		return NULL;
+	}
 	if ((usr->text = new_StringIO()) == NULL) {
 		destroy_User(usr);
 		return NULL;
@@ -126,7 +130,7 @@ int i;
 	listdestroy_StringList(usr->enemies);
 	listdestroy_StringList(usr->recipients);
 	listdestroy_StringList(usr->tablist);
-	listdestroy_StringList(usr->chat_history);
+	destroy_StringQueue(usr->chat_history);
 
 	listdestroy_Joined(usr->rooms);
 

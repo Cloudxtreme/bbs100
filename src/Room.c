@@ -569,6 +569,25 @@ void resize_Room(Room *r, long newsize, User *usr) {
 	r->flags |= ROOM_DIRTY;
 }
 
+/*
+	print the room name into a buffer
+	user has choice to have room numbers in the name
+*/
+char *room_name(User *usr, Room *r, char *buf, int buflen) {
+	if (buf == NULL)
+		return NULL;
+
+	*buf = 0;
+	if (usr == NULL || r == NULL)
+		return buf;
+
+	if (usr->flags & USR_ROOMNUMBERS)
+		bufprintf(buf, buflen, "<white>%u <yellow>%s>", r->number, r->name);
+	else
+		bufprintf(buf, buflen, "<yellow>%s>", r->name);
+	return buf;
+}
+
 void room_readdir(Room *r) {
 char dirname[MAX_PATHLEN];
 

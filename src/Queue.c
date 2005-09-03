@@ -34,21 +34,21 @@ Queue *new_Queue(void) {
 	return (Queue *)Malloc(sizeof(Queue), TYPE_QUEUE);
 }
 
-void destroy_Queue(Queue *q, void (*destroy_func)(ListType *)) {
+void destroy_Queue(Queue *q, void *destroy_func) {
 	if (q == NULL || destroy_func == NULL)
 		return;
 
-	listdestroy_List(q->tail, destroy_func);
+	listdestroy_List(q->tail, (void (*)(ListType *))destroy_func);
 	Free(q);
 }
 
-ListType *add_Queue(Queue *q, ListType *l) {
+ListType *add_Queue(Queue *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
 		return NULL;
 
-	if ((ret = add_List(&q->head, l)) == NULL)
+	if ((ret = add_List(&q->head, (ListType *)l)) == NULL)
 		return NULL;
 
 	q->head = ret;
@@ -60,13 +60,13 @@ ListType *ret;
 	return q->head;
 }
 
-ListType *prepend_Queue(Queue *q, ListType *l) {
+ListType *prepend_Queue(Queue *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
 		return NULL;
 
-	if ((ret = prepend_List(&q->tail, l)) == NULL)
+	if ((ret = prepend_List(&q->tail, (ListType *)l)) == NULL)
 		return NULL;
 
 	q->tail = ret;
@@ -78,16 +78,16 @@ ListType *ret;
 	return q->tail;
 }
 
-ListType *remove_Queue(Queue *q, ListType *l) {
+ListType *remove_Queue(Queue *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
 		return NULL;
 
-	if (q->head == l)
+	if (q->head == (ListType *)l)
 		q->head = q->head->prev;
 
-	if ((ret = remove_List(&q->tail, l)) != NULL) {
+	if ((ret = remove_List(&q->tail, (ListType *)l)) != NULL) {
 		q->count--;
 		if (q->count < 0) {
 			q->count = 0;
@@ -109,11 +109,11 @@ ListType *ret;
 	return ret;
 }
 
-void concat_Queue(Queue *q, ListType *l) {
+void concat_Queue(Queue *q, void *l) {
 	if (q == NULL || l == NULL)
 		return;
 
-	concat_List(&q->head, l);
+	concat_List(&q->head, (ListType *)l);
 	if (q->tail == NULL)
 		q->tail = rewind_List(q->head);
 }

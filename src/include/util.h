@@ -119,7 +119,6 @@ char *print_total_time(unsigned long, char *, int);
 char *print_number(unsigned long, char *, int);
 char *print_numberth(unsigned long, char *, int);
 char *possession(char *, char *, char *, int);
-char *room_name(User *, Room *, char *, int);
 unsigned long get_mail_top(char *);
 char *get_basename(char *);
 int rm_rf_trashdir(char *);

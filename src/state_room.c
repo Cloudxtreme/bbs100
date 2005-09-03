@@ -1001,15 +1001,14 @@ void PrintPrompt(User *usr) {
 
 /* spool the chat messages we didn't get while we were busy */
 
-			if (usr->chat_history != NULL) {
+			if (Queue_count(usr->chat_history) > 0) {
 				StringList *sl;
 
 				Put(usr, "\n");
-				for(sl = usr->chat_history; sl != NULL; sl = sl->next)
+				while((sl = pop_StringQueue(usr->chat_history)) != NULL) {
 					Print(usr, "%s\n", sl->str);
-
-				listdestroy_StringList(usr->chat_history);
-				usr->chat_history = NULL;
+					destroy_StringList(sl);
+				}
 			}
 			Print(usr, "<white>%c ", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 		} else {
@@ -1733,7 +1732,7 @@ StringList *sl;
 		if (!strcmp(buf, usr->curr_room->name))
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);
 		else
-			Print(usr, "\n<magenta>Welcome to <yellow>%s>\n", buf);
+			Print(usr, "\n<magenta>Welcome to <yellow>%s>\n", usr->curr_room->name);
 	} else
 		Print(usr, "\n<yellow>%s>\n", usr->curr_room->name);
 
@@ -1874,7 +1873,7 @@ void chatroom_tell_user(User *u, char *str) {
 		Return;
 	}
 	if (u->runtime_flags & RTF_BUSY)
-		add_StringList(&u->chat_history, new_StringList(str));
+		add_StringQueue(u->chat_history, new_StringList(str));
 	else {
 /*
 	when not busy, pretty print the lines

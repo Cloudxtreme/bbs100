@@ -31,13 +31,13 @@ typedef struct {
 } Queue;
 
 Queue *new_Queue(void);
-void destroy_Queue(Queue *, void (*)(ListType *));
+void destroy_Queue(Queue *, void *);
 
-ListType *add_Queue(Queue *, ListType *);
-ListType *prepend_Queue(Queue *, ListType *);
-ListType *remove_Queue(Queue *, ListType *);
+ListType *add_Queue(Queue *, void *);
+ListType *prepend_Queue(Queue *, void *);
+ListType *remove_Queue(Queue *, void *);
 ListType *pop_Queue(Queue *);
-void concat_Queue(Queue *, ListType *);
+void concat_Queue(Queue *, void *);
 void sort_Queue(Queue *, int (*)(void *, void *));
 int Queue_count(Queue *);
 

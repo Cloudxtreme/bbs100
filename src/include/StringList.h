@@ -37,10 +37,12 @@
 #define unwind_StringList(x)		(StringList *)unwind_List(x)
 #define sort_StringList(x, y)		(StringList *)sort_List((x), (y))
 
+#define StringQueue					Queue
 #define add_StringQueue(x,y)		(StringList *)add_Queue((x), (y))
 #define remove_StringQueue(x,y)		(StringList *)remove_Queue((x), (y))
 #define concat_StringQueue(x,y)		(StringList *)concat_Queue((x), (y))
 #define pop_StringQueue(x)			(StringList *)pop_Queue(x)
+#define new_StringQueue				new_Queue
 #define destroy_StringQueue(x)		destroy_Queue((x), destroy_StringList)
 #define sort_StringQueue(x, y)		(StringList *)sort_Queue((x), (y))
 

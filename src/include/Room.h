@@ -109,6 +109,7 @@ int save_Room_version1(File *, Room *);
 void newMsg(Room *, User *);
 long newMsgs(Room *, long);
 void resize_Room(Room *, long, User *);
+char *room_name(User *, Room *, char *, int);
 void room_readdir(Room *);
 void room_readmaildir(Room *, char *);
 void room_readroomdir(Room *, char *, int);
