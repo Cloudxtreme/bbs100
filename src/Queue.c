@@ -121,18 +121,22 @@ ListType *ret;
 	return ret;
 }
 
-void concat_Queue(Queue *q, void *l) {
+ListType *concat_Queue(Queue *q, void *l) {
 	if (q == NULL || l == NULL)
-		return;
+		return NULL;
 
-	concat_List(&q->head, (ListType *)l);
+	if (concat_List(&q->head, (ListType *)l) == NULL)
+		return NULL;
+
 	if (q->tail == NULL)
 		q->tail = rewind_List(q->head);
+	q->head = unwind_List(q->head);
 
 	while(l != NULL) {
 		l = ((ListType *)l)->next;
 		q->count++;
 	}
+	return q->tail;
 }
 
 void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {

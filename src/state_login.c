@@ -313,7 +313,7 @@ char buf[MAX_LINE];
 			for(u = AllUsers; u != NULL; u = u->next) {
 				if (u->runtime_flags & RTF_BUSY) {
 					if ((u->runtime_flags & RTF_BUSY_SENDING)
-						&& in_StringList(u->recipients, usr->name) != NULL) {
+						&& in_StringQueue(u->recipients, usr->name) != NULL) {
 /*
 	warn follow-up mode by Richard of MatrixBBS
 */

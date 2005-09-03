@@ -41,11 +41,11 @@ static void generic_print_history(User *usr, BufferedMsg *m) {
 
 	print_buffered_msg(usr, m);
 
-	listdestroy_StringList(usr->recipients);
+	deinit_StringQueue(usr->recipients);
 	if (!strcmp(m->from, usr->name))
-		usr->recipients = copy_StringList(m->to);
+		concat_StringQueue(usr->recipients, copy_StringList(m->to));
 	else
-		usr->recipients = new_StringList(m->from);
+		add_StringQueue(usr->recipients, new_StringList(m->from));
 }
 
 
@@ -194,27 +194,24 @@ History_Reply_Code:
 				RET(usr);
 				Return;
 			}
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			m = (BufferedMsg *)usr->history_p->p;
 
 			if (c == 'R' || c == 'V' || c == 'A' || c == 'a') {
-				if ((usr->recipients = copy_StringList(m->to)) == NULL) {
+				if (concat_StringQueue(usr->recipients, copy_StringList(m->to)) == NULL) {
 					Perror(usr, "Out of memory");
-
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 				}
 			}
-			if ((sl = in_StringList(usr->recipients, m->from)) == NULL) {
+			if ((sl = in_StringQueue(usr->recipients, m->from)) == NULL) {
 				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
-					concat_StringList(&usr->recipients, sl);
+					add_StringList(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (usr->recipients == NULL)
+			if (!Queue_count(usr->recipients))
 				break;
 
 			do_reply_x(usr, m->flags);
@@ -599,25 +596,22 @@ Held_History_Reply:
 			}
 			m = (BufferedMsg *)usr->held_msgp->p;
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			if (c == 'R' || c == 'V' || c == 'A' || c == 'a') {
-				if ((usr->recipients = copy_StringList(m->to)) == NULL) {
+				if (concat_StringQueue(usr->recipients, copy_StringList(m->to)) == NULL) {
 					Perror(usr, "Out of memory");
-
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 				}
 			}
-			if ((sl = in_StringList(usr->recipients, m->from)) == NULL) {
+			if ((sl = in_StringQueue(usr->recipients, m->from)) == NULL) {
 				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
-					concat_StringList(&usr->recipients, sl);
+					add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (usr->recipients == NULL)
+			if (!Queue_count(usr->recipients))
 				break;
 
 			do_reply_x(usr, m->flags);

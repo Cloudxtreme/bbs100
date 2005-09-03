@@ -803,8 +803,7 @@ int r;
 	r = edit_tabname(usr, c);
 
 	if (r == EDIT_BREAK) {
-		listdestroy_StringList(usr->recipients);
-		usr->recipients = NULL;
+		deinit_StringQueue(usr->recipients);
 		RET(usr);
 		Return;
 	}
@@ -824,8 +823,7 @@ int r;
 				usr->runtime_flags |= RTF_CONFIG_EDITED;
 			}
 		}
-		listdestroy_StringList(usr->recipients);
-		usr->recipients = NULL;
+		deinit_StringQueue(usr->recipients);
 		RET(usr);
 		Return;
 	}

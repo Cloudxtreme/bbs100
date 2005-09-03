@@ -165,8 +165,7 @@ void state_sysop_menu(User *usr, char c) {
 		case 'D':
 			Put(usr, "Disconnect user\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			enter_name(usr, STATE_DISCONNECT_USER);
 			Return;
@@ -174,8 +173,7 @@ void state_sysop_menu(User *usr, char c) {
 		case KEY_CTRL('N'):
 			Put(usr, "Nuke user\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			enter_name(usr, STATE_NUKE_USER);
 			Return;
@@ -752,8 +750,7 @@ int r;
 		Put(usr, "\n");
 		POP(usr);
 
-		listdestroy_StringList(usr->recipients);
-		usr->recipients = NULL;
+		deinit_StringQueue(usr->recipients);
 
 		enter_name(usr, STATE_BANISH_USER);
 		Return;

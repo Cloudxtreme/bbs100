@@ -1331,8 +1331,7 @@ User *u;
 		if (!next_helping_hand(usr)) {
 			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 			return NULL;
 		} else
 			Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
@@ -1344,8 +1343,7 @@ HH_is_online:
 		if (!next_helping_hand(usr)) {
 			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 			return NULL;
 		}
 		Print(usr, "<green>The question goes to <yellow>%s<green> instead\n", usr->question_asked);
@@ -1359,15 +1357,14 @@ HH_is_online:
 		if (!next_helping_hand(usr)) {
 			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 			return NULL;
 		}
 		Print(usr, "<green>The question goes to <yellow>%s<green> instead\n", usr->question_asked);
 		goto HH_is_online;
 	}
-	listdestroy_StringList(usr->recipients);
-	usr->recipients = new_StringList(usr->question_asked);
+	deinit_StringQueue(usr->recipients);
+	add_StringQueue(usr->recipients, new_StringList(usr->question_asked));
 	return u;
 }
 

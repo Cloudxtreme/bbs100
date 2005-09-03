@@ -94,8 +94,8 @@ StringList *sl;
 				break;
 			}
 /* remove myself from the recipient list */
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
+			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_ADD_FRIEND);
@@ -114,8 +114,8 @@ StringList *sl;
 
 /* remove myself from the recipient list */
 
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
+			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_REMOVE_FRIEND);
@@ -149,11 +149,11 @@ int r;
 		StringList *new_friend;
 
 		if (!usr->edit_buf[0]) {
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
-			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
 		}
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
@@ -207,11 +207,11 @@ int r;
 		StringList *rm_friend;
 
 		if (!usr->edit_buf[0]) {
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
-			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Stopped being friends with yourself? How sad and lonely...\n");
@@ -289,8 +289,8 @@ StringList *sl;
 
 /* remove myself from the recipient list */
 
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
+			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_ADD_ENEMY);
@@ -309,8 +309,8 @@ StringList *sl;
 
 /* remove myself from the recipient list */
 
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
+			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_REMOVE_ENEMY);
@@ -344,11 +344,11 @@ int r;
 		StringList *new_enemy;
 
 		if (!usr->edit_buf[0]) {
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
-			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf)) {
 			Put(usr, "<red>So, your worst enemy is <white>YOU\n");
@@ -407,11 +407,11 @@ int r;
 		StringList *rm_enemy;
 
 		if (!usr->edit_buf[0]) {
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				Return;
 			}
-			cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
 		}
 		if (!strcmp(usr->name, usr->edit_buf))
 			Put(usr, "<green>Time to come to peace with yourself?\n");

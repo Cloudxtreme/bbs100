@@ -188,15 +188,14 @@ char num_buf[MAX_NUMBER];
 					if (!next_helping_hand(usr)) {
 						Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
 
-						listdestroy_StringList(usr->recipients);
-						usr->recipients = NULL;
+						deinit_StringQueue(usr->recipients);
 						break;
 					}
 				}
 				Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
 
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = new_StringList(usr->question_asked);
+				deinit_StringQueue(usr->recipients);
+				add_StringQueue(usr->recipients, new_StringList(usr->question_asked));
 
 				CALL(usr, STATE_EDIT_QUESTION);
 				Return;
@@ -309,8 +308,7 @@ char num_buf[MAX_NUMBER];
 					break;
 				}
 				if (usr->quick[c - '1'] != NULL) {
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 
 					cstrcpy(usr->edit_buf, usr->quick[c - '1'], MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);

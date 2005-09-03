@@ -65,6 +65,13 @@ StringList *in_StringList(StringList *sl, char *p) {
 	return sl;
 }
 
+StringList *in_StringQueue(Queue *q, char *s) {
+	if (q == NULL || s == NULL)
+		return NULL;
+
+	return in_StringList((StringList *)q->tail, s);
+}
+
 /*
 	converts stringlist to string; returned string must be Free()d
 */

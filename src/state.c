@@ -170,14 +170,12 @@ int fun_common(User *usr, char c) {
 				break;
 			}
 			if (usr->message != NULL) {
-				listdestroy_StringList(usr->recipients);
+				deinit_StringQueue(usr->recipients);
 				if (usr->message->anon != NULL && usr->message->anon[0]) {
 					if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))
-						usr->recipients = new_StringList(usr->message->from);
-					else
-						usr->recipients = NULL;
+						add_StringQueue(usr->recipients, new_StringList(usr->message->from));
 				} else
-					usr->recipients = new_StringList(usr->message->from);
+					add_StringQueue(usr->recipients, new_StringList(usr->message->from));
 			}
 			if (c == 'p')
 				enter_name(usr, STATE_LONG_PROFILE);
@@ -349,11 +347,11 @@ void enter_recipients(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_recipients);
 
-	if (usr->recipients == NULL)
+	if (!Queue_count(usr->recipients))
 		Put(usr, "<green>Enter recipient: <yellow>");
 	else {
-		if (usr->recipients->next == NULL)
-			Print(usr, "<green>Enter recipient <white>[<yellow>%s<white>]:<yellow> ", usr->recipients->str);
+		if (Queue_count(usr->recipients) == 1)
+			Print(usr, "<green>Enter recipient <white>[<yellow>%s<white>]:<yellow> ", ((StringList *)usr->recipients->head)->str);
 		else
 			Put(usr, "<green>Enter recipient <white>[<green><many<green>><white>]:<yellow> ");
 	}
@@ -370,15 +368,17 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_name);
 
-	if (usr->recipients == NULL)
+	if (!Queue_count(usr->recipients))
 		Put(usr, "<green>Enter name: <yellow>");
 	else {
-		if (usr->recipients->next != NULL) {
-			usr->recipients->next->prev = NULL;
-			listdestroy_StringList(usr->recipients->next);
-			usr->recipients->next = NULL;
+		if (Queue_count(usr->recipients) > 1) {
+			usr->recipients->tail->next->prev = NULL;
+			listdestroy_StringList(usr->recipients->tail->next);
+			usr->recipients->tail->next = NULL;
+			usr->recipients->head = usr->recipients->tail;
+			usr->recipients->count = 1;
 		}
-		Print(usr, "<green>Enter name <white>[<yellow>%s<white>]:<yellow> ", usr->recipients->str);
+		Print(usr, "<green>Enter name <white>[<yellow>%s<white>]:<yellow> ", ((StringList *)usr->recipients->head)->str);
 	}
 	usr->runtime_flags |= RTF_BUSY;
 	usr->edit_pos = 0;
@@ -401,7 +401,7 @@ void state_x_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -441,7 +441,7 @@ void state_emote_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -463,7 +463,7 @@ void state_feelings_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -473,8 +473,6 @@ void state_feelings_prompt(User *usr, char c) {
 }
 
 void state_ping_prompt(User *usr, char c) {
-StringList *sl;
-
 	if (usr == NULL)
 		return;
 
@@ -486,14 +484,7 @@ StringList *sl;
 			break;
 
 		case EDIT_RETURN:
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
-				destroy_StringList(sl);
-
-				if (usr->recipients == NULL)
-					Put(usr, "<red>You are keeping yourself busy pinging yourself\n");
-			}
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -509,13 +500,13 @@ void loop_ping(User *usr, char c) {
 	Enter(loop_ping);
 
 	if (c == INIT_STATE) {
-		LOOP(usr, list_Count(usr->recipients));
+		LOOP(usr, Queue_count(usr->recipients));
 	} else {
 		StringList *sl;
 		User *u;
 		unsigned long i, tdiff;
 
-		sl = usr->recipients;
+		sl = (StringList *)usr->recipients->tail;
 		if (sl == NULL) {
 			LOOP(usr, 0UL);
 			RET(usr);
@@ -529,9 +520,15 @@ void loop_ping(User *usr, char c) {
 				Return;
 			}
 		}
+		if (!strcmp(sl->str, usr->name)) {
+			Put(usr, "<red>You are keeping yourself busy pinging yourself\n");
+			remove_StringQueue(usr->recipients, sl);
+			destroy_StringList(sl);
+			Return;
+		}
 		if ((u = is_online(sl->str)) == NULL) {
 			Print(usr, "<yellow>%s <red>suddenly logged off!\n", sl->str);
-			remove_StringList(&usr->recipients, sl);
+			remove_StringQueue(usr->recipients, sl);
 			destroy_StringList(sl);
 			Return;
 		}
@@ -543,7 +540,7 @@ void loop_ping(User *usr, char c) {
 		} else {
 			if (u->runtime_flags & RTF_BUSY) {
 				if ((u->runtime_flags & RTF_BUSY_SENDING)
-					&& in_StringList(u->recipients, usr->name) != NULL)
+					&& in_StringQueue(u->recipients, usr->name) != NULL)
 /*
 	the warn follow-up mode feature was donated by Richard of MatrixBBS
 */
@@ -554,7 +551,7 @@ void loop_ping(User *usr, char c) {
 						&& u->new_message != NULL
 						&& in_StringList(u->new_message->to, usr->name) != NULL)
 						Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
-					else
+					else {
 						if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
 							if (u->away != NULL && u->away[0])
 								Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
@@ -562,6 +559,7 @@ void loop_ping(User *usr, char c) {
 								Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
 						} else
 							Print(usr, "<yellow>%s<green> is busy\n", u->name);
+					}
 				}
 			} else
 				if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
@@ -651,16 +649,12 @@ char total_buf[MAX_LINE], *hidden;
 	}
 	if (!user_exists(usr->edit_buf)) {
 		Put(usr, "<red>No such user\n");
-
-		listdestroy_StringList(usr->recipients);
-		usr->recipients = NULL;
-
+		deinit_StringQueue(usr->recipients);
 		RET(usr);
 		Return;
 	}
 	if ((u = is_online(usr->edit_buf)) == NULL) {
-		listdestroy_StringList(usr->recipients);	/* don't put name in history */
-		usr->recipients = NULL;
+		deinit_StringQueue(usr->recipients);	/* don't put name in history */
 
 		if ((u = new_User()) == NULL) {
 			Perror(usr, "Out of memory");
@@ -687,8 +681,8 @@ char total_buf[MAX_LINE], *hidden;
 	} else {
 		load_profile_info(u);
 
-		listdestroy_StringList(usr->recipients);		/* place entered name in history */
-		usr->recipients = new_StringList(usr->edit_buf);
+		deinit_StringQueue(usr->recipients);		/* place entered name in history */
+		add_StringQueue(usr->recipients, new_StringList(usr->edit_buf));
 	}
 /*
 	make the profile
@@ -900,7 +894,7 @@ void loop_send_msg(User *usr, char c) {
 	from within a chat room ... (otherwise the line annoyingly gets reprinted)
 */
 		edit_line(usr, EDIT_INIT);
-		LOOP(usr, list_Count(usr->recipients));
+		LOOP(usr, Queue_count(usr->recipients));
 	} else {
 		StringList *sl;
 		User *u;
@@ -913,7 +907,7 @@ void loop_send_msg(User *usr, char c) {
 			RET(usr);
 			Return;
 		}
-		sl = usr->recipients;
+		sl = (StringList *)usr->recipients->tail;
 		if (sl != NULL) {
 			for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* do the next recipient */
 				sl = sl->next;
@@ -995,7 +989,7 @@ StringList *sl;
 /*
 	The user was already gone, so remove it from the recipient list
 */
-	sl = usr->recipients;
+	sl = (StringList *)usr->recipients->tail;
 	if (sl != NULL) {
 		unsigned long i;
 
@@ -1005,7 +999,7 @@ StringList *sl;
 				break;
 		}
 		if (sl != NULL) {
-			remove_StringList(&usr->recipients, sl);
+			remove_StringQueue(usr->recipients, sl);
 			destroy_StringList(sl);
 		}
 	}
@@ -1058,7 +1052,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->to = copy_StringList(usr->recipients)) == NULL) {
+		if ((msg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 			destroy_BufferedMsg(msg);
 			Perror(usr, "Out of memory");
 			RET(usr);
@@ -1082,8 +1076,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (usr->recipients != NULL
-			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+		if (Queue_count(usr->recipients) > 0
+			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->esent++;
 			if (usr->esent > stats.esent) {
 				stats.esent = usr->esent;
@@ -1143,7 +1137,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((xmsg->to = copy_StringList(usr->recipients)) == NULL) {
+		if ((xmsg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 			destroy_BufferedMsg(xmsg);
 			Perror(usr, "Out of memory");
 			RET(usr);
@@ -1169,8 +1163,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (usr->recipients != NULL
-			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+		if (Queue_count(usr->recipients) > 0
+			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->xsent++;
 			if (usr->xsent > stats.xsent) {
 				stats.xsent = usr->xsent;
@@ -1249,7 +1243,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((msg->to = copy_StringList(usr->recipients)) == NULL) {
+		if ((msg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 			destroy_BufferedMsg(msg);
 			Perror(usr, "Out of memory");
 			RET(usr);
@@ -1291,8 +1285,8 @@ int r;
 		usr->msg_seq_sent++;
 
 /* update stats */
-		if (usr->recipients != NULL
-			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+		if (Queue_count(usr->recipients) > 0
+			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->fsent++;
 			if (usr->fsent > stats.fsent) {
 				stats.fsent = usr->fsent;
@@ -1446,7 +1440,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((xmsg->to = copy_StringList(usr->recipients)) == NULL) {
+		if ((xmsg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 			destroy_BufferedMsg(xmsg);
 			Perror(usr, "Out of memory");
 			RET(usr);
@@ -1471,8 +1465,8 @@ int r;
 		usr->send_msg = ref_BufferedMsg(xmsg);
 		usr->msg_seq_sent++;
 
-		if (usr->recipients != NULL
-			&& !(usr->recipients->next == NULL && !strcmp(usr->name, usr->recipients->str))) {
+		if (Queue_count(usr->recipients) > 0
+			&& !(Queue_count(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
 			usr->qansw++;
 			if (usr->qansw > stats.qansw) {
 				stats.qansw = usr->qansw;
@@ -1769,7 +1763,7 @@ User *u;
 	you can see it when someone is X-ing or Mail>-ing you
 	this is after a (good) idea by Richard of MatrixBBS
 */
-		if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringList(u->recipients, usr->name) != NULL)
+		if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringQueue(u->recipients, usr->name) != NULL)
 			stat = 'x';
 
 		if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_StringList(u->new_message->to, usr->name) != NULL)
@@ -1893,7 +1887,7 @@ PList *pl_cols[16];
 			if (u->runtime_flags & RTF_LOCKED)
 				stat = '#';
 
-			if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringList(u->recipients, usr->name) != NULL)
+			if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringQueue(u->recipients, usr->name) != NULL)
 				stat = 'x';
 
 			if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_StringList(u->new_message->to, usr->name) != NULL)
@@ -1967,10 +1961,9 @@ int msgtype;
 		CURRENT_STATE(usr);
 		Return;
 	}
-	listdestroy_StringList(usr->recipients);
-	usr->recipients = NULL;
+	deinit_StringQueue(usr->recipients);
 
-	if ((usr->recipients = new_StringList(m->from)) == NULL) {
+	if (add_StringQueue(usr->recipients, new_StringList(m->from)) == NULL) {
 		Perror(usr, "Out of memory");
 	} else
 		check_recipients(usr);
@@ -1980,9 +1973,7 @@ int msgtype;
 
 		if ((reply_to = copy_StringList(m->to)) == NULL) {
 			Perror(usr, "Out of memory");
-
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 		} else {
 			StringList *sl_next;
 
@@ -1991,19 +1982,19 @@ int msgtype;
 
 /* don't add the same user multiple times */
 
-				if (in_StringList(usr->recipients, sl->str) == NULL)
-					add_StringList(&usr->recipients, sl);
+				if (in_StringQueue(usr->recipients, sl->str) == NULL)
+					add_StringQueue(usr->recipients, sl);
 				else
 					destroy_StringList(sl);
 			}
-			if ((sl = in_StringList(usr->recipients, usr->name)) != NULL) {
-				remove_StringList(&usr->recipients, sl);
+			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			check_recipients(usr);
 		}
 	}
-	if (usr->recipients == NULL) {
+	if (!Queue_count(usr->recipients)) {
 		CURRENT_STATE(usr);
 		Return;
 	}
@@ -2029,7 +2020,7 @@ char numbuf[MAX_NUMBER], many_buf[MAX_LINE];
 		numbuf[0] = 0;
 
 /* replying to just one person? */
-	if (usr->recipients->next == NULL && usr->recipients->prev == NULL) {
+	if (Queue_count(usr->recipients) == 1) {
 		usr->runtime_flags &= ~RTF_MULTI;
 
 		Print(usr, "<green>Replying %sto%s\n", numbuf, print_many(usr, many_buf, MAX_LINE));

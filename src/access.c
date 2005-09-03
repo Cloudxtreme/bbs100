@@ -218,7 +218,7 @@ User *u;
 	if (usr == NULL)
 		return;
 
-	for(sl = usr->recipients; sl != NULL; sl = sl_next) {
+	for(sl = (StringList *)usr->recipients->tail; sl != NULL; sl = sl_next) {
 		sl_next = sl->next;
 
 		if ((u = is_online(sl->str)) == NULL) {
@@ -253,7 +253,7 @@ User *u;
 				Print(usr, "<red>Sorry, but <yellow>%s<red> is not on your friend list\n", sl->str);
 
 Remove_Checked_Recipient:
-				remove_StringList(&usr->recipients, sl);
+				remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 				continue;
 			}

@@ -44,6 +44,7 @@
 #define pop_StringQueue(x)			(StringList *)pop_Queue(x)
 #define new_StringQueue				new_Queue
 #define destroy_StringQueue(x)		destroy_Queue((x), destroy_StringList)
+#define deinit_StringQueue(x)		deinit_Queue((x), destroy_StringList)
 #define sort_StringQueue(x, y)		(StringList *)sort_Queue((x), (y))
 
 typedef struct StringList_tag StringList;
@@ -57,6 +58,7 @@ struct StringList_tag {
 StringList *new_StringList(char *);
 void destroy_StringList(StringList *);
 StringList *in_StringList(StringList *, char *);
+StringList *in_StringQueue(Queue *, char *);
 char *str_StringList(StringList *);
 StringList *load_StringList(char *);
 int save_StringList(StringList *, char *);

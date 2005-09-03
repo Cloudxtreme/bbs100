@@ -78,16 +78,16 @@ char many_buf[MAX_LINE];
 				usr->edit_buf[usr->edit_pos] = 0;
 				Put(usr, "\b \b");
 			} else {
-				if (usr->recipients != NULL) {
+				if (Queue_count(usr->recipients) > 0) {
 					erase_many(usr);
 
-					for(sl = usr->recipients; sl != NULL && sl->next != NULL; sl = sl->next);
+					sl = (StringList *)usr->recipients->head;
 					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
-					remove_StringList(&usr->recipients, sl);
+					remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
-					if (usr->recipients == NULL)
+					if (!Queue_count(usr->recipients))
 						usr->runtime_flags &= ~RTF_MULTI;
 
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -99,11 +99,11 @@ char many_buf[MAX_LINE];
 			if (usr->edit_pos > 0)
 				Put(usr, "\n");
 
-			if (usr->recipients == NULL)
+			if (!Queue_count(usr->recipients))
 				Put(usr, "<magenta>The recipient list is empty");
 			else {
 				Put(usr, "<magenta>List recipients: ");
-				for(sl = usr->recipients; sl != NULL; sl = sl->next) {
+				for(sl = (StringList *)usr->recipients->tail; sl != NULL; sl = sl->next) {
 					Print(usr, "<yellow>%s", sl->str);
 					if (sl->next != NULL)
 						Put(usr, "<green>, ");
@@ -121,17 +121,16 @@ char many_buf[MAX_LINE];
 			Put(usr, "\b\b");
 
 			if (!(usr->runtime_flags & RTF_MULTI)) {
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
+				deinit_StringQueue(usr->recipients);
 				usr->runtime_flags |= RTF_MULTI;
 			}
 			for(sl = usr->friends; sl != NULL; sl = sl->next)
-				if (in_StringList(usr->recipients, sl->str) == NULL) {
+				if (in_StringQueue(usr->recipients, sl->str) == NULL) {
 /* this is a kind of hack; you may multi-mail to offline friends */
 					if (access_func != multi_mail_access && is_online(sl->str) == NULL)
 						continue;
 
-					add_StringList(&usr->recipients, new_StringList(sl->str));
+					add_StringQueue(usr->recipients, new_StringList(sl->str));
 			}
 			Put(usr, print_many(usr, many_buf, MAX_LINE));
 			break;
@@ -148,17 +147,16 @@ char many_buf[MAX_LINE];
 				Put(usr, "\b\b");
 
 				if (!(usr->runtime_flags & RTF_MULTI)) {
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 					usr->runtime_flags |= RTF_MULTI;
 				}
 				for(sl = talked_to; sl != NULL; sl = sl->next)
-					if (in_StringList(usr->recipients, sl->str) == NULL) {
+					if (in_StringQueue(usr->recipients, sl->str) == NULL) {
 /* this is a kind of hack; you may multi-mail to ppl you've talked with */
 						if (access_func != multi_mail_access && is_online(sl->str) == NULL)
 							continue;
 
-						add_StringList(&usr->recipients, new_StringList(sl->str));
+						add_StringQueue(usr->recipients, new_StringList(sl->str));
 				}
 				listdestroy_StringList(talked_to);
 				Put(usr, print_many(usr, many_buf, MAX_LINE));
@@ -174,15 +172,13 @@ char many_buf[MAX_LINE];
 				Put(usr, "\b\b");
 
 				if (!(usr->runtime_flags & RTF_MULTI)) {
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 					usr->runtime_flags |= RTF_MULTI;
 				}
 				for(u = AllUsers; u != NULL; u = u->next) {
 					if (u->name[0])
-						usr->recipients = add_StringList(&usr->recipients, new_StringList(u->name));
+						add_StringQueue(usr->recipients, new_StringList(u->name));
 				}
-				usr->recipients = rewind_StringList(usr->recipients);
 				Put(usr, print_many(usr, many_buf, MAX_LINE));
 			}
 			break;
@@ -206,12 +202,12 @@ char many_buf[MAX_LINE];
 			switch(c) {
 				case '-':
 				case KEY_CTRL('R'):
-					if ((sl = in_StringList(usr->recipients, usr->edit_buf)) != NULL) {
+					if ((sl = in_StringQueue(usr->recipients, usr->edit_buf)) != NULL) {
 						usr->edit_pos = 0;
 						usr->edit_buf[0] = 0;
 
 						erase_many(usr);
-						remove_StringList(&usr->recipients, sl);
+						remove_StringQueue(usr->recipients, sl);
 						destroy_StringList(sl);
 
 						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -224,8 +220,7 @@ char many_buf[MAX_LINE];
 				case KEY_CTRL('D'):
 					usr->edit_pos = 0;
 					usr->edit_buf[0] = 0;
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 					Put(usr, "\n");
 					return EDIT_BREAK;
 
@@ -250,14 +245,12 @@ char many_buf[MAX_LINE];
 					Put(usr, "\n");
 				return EDIT_RETURN;
 			}
-			if (!(usr->runtime_flags & RTF_MULTI)) {
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
-			}
+			if (!(usr->runtime_flags & RTF_MULTI))
+				deinit_StringQueue(usr->recipients);
 /*
 	if it's already in the list, then erase it
 */
-			if (in_StringList(usr->recipients, usr->edit_buf) != NULL) {
+			if (in_StringQueue(usr->recipients, usr->edit_buf) != NULL) {
 				erase_name(usr);
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
@@ -269,11 +262,10 @@ char many_buf[MAX_LINE];
 			if ((sl = new_StringList(usr->edit_buf)) == NULL) {
 				Perror(usr, "Out of memory");
 			} else {
-				if (!(usr->runtime_flags & RTF_MULTI)) {
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
-				}
-				add_StringList(&usr->recipients, sl);
+				if (!(usr->runtime_flags & RTF_MULTI))
+					deinit_StringQueue(usr->recipients);
+
+				add_StringQueue(usr->recipients, sl);
 			}
 			usr->edit_buf[0] = 0;
 			usr->edit_pos = 0;
@@ -289,17 +281,16 @@ char many_buf[MAX_LINE];
 			}
 			if (usr->edit_pos > 0 && !(usr->runtime_flags & RTF_MULTI)) {
 				erase_many(usr);
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
+				deinit_StringQueue(usr->recipients);
 			}
 			if (!usr->edit_pos) {
-				if (usr->recipients != NULL) {
+				if (Queue_count(usr->recipients) > 0) {
 					Put(usr, "\b\b, ");
 					usr->runtime_flags |= RTF_MULTI;
 				}
 				break;
 			}
-			if (in_StringList(usr->recipients, usr->edit_buf) != NULL) {
+			if (in_StringQueue(usr->recipients, usr->edit_buf) != NULL) {
 				erase_name(usr);
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
@@ -322,16 +313,16 @@ char many_buf[MAX_LINE];
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
 
-				if (usr->recipients == NULL) {
-					add_StringList(&usr->recipients, sl);
+				if (!Queue_count(usr->recipients)) {
+					add_StringQueue(usr->recipients, sl);
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				} else {
-					if (usr->recipients->next == NULL) {
+					if (Queue_count(usr->recipients) == 1) {
 						erase_many(usr);
-						add_StringList(&usr->recipients, sl);
+						add_StringQueue(usr->recipients, sl);
 						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 					} else
-						add_StringList(&usr->recipients, sl);
+						add_StringQueue(usr->recipients, sl);
 				}
 			}
 			usr->edit_pos = 0;
@@ -409,8 +400,7 @@ char many_buf[MAX_LINE];
 			usr->edit_pos = 0;
 			usr->edit_buf[0] = 0;
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 			break;
 
 		case KEY_CTRL('C'):
@@ -433,18 +423,18 @@ char many_buf[MAX_LINE];
 				usr->edit_buf[usr->edit_pos] = 0;
 				Put(usr, "\b \b");
 			} else {
-				if (usr->recipients != NULL) {
+				if (Queue_count(usr->recipients) > 0) {
 					StringList *sl;
 
 					erase_many(usr);
 
-					for(sl = usr->recipients; sl != NULL && sl->next != NULL; sl = sl->next);
+					sl = (StringList *)usr->recipients->head;
 					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
-					remove_StringList(&usr->recipients, sl);
+					remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
-					if (usr->recipients == NULL)
+					if (!Queue_count(usr->recipients))
 						usr->runtime_flags &= ~RTF_MULTI;
 
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -517,8 +507,8 @@ int i;
 				usr->edit_buf[usr->edit_pos] = 0;
 			}
 			if (!usr->edit_pos) {
-				if (usr->recipients != NULL && usr->recipients->str != NULL) {
-					cstrcpy(usr->edit_buf, usr->recipients->str, MAX_LINE);
+				if (Queue_count(usr->recipients) > 0) {
+					cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->tail)->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 				}
 			}
@@ -1771,13 +1761,13 @@ void erase_many(User *usr) {
 	if (usr == NULL)
 		return;
 
-	if (usr->recipients != NULL) {
-		if (usr->recipients->next == NULL) {
+	if (Queue_count(usr->recipients) > 0) {
+		if (Queue_count(usr->recipients) == 1) {
 			char buf[MAX_LONGLINE];
 			int i;
 
 			buf[0] = 0;
-			i = strlen(usr->recipients->str) + 5;	/* erase '[User Joe]: ' */
+			i = strlen(((StringList *)usr->recipients->tail)->str) + 5;	/* erase '[User Joe]: ' */
 			while(i > 0) {
 				cstrcat(buf, "\b \b", MAX_LONGLINE);
 				i--;
@@ -1800,9 +1790,9 @@ char *print_many(User *usr, char *buf, int buflen) {
 	if (usr == NULL)
 		return buf;
 
-	if (usr->recipients != NULL) {
-		if (usr->recipients->next == NULL)
-			bufprintf(buf, buflen, " <white>[<yellow>%s<white>]%c <yellow>%s", usr->recipients->str,
+	if (Queue_count(usr->recipients) > 0) {
+		if (Queue_count(usr->recipients) == 1)
+			bufprintf(buf, buflen, " <white>[<yellow>%s<white>]%c <yellow>%s", ((StringList *)usr->recipients->tail)->str,
 				(usr->runtime_flags & RTF_MULTI) ? ',' : ':', usr->edit_buf);
 		else
 			bufprintf(buf, buflen, "<green> <white>[<green><many<green>><white>]%c <yellow>%s", (usr->runtime_flags & RTF_MULTI) ? ',' : ':',

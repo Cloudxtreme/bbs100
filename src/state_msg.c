@@ -197,7 +197,7 @@ void state_enter_mail_recipients(User *usr, char c) {
 			break;
 
 		case EDIT_RETURN:
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -206,13 +206,12 @@ void state_enter_mail_recipients(User *usr, char c) {
 				RET(usr);
 				break;
 			}
-			if ((usr->new_message->to = copy_StringList(usr->recipients)) == NULL) {
+			if ((usr->new_message->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
 				break;
 			}
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			POP(usr);
 			enter_the_message(usr);
@@ -826,8 +825,8 @@ int remove;
 			}
 		}
 		if (remove) {
-			if ((sl = in_StringList(from->recipients, usr->name)) != NULL) {
-				remove_StringList(&from->recipients, sl);
+			if ((sl = in_StringQueue(from->recipients, usr->name)) != NULL) {
+				remove_StringQueue(from->recipients, sl);
 				destroy_StringList(sl);
 			}
 			Return;
@@ -912,13 +911,13 @@ int remove;
 	if (usr != from) {
 		if ((usr->runtime_flags & RTF_BUSY) || (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD))) {
 			if ((usr->runtime_flags & RTF_BUSY_SENDING)
-				&& in_StringList(usr->recipients, from->name) != NULL)
+				&& in_StringQueue(usr->recipients, from->name) != NULL)
 /* warn follow-up mode by Richard of MatrixBBS */
 				Print(from, "<yellow>%s<green> is busy sending you a message%s\n", usr->name,
 					(PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
 			else {
 				if ((usr->runtime_flags & RTF_BUSY_MAILING)
-					&& in_StringList(usr->recipients, from->name) != NULL)
+					&& in_StringQueue(usr->recipients, from->name) != NULL)
 					Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
 				else {
 					if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
@@ -949,8 +948,8 @@ int remove;
 */
 		if ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
 			|| (((msg->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND))) {
-			listdestroy_StringList(usr->recipients);
-			if ((usr->recipients = new_StringList(msg->from)) == NULL) {
+			deinit_StringQueue(usr->recipients);
+			if (add_StringQueue(usr->recipients, new_StringList(msg->from)) == NULL) {
 				Perror(usr, "Out of memory");
 				Return;
 			}
@@ -1006,10 +1005,9 @@ int printed;
 			&& ((PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP))
 			|| (((m->flags & BUFMSG_TYPE) == BUFMSG_QUESTION) && (usr->flags & USR_HELPING_HAND)))) {
 			if (is_online(m->from) != NULL) {
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
+				deinit_StringQueue(usr->recipients);
 
-				if ((usr->recipients = new_StringList(m->from)) == NULL) {
+				if (add_StringQueue(usr->recipients, new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 					Return;
 				}
@@ -1182,7 +1180,7 @@ StringIO *tmp;
 			break;
 
 		case EDIT_RETURN:
-			if (usr->recipients == NULL) {
+			if (!Queue_count(usr->recipients)) {
 				RET(usr);
 				break;
 			}
@@ -1195,13 +1193,12 @@ StringIO *tmp;
 			usr->new_message->flags &= ~MSG_REPLY;
 
 			listdestroy_StringList(usr->new_message->to);
-			if ((usr->new_message->to = copy_StringList(usr->recipients)) == NULL) {
+			if ((usr->new_message->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
 				Perror(usr, "Out of memory");
 				RET(usr);
 				break;
 			}
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			usr->new_message->mtime = rtc;
 
@@ -1564,7 +1561,7 @@ char buf[PRINT_BUF], c;
 	}
 	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
 
-	sl = usr->recipients;
+	sl = usr->recipients->tail;
 	if (sl != NULL) {
 		unsigned long i;
 

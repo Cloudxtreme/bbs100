@@ -38,7 +38,7 @@ ListType *add_Queue(Queue *, void *);
 ListType *prepend_Queue(Queue *, void *);
 ListType *remove_Queue(Queue *, void *);
 ListType *pop_Queue(Queue *);
-void concat_Queue(Queue *, void *);
+ListType *concat_Queue(Queue *, void *);
 void sort_Queue(Queue *, int (*)(void *, void *));
 int Queue_count(Queue *);
 

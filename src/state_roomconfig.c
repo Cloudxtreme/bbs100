@@ -223,8 +223,7 @@ void state_room_config_menu(User *usr, char c) {
 				Put(usr, "<red>You can't kick anyone from the <yellow>Mail><red> room\n");
 				break;
 			}
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			enter_name(usr, STATE_KICKOUT_PROMPT);
 			Return;
@@ -673,8 +672,7 @@ int r;
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 			RET(usr);
 			Return;
 		}
@@ -786,8 +784,7 @@ int r;
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			RET(usr);
 			Return;
@@ -896,8 +893,7 @@ int r;
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
 
-			listdestroy_StringList(usr->recipients);
-			usr->recipients = NULL;
+			deinit_StringQueue(usr->recipients);
 
 			RET(usr);
 			Return;
@@ -907,8 +903,7 @@ int r;
 				if (!strcmp(usr->edit_buf, usr->name)) {
 					Print(usr, "<red>You can't unassign yourself as %s. Please ask a sysop to do so.\n", PARAM_NAME_ROOMAIDE);
 
-					listdestroy_StringList(usr->recipients);
-					usr->recipients = NULL;
+					deinit_StringQueue(usr->recipients);
 
 					RET(usr);
 					Return;
@@ -916,8 +911,7 @@ int r;
 				Print(usr, "<red>You are not allowed to unassign <yellow>%s<red> as %s.\n"
 					"Please ask a sysop to do so.\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 
-				listdestroy_StringList(usr->recipients);
-				usr->recipients = NULL;
+				deinit_StringQueue(usr->recipients);
 
 				RET(usr);
 				Return;
