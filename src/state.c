@@ -1695,7 +1695,7 @@ int total;
 	if (format & WHO_LIST_LONG)
 		long_who_list(usr, pq);
 	else
-		short_who_list(usr, pq, total);
+		short_who_list(usr, pq);
 
 	destroy_PQueue(pq);			/* destroy temp list */
 
@@ -1805,11 +1805,9 @@ User *u;
 
 /*
 	construct a short format who list with sorted columns
-
-	total should equal list_Count(pl)
 */
-int short_who_list(User *usr, PQueue *pq, int total) {
-int i, j, buflen = 0, cols, rows;
+int short_who_list(User *usr, PQueue *pq) {
+int i, j, buflen = 0, cols, rows, total;
 char buf[PRINT_BUF], col, stat;
 User *u;
 PList *pl, *pl_cols[16];
@@ -1826,6 +1824,7 @@ PList *pl, *pl_cols[16];
 		if (cols > 15)
 			cols = 15;
 
+	total = Queue_count(pq);
 	rows = total / cols;
 	if (total % cols)
 		rows++;
@@ -2403,7 +2402,7 @@ int total;
 		(total == 1) ? "is" : "are", total, (total == 1) ? "" : "s",
 		tm->tm_hour, tm->tm_min);
 
-	short_who_list(usr, pq, total);
+	short_who_list(usr, pq);
 
 	destroy_PQueue(pq);
 
@@ -2465,7 +2464,7 @@ int total;
 		(total == 1) ? "is" : "are", total, (total == 1) ? "person" : "people",
 		tm->tm_hour, tm->tm_min);
 
-	short_who_list(usr, pq, total);
+	short_who_list(usr, pq);
 
 	destroy_PQueue(pq);
 	listdestroy_StringList(talked_to);
