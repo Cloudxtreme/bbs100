@@ -121,6 +121,23 @@ ListType *ret;
 	return ret;
 }
 
+/* pop off the end */
+ListType *dequeue_Queue(Queue *q) {
+ListType *ret;
+
+	if (q == NULL || q->head == NULL)
+		return NULL;
+
+	ret = q->head;
+	q->count--;
+
+	q->head = q->head->prev;
+	if (q->head == NULL)
+		q->tail = NULL;
+
+	return ret;
+}
+
 ListType *concat_Queue(Queue *q, void *l) {
 	if (q == NULL || l == NULL)
 		return NULL;

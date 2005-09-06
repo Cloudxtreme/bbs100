@@ -206,8 +206,11 @@ void state_enter_mail_recipients(User *usr, char c) {
 				RET(usr);
 				break;
 			}
-			set_mailto(usr, usr->new_message, usr->recipients);
-
+			if (set_mailto(usr->new_message, usr->recipients)) {
+				Perror(usr, "Out of memory");
+				RET(usr);
+				break;
+			}
 			POP(usr);
 			enter_the_message(usr);
 	}
@@ -220,23 +223,17 @@ void state_enter_mail_recipients(User *usr, char c) {
 	The mailto structure also holds the message numbers of the recipient's mail dir,
 	so the messages can be deleted properly later
 */
-void set_mailto(User *usr, Message *msg, StringQueue *sq) {
+int set_mailto(Message *msg, StringQueue *sq) {
 MailTo *m;
 StringList *sl;
-char *name;
 
 	if (msg == NULL || sq == NULL)
-		return;
+		return -1;
 
-	while((sl = pop_StringQueue(sq)) != NULL) {
-		name = sl->str;
-		if (!strcmp(usr->name, name)) {
-			destroy_StringList(sl);
-			continue;
-		}
+	while((sl = dequeue_StringQueue(sq)) != NULL) {
 		if ((m = new_MailTo()) == NULL) {
-			Perror(usr, "Out of memory");
-			break;
+			deinit_StringQueue(sq);
+			return -1;
 		}
 		m->name = sl->str;
 		sl->str = NULL;
@@ -245,6 +242,7 @@ char *name;
 		prepend_MailTo(&msg->to, m);
 	}
 	deinit_StringQueue(sq);
+	return 0;
 }
 
 void state_enter_subject(User *usr, char c) {
@@ -362,11 +360,9 @@ StringIO *tmp;
 		for(to = usr->new_message->to; to != NULL; to = to_next) {
 			to_next = to->next;
 
-/*
-	already filtered out by set_mailto()
 			if (!strcmp(usr->name, to->name))
 				continue;
-*/
+
 			if ((u = is_online(to->name)) == NULL) {
 				if (!(usr->runtime_flags & RTF_SYSOP)) {	/* if not sysop, check permissions */
 					StringList *sl;
@@ -1298,8 +1294,11 @@ StringIO *tmp;
 			usr->new_message->flags &= ~MSG_REPLY;
 
 			listdestroy_MailTo(usr->new_message->to);
-			set_mailto(usr, usr->new_message, usr->recipients);
-
+			if (set_mailto(usr->new_message, usr->recipients)) {
+				Perror(usr, "Out of memory");
+				RET(usr);
+				break;
+			}
 			usr->new_message->mtime = rtc;
 
 /* swap these pointers for save_message() */
@@ -1770,6 +1769,9 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			dl = color_strlen(buf);
 
 			for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+				if (to->name == NULL)
+					continue;
+
 				if ((dl + strlen(to->name) + 2) < max_dl)
 					l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
 				else {
@@ -1781,13 +1783,16 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			}
 			Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 		} else {
-			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->name, usr->name))
+			if (msg->to != NULL && msg->to->next == NULL && to->name != NULL && !strcmp(msg->to->name, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
 				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
 				for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+					if (to->name == NULL)
+						continue;
+
 					if ((dl + strlen(to->name) + 2) < MAX_LINE) {
 						l = strlen(buf);
 						l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
