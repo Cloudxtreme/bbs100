@@ -572,7 +572,7 @@ int n;
 				r->flags |= ROOM_DIRTY;
 			}
 		}
-		for(r = HomeRooms; r != NULL; r = r->next) {
+		for(r = (Room *)HomeRooms->tail; r != NULL; r = r->next) {
 			if (r->category != NULL && !strcmp(r->category, sl->str)) {
 				Free(r->category);
 				r->category = NULL;

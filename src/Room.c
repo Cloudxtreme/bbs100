@@ -42,8 +42,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-Room *AllRooms = NULL, *HomeRooms = NULL, *Lobby_room = NULL;
-
+Room *AllRooms = NULL, *Lobby_room = NULL;
+RoomQueue *HomeRooms = NULL;
 
 Room *new_Room(void) {
 Room *r;
@@ -706,7 +706,7 @@ Room *r;
 
 						r = load_Mail(name, load_room_flags);
 						*quote = '\'';
-						add_Room(&HomeRooms, r);
+						add_RoomQueue(HomeRooms, r);
 						return r;
 					}
 					*quote = '\'';
@@ -852,7 +852,7 @@ int load_room_flags;
 
 	possession(username, "Home", buf, MAX_LINE);
 
-	for(r = HomeRooms; r != NULL; r = r->next)
+	for(r = (Room *)HomeRooms->tail; r != NULL; r = r->next)
 		if (!strcmp(r->name, buf))
 			return r;
 
@@ -863,7 +863,7 @@ int load_room_flags;
 	if ((r = load_Home(username, load_room_flags)) == NULL)
 		return NULL;
 
-	add_Room(&HomeRooms, r);
+	add_RoomQueue(HomeRooms, r);
 	return r;
 }
 
@@ -944,7 +944,7 @@ void unload_Room(Room *r) {
 		return;
 
 	if (r->number == HOME_ROOM && count_Queue(r->inside) <= 0) {	/* demand loaded Home room */
-		remove_Room(&HomeRooms, r);
+		remove_RoomQueue(HomeRooms, r);
 		save_Room(r);
 		destroy_Room(r);
 		return;
@@ -953,16 +953,16 @@ void unload_Room(Room *r) {
 		Room *h;
 /*
 	Note: mail rooms are usually stored in the user as usr->mail
-	However, if the user was not online, it was put on the HomeRooms list
+	However, if the user was not online, it was put on the HomeRooms queue
 	so if we can find it there, it should be unloaded
 	if we can't find it there, the room should not be unloaded
 
 	This procedure is more efficient than scanning all users for "(usr->mail == r)"
-	because the HomeRooms list is usually very short or empty
+	because the HomeRooms queue is usually very short or empty
 */
-		for(h = HomeRooms; h != NULL; h = h->next) {
+		for(h = (Room *)HomeRooms->tail; h != NULL; h = h->next) {
 			if (h == r) {
-				remove_Room(&HomeRooms, r);
+				remove_RoomQueue(HomeRooms, r);
 				save_Room(r);
 				destroy_Room(r);
 				return;
@@ -1051,6 +1051,9 @@ int load_room_flags, len;
 
 	listdestroy_Room(AllRooms);
 	AllRooms = Lobby_room = NULL;
+
+	if ((HomeRooms = new_RoomQueue()) == NULL)
+		return -1;
 
 	load_room_flags = LOAD_ROOM_ALL;
 	if (!PARAM_HAVE_RESIDENT_INFO)
