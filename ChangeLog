@@ -1,3 +1,6 @@
+Changes as of September 6th 2005
+- room->inside is now PQueue
+
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting
 - bugfix; enter homeroom would display wrong room name to invited users

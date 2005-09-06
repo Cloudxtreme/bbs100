@@ -211,7 +211,7 @@ History_Reply_Code:
 					add_StringList(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (!count_Queue(usr->recipients))
+			if (count_Queue(usr->recipients) <= 0)
 				break;
 
 			do_reply_x(usr, m->flags);
@@ -611,7 +611,7 @@ Held_History_Reply:
 					add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
-			if (!count_Queue(usr->recipients))
+			if (count_Queue(usr->recipients) <= 0)
 				break;
 
 			do_reply_x(usr, m->flags);

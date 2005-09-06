@@ -197,7 +197,7 @@ void state_enter_mail_recipients(User *usr, char c) {
 			break;
 
 		case EDIT_RETURN:
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -1180,7 +1180,7 @@ StringIO *tmp;
 			break;
 
 		case EDIT_RETURN:
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -1620,7 +1620,7 @@ User *u;
 
 	Enter(room_beep);
 
-	for(p = r->inside; p != NULL; p = p->next) {
+	for(p = (PList *)r->inside->tail; p != NULL; p = p->next) {
 		u = (User *)p->p;
 		if (u == NULL || u == usr)
 			continue;

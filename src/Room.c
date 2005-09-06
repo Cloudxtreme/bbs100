@@ -51,6 +51,10 @@ Room *r;
 	if ((r = (Room *)Malloc(sizeof(Room), TYPE_ROOM)) == NULL)
 		return NULL;
 
+	if ((r->inside = new_PQueue()) == NULL) {
+		destroy_Room(r);
+		return NULL;
+	}
 	r->max_msgs = PARAM_MAX_MESSAGES;
 	return r;
 }
@@ -67,7 +71,7 @@ void destroy_Room(Room *r) {
 	listdestroy_StringList(r->invited);
 	destroy_StringQueue(r->chat_history);
 	destroy_StringIO(r->info);
-	listdestroy_PList(r->inside);
+	destroy_PQueue(r->inside);
 
 	Free(r);
 }
@@ -939,7 +943,7 @@ void unload_Room(Room *r) {
 	if (r == NULL)
 		return;
 
-	if (r->number == HOME_ROOM && r->inside == NULL) {		/* demand loaded Home room */
+	if (r->number == HOME_ROOM && count_Queue(r->inside) <= 0) {	/* demand loaded Home room */
 		remove_Room(&HomeRooms, r);
 		save_Room(r);
 		destroy_Room(r);

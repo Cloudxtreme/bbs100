@@ -1691,7 +1691,7 @@ void enter_room(User *usr, Room *r) {
 	the reason we do it this late is that you now won't get to see people
 	walking in and out of the room in the history, if there is no one else there
 */
-	add_PList(&usr->curr_room->inside, new_PList(usr));
+	add_PQueue(usr->curr_room->inside, new_PList(usr));
 }
 
 void leave_room(User *usr) {
@@ -1700,14 +1700,14 @@ PList *p;
 	if (usr->curr_room == NULL)
 		return;
 
-	if ((p = in_PList(usr->curr_room->inside, usr)) != NULL) {
-		remove_PList(&usr->curr_room->inside, p);
+	if (usr->curr_room->inside != NULL && (p = in_PList((PList *)usr->curr_room->inside->tail, usr)) != NULL) {
+		remove_PQueue(usr->curr_room->inside, p);
 		destroy_PList(p);
 	}
 	if (usr->curr_room->flags & ROOM_CHATROOM)
 		leave_chatroom(usr);
 
-	if (usr->curr_room->number == HOME_ROOM && usr->curr_room->inside == NULL) {
+	if (usr->curr_room->number == HOME_ROOM && count_Queue(usr->curr_room->inside) <= 0) {
 		remove_Room(&HomeRooms, usr->curr_room);
 		save_Room(usr->curr_room);
 		destroy_Room(usr->curr_room);
@@ -1848,10 +1848,10 @@ User *u;
 
 	Enter(chatroom_msg);
 
-	if (!(r->flags & ROOM_CHATROOM)) {
+	if (!(r->flags & ROOM_CHATROOM) || r->inside == NULL) {
 		Return;
 	}
-	for(p = r->inside; p != NULL; p = p->next) {
+	for(p = (PList *)r->inside->tail; p != NULL; p = p->next) {
 		u = (User *)p->p;
 		if (u == NULL)
 			continue;

@@ -347,7 +347,7 @@ void enter_recipients(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_recipients);
 
-	if (!count_Queue(usr->recipients))
+	if (count_Queue(usr->recipients) <= 0)
 		Put(usr, "<green>Enter recipient: <yellow>");
 	else {
 		if (count_Queue(usr->recipients) == 1)
@@ -368,7 +368,7 @@ void enter_name(User *usr, void (*state_func)(User *, char)) {
 
 	Enter(enter_name);
 
-	if (!count_Queue(usr->recipients))
+	if (count_Queue(usr->recipients) <= 0)
 		Put(usr, "<green>Enter name: <yellow>");
 	else {
 		if (count_Queue(usr->recipients) > 1) {
@@ -401,7 +401,7 @@ void state_x_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -441,7 +441,7 @@ void state_emote_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -463,7 +463,7 @@ void state_feelings_prompt(User *usr, char c) {
 
 		case EDIT_RETURN:
 			check_recipients(usr);
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -484,7 +484,7 @@ void state_ping_prompt(User *usr, char c) {
 			break;
 
 		case EDIT_RETURN:
-			if (!count_Queue(usr->recipients)) {
+			if (count_Queue(usr->recipients) <= 0) {
 				RET(usr);
 				break;
 			}
@@ -1644,7 +1644,7 @@ int total;
 		&& !(usr->flags & USR_SHOW_ALL)) {
 		PList *p;
 
-		for(p = usr->curr_room->inside; p != NULL; p = p->next) {
+		for(p = (PList *)usr->curr_room->inside->tail; p != NULL; p = p->next) {
 			u = (User *)p->p;
 			if (u == NULL)
 				continue;
@@ -1999,7 +1999,7 @@ int msgtype;
 			check_recipients(usr);
 		}
 	}
-	if (!count_Queue(usr->recipients)) {
+	if (count_Queue(usr->recipients) <= 0) {
 		CURRENT_STATE(usr);
 		Return;
 	}
@@ -2368,7 +2368,7 @@ int total;
 
 	Enter(online_friends_list);
 
-	if (!count_Queue(usr->friends)) {
+	if (count_Queue(usr->friends) <= 0) {
 		Put(usr, "<red>You have no friends\n");
 		CURRENT_STATE(usr);
 		Return;
@@ -2383,7 +2383,7 @@ int total;
 
 		add_PList(pq, new_PList(u));
 	}
-	if (!count_Queue(pq)) {
+	if (count_Queue(pq) <= 0) {
 		Put(usr, "<red>None of your friends are online\n");
 		destroy_PQueue(pq);
 		CURRENT_STATE(usr);
@@ -2445,7 +2445,7 @@ int total;
 
 		add_PQueue(pq, new_PList(u));
 	}
-	if (!count_Queue(pq)) {
+	if (count_Queue(pq) <= 0) {
 		Put(usr, "<red>Nobody you talked to is online anymore\n");
 		destroy_PQueue(pq);
 		CURRENT_STATE(usr);

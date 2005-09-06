@@ -87,7 +87,7 @@ char many_buf[MAX_LINE];
 
 					remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
-					if (!count_Queue(usr->recipients))
+					if (count_Queue(usr->recipients) <= 0)
 						usr->runtime_flags &= ~RTF_MULTI;
 
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -99,7 +99,7 @@ char many_buf[MAX_LINE];
 			if (usr->edit_pos > 0)
 				Put(usr, "\n");
 
-			if (!count_Queue(usr->recipients))
+			if (count_Queue(usr->recipients) <= 0)
 				Put(usr, "<magenta>The recipient list is empty");
 			else {
 				Put(usr, "<magenta>List recipients: ");
@@ -113,7 +113,7 @@ char many_buf[MAX_LINE];
 			break;
 
 		case KEY_CTRL('F'):
-			if (!count_Queue(usr->friends))
+			if (count_Queue(usr->friends) <= 0)
 				break;
 
 			erase_name(usr);
@@ -313,7 +313,7 @@ char many_buf[MAX_LINE];
 				usr->edit_pos = 0;
 				usr->edit_buf[0] = 0;
 
-				if (!count_Queue(usr->recipients)) {
+				if (count_Queue(usr->recipients) <= 0) {
 					add_StringQueue(usr->recipients, sl);
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				} else {
@@ -434,7 +434,7 @@ char many_buf[MAX_LINE];
 
 					remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
-					if (!count_Queue(usr->recipients))
+					if (count_Queue(usr->recipients) <= 0)
 						usr->runtime_flags &= ~RTF_MULTI;
 
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -1889,7 +1889,7 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 
 	Enter(tab_list);
 
-	if (!count_Queue(usr->tablist))
+	if (count_Queue(usr->tablist) <= 0)
 		make_tablist(usr);
 	else
 		usr->tablist->head = usr->tablist->head->next;
@@ -1907,7 +1907,7 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 	if (usr == NULL)
 		return;
 
-	if (!count_Queue(usr->tablist))
+	if (count_Queue(usr->tablist) <= 0)
 		make_tablist(usr);
 	else
 		usr->tablist->head = usr->tablist->head->prev;
