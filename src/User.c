@@ -47,6 +47,7 @@
 #include "Timezone.h"
 #include "OnlineUser.h"
 #include "bufprintf.h"
+#include "helper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1170,6 +1171,9 @@ void close_connection(User *usr, char *reason, ...) {
 	Enter(close_connection);
 
 	if (usr->name[0]) {
+		if (usr->flags & USR_HELPING_HAND)
+			remove_helper(usr);
+
 		if (usr->runtime_flags & RTF_WAS_HH)	/* restore HH status before saving the User */
 			usr->flags |= USR_HELPING_HAND;
 

@@ -41,6 +41,7 @@
 #include "Param.h"
 #include "SU_Passwd.h"
 #include "bufprintf.h"
+#include "helper.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -184,19 +185,6 @@ char num_buf[MAX_NUMBER];
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot ask questions\n", PARAM_NAME_GUEST);
 					break;
 				}
-				if (usr->question_asked == NULL) {			/* this should never happen */
-					if (!next_helping_hand(usr)) {
-						Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
-
-						deinit_StringQueue(usr->recipients);
-						break;
-					}
-				}
-				Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
-
-				deinit_StringQueue(usr->recipients);
-				add_StringQueue(usr->recipients, new_StringList(usr->question_asked));
-
 				CALL(usr, STATE_EDIT_QUESTION);
 				Return;
 			} else
@@ -214,6 +202,7 @@ char num_buf[MAX_NUMBER];
 				if ((usr->flags & USR_HELPING_HAND) || (usr->runtime_flags & RTF_WAS_HH)) {
 					usr->flags &= ~USR_HELPING_HAND;
 					usr->runtime_flags &= ~RTF_WAS_HH;
+					remove_helper(usr);
 					Put(usr, "<magenta>You are no longer available to help others\n");
 				} else {
 					if (get_su_passwd(usr->name) == NULL) {
@@ -245,6 +234,7 @@ char num_buf[MAX_NUMBER];
 							usr->runtime_flags &= ~RTF_HOLD;
 					}
 					usr->flags |= USR_HELPING_HAND;
+					add_helper(usr);
 					Put(usr, "<magenta>You now are available to help others\n");
 				}
 				break;
@@ -469,6 +459,11 @@ char num_buf[MAX_NUMBER];
 				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot lock the terminal\n", PARAM_NAME_GUEST);
 				break;
 			}
+			if (usr->flags & USR_HELPING_HAND) {
+				usr->flags &= ~USR_HELPING_HAND;
+				remove_helper(usr);
+				usr->runtime_flags |= RTF_WAS_HH;
+			}
 			if (!(usr->flags & USR_DONT_ASK_REASON)) {
 				PUSH(usr, STATE_LOCK_PASSWORD);
 				Put(usr, "<green>");
@@ -530,6 +525,7 @@ char num_buf[MAX_NUMBER];
 
 					if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
 						usr->flags &= ~USR_HELPING_HAND;
+						remove_helper(usr);
 						usr->runtime_flags |= RTF_WAS_HH;
 					}
 					notify_hold(usr);
@@ -553,6 +549,7 @@ char num_buf[MAX_NUMBER];
 					if (usr->runtime_flags & RTF_WAS_HH) {
 						usr->runtime_flags &= ~RTF_WAS_HH;
 						usr->flags |= USR_HELPING_HAND;
+						add_helper(usr);
 					}
 				}
 			} else {

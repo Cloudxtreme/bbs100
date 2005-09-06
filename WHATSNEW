@@ -128,6 +128,7 @@ What's new internally?
   (this is not fast, but does save memory)
 - feelings are cached rather than always resident
   (this saves memory)
+- helping hands are selected in an efficient way
 - CRC-32 is used for computing hash keys
   (far less cache collisions, and it's not all that much slower either)
 - room info and profile info can be 'offline', not permanently resident

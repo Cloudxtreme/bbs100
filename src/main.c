@@ -54,6 +54,7 @@
 #include "ConnResolv.h"
 #include "bufprintf.h"
 #include "BinAlloc.h"
+#include "helper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -333,6 +334,7 @@ char buf[MAX_LONGLINE];
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();					/* init salt table for passwd encryption */
+	init_helper();					/* reset helping hands */
 
 	if (init_ConnUser())			/* startup inet */
 		exit_program(SHUTDOWN);

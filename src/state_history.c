@@ -33,7 +33,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "Memory.h"
-
+#include "helper.h"
 
 static void generic_print_history(User *usr, BufferedMsg *m) {
 	if (usr == NULL || m == NULL)
@@ -664,6 +664,7 @@ Exit_Held_History:
 			if (usr->runtime_flags & RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
+				add_helper(usr);
 			}
 			notify_unhold(usr);				/* wake up friends */
 

@@ -230,9 +230,8 @@ void state_room_config_menu(User *usr, char c) {
 			Put(usr, "Show kicked\n\n");
 			if (usr->curr_room->kicked == NULL)
 				Put(usr, "<red>No one has been kicked out\n");
-			else {
+			else
 				print_columns(usr, usr->curr_room->kicked, 0);
-			}
 			break;
 
 		case 'a':

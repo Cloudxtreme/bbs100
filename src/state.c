@@ -59,6 +59,7 @@
 #include "Memory.h"
 #include "memset.h"
 #include "bufprintf.h"
+#include "helper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -195,6 +196,7 @@ int fun_common(User *usr, char c) {
 			if (usr->flags & USR_X_DISABLED) {
 				if (usr->flags & USR_HELPING_HAND) {
 					usr->flags &= ~USR_HELPING_HAND;
+					remove_helper(usr);
 					Put(usr, "<magenta>You are no longer available to help others\n");
 					usr->runtime_flags |= RTF_WAS_HH;
 				}
@@ -202,6 +204,7 @@ int fun_common(User *usr, char c) {
 				if (usr->runtime_flags & RTF_WAS_HH) {
 					usr->flags |= USR_HELPING_HAND;
 					usr->runtime_flags &= ~RTF_WAS_HH;
+					add_helper(usr);
 					Put(usr, "<magenta>You are now available to help others\n");
 				}
 			}
@@ -1308,7 +1311,7 @@ int r;
 	Enter(state_edit_question);
 
 	if (c == INIT_STATE) {
-		if (check_helping_hand(usr) == NULL) {
+		if (get_helper(usr, 0) == NULL) {
 			RET(usr);
 			Return;
 		}
@@ -1344,7 +1347,7 @@ int r;
 
 /* send question */
 
-		if ((u = check_helping_hand(usr)) == NULL) {
+		if ((u = get_helper(usr, GH_SILENT)) == NULL) {
 			RET(usr);
 			Return;
 		}
@@ -2090,7 +2093,6 @@ int r;
 
 		if (usr->idle_timer != NULL)
 			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
-
 		Return;
 	}
 	if (r == EDIT_RETURN) {
@@ -2110,6 +2112,11 @@ int r;
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
 
+			if (usr->runtime_flags & RTF_WAS_HH) {
+				usr->runtime_flags &= ~RTF_WAS_HH;
+				usr->flags |= USR_HELPING_HAND;
+				add_helper(usr);
+			}
 			if (usr->idle_timer != NULL)
 				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 
@@ -2141,6 +2148,7 @@ int r;
 
 		if (usr->flags & USR_HELPING_HAND) {		/* this is inconvenient right now */
 			usr->flags &= ~USR_HELPING_HAND;
+			remove_helper(usr);
 			usr->runtime_flags |= RTF_WAS_HH;
 		}
 		if (usr->flags & (USR_ANSI|USR_BOLD)) {
@@ -2201,6 +2209,7 @@ int r;
 			if (usr->runtime_flags & RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
+				add_helper(usr);
 			}
 			usr->flags = (unsigned int)usr->read_lines;		/* restore color flags */
 

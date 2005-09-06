@@ -64,8 +64,6 @@ ColorTable color_table[NUM_COLORS] = {
 
 char *Default_Symbols = DEFAULT_SYMBOLS;
 
-static char last_helping_hand[MAX_NAME] = "";
-
 
 int Out(User *usr, char *str) {
 	if (usr == NULL || str == NULL || !*str)
@@ -1262,110 +1260,6 @@ struct stat statbuf;
 		return 1;
 
 	return 0;
-}
-
-/*
-	find next helping hand
-	returns 0 on not found, 1 on found and usr->question_asked set
-
-	This algorithm is not entirely round robin (since users log in and
-	out all the time), but it is good enough
-*/
-int next_helping_hand(User *usr) {
-User *u;
-
-	if (usr == NULL)
-		return 0;
-
-	if (usr->question_asked != NULL) {
-		Free(usr->question_asked);
-		usr->question_asked = NULL;
-	}
-	if (last_helping_hand[0] && (u = is_online(last_helping_hand)) != NULL) {
-		u = u->next;
-
-		for(; u != NULL; u = u->next) {
-			if (u == usr)
-				continue;
-
-			if ((u->flags & USR_HELPING_HAND)
-				&& !(u->runtime_flags & RTF_LOCKED)
-				&& (in_StringList(usr->enemies, u->name)) == NULL
-				&& (in_StringList(u->enemies, usr->name)) == NULL) {
-				cstrcpy(last_helping_hand, u->name, MAX_NAME);
-				usr->question_asked = cstrdup(u->name);
-				return 1;
-			}
-		}
-	}
-
-/* not found; search from beginning */
-
-	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u == usr)
-			continue;
-
-		if ((u->flags & USR_HELPING_HAND)
-			&& !(u->runtime_flags & RTF_LOCKED)
-			&& (in_StringList(usr->enemies, u->name)) == NULL
-			&& (in_StringList(u->enemies, usr->name)) == NULL) {
-			cstrcpy(last_helping_hand, u->name, MAX_NAME);
-			usr->question_asked = cstrdup(u->name);
-			return 1;
-		}
-	}
-	return 0;
-}
-
-/*
-	make sure the HH asked is still online and still has HH status enabled
-	returns NULL if not available, else the recipient user and usr->question_asked set
-*/
-User *check_helping_hand(User *usr) {
-User *u;
-
-	if (usr == NULL)
-		return NULL;
-
-	if (usr->question_asked == NULL) {
-		if (!next_helping_hand(usr)) {
-			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
-
-			deinit_StringQueue(usr->recipients);
-			return NULL;
-		} else
-			Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
-	}
-HH_is_online:
-	while((u = is_online(usr->question_asked)) == NULL) {		/* HH logged off :P */
-		Print(usr, "<yellow>%s<red> is no longer available to help you\n", usr->question_asked);
-
-		if (!next_helping_hand(usr)) {
-			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
-
-			deinit_StringQueue(usr->recipients);
-			return NULL;
-		}
-		Print(usr, "<green>The question goes to <yellow>%s<green> instead\n", usr->question_asked);
-	}
-	if (!(u->flags & USR_HELPING_HAND)
-		|| (u->runtime_flags & RTF_LOCKED)
-		|| (in_StringList(usr->enemies, u->name)) != NULL
-		|| (in_StringList(u->enemies, usr->name)) != NULL) {
-
-		Print(usr, "<yellow>%s<red> is no longer available to help you\n", usr->question_asked);
-		if (!next_helping_hand(usr)) {
-			Put(usr, "<red>Sorry, but currently there is no one available to help you\n");
-
-			deinit_StringQueue(usr->recipients);
-			return NULL;
-		}
-		Print(usr, "<green>The question goes to <yellow>%s<green> instead\n", usr->question_asked);
-		goto HH_is_online;
-	}
-	deinit_StringQueue(usr->recipients);
-	add_StringQueue(usr->recipients, new_StringList(usr->question_asked));
-	return u;
 }
 
 void system_broadcast(int overrule, char *msg) {

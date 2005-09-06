@@ -50,6 +50,7 @@
 #include "Wrapper.h"
 #include "sys_time.h"
 #include "bufprintf.h"
+#include "helper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -527,6 +528,9 @@ int i, new_mail;
 		usr->tmpbuf[i] = NULL;
 	}
 	new_mail = print_user_status(usr);
+
+	if (usr->flags & USR_HELPING_HAND)
+		add_helper(usr);
 
 	MOV(usr, STATE_ROOM_PROMPT);
 

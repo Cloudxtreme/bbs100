@@ -109,8 +109,6 @@ void default_symbol_colors(User *);
 void wipe_line(User *);
 int yesno(User *, char, char);
 int user_exists(char *);
-int next_helping_hand(User *);
-User *check_helping_hand(User *);
 void system_broadcast(int, char *);
 struct tm *tz_time(Timezone *, time_t);
 struct tm *user_time(User *, time_t);
