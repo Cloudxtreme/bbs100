@@ -1660,7 +1660,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			}
 			Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 		} else {
-			if (msg->to != NULL && msg->to->next == NULL && to->name != NULL && !strcmp(msg->to->name, usr->name))
+			if (msg->to != NULL && msg->to->next == NULL && msg->to->name != NULL && !strcmp(msg->to->name, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
 				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
