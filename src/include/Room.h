@@ -102,7 +102,7 @@ struct Room_tag {
 };
 
 extern Room *AllRooms;
-extern RoomQueue *HomeRooms;
+extern Room *HomeRooms;
 extern Room *Lobby_room;
 
 Room *new_Room(void);

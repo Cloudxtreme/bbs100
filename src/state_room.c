@@ -1708,7 +1708,7 @@ PList *p;
 		leave_chatroom(usr);
 
 	if (usr->curr_room->number == HOME_ROOM && count_Queue(usr->curr_room->inside) <= 0) {
-		remove_RoomQueue(HomeRooms, usr->curr_room);
+		remove_Room(&HomeRooms, usr->curr_room);
 		save_Room(usr->curr_room);
 		destroy_Room(usr->curr_room);
 	}
