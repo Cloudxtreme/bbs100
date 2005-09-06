@@ -109,7 +109,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->invited, username) == NULL)
-		add_StringList(&r->invited, new_StringList(username));
+		prepend_StringList(&r->invited, new_StringList(username));
 
 	r->flags = ROOM_SUBJECTS | ROOM_NOZAP | ROOM_INVITE_ONLY;
 
@@ -143,10 +143,10 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->room_aides, username) == NULL)
-		add_StringList(&r->room_aides, new_StringList(username));
+		prepend_StringList(&r->room_aides, new_StringList(username));
 
 	if (in_StringList(r->invited, username) == NULL)
-		add_StringList(&r->invited, new_StringList(username));
+		prepend_StringList(&r->invited, new_StringList(username));
 
 	r->flags = ROOM_CHATROOM | ROOM_NOZAP | ROOM_INVITE_ONLY | ROOM_HOME;
 	Return r;
@@ -203,6 +203,9 @@ int version;
 			r->flags &= ~ROOM_CHATROOM;
 			r->flags |= ROOM_DIRTY;
 		}
+		sort_StringList(r->room_aides, alphasort_StringList);
+		sort_StringList(r->invited, alphasort_StringList);
+		sort_StringList(r->kicked, alphasort_StringList);
 		return r;
 	}
 	destroy_Room(r);
@@ -234,17 +237,17 @@ int ff1_continue;
 			FF1_SKIP("max_msgs");
 		}
 		if (flags & LOAD_ROOM_AIDES)
-			FF1_LOAD_STRINGLIST("room_aides", r->room_aides);
+			FF1_LOAD_USERLIST("room_aides", r->room_aides);
 		else
 			FF1_SKIP("room_aides");
 
 		if (flags & LOAD_ROOM_INVITED)
-			FF1_LOAD_STRINGLIST("invited", r->invited);
+			FF1_LOAD_USERLIST("invited", r->invited);
 		else
 			FF1_SKIP("invited");
 
 		if (flags & LOAD_ROOM_KICKED)
-			FF1_LOAD_STRINGLIST("kicked", r->kicked);
+			FF1_LOAD_USERLIST("kicked", r->kicked);
 		else
 			FF1_SKIP("kicked");
 

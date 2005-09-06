@@ -195,7 +195,7 @@ void state_room_config_menu(User *usr, char c) {
 
 		case 'I':
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY) {
-				Put(usr, "Invite\n");
+				Put(usr, "Invite\n\n");
 				enter_name(usr, STATE_INVITE_PROMPT);
 				Return;
 			}
@@ -203,18 +203,16 @@ void state_room_config_menu(User *usr, char c) {
 
 		case 'i':
 			if (usr->curr_room->flags & ROOM_INVITE_ONLY) {
-				Put(usr, "Show Invited\n");
+				Put(usr, "Show invited\n\n");
 				if (usr->curr_room->invited == NULL)
 					Put(usr, "<red>No one is invited here\n");
-				else {
-					Put(usr, "\n");
+				else
 					print_columns(usr, usr->curr_room->invited, 0);
-				}
 			}
 			break;
 
 		case 'K':
-			Put(usr, "Kickout\n");
+			Put(usr, "Kickout\n\n");
 			if (usr->curr_room == Lobby_room) {
 				Print(usr, "<red>You can't kick anyone from the <yellow>%s>\n", Lobby_room->name);
 				break;
@@ -229,7 +227,7 @@ void state_room_config_menu(User *usr, char c) {
 			Return;
 
 		case 'k':
-			Put(usr, "Show kicked\n");
+			Put(usr, "Show kicked\n\n");
 			if (usr->curr_room->kicked == NULL)
 				Put(usr, "<red>No one has been kicked out\n");
 			else {
@@ -682,7 +680,8 @@ int r;
 		}
 		if ((sl = in_StringList(usr->curr_room->kicked, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->curr_room->kicked, sl);
-			add_StringList(&usr->curr_room->invited, sl);
+			prepend_StringList(&usr->curr_room->invited, sl);
+			sort_StringList(&usr->curr_room->invited, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was kicked, but is now invited\n", sl->str);
 			log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
@@ -719,7 +718,9 @@ int r;
 						j->zapped = 1;
 				}
 			} else {
-				add_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
+				prepend_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
+				sort_StringList(&usr->curr_room->invited, alphasort_StringList);
+
 				Print(usr, "<yellow>%s<green> is invited\n", usr->edit_buf);
 				log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
@@ -805,7 +806,8 @@ int r;
 		}
 		if ((sl = in_StringList(usr->curr_room->invited, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->curr_room->invited, sl);
-			add_StringList(&usr->curr_room->kicked, sl);
+			prepend_StringList(&usr->curr_room->kicked, sl);
+			sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was invited, but is now kicked\n", sl->str);
 			log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
@@ -841,7 +843,8 @@ int r;
 						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 				}
 			} else {
-				add_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
+				prepend_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
+				sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 				Print(usr, "<yellow>%s<green> has been kicked out\n", usr->edit_buf);
 				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
@@ -930,7 +933,9 @@ int r;
 					u->runtime_flags &= ~RTF_ROOMAIDE;
 			}
 		} else {
-			add_StringList(&usr->curr_room->room_aides, new_StringList(usr->edit_buf));
+			prepend_StringList(&usr->curr_room->room_aides, new_StringList(usr->edit_buf));
+			sort_StringList(&usr->curr_room->room_aides, alphasort_StringList);
+
 			Print(usr, "<yellow>%s<green> assigned as %s\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr)

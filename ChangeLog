@@ -5,6 +5,7 @@ Changes as of September 6th 2005
 - feelings use prepend
 - usr->friends and usr->enemies are StringList again and use prepend
 - sort_List() modifies the root pointer
+- room_aides, invited, kicked are now sorted lists
 
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting

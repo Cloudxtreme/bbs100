@@ -40,17 +40,6 @@
 #define sort_Room(x,y)			(Room *)sort_List((x), (y))
 #define listdestroy_Room(x)		listdestroy_List((x), destroy_Room)
 
-#define RoomQueue				Queue
-#define new_RoomQueue			new_Queue
-#define add_RoomQueue(x,y)		(Room *)add_Queue((x), (y))
-#define concat_RoomQueue(x,y)	(Room *)concat_Queue((x), (y))
-#define remove_RoomQueue(x,y)	(Room *)remove_Queue((x), (y))
-#define pop_RoomQueue(x)		(Room *)pop_Queue(x)
-#define destroy_RoomQueue(x)	destroy_Queue((x), destroy_RoomList)
-#define deinit_RoomQueue(x)		deinit_Queue((x), destroy_RoomList)
-#define sort_RoomQueue(x,y)		sort_Queue((x), (y))
-
-
 /*
 	fixed room numbers
 */
