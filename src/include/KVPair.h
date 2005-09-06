@@ -26,6 +26,7 @@
 #include "List.h"
 
 #define add_KVPair(x,y)			(KVPair *)add_List((x), (y))
+#define prepend_KVPair(x,y)		(KVPair *)prepend_List((x), (y))
 #define remove_KVPair(x,y)		(KVPair *)remove_List((x), (y))
 #define listdestroy_KVPair(x)	listdestroy_List((x), destroy_KVPair)
 #define rewind_KVPair(x)		(KVPair *)rewind_List(x)

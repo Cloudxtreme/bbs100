@@ -89,12 +89,11 @@ int len;
 
 		if (!stat(buf, &statbuf) && S_ISREG(statbuf.st_mode)) {
 			if ((f = load_Feeling(buf)) != NULL)
-				feelings = add_KVPair(&feelings, f);
+				feelings = prepend_KVPair(&feelings, f);
 		}
 	}
 	closedir(dirp);
 
-	feelings = rewind_KVPair(feelings);
 	feelings = sort_KVPair(feelings, feeling_sort_func);
 	return 0;
 }

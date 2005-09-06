@@ -2174,7 +2174,7 @@ KVPair *f;
 	}
 	free_StringIO(usr->text);
 
-	add_KVPair(&feelings, f);
+	prepend_KVPair(&feelings, f);
 	feelings = sort_KVPair(feelings, feeling_sort_func);
 
 	RET(usr);
