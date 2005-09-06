@@ -1210,7 +1210,7 @@ int r;
 						j->number = room->number;
 						j->generation = room->generation;
 						j->zapped = 1;
-						add_Joined(&usr->rooms, j);
+						prepend_Joined(&usr->rooms, j);
 					}
 				}
 			}
@@ -1650,7 +1650,7 @@ Joined *j;
 		} else {
 			j->number = r->number;
 			j->generation = r->generation;
-			add_Joined(&usr->rooms, j);
+			prepend_Joined(&usr->rooms, j);
 		}
 	}
 	if (j != NULL) {

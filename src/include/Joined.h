@@ -31,6 +31,7 @@
 #include "sys_time.h"
 
 #define add_Joined(x,y)			(Joined *)add_List((x), (y))
+#define prepend_Joined(x,y)		(Joined *)prepend_List((x), (y))
 #define concat_Joined(x,y)		(Joined *)concat_List((x), (y))
 #define remove_Joined(x,y)		(Joined *)remove_List((x), (y))
 #define rewind_Joined(x)		(Joined *)rewind_List((x))

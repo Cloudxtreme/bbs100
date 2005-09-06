@@ -395,7 +395,7 @@ int r;
 			} else {
 				j->number = room->number;
 				j->generation = room->generation;
-				add_Joined(&usr->rooms, j);
+				prepend_Joined(&usr->rooms, j);
 			}
 		} else {
 			j->zapped = 0;

@@ -693,7 +693,7 @@ int r;
 
 				if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 					if ((j = new_Joined()) != NULL)
-						add_Joined(&u->rooms, j);
+						prepend_Joined(&u->rooms, j);
 				if (j != NULL) {
 					j->zapped = 0;
 					j->number = usr->curr_room->number;
@@ -731,7 +731,7 @@ int r;
 
 					if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
 						if ((j = new_Joined()) != NULL)
-							add_Joined(&u->rooms, j);
+							prepend_Joined(&u->rooms, j);
 					if (j != NULL) {
 						j->zapped = 0;
 						j->number = usr->curr_room->number;

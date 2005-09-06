@@ -1416,12 +1416,10 @@ Joined *j;
 			j->number = MAIL_ROOM;
 			if (usr->mail != NULL)
 				j->generation = usr->mail->generation;
-			add_Joined(&usr->rooms, j);
+			prepend_Joined(&usr->rooms, j);
 		}
-		if (usr->mail->head_msg > j->last_read) {
-			log_debug("mail->head == %ld, last_read == %ld, jumping to Mail>", usr->mail->head_msg, j->last_read);
+		if (usr->mail->head_msg > j->last_read)
 			return usr->mail;
-		}
 	}
 /*
 	scan for next unread rooms
@@ -1527,7 +1525,7 @@ Joined *j;
 				Return NULL;
 			}
 			j->number = r->number;
-			add_Joined(&usr->rooms, j);
+			prepend_Joined(&usr->rooms, j);
 		}
 	}
 	if (j->generation != r->generation) {

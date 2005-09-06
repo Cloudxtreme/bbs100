@@ -589,7 +589,7 @@ int term_width, term_height, ff1_continue;
 			j->last_read = last_read;
 			j->roominfo_read = roominfo_read;
 
-			add_Joined(&usr->rooms, j);
+			prepend_Joined(&usr->rooms, j);
 			unload_Room(r);
 			continue;
 		} else
@@ -885,7 +885,7 @@ int i;
 			j->last_read = last_read;
 			j->roominfo_read = roominfo_read;
 
-			add_Joined(&usr->rooms, j);
+			prepend_Joined(&usr->rooms, j);
 			unload_Room(r);
 		}
 	} else
