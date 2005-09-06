@@ -1290,8 +1290,8 @@ User *u;
 
 			if ((u->flags & USR_HELPING_HAND)
 				&& !(u->runtime_flags & RTF_LOCKED)
-				&& (in_StringQueue(usr->enemies, u->name)) == NULL
-				&& (in_StringQueue(u->enemies, usr->name)) == NULL) {
+				&& (in_StringList(usr->enemies, u->name)) == NULL
+				&& (in_StringList(u->enemies, usr->name)) == NULL) {
 				cstrcpy(last_helping_hand, u->name, MAX_NAME);
 				usr->question_asked = cstrdup(u->name);
 				return 1;
@@ -1307,8 +1307,8 @@ User *u;
 
 		if ((u->flags & USR_HELPING_HAND)
 			&& !(u->runtime_flags & RTF_LOCKED)
-			&& (in_StringQueue(usr->enemies, u->name)) == NULL
-			&& (in_StringQueue(u->enemies, usr->name)) == NULL) {
+			&& (in_StringList(usr->enemies, u->name)) == NULL
+			&& (in_StringList(u->enemies, usr->name)) == NULL) {
 			cstrcpy(last_helping_hand, u->name, MAX_NAME);
 			usr->question_asked = cstrdup(u->name);
 			return 1;
@@ -1350,8 +1350,8 @@ HH_is_online:
 	}
 	if (!(u->flags & USR_HELPING_HAND)
 		|| (u->runtime_flags & RTF_LOCKED)
-		|| (in_StringQueue(usr->enemies, u->name)) != NULL
-		|| (in_StringQueue(u->enemies, usr->name)) != NULL) {
+		|| (in_StringList(usr->enemies, u->name)) != NULL
+		|| (in_StringList(u->enemies, usr->name)) != NULL) {
 
 		Print(usr, "<yellow>%s<red> is no longer available to help you\n", usr->question_asked);
 		if (!next_helping_hand(usr)) {
@@ -1844,13 +1844,13 @@ BufferedMsg *m;
 		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT)
 			continue;
 
-		if (m->from[0] && strcmp(usr->name, m->from) && !in_StringQueue(usr->enemies, m->from)
+		if (m->from[0] && strcmp(usr->name, m->from) && !in_StringList(usr->enemies, m->from)
 			&& !in_StringList(talked_to, m->from))
 			add_StringList(&talked_to, new_StringList(m->from));
 
 		for(sl = m->to; sl != NULL; sl = sl->next)
 			if (sl->str != NULL && sl->str[0] && strcmp(usr->name, sl->str)
-				&& !in_StringQueue(usr->enemies, sl->str)
+				&& !in_StringList(usr->enemies, sl->str)
 				&& !in_StringList(talked_to, sl->str))
 				add_StringList(&talked_to, new_StringList(sl->str));
 	}

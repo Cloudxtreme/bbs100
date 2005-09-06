@@ -185,8 +185,8 @@
 		if (ff1_continue)													\
 			break;															\
 		if (!strcmp(buf, (x))) {											\
-			if (*p && user_exists(p) && in_StringQueue((y), p) == NULL)		\
-				add_StringQueue((y), new_StringList(p));					\
+			if (*p && user_exists(p) && in_StringList((y), p) == NULL)		\
+				prepend_StringList(&(y), new_StringList(p));				\
 			ff1_continue = 1;												\
 		}																	\
 	} while(0)

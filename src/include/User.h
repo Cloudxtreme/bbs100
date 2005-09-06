@@ -164,7 +164,7 @@ struct User_tag {
 	char *question_asked;
 
 	Joined *rooms;
-	StringQueue *friends, *enemies;
+	StringList *friends, *enemies;
 	StringQueue *recipients, *tablist, *chat_history;
 
 	Message *message, *new_message;

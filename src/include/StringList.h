@@ -29,6 +29,7 @@
 #include <stdarg.h>
 
 #define add_StringList(x,y)			(StringList *)add_List((x), (y))
+#define prepend_StringList(x,y)		(StringList *)prepend_List((x), (y))
 #define remove_StringList(x,y)		(StringList *)remove_List((x), (y))
 #define concat_StringList(x,y)		(StringList *)concat_List((x), (y))
 #define pop_StringList(x)			(StringList *)pop_List(x)

@@ -113,7 +113,7 @@ char many_buf[MAX_LINE];
 			break;
 
 		case KEY_CTRL('F'):
-			if (count_Queue(usr->friends) <= 0)
+			if (usr->friends == NULL)
 				break;
 
 			erase_name(usr);
@@ -124,7 +124,7 @@ char many_buf[MAX_LINE];
 				deinit_StringQueue(usr->recipients);
 				usr->runtime_flags |= RTF_MULTI;
 			}
-			for(sl = (StringList *)usr->friends->tail; sl != NULL; sl = sl->next)
+			for(sl = usr->friends; sl != NULL; sl = sl->next)
 				if (in_StringQueue(usr->recipients, sl->str) == NULL) {
 /* this is a kind of hack; you may multi-mail to offline friends */
 					if (access_func != multi_mail_access && is_online(sl->str) == NULL)
@@ -1814,7 +1814,7 @@ User *u;
 	deinit_StringQueue(usr->tablist);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (!u->name[0] || (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL))
+		if (!u->name[0] || (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL))
 			continue;
 
 		if (!usr->edit_pos || !strncmp(u->name, usr->edit_buf, usr->edit_pos))

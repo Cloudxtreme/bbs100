@@ -582,9 +582,9 @@ void loop_ping(User *usr, char c) {
 			}
 		}
 /*
-		if (in_StringQueue(u->friends, usr->name) != NULL)
+		if (in_StringList(u->friends, usr->name) != NULL)
 			Print(usr, "You are on %s\n", possession(u->name, "friend list", name_buf));
-		if (in_StringQueue(u->enemies, usr->name) != NULL)
+		if (in_StringList(u->enemies, usr->name) != NULL)
 			Print(usr, "<red>You are on %s\n", possession(u->name, "enemy list", name_buf));
 */
 	}
@@ -704,8 +704,8 @@ char total_buf[MAX_LINE], *hidden;
 	if (flags == PROFILE_LONG) {
 		visible = 1;
 		hidden = "";
-		if (((u->flags & USR_HIDE_ADDRESS) && in_StringQueue(u->friends, usr->name) == NULL)
-			|| ((u->flags & USR_HIDE_INFO) && in_StringQueue(u->enemies, usr->name) != NULL)) {
+		if (((u->flags & USR_HIDE_ADDRESS) && in_StringList(u->friends, usr->name) == NULL)
+			|| ((u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)) {
 			if ((usr->runtime_flags & RTF_SYSOP) || u == usr)
 				hidden = "<white>hidden> ";
 			else
@@ -803,7 +803,7 @@ char total_buf[MAX_LINE], *hidden;
 		Print(usr, "<red>%s has message reception turned off\n", u->name);
 
 	if (flags == PROFILE_LONG) {
-		if (in_StringQueue(u->friends, usr->name) != NULL) {
+		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
 
 			bufprintf(namebuf, MAX_NAME+20, "<yellow>%s<green>", u->name);
@@ -812,10 +812,10 @@ char total_buf[MAX_LINE], *hidden;
 	}
 	visible = 1;
 	if (!(usr->runtime_flags & RTF_SYSOP) && usr != u
-		&& (u->flags & USR_HIDE_INFO) && in_StringQueue(u->enemies, usr->name) != NULL)
+		&& (u->flags & USR_HIDE_INFO) && in_StringList(u->enemies, usr->name) != NULL)
 		visible = 0;
 
-	if (visible && in_StringQueue(u->enemies, usr->name) != NULL)
+	if (visible && in_StringList(u->enemies, usr->name) != NULL)
 		Print(usr, "<yellow>%s<red> does not wish to receive any messages from you\n", u->name);
 
 	if (visible && u->info != NULL && u->info->buf != NULL) {
@@ -931,7 +931,7 @@ void loop_send_msg(User *usr, char c) {
 					} else {
 						if (!(usr->runtime_flags & RTF_SYSOP)
 							&& (u->flags & USR_X_DISABLED)
-							&& (in_StringQueue(u->friends, usr->name) == NULL)) {
+							&& (in_StringList(u->friends, usr->name) == NULL)) {
 							Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
 							recv_it = 0;
 						}
@@ -1655,7 +1655,7 @@ int total;
 			if (u->curr_room != usr->curr_room)
 				continue;
 
-			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL)
+			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
 			add_PQueue(pq, new_PList(u));
@@ -1665,7 +1665,7 @@ int total;
 			if (!u->name[0])
 				continue;
 
-			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL)
+			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
 			add_PQueue(pq, new_PList(u));
@@ -1736,15 +1736,15 @@ User *u;
 		if (u == usr)
 			col = (char)color_by_name("white");
 		else
-			if (in_StringQueue(u->enemies, usr->name) != NULL
+			if (in_StringList(u->enemies, usr->name) != NULL
 				|| ((usr->flags & USR_SHOW_ENEMIES)
-					&& in_StringQueue(usr->enemies, u->name) != NULL)) {
+					&& in_StringList(usr->enemies, u->name) != NULL)) {
 
 				col = (char)color_by_name("red");
 				if (!(usr->flags & USR_ANSI))
 					stat = '-';				/* indicate enemy /wo colors */
 			} else
-				if (in_StringQueue(usr->friends, u->name) != NULL) {
+				if (in_StringList(usr->friends, u->name) != NULL) {
 					col = (char)color_by_name("green");
 					if (!(usr->flags & USR_ANSI))
 						stat = '+';			/* indicate friend /wo colors */
@@ -1862,15 +1862,15 @@ PList *pl, *pl_cols[16];
 			if (u == usr)
 				col = (char)color_by_name("white");
 			else {
-				if (in_StringQueue(u->enemies, usr->name) != NULL
+				if (in_StringList(u->enemies, usr->name) != NULL
 					|| ((usr->flags & USR_SHOW_ENEMIES)
-						&& in_StringQueue(usr->enemies, u->name) != NULL)) {
+						&& in_StringList(usr->enemies, u->name) != NULL)) {
 
 					col = (char)color_by_name("red");
 					if (!(usr->flags & USR_ANSI))
 						stat = '-';				/* indicate enemy /wo colors */
 				} else {
-					if (in_StringQueue(usr->friends, u->name) != NULL) {
+					if (in_StringList(usr->friends, u->name) != NULL) {
 						col = (char)color_by_name("green");
 						if (!(usr->flags & USR_ANSI))
 							stat = '+';			/* indicate friend /wo colors */
@@ -2368,7 +2368,7 @@ int total;
 
 	Enter(online_friends_list);
 
-	if (count_Queue(usr->friends) <= 0) {
+	if (usr->friends == NULL) {
 		Put(usr, "<red>You have no friends\n");
 		CURRENT_STATE(usr);
 		Return;
@@ -2377,11 +2377,11 @@ int total;
 		Perror(usr, "Out of memory");
 		Return;
 	}
-	for(sl = (StringList *)usr->friends->tail; sl != NULL; sl = sl->next) {
+	for(sl = usr->friends; sl != NULL; sl = sl->next) {
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
 
-		add_PList(pq, new_PList(u));
+		add_PQueue(pq, new_PList(u));
 	}
 	if (count_Queue(pq) <= 0) {
 		Put(usr, "<red>None of your friends are online\n");

@@ -352,7 +352,7 @@ StringIO *tmp;
 						u = NULL;
 						continue;
 					}
-					if ((sl2 = in_StringQueue(u->enemies, usr->name)) != NULL) {
+					if ((sl2 = in_StringList(u->enemies, usr->name)) != NULL) {
 						Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
 
 						remove_StringList(&usr->new_message->to, sl2);
@@ -810,7 +810,7 @@ int remove;
 			remove = 1;
 		}
 		if (!remove && !(from->runtime_flags & RTF_SYSOP)) {
-			if ((sl = in_StringQueue(usr->enemies, from->name)) != NULL) {
+			if ((sl = in_StringList(usr->enemies, from->name)) != NULL) {
 				Print(from, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages from you any longer\n", usr->name);
 				remove = 1;
 			}
@@ -819,7 +819,7 @@ int remove;
 				remove = 1;
 			}
 			if (!remove && (usr->flags & USR_X_DISABLED)
-				&& (in_StringQueue(usr->friends, from->name) == NULL)) {
+				&& (in_StringList(usr->friends, from->name) == NULL)) {
 				Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
 				remove = 1;
 			}

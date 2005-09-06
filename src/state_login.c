@@ -780,12 +780,12 @@ User *u;
 
 		if (u->name[0]) {
 			all_users++;
-			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringQueue(usr->enemies, u->name) != NULL)
+			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
 			num_users++;
 		}
-		if (in_StringQueue(usr->friends, u->name) != NULL)
+		if (in_StringList(usr->friends, u->name) != NULL)
 			num_friends++;
 	}
 	if (!num_users)

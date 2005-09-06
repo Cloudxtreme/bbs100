@@ -70,14 +70,6 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
-	if ((usr->friends = new_StringQueue()) == NULL) {
-		destroy_User(usr);
-		return NULL;
-	}
-	if ((usr->enemies = new_StringQueue()) == NULL) {
-		destroy_User(usr);
-		return NULL;
-	}
 	if ((usr->recipients = new_StringQueue()) == NULL) {
 		destroy_User(usr);
 		return NULL;
@@ -142,8 +134,9 @@ int i;
 
 	Free(usr->question_asked);
 
-	destroy_StringQueue(usr->friends);
-	destroy_StringQueue(usr->enemies);
+	listdestroy_StringList(usr->friends);
+	listdestroy_StringList(usr->enemies);
+
 	destroy_StringQueue(usr->recipients);
 	destroy_StringQueue(usr->tablist);
 	destroy_StringQueue(usr->chat_history);
@@ -242,7 +235,7 @@ User *u;
 		return;
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u != usr && u->name[0] && in_StringQueue(u->friends, usr->name) != NULL
+		if (u != usr && u->name[0] && in_StringList(u->friends, usr->name) != NULL
 			&& ((u->flags & USR_FRIEND_NOTIFY) || force))
 			Tell(u, "\n<beep><cyan>%s<magenta> %s\n", usr->name, msg);
 	}
@@ -269,8 +262,10 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 */
 	usr->name[0] = 0;
 
-	deinit_StringQueue(usr->friends);
-	deinit_StringQueue(usr->enemies);
+	listdestroy_StringList(usr->friends);
+	usr->friends = NULL;
+	listdestroy_StringList(usr->enemies);
+	usr->enemies = NULL;
 
 	destroy_StringIO(usr->info);
 	usr->info = NULL;
@@ -316,13 +311,16 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			log_err("load_User(): don't know how to load file format version %d of %s", version, filename);
 	}
 	if (load_func != NULL && !load_func(f, usr, username, flags)) {
+		Fclose(f);
+		usr->flags &= USR_ALL;
+
 		if (usr->timezone == NULL)
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
 
-		Fclose(f);
-		usr->flags &= USR_ALL;
+		usr->friends = sort_StringList(usr->friends, alphasort_StringList);
+		usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
 
 		if (!usr->name[0])
 			cstrncpy(usr->name, username, MAX_NAME);
@@ -911,7 +909,8 @@ int i;
 		
 /* friendlist */
 	if (flags & LOAD_USER_FRIENDLIST) {
-		deinit_StringQueue(usr->friends);
+		listdestroy_StringList(usr->friends);
+		usr->friends = NULL;
 
 		while(Fgets(f, buf, MAX_LINE) != NULL) {
 			cstrip_line(buf);
@@ -919,14 +918,15 @@ int i;
 				break;
 
 			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-				add_StringQueue(usr->friends, sl);
+				prepend_StringList(&usr->friends, sl);
 		}
 	} else
 		LOAD_USER_SKIPLIST;
 
 /* enemy list */
 	if (flags & LOAD_USER_ENEMYLIST) {
-		deinit_StringQueue(usr->enemies);
+		listdestroy_StringList(usr->enemies);
+		usr->enemies = NULL;
 
 		while(Fgets(f, buf, MAX_LINE) != NULL) {
 			cstrip_line(buf);
@@ -934,7 +934,7 @@ int i;
 				break;
 
 			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-				add_StringQueue(usr->enemies, sl);
+				prepend_StringList(&usr->enemies, sl);
 		}
 	} else
 		LOAD_USER_SKIPLIST;
@@ -1150,8 +1150,8 @@ char buf[PRINT_BUF];
 		Fprintf(f, "rooms=%c %u %lu %ld %u", (j->zapped == 0) ? 'J' : 'Z', j->number,
 			j->generation, j->last_read, j->roominfo_read);
 
-	FF1_SAVE_STRINGQUEUE("friends", usr->friends);
-	FF1_SAVE_STRINGQUEUE("enemies", usr->enemies);
+	FF1_SAVE_STRINGLIST("friends", usr->friends);
+	FF1_SAVE_STRINGLIST("enemies", usr->enemies);
 	FF1_SAVE_STRINGIO("info", usr->info);
 
 /*
