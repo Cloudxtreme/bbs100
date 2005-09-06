@@ -354,79 +354,8 @@ StringIO *tmp;
 		Return;
 	}
 	if (usr->curr_room == usr->mail) {
-		MailTo *to, *to_next;
-		User *u;
-
-		for(to = usr->new_message->to; to != NULL; to = to_next) {
-			to_next = to->next;
-
-			if (!strcmp(usr->name, to->name))
-				continue;
-
-			if ((u = is_online(to->name)) == NULL) {
-				if (!(usr->runtime_flags & RTF_SYSOP)) {	/* if not sysop, check permissions */
-					StringList *sl;
-
-					if ((u = new_User()) == NULL) {
-						Perror(usr, "Out of memory");
-						RET(usr);
-						Return;
-					}
-					if (load_User(u, to->name, LOAD_USER_ENEMYLIST)) {
-						Perror(usr, "Failed to load user");
-						destroy_User(u);
-						u = NULL;
-						continue;
-					}
-					if ((sl = in_StringList(u->enemies, usr->name)) != NULL) {
-						Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
-
-						remove_MailTo(&usr->new_message->to, to);
-						destroy_MailTo(to);
-						destroy_User(u);
-						u = NULL;
-						continue;
-					}
-					destroy_User(u);
-					u = NULL;
-				}
-				usr->new_message->number = to->number = get_mail_top(to->name)+1;
-			} else
-				usr->new_message->number = to->number = room_top(u->mail)+1;
-
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
-			path_strip(filename);
-
-			if (!save_Message(usr->new_message, filename, 0)) {
-				Print(usr, "<green>Sending mail to <yellow>%s\n", to->name);
-
-				if (u != NULL) {
-					newMsg(u->mail, u);
-					if (PARAM_HAVE_MAILROOM)
-						Tell(u, "<beep><cyan>You have new mail\n");
-				}
-			} else {
-				Print(usr, "<red>Error delivering mail to <yellow>%s\n", to->name);
-				err++;
-			}
-		}
-/* save a copy for the sender */
-
-		if (usr->new_message->to != NULL) {
-			if (!err) {
-				usr->new_message->number = room_top(usr->mail)+1;
-				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
-				path_strip(filename);
-
-				if (save_Message(usr->new_message, filename, SAVE_MAILTO))
-					err++;
-				else
-					newMsg(usr->mail, usr);
-			}
-			if (err) {
-				Perror(usr, "Error sending mail");
-			}
-		}
+		JMP(usr, LOOP_SEND_MAIL);
+		Return;
 	} else {
 		if ((usr->curr_room->flags & ROOM_READONLY) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))) {
 			Put(usr, "<red>You are suddenly not allowed to post in this room\n");
@@ -2278,6 +2207,104 @@ void state_return_menu(User *usr, char c) {
 		return;
 
 	RETX(usr, INIT_PROMPT);
+}
+
+/*
+	send mail in a loop
+	the mail message is in usr->new_message, and has to be sent to usr->new_message->to
+*/
+void loop_send_mail(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(loop_send_mail);
+
+	if (usr->new_message == NULL) {
+		Perror(usr, "Your message has gone up in smoke");
+		LOOP(usr, 0UL);
+		RET(usr);
+		Return;
+	}
+	if (c == INIT_STATE)
+		LOOP(usr, count_List(usr->new_message->to)+1);
+	else {
+		MailTo *to;
+		User *u;
+		unsigned long i;
+		char filename[MAX_PATHLEN];
+
+/* at the end of the loop, save a copy for the sender */
+		if (!usr->conn->loop_counter) {
+			usr->new_message->number = room_top(usr->mail)+1;
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
+			path_strip(filename);
+
+			if (save_Message(usr->new_message, filename, SAVE_MAILTO))
+				Perror(usr, "Error saving mail");
+			else
+				newMsg(usr->mail, usr);
+
+/* update stats */
+			if (usr->new_message->to != NULL && (strcmp(usr->new_message->to->name, usr->name) || usr->new_message->to->next != NULL)) {
+				usr->posted++;
+				if (usr->posted > stats.posted) {
+					stats.posted = usr->posted;
+					cstrcpy(stats.most_posted, usr->name, MAX_NAME);
+				}
+			}
+			stats.posted_boot++;
+			Return;
+		}
+		to = usr->new_message->to;
+		for(i = 1UL; i < usr->conn->loop_counter; i++)
+			if (to != NULL)
+				to = to->next;
+
+		if (to == NULL || to->name == NULL || !strcmp(usr->name, to->name)) {
+			Return;
+		}
+		if ((u = is_online(to->name)) == NULL) {
+			if (!(usr->runtime_flags & RTF_SYSOP)) {	/* if not sysop, check permissions */
+				StringList *sl;
+
+				if ((u = new_User()) == NULL) {
+					Perror(usr, "Out of memory");
+					LOOP(usr, 0UL);
+					RET(usr);
+					Return;
+				}
+				if (load_User(u, to->name, LOAD_USER_ENEMYLIST)) {
+					Print(usr, "<red>Failed to load user %s\n", to->name);
+					destroy_User(u);
+					Return;
+				}
+				if ((sl = in_StringList(u->enemies, usr->name)) != NULL) {
+					Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
+					destroy_User(u);
+					Return;
+				}
+				destroy_User(u);
+				u = NULL;
+			}
+			usr->new_message->number = to->number = get_mail_top(to->name)+1;
+		} else
+			usr->new_message->number = to->number = room_top(u->mail)+1;
+
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
+		path_strip(filename);
+
+		if (!save_Message(usr->new_message, filename, 0)) {
+			Print(usr, "<green>Sending mail to <yellow>%s\n", to->name);
+
+			if (u != NULL) {
+				newMsg(u->mail, u);
+				if (PARAM_HAVE_MAILROOM)
+					Tell(u, "<beep><cyan>You have new mail\n");
+			}
+		} else
+			Print(usr, "<red>Error delivering mail to <yellow>%s\n", to->name);
+	}
+	Return;
 }
 
 /* EOB */
