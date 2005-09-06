@@ -1650,7 +1650,12 @@ Joined *j;
 			prepend_Joined(&usr->rooms, j);
 		}
 	}
-	if (j != NULL) {
+/*
+	read the room info
+	this doesn't work well for the Home> room (because you can invite others to your Home>)
+	so this is simply hacked out
+*/
+	if (j != NULL && usr->curr_room->number != HOME_ROOM) {
 		if (j->roominfo_read == -1) {
 			room_info(usr);			/* first time here ; read room info */
 			Return;
