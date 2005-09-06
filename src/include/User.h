@@ -169,13 +169,18 @@ struct User_tag {
 
 	Message *message, *new_message;
 	Room *mail, *curr_room;
+
 	PList *history, *history_p, *held_msgs, *held_msgp;
 	BufferedMsg *send_msg;
+
 	Timer *timerq, *idle_timer;
 	Timezone *tz;
-	Telnet *telnet;
+
 	StringIO *text, *info;
-	PList *scroll, *scrollp;
+	PQueue *scroll;
+	PList *scrollp;
+
+	Telnet *telnet;
 	Display *display;
 };
 

@@ -1772,7 +1772,7 @@ int l;
 		usr->read_lines--;
 	}
 	if (usr->scrollp == NULL)
-		usr->scrollp = usr->scroll;
+		usr->scrollp = (PList *)usr->scroll->tail;
 }
 
 /*
@@ -1789,22 +1789,23 @@ int pos, len;
 	seek_StringIO(usr->text, 0, STRINGIO_END);
 	len = tell_StringIO(usr->text);
 
-	listdestroy_PList(usr->scroll);
-	usr->scroll = usr->scrollp = new_PList(usr->text->buf);
-	if (usr->scroll == NULL) {
+	deinit_PQueue(usr->scroll);
+	if ((usr->scrollp = new_PList(usr->text->buf)) == NULL) {
 		usr->runtime_flags &= ~RTF_BUFFER_TEXT;
 		Perror(usr, "Out of memory");
 		Return -1;
 	}
+	add_PQueue(usr->scroll, usr->scrollp);
+
 	while(pos < len) {
 		usr->display->cpos = 0;
 		usr->display->line = 0;
 		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1, 0);
-		usr->scroll = add_PList(&usr->scroll, new_PList(usr->text->buf+pos));
+		add_PQueue(usr->scroll, new_PList(usr->text->buf+pos));
 	}
-	usr->scrollp = usr->scroll = rewind_PList(usr->scroll);
+	usr->scrollp = (PList *)usr->scroll->tail;
 	usr->read_lines = 0;
-	usr->total_lines = count_List(usr->scroll) - 1;
+	usr->total_lines = count_Queue(usr->scroll) - 1;
 
 /* going to display usr->text, so don't buffer it */
 	usr->runtime_flags &= ~RTF_BUFFER_TEXT;
@@ -1837,7 +1838,7 @@ int l, color;
 
 	switch(c) {
 		case INIT_STATE:
-			if (usr->scroll == NULL) {
+			if (count_Queue(usr->scroll) <= 0) {
 				RET(usr);
 				Return;
 			}
@@ -1902,7 +1903,7 @@ int l, color;
 			break;
 
 		case 'g':						/* goto beginning */
-			usr->scrollp = usr->scroll;
+			usr->scrollp = (PList *)usr->scroll->tail;
 			usr->read_lines = 0;
 			clear_screen(usr);
 			display_page(usr, 0);
@@ -1913,8 +1914,8 @@ int l, color;
 				break;
 
 /* goto the end */
-			for(; usr->scrollp != NULL && usr->scrollp->next != NULL; usr->scrollp = usr->scrollp->next)
-				usr->read_lines++;
+			usr->scrollp = (PList *)usr->scroll->head;
+			usr->read_lines = count_Queue(usr->scroll) - 1;
 
 /* fall through */
 
@@ -1975,9 +1976,9 @@ int l, color;
 		destroy_Message(usr->message);
 		usr->message = NULL;
 */
-		listdestroy_PList(usr->scroll);
-		usr->scroll = usr->scrollp = NULL;
 		free_StringIO(usr->text);
+		deinit_PQueue(usr->scroll);
+		usr->scrollp = NULL;
 		usr->read_lines = usr->total_lines = 0;
 		RET(usr);
 	}

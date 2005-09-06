@@ -87,6 +87,10 @@ User *usr;
 		destroy_User(usr);
 		return NULL;
 	}
+	if ((usr->scroll = new_PQueue()) == NULL) {
+		destroy_User(usr);
+		return NULL;
+	}
 	usr->idle_timer = new_Timer(LOGIN_TIMEOUT, login_timeout, TIMER_ONESHOT);
 	add_Timer(&usr->timerq, usr->idle_timer);
 
@@ -160,7 +164,7 @@ int i;
 	destroy_StringIO(usr->text);
 	destroy_StringIO(usr->info);
 
-	listdestroy_PList(usr->scroll);
+	destroy_PQueue(usr->scroll);
 	destroy_Display(usr->display);
 
 	Free(usr);

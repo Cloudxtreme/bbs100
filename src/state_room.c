@@ -975,8 +975,8 @@ void PrintPrompt(User *usr) {
 	do housekeeping: free up memory that we're not going to use anyway
 */
 	free_StringIO(usr->text);
-	listdestroy_PList(usr->scroll);
-	usr->scroll = usr->scrollp = NULL;
+	deinit_PQueue(usr->scroll);
+	usr->scrollp = NULL;
 
 /*
 	these messages were held while you were busy ...
