@@ -27,6 +27,7 @@
 #include "StringIO.h"
 
 extern KVPair *feelings;
+extern int feelings_generation;
 
 KVPair *load_Feeling(char *);
 int init_Feelings(void);

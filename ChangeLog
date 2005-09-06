@@ -11,6 +11,7 @@ Changes as of September 6th 2005
 - temporarily disable helping hand status when locked
 - usr->scroll is now a PQueue
 - number of users in chatroom shown upon enter
+- a race existed for add/delete feeling; this race is now detected
 
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting

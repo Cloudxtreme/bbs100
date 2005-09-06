@@ -39,6 +39,7 @@
 
 
 KVPair *feelings = NULL;
+int feelings_generation = 0;	/* increased whenever Sysop changes something */
 
 
 /*

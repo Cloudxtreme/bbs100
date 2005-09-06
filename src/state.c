@@ -1189,6 +1189,8 @@ int r;
 	Enter(state_choose_feeling);
 
 	if (c == INIT_STATE) {
+		char numbuf[MAX_NUMBER];
+
 		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
 
 		make_feelings_screen(usr->text, usr->display->term_width);
@@ -1196,6 +1198,17 @@ int r;
 			Perror(usr, "The feelings are temporarily unavailable");
 			RET(usr);
 			Return;
+		}
+/*
+	remember the current generation number; this will tell us later if
+	Sysop changed the feelings in the meantime
+*/
+		bufprintf(numbuf, MAX_NUMBER, "%d", feelings_generation);
+		Free(usr->tmpbuf[TMP_FROM_IP]);
+		if ((usr->tmpbuf[TMP_FROM_IP] = cstrdup(numbuf)) == NULL) {
+			Perror(usr, "Out of memory");
+			free_StringIO(usr->text);
+			RET(usr);
 		}
 		display_text(usr, usr->text);
 		free_StringIO(usr->text);
@@ -1205,6 +1218,10 @@ int r;
 
 	if (r == EDIT_BREAK) {
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING);
+
+		Free(usr->tmpbuf[TMP_FROM_IP]);
+		usr->tmpbuf[TMP_FROM_IP] = NULL;
+
 		RET(usr);
 		Return;
 	}
@@ -1213,18 +1230,31 @@ int r;
 		KVPair *f;
 		File *file;
 		char *filename;
-		int num;
+		int num, gen;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
 		if (!usr->edit_buf[0]) {
+			Free(usr->tmpbuf[TMP_FROM_IP]);
+			usr->tmpbuf[TMP_FROM_IP] = NULL;
 			RET(usr);
 			Return;
 		}
 		num = atoi(usr->edit_buf);
 		if (num <= 0) {
 			Put(usr, "<red>No such feeling\n");
+			Free(usr->tmpbuf[TMP_FROM_IP]);
+			usr->tmpbuf[TMP_FROM_IP] = NULL;
 			RET(usr);
+			Return;
+		}
+		gen = atoi(usr->tmpbuf[TMP_FROM_IP]);
+		Free(usr->tmpbuf[TMP_FROM_IP]);
+		usr->tmpbuf[TMP_FROM_IP] = NULL;
+
+		if (gen != feelings_generation) {
+			Print(usr, "<red>In the meantime, a %s changed something ...\n\n", PARAM_NAME_SYSOP);
+			CURRENT_STATE(usr);
 			Return;
 		}
 		f = feelings;

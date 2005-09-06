@@ -2176,6 +2176,7 @@ KVPair *f;
 
 	prepend_KVPair(&feelings, f);
 	sort_KVPair(&feelings, feeling_sort_func);
+	feelings_generation++;
 
 	RET(usr);
 }
@@ -2281,6 +2282,7 @@ int r;
 			else {
 				remove_KVPair(&feelings, f);
 				destroy_KVPair(f);
+				feelings_generation++;
 			}
 			RET(usr);
 			Return;
