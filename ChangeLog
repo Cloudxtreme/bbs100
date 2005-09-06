@@ -13,7 +13,7 @@ Changes as of September 6th 2005
 - number of users in chatroom shown upon enter
 - a race existed for add/delete feeling; this race is now detected
 - delete Mail deletes all copies, undelete Mail undeletes all copies
-- scalability: mail is sent in a loop
+- scalability: mail is sent/deleted/undeleted in a loop
 
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting

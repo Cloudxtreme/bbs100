@@ -131,7 +131,7 @@ What's new internally?
 - feelings are cached rather than always resident
   (this saves memory)
 - helping hands are selected in an efficient way
-- scalability: mail is sent in a loop
+- scalability: mail is sent, deleted, and undeleted in a loop
 - CRC-32 is used for computing hash keys
   (far less cache collisions, and it's not all that much slower either)
 - room info and profile info can be 'offline', not permanently resident

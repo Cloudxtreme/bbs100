@@ -46,6 +46,8 @@
 #define STATE_SCROLL_TEXT_NOTFOUND		state_scroll_text_notfound
 #define STATE_RETURN_MENU				state_return_menu
 #define LOOP_SEND_MAIL					loop_send_mail
+#define LOOP_DELETE_MAIL				loop_delete_mail
+#define LOOP_UNDELETE_MAIL				loop_undelete_mail
 
 void state_post_as_anon(User *, char);
 void state_enter_anonymous(User *, char);
@@ -91,6 +93,8 @@ void state_scroll_text_notfound(User *, char);
 void read_menu(User *);
 void state_return_menu(User *, char);
 void loop_send_mail(User *, char);
+void loop_delete_mail(User *, char);
+void loop_undelete_mail(User *, char);
 
 #endif	/* STATE_MSG_H_WJ99 */
 

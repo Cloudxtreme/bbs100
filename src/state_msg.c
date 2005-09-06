@@ -682,34 +682,8 @@ int r;
 
 		if (usr->curr_room == usr->mail) {
 			if (!strcmp(usr->name, usr->message->from)) {
-				MailTo *to;
-				char room_name[MAX_LINE];
-
-				for(to = usr->message->to; to != NULL; to = to->next) {
-					if (!strcmp(to->name, usr->name))
-						continue;
-
-					if (!to->number)
-						continue;
-
-					bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
-					path_strip(buf);
-
-					possession(to->name, "Mail>", room_name, MAX_LINE);
-
-					if (save_Message(usr->message, buf, 0))
-						Print(usr, "<red>Failed to delete message from <yellow>%s\n", room_name);
-					else
-						Print(usr, "<green>Message deleted from <yellow>%s\n", room_name);
-				}
-/* now delete the sender's copy */
-				bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
-				path_strip(buf);
-
-				if (save_Message(usr->message, buf, SAVE_MAILTO)) {
-					Perror(usr, "Failed to delete message");
-				} else
-					Put(usr, "<green>Message deleted\n");
+				JMP(usr, LOOP_DELETE_MAIL);
+				Return;
 			} else {
 				bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 				path_strip(buf);
@@ -762,34 +736,8 @@ int r;
 
 		if (usr->curr_room == usr->mail) {
 			if (!strcmp(usr->name, usr->message->from)) {
-				MailTo *to;
-				char room_name[MAX_LINE];
-
-				for(to = usr->message->to; to != NULL; to = to->next) {
-					if (!strcmp(to->name, usr->name))
-						continue;
-
-					if (!to->number)
-						continue;
-
-					bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
-					path_strip(filename);
-
-					possession(to->name, "Mail>", room_name, MAX_LINE);
-
-					if (save_Message(usr->message, filename, 0))
-						Print(usr, "<red>Failed to undelete message from <yellow>%s\n", room_name);
-					else
-						Print(usr, "<green>Message undeleted from <yellow>%s\n", room_name);
-				}
-/* and now the sender's copy */
-				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
-				path_strip(filename);
-
-				if (save_Message(usr->message, filename, SAVE_MAILTO)) {
-					Perror(usr, "Failed to undelete message");
-				} else
-					Put(usr, "<green>Message undeleted\n");
+				JMP(usr, LOOP_UNDELETE_MAIL);
+				Return;
 			} else {
 				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 				path_strip(filename);
@@ -2303,6 +2251,117 @@ void loop_send_mail(User *usr, char c) {
 			}
 		} else
 			Print(usr, "<red>Error delivering mail to <yellow>%s\n", to->name);
+	}
+	Return;
+}
+
+/*
+	delete multi-mails in a loop
+	usr->message is the deleted message
+*/
+void loop_delete_mail(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(loop_delete_mail);
+
+	if (usr->message == NULL) {
+		Put(usr, "<red>The message to delete has now vanished completely\n");
+		Return;
+	}
+	if (c == INIT_STATE) {
+		LOOP(usr, count_List(usr->message->to)+1);
+	} else {
+		MailTo *to;
+		unsigned long i;
+		char room_name[MAX_LINE], filename[MAX_PATHLEN];
+
+		if (!usr->conn->loop_counter) {
+/* delete the sender's copy */
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+			path_strip(filename);
+
+			if (save_Message(usr->message, filename, SAVE_MAILTO)) {
+				Perror(usr, "Failed to delete message");
+			} else
+				Put(usr, "<green>Message deleted\n");
+			Return;
+		}
+		to = usr->message->to;
+		for(i = 1UL; i < usr->conn->loop_counter; i++)
+			if (to != NULL)
+				to = to->next;
+
+		if (!strcmp(to->name, usr->name)) {
+			Return;
+		}
+		if (!to->number) {	/* this happens for old messages, that don't have the new format yet */
+			Return;
+		}
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+		path_strip(filename);
+
+		possession(to->name, "Mail>", room_name, MAX_LINE);
+
+		if (save_Message(usr->message, filename, 0))
+			Print(usr, "<red>Failed to delete message from <yellow>%s\n", room_name);
+		else
+			Print(usr, "<green>Message deleted from <yellow>%s\n", room_name);
+	}
+	Return;
+}
+
+/*
+	undeleting is practically the same as deleting; the message is in usr->message
+*/
+void loop_undelete_mail(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(loop_undelete_mail);
+
+	if (usr->message == NULL) {
+		Put(usr, "<red>The message to undelete has vanished\n");
+		Return;
+	}
+	if (c == INIT_STATE) {
+		LOOP(usr, count_List(usr->message->to)+1);
+	} else {
+		MailTo *to;
+		unsigned long i;
+		char room_name[MAX_LINE], filename[MAX_PATHLEN];
+
+		if (!usr->conn->loop_counter) {
+/* undelete the sender's copy */
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+			path_strip(filename);
+
+			if (save_Message(usr->message, filename, SAVE_MAILTO)) {
+				Perror(usr, "Failed to undelete message");
+			} else
+				Put(usr, "<green>Message undeleted\n");
+			Return;
+		}
+		to = usr->message->to;
+		for(i = 1UL; i < usr->conn->loop_counter; i++)
+			if (to != NULL)
+				to = to->next;
+
+		if (!strcmp(to->name, usr->name)) {
+			Return;
+		}
+		if (!to->number) {	/* this happens for old messages, that don't have the new format yet */
+			Return;
+		}
+		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+		path_strip(filename);
+
+		possession(to->name, "Mail>", room_name, MAX_LINE);
+
+		if (save_Message(usr->message, filename, 0))
+			Print(usr, "<red>Failed to undelete message from <yellow>%s\n", room_name);
+		else
+			Print(usr, "<green>Message undeleted from <yellow>%s\n", room_name);
 	}
 	Return;
 }
