@@ -218,28 +218,28 @@ ListType *root;
 	sort a list using qsort()
 */
 ListType *sort_List(void *v, int (*sort_func)(void *, void *)) {
-ListType *root, *p, **arr;
+ListType **root, *p, **arr;
 int count, i;
 
 	if (v == NULL)
 		return NULL;
 
-	root = (ListType *)v;
+	root = (ListType **)v;
 	if (sort_func == NULL)
-		return root;
+		return *root;
 
 	count = 0;
-	for(p = root; p != NULL; p = p->next)		/* count # of elements */
+	for(p = *root; p != NULL; p = p->next)		/* count # of elements */
 		count++;
 
 	if (count <= 1)								/* nothing to be sorted */
-		return root;
+		return *root;
 
 	if ((arr = (ListType **)Malloc(count * sizeof(ListType *), TYPE_POINTER)) == NULL)
-		return root;							/* malloc() failed, return root */
+		return *root;							/* malloc() failed, return root */
 
 /* fill the array of pointers */
-	p = root;
+	p = *root;
 	for(i = 0; i < count; i++) {
 		arr[i] = p;
 		p = p->next;
@@ -259,9 +259,9 @@ int count, i;
 	arr[i]->next = NULL;
 
 /* Free the array and return new root */
-	root = arr[0];
+	*root = arr[0];
 	Free(arr);
-	return root;
+	return *root;
 }
 
 /* EOB */

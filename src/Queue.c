@@ -143,7 +143,7 @@ void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {
 	if (q == NULL || sort_func == NULL)
 		return;
 
-	q->tail = sort_List(q->tail, sort_func);
+	sort_List(&q->tail, sort_func);
 	q->head = unwind_List(q->tail);
 }
 

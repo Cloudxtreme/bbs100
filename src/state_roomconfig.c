@@ -482,9 +482,9 @@ StringList *sl;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 
 				if (PARAM_HAVE_CATEGORY)
-					AllRooms = sort_Room(AllRooms, room_sort_by_category);
+					sort_Room(&AllRooms, room_sort_by_category);
 				else
-					AllRooms = sort_Room(AllRooms, room_sort_by_number);
+					sort_Room(&AllRooms, room_sort_by_number);
 			}
 			RET(usr);
 			Return;
@@ -508,9 +508,9 @@ StringList *sl;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
 
 			if (PARAM_HAVE_CATEGORY)
-				AllRooms = sort_Room(AllRooms, room_sort_by_category);
+				sort_Room(&AllRooms, room_sort_by_category);
 			else
-				AllRooms = sort_Room(AllRooms, room_sort_by_number);
+				sort_Room(&AllRooms, room_sort_by_number);
 		}
 		RET(usr);
 		Return;

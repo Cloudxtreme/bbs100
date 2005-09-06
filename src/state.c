@@ -2306,9 +2306,9 @@ char buf[MAX_LONGLINE], *p;
 		};
 
 		for(i = 0; sourcefiles[i] != NULL; i++)
-			ls = add_StringList(&ls, new_StringList(sourcefiles[i]));
+			prepend_StringList(&ls, new_StringList(sourcefiles[i]));
 
-		ls = sort_StringList(rewind_StringList(ls), alphasort_StringList);
+		sort_StringList(&ls, alphasort_StringList);
 
 		flags = usr->flags;
 		usr->flags &= ~(USR_ANSI|USR_BOLD);

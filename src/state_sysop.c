@@ -364,7 +364,7 @@ int r;
 	we must resort the list
 */
 		if (PARAM_HAVE_CATEGORY)
-			AllRooms = sort_Room(AllRooms, room_sort_by_number);
+			sort_Room(&AllRooms, room_sort_by_number);
 
 		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
 		for(rm = AllRooms; rm != NULL; rm = rm->next) {
@@ -375,7 +375,7 @@ int r;
 					break;
 		}
 		if (PARAM_HAVE_CATEGORY)
-			AllRooms = sort_Room(AllRooms, room_sort_by_category);
+			sort_Room(&AllRooms, room_sort_by_category);
 
 		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
@@ -408,9 +408,9 @@ int r;
 		prepend_Room(&AllRooms, room);		/* add room to all rooms list */
 
 		if (PARAM_HAVE_CATEGORY)
-			AllRooms = sort_Room(AllRooms, room_sort_by_category);
+			sort_Room(&AllRooms, room_sort_by_category);
 		else
-			AllRooms = sort_Room(AllRooms, room_sort_by_number);
+			sort_Room(&AllRooms, room_sort_by_number);
 
 		JMP(usr, STATE_ROOM_CONFIG_MENU);
 		usr->runtime_flags |= RTF_ROOM_EDITED;
@@ -2175,7 +2175,7 @@ KVPair *f;
 	free_StringIO(usr->text);
 
 	prepend_KVPair(&feelings, f);
-	feelings = sort_KVPair(feelings, feeling_sort_func);
+	sort_KVPair(&feelings, feeling_sort_func);
 
 	RET(usr);
 }
@@ -3745,9 +3745,9 @@ void state_features_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_PARAM_EDITED;
 
 			if (PARAM_HAVE_CATEGORY)
-				AllRooms = sort_Room(AllRooms, room_sort_by_category);
+				sort_Room(&AllRooms, room_sort_by_category);
 			else
-				AllRooms = sort_Room(AllRooms, room_sort_by_number);
+				sort_Room(&AllRooms, room_sort_by_number);
 
 			CURRENT_STATE(usr);
 			Return;

@@ -94,7 +94,7 @@ int len;
 	}
 	closedir(dirp);
 
-	feelings = sort_KVPair(feelings, feeling_sort_func);
+	sort_KVPair(&feelings, feeling_sort_func);
 	return 0;
 }
 

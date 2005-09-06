@@ -1094,9 +1094,9 @@ int load_room_flags, len;
 	closedir(dirp);
 
 	if (PARAM_HAVE_CATEGORY)
-		AllRooms = sort_Room(AllRooms, room_sort_by_category);
+		sort_Room(&AllRooms, room_sort_by_category);
 	else
-		AllRooms = sort_Room(AllRooms, room_sort_by_number);
+		sort_Room(&AllRooms, room_sort_by_number);
 
 /*
 	find the Lobby>

@@ -173,7 +173,7 @@ int r;
 		if ((new_friend = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->enemies, new_friend);
 			prepend_StringList(&usr->friends, new_friend);
-			usr->friends = sort_StringList(usr->friends, alphasort_StringList);
+			sort_StringList(&usr->friends, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your enemy to friend list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -184,7 +184,7 @@ int r;
 			Return;
 		}
 		prepend_StringList(&usr->friends, new_friend);
-		usr->friends = sort_StringList(usr->friends, alphasort_StringList);
+		sort_StringList(&usr->friends, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -368,7 +368,7 @@ int r;
 		if ((new_enemy = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
 			remove_StringList(&usr->friends, new_enemy);
 			prepend_StringList(&usr->enemies, new_enemy);
-			usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
+			sort_StringList(&usr->enemies, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your friend to enemy list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -379,7 +379,7 @@ int r;
 			Return;
 		}
 		prepend_StringList(&usr->enemies, new_enemy);
-		usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
+		sort_StringList(&usr->enemies, alphasort_StringList);
 		RET(usr);
 	}
 	Return;

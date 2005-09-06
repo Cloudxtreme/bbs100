@@ -319,8 +319,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
 
-		usr->friends = sort_StringList(usr->friends, alphasort_StringList);
-		usr->enemies = sort_StringList(usr->enemies, alphasort_StringList);
+		sort_StringList(&usr->friends, alphasort_StringList);
+		sort_StringList(&usr->enemies, alphasort_StringList);
 
 		if (!usr->name[0])
 			cstrncpy(usr->name, username, MAX_NAME);

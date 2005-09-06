@@ -68,7 +68,7 @@ int save_Category(void) {
 void add_Category(char *c) {
 	if (!in_Category(c)) {
 		add_StringList(&category, new_StringList(c));
-		category = sort_StringList(category, alphasort_StringList);
+		sort_StringList(&category, alphasort_StringList);
 	}
 }
 

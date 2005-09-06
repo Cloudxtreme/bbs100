@@ -538,18 +538,16 @@ StringList *sl;
 
 		if (subdir) {
 			if (!stat(filename, &statbuf) && S_ISDIR(statbuf.st_mode)) {
-				sl = add_StringList(&sl, new_StringList(direntp->d_name));
+				prepend_StringList(&sl, new_StringList(direntp->d_name));
 				generate_tz_index(filename, 0);				/* recurse */
 			}
 		} else {
 			if (!stat(filename, &statbuf) && S_ISREG(statbuf.st_mode))
-				sl = add_StringList(&sl, new_StringList(direntp->d_name));
+				prepend_StringList(&sl, new_StringList(direntp->d_name));
 		}
 	}
 	closedir(dirp);
-
-	sl = rewind_StringList(sl);
-	sl = sort_StringList(sl, tz_index_sort);
+	sort_StringList(&sl, tz_index_sort);
 
 /*
 	now save the sorted list to a file

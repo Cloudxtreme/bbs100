@@ -4,6 +4,7 @@ Changes as of September 6th 2005
 - HomeRooms uses prepend_Room()
 - feelings use prepend
 - usr->friends and usr->enemies are StringList again and use prepend
+- sort() modifies the root
 
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting
