@@ -206,11 +206,9 @@ void state_enter_mail_recipients(User *usr, char c) {
 				RET(usr);
 				break;
 			}
-			if ((usr->new_message->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
-				Perror(usr, "Out of memory");
-				RET(usr);
-				break;
-			}
+			usr->new_message->to = (StringList *)usr->recipients->tail;
+			usr->recipients->tail = usr->recipients->head = NULL;
+			usr->recipients->count = 0;
 			deinit_StringQueue(usr->recipients);
 
 			POP(usr);

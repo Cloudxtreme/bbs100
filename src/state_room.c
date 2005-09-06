@@ -1621,7 +1621,7 @@ Joined *j;
 
 	leave_room(usr);
 
-	if (r == NULL) {							/* possible if connection is being closed */
+	if (r == NULL) {						/* possible if connection is being closed */
 		Return;
 	}
 	usr->curr_msg = -1;
@@ -1681,7 +1681,7 @@ void enter_room(User *usr, Room *r) {
 */
 /*
 	always reset the RA flag
-	if you don't like this, uncomment the code above
+	if you don't like this, remove this line and uncomment the code above
 */
 	usr->runtime_flags &= ~RTF_ROOMAIDE;
 
@@ -1690,8 +1690,8 @@ void enter_room(User *usr, Room *r) {
 
 /*
 	add user to the who-is-inside list
-	the reason we do it this late is that you now won't get to see people
-	walking in and out of the room in the history, if there is no one else there
+	the reason we do it this late is that you now won't get to see people walking in
+	and out of the room in the history, if there is no one else there
 */
 	add_PQueue(usr->curr_room->inside, new_PList(usr));
 }
