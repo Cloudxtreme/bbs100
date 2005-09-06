@@ -10,6 +10,7 @@ Changes as of September 6th 2005
 - helping hand selection is more efficient and truly LRU
 - temporarily disable helping hand status when locked
 - usr->scroll is now a PQueue
+- number of users in chatroom shown upon enter
 
 Changes as of September 3rd 2005
 - added Queue type; it does efficient adding, prepending, and counting

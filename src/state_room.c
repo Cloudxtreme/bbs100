@@ -1715,11 +1715,15 @@ PList *p;
 void enter_chatroom(User *usr) {
 char buf[MAX_LONGLINE], *str;
 StringList *sl;
+int num_users;
 
 	if (usr == NULL)
 		return;
 
 	Enter(enter_chatroom);
+
+/* +1, the current user will be added right after entering ... */
+	num_users = count_Queue(usr->curr_room->inside) + 1;
 
 	if (usr->curr_room->number == HOME_ROOM) {
 		possession(usr->name, "Home", buf, MAX_LONGLINE);
@@ -1728,9 +1732,15 @@ StringList *sl;
 			Print(usr, "\n<magenta>Welcome home, <yellow>%s\n", usr->name);
 		else
 			Print(usr, "\n<magenta>Welcome to <yellow>%s>\n", usr->curr_room->name);
-	} else
-		Print(usr, "\n<yellow>%s>\n", usr->curr_room->name);
 
+		if (num_users > 1)
+			Print(usr, "<magenta>There are <yellow>%d<magenta> users here\n", num_users);
+	} else {
+		if (num_users <= 1)
+			Print(usr, "\n<magenta>You are the only one in <yellow>%s>\n", usr->curr_room->name);
+		else
+			Print(usr, "\n<magenta>There are <yellow>%d<magenta> users in <yellow>%s>\n", num_users, usr->curr_room->name);
+	}
 	if (STRING_CHANCE)
 		str = PARAM_NOTIFY_ENTER_CHAT;
 	else
