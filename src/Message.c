@@ -62,6 +62,19 @@ void destroy_Message(Message *m) {
 	Free(m);
 }
 
+MailTo *new_MailTo(void) {
+	return (MailTo *)Malloc(sizeof(MailTo), TYPE_MAILTO);
+}
+
+void destroy_MailTo(MailTo *m) {
+	if (m == NULL)
+		return;
+
+	Free(m->name);
+	Free(m);
+}
+
+
 Message *load_Message(char *filename, unsigned long number) {
 Message *m;
 File *f;
@@ -132,7 +145,7 @@ int ff1_continue;
 		FF1_LOAD_ULONG("deleted", m->deleted);
 		FF1_LOAD_HEX("flags", m->flags);
 
-		FF1_LOAD_STRINGLIST("to", m->to);
+		FF1_LOAD_MAILTO("to", m->to);
 		FF1_LOAD_STRINGIO("msg", m->msg);
 
 		FF1_LOAD_UNKNOWN;
@@ -143,6 +156,7 @@ int ff1_continue;
 
 int load_Message_version0(File *f, Message *m) {
 char buf[MAX_LONGLINE];
+StringList *sl, *mailto;
 
 /* mtime */
 	if (Fgets(f, buf, MAX_LONGLINE) == NULL)
@@ -207,9 +221,13 @@ char buf[MAX_LONGLINE];
 	m->subject = cstrdup(buf);
 
 /* to */
-	listdestroy_StringList(m->to);
-	m->to = Fgetlist(f);
-
+	listdestroy_MailTo(m->to);
+	sl = mailto = Fgetlist(f);
+	while(sl != NULL) {
+		add_MailTo(&m->to, new_MailTo_from_str(sl->str));
+		destroy_StringList(sl);
+		sl = pop_StringList(&mailto);
+	}
 /* the message */
 	free_StringIO(m->msg);
 	while(Fgets(f, buf, MAX_LINE) != NULL) {
@@ -231,22 +249,26 @@ err_load_message:
 	return -1;
 }
 
-int save_Message(Message *m, char *filename) {
+/*
+	flag can be SAVE_MAILTO, to save the mailto list
+	this is only done for the sender of the mail, so the sender can delete
+	all copies of the mail
+*/
+int save_Message(Message *m, char *filename, int flags) {
 int ret;
 File *f;
 
-	if (m == NULL || filename == NULL || !*filename
-		|| (f = Fcreate(filename)) == NULL)
+	if (m == NULL || filename == NULL || !*filename || (f = Fcreate(filename)) == NULL)
 		return -1;
 
 	m->flags &= MSG_ALL;
-	ret = save_Message_version1(f, m);
+	ret = save_Message_version1(f, m, flags);
 	Fclose(f);
 	return ret;
 }
 
-int save_Message_version1(File *f, Message *m) {
-StringList *sl;
+int save_Message_version1(File *f, Message *m, int flags) {
+MailTo *to;
 char buf[PRINT_BUF];
 
 	FF1_SAVE_VERSION;
@@ -260,12 +282,14 @@ char buf[PRINT_BUF];
 	Fprintf(f, "deleted=%lu", m->deleted);
 	Fprintf(f, "flags=0x%x", m->flags);
 
-	FF1_SAVE_STRINGLIST("to", m->to);
+	FF1_SAVE_MAILTO("to", m->to);
 	FF1_SAVE_STRINGIO("msg", m->msg);
-
 	return 0;
 }
 
+/*
+	used for forwarding, so msg->to is not copied over
+*/
 Message *copy_Message(Message *msg) {
 Message *m;
 StringIO *s;
@@ -278,10 +302,44 @@ StringIO *s;
 
 	s = m->msg;
 	memcpy(m, msg, sizeof(Message));
-	m->to = copy_StringList(msg->to);
 	m->msg = s;
 	copy_StringIO(m->msg, msg->msg);
 	return m;
+}
+
+MailTo *new_MailTo_from_str(char *str) {
+MailTo *to;
+char *p;
+
+	if (str == NULL)
+		return NULL;
+
+	if ((to = new_MailTo()) == NULL)
+		return NULL;
+
+	if ((p = cstrchr(str, '|')) != NULL) {
+		*p = 0;
+		to->name = cstrdup(str);
+		*p = '|';
+
+		to->number = cstrtoul(p+1, 10);
+	} else
+		to->name = cstrdup(str);
+
+	return to;
+}
+
+MailTo *in_MailTo(MailTo *m, char *name) {
+	if (name == NULL || !*name)
+		return NULL;
+
+	while(m != NULL) {
+		if (!strcmp(m->name, name))
+			return m;
+
+		m = m->next;
+	}
+	return NULL;
 }
 
 /* EOB */

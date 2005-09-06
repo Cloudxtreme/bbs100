@@ -59,7 +59,8 @@
 #define TYPE_STRINGIO		26
 #define TYPE_DISPLAY		27
 #define TYPE_QUEUE			28
-#define NUM_TYPES			29
+#define TYPE_MAILTO			29
+#define NUM_TYPES			30
 
 typedef struct Typedef_tag Typedef;
 

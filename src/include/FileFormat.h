@@ -165,6 +165,17 @@
 		}													\
 	} while(0)
 
+#define FF1_LOAD_MAILTO(x,y)								\
+	do {													\
+		if (ff1_continue)									\
+			break;											\
+		if (!strcmp(buf, (x))) {							\
+			if (*p)											\
+				add_MailTo(&(y), new_MailTo_from_str(p));	\
+			ff1_continue = 1;								\
+		}													\
+	} while(0)
+
 #define FF1_LOAD_STRINGIO(x,y)										\
 	do {															\
 		if (ff1_continue)											\
@@ -238,6 +249,17 @@
 		if ((y) != NULL)													\
 			for(sl = (StringList *)(y)->tail; sl != NULL; sl = sl->next)	\
 				FF1_SAVE_STR((x), sl->str);									\
+	} while(0)
+
+#define FF1_SAVE_MAILTO(x,y)												\
+	do {																	\
+		if ((y) != NULL)													\
+			for(to = (y); to != NULL; to = to->next) {						\
+				if (flags == SAVE_MAILTO)									\
+					Fprintf(f, "%s=%s|%lu", (x), to->name, to->number);		\
+				else														\
+					Fprintf(f, "%s=%s", (x), to->name);						\
+			}																\
 	} while(0)
 
 #define FF1_SAVE_STRINGIO(x,y)									\

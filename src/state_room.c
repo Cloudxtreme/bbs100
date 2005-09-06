@@ -801,8 +801,7 @@ char num_buf[MAX_NUMBER];
 				Put(usr, "<red>Message has not been deleted, so you can't undelete it..!\n");
 				break;
 			}
-			if ((usr->curr_room != usr->mail
-				&& ((usr->message->flags & MSG_DELETED_BY_SYSOP) && !(usr->runtime_flags & RTF_SYSOP)))
+			if (((usr->message->flags & MSG_DELETED_BY_SYSOP) && !(usr->runtime_flags & RTF_SYSOP))
 				|| ((usr->message->flags & MSG_DELETED_BY_ROOMAIDE) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))
 				|| (usr->message->deleted_by != NULL && strcmp(usr->message->deleted_by, usr->name) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE)))) {
 				Put(usr, "<red>You are not allowed to undelete this message\n");
@@ -848,17 +847,17 @@ char num_buf[MAX_NUMBER];
 					if (mail_access(usr, usr->message->from))
 						break;
 
-					if ((m->to = new_StringList(usr->message->from)) == NULL) {
+					if ((m->to = new_MailTo_from_str(usr->message->from)) == NULL) {
 						Perror(usr, "Out of memory");
 						break;
 					}
 /* reply to all */
 					if (c == 'R') {
-						StringList *sl;
+						MailTo *to;
 
-						for(sl = usr->message->to; sl != NULL; sl = sl->next) {
-							if (strcmp(sl->str, usr->name) && !mail_access(usr, sl->str))
-								add_StringList(&m->to, new_StringList(sl->str));
+						for(to = usr->message->to; to != NULL; to = to->next) {
+							if (strcmp(to->name, usr->name) && !mail_access(usr, to->name))
+								add_MailTo(&m->to, new_MailTo_from_str(to->name));
 						}
 					}
 				}

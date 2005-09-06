@@ -30,6 +30,16 @@
 #include "sys_time.h"
 #include "CachedFile.h"
 
+#define add_MailTo(x,y)			(MailTo *)add_List((x), (y))
+#define prepend_MailTo(x,y)		(MailTo *)prepend_List((x), (y))
+#define concat_MailTo(x,y)		(MailTo *)concat_List((x), (y))
+#define remove_MailTo(x,y)		(MailTo *)remove_List((x), (y))
+#define pop_MailTo(x)			(MailTo *)pop_List(x)
+#define listdestroy_MailTo(x)	listdestroy_List((x), destroy_MailTo)
+#define rewind_MailTo(x)		(MailTo *)rewind_List(x)
+#define unwind_MailTo(x)		(MailTo *)unwind_List(x)
+#define sort_MailTo(x,y)		(MailTo *)sort_List((x), (y))
+
 #define MSG_FROM_SYSOP				1
 #define MSG_FROM_ROOMAIDE			2
 #define MSG_REPLY					4
@@ -39,6 +49,18 @@
 #define MSG_DELETED_BY_ANON			0x40
 #define MSG_ALL						0x7f	/* MSG_FROM_SYSOP | ... | MSG_.._RA */
 
+#define SAVE_MAILTO		1	/* flag for save_Message() */
+
+
+typedef struct MailTo_tag MailTo;
+
+struct MailTo_tag {
+	List(MailTo);
+
+	char *name;
+	unsigned long number;
+};
+
 typedef struct {
 	unsigned long number, reply_number;
 	time_t mtime, deleted;
@@ -46,22 +68,25 @@ typedef struct {
 
 	char from[MAX_NAME], *subject, *anon, *deleted_by;
 
-	StringList *to;
+	MailTo *to;
 	StringIO *msg;
 } Message;
 
 Message *new_Message(void);
 void destroy_Message(Message *);
 
-Message *load_Message(char *, unsigned long);
-int save_Message(Message *, char *);
+MailTo *new_MailTo(void);
+void destroy_MailTo(MailTo *);
 
+Message *load_Message(char *, unsigned long);
+int save_Message(Message *, char *, int);
 int load_Message_version0(File *, Message *);
 int load_Message_version1(File *, Message *);
-
-int save_Message_version1(File *, Message *);
-
+int save_Message_version1(File *, Message *, int);
 Message *copy_Message(Message *);
+
+MailTo *new_MailTo_from_str(char *);
+MailTo *in_MailTo(MailTo *, char *);
 
 #endif	/* MESSAGE_H_WJ99 */
 

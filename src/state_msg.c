@@ -206,15 +206,45 @@ void state_enter_mail_recipients(User *usr, char c) {
 				RET(usr);
 				break;
 			}
-			usr->new_message->to = (StringList *)usr->recipients->tail;
-			usr->recipients->tail = usr->recipients->head = NULL;
-			usr->recipients->count = 0;
-			deinit_StringQueue(usr->recipients);
+			set_mailto(usr, usr->new_message, usr->recipients);
 
 			POP(usr);
 			enter_the_message(usr);
 	}
 	Return;
+}
+
+/*
+	move usr->recipients to usr->new_message->to
+
+	The mailto structure also holds the message numbers of the recipient's mail dir,
+	so the messages can be deleted properly later
+*/
+void set_mailto(User *usr, Message *msg, StringQueue *sq) {
+MailTo *m;
+StringList *sl;
+char *name;
+
+	if (msg == NULL || sq == NULL)
+		return;
+
+	while((sl = pop_StringQueue(sq)) != NULL) {
+		name = sl->str;
+		if (!strcmp(usr->name, name)) {
+			destroy_StringList(sl);
+			continue;
+		}
+		if ((m = new_MailTo()) == NULL) {
+			Perror(usr, "Out of memory");
+			break;
+		}
+		m->name = sl->str;
+		sl->str = NULL;
+		destroy_StringList(sl);
+
+		prepend_MailTo(&msg->to, m);
+	}
+	deinit_StringQueue(sq);
 }
 
 void state_enter_subject(User *usr, char c) {
@@ -326,35 +356,37 @@ StringIO *tmp;
 		Return;
 	}
 	if (usr->curr_room == usr->mail) {
-		StringList *sl, *sl_next;
+		MailTo *to, *to_next;
 		User *u;
 
-		for(sl = usr->new_message->to; sl != NULL; sl = sl_next) {
-			sl_next = sl->next;
+		for(to = usr->new_message->to; to != NULL; to = to_next) {
+			to_next = to->next;
 
-			if (!strcmp(usr->name, sl->str))
+/*
+	already filtered out by set_mailto()
+			if (!strcmp(usr->name, to->name))
 				continue;
-
-			if ((u = is_online(sl->str)) == NULL) {
+*/
+			if ((u = is_online(to->name)) == NULL) {
 				if (!(usr->runtime_flags & RTF_SYSOP)) {	/* if not sysop, check permissions */
-					StringList *sl2;
+					StringList *sl;
 
 					if ((u = new_User()) == NULL) {
 						Perror(usr, "Out of memory");
 						RET(usr);
 						Return;
 					}
-					if (load_User(u, sl->str, LOAD_USER_ENEMYLIST)) {
+					if (load_User(u, to->name, LOAD_USER_ENEMYLIST)) {
 						Perror(usr, "Failed to load user");
 						destroy_User(u);
 						u = NULL;
 						continue;
 					}
-					if ((sl2 = in_StringList(u->enemies, usr->name)) != NULL) {
+					if ((sl = in_StringList(u->enemies, usr->name)) != NULL) {
 						Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
 
-						remove_StringList(&usr->new_message->to, sl2);
-						destroy_StringList(sl2);
+						remove_MailTo(&usr->new_message->to, to);
+						destroy_MailTo(to);
 						destroy_User(u);
 						u = NULL;
 						continue;
@@ -362,15 +394,15 @@ StringIO *tmp;
 					destroy_User(u);
 					u = NULL;
 				}
-				usr->new_message->number = get_mail_top(sl->str)+1;
+				usr->new_message->number = to->number = get_mail_top(to->name)+1;
 			} else
-				usr->new_message->number = room_top(u->mail)+1;
+				usr->new_message->number = to->number = room_top(u->mail)+1;
 
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, sl->str[0], sl->str, usr->new_message->number);
+			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
 			path_strip(filename);
 
-			if (!save_Message(usr->new_message, filename)) {
-				Print(usr, "<green>Sending mail to <yellow>%s\n", sl->str);
+			if (!save_Message(usr->new_message, filename, 0)) {
+				Print(usr, "<green>Sending mail to <yellow>%s\n", to->name);
 
 				if (u != NULL) {
 					newMsg(u->mail, u);
@@ -378,7 +410,7 @@ StringIO *tmp;
 						Tell(u, "<beep><cyan>You have new mail\n");
 				}
 			} else {
-				Print(usr, "<red>Error delivering mail to <yellow>%s\n", sl->str);
+				Print(usr, "<red>Error delivering mail to <yellow>%s\n", to->name);
 				err++;
 			}
 		}
@@ -390,7 +422,7 @@ StringIO *tmp;
 				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
 				path_strip(filename);
 
-				if (save_Message(usr->new_message, filename))
+				if (save_Message(usr->new_message, filename, SAVE_MAILTO))
 					err++;
 				else
 					newMsg(usr->mail, usr);
@@ -422,7 +454,7 @@ StringIO *tmp;
 		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->new_message->number);
 		path_strip(filename);
 
-		if (!save_Message(usr->new_message, filename)) {
+		if (!save_Message(usr->new_message, filename, 0)) {
 			newMsg(usr->curr_room, usr);
 			room_beep(usr, usr->curr_room);
 		} else {
@@ -431,8 +463,7 @@ StringIO *tmp;
 		}
 	}
 /* update stats */
-	if (!err && !(usr->new_message->to != NULL && usr->new_message->to->next == NULL
-		&& !strcmp(usr->name, usr->new_message->to->str))) {
+	if (!err) {
 		usr->posted++;
 		if (usr->posted > stats.posted) {
 			stats.posted = usr->posted;
@@ -724,16 +755,54 @@ int r;
 				if (usr->message->anon != NULL && usr->message->anon[0])
 					usr->message->flags |= MSG_DELETED_BY_ANON;
 
-		if (usr->curr_room == usr->mail)
-			bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
-		else
-			bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
-		path_strip(buf);
+		if (usr->curr_room == usr->mail) {
+			if (!strcmp(usr->name, usr->message->from)) {
+				MailTo *to;
+				char room_name[MAX_LINE];
 
-		if (save_Message(usr->message, buf)) {
-			Perror(usr, "Failed to delete message");
-		} else
-			Put(usr, "<green>Message deleted\n");
+				for(to = usr->message->to; to != NULL; to = to->next) {
+					if (!strcmp(to->name, usr->name))
+						continue;
+
+					if (!to->number)
+						continue;
+
+					bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+					path_strip(buf);
+
+					possession(to->name, "Mail>", room_name, MAX_LINE);
+
+					if (save_Message(usr->message, buf, 0))
+						Print(usr, "<red>Failed to delete message from <yellow>%s\n", room_name);
+					else
+						Print(usr, "<green>Message deleted from <yellow>%s\n", room_name);
+				}
+/* now delete the sender's copy */
+				bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				path_strip(buf);
+
+				if (save_Message(usr->message, buf, SAVE_MAILTO)) {
+					Perror(usr, "Failed to delete message");
+				} else
+					Put(usr, "<green>Message deleted\n");
+			} else {
+				bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				path_strip(buf);
+
+				if (save_Message(usr->message, buf, 0))
+					Print(usr, "<red>Failed to delete message\n");
+				else
+					Print(usr, "<green>Deleted only the local copy\n");
+			}
+		} else {
+			bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+			path_strip(buf);
+
+			if (save_Message(usr->message, buf, 0)) {
+				Perror(usr, "Failed to delete message");
+			} else
+				Put(usr, "<green>Message deleted\n");
+		}
 	}
 	if (r == YESNO_UNDEF) {
 		Put(usr, "<cyan>Delete message, <hotkey>yes or <hotkey>no? (y/N): <white>");
@@ -766,16 +835,54 @@ int r;
 		usr->message->deleted = (time_t)0UL;
 		usr->message->flags &= ~(MSG_DELETED_BY_SYSOP | MSG_DELETED_BY_ROOMAIDE | MSG_DELETED_BY_ANON);
 
-		if (usr->curr_room == usr->mail)
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
-		else
-			bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
-		path_strip(filename);
+		if (usr->curr_room == usr->mail) {
+			if (!strcmp(usr->name, usr->message->from)) {
+				MailTo *to;
+				char room_name[MAX_LINE];
 
-		if (save_Message(usr->message, filename)) {
-			Perror(usr, "Failed to undelete message");
-		} else
-			Put(usr, "<green>Message undeleted\n");
+				for(to = usr->message->to; to != NULL; to = to->next) {
+					if (!strcmp(to->name, usr->name))
+						continue;
+
+					if (!to->number)
+						continue;
+
+					bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+					path_strip(filename);
+
+					possession(to->name, "Mail>", room_name, MAX_LINE);
+
+					if (save_Message(usr->message, filename, 0))
+						Print(usr, "<red>Failed to undelete message from <yellow>%s\n", room_name);
+					else
+						Print(usr, "<green>Message undeleted from <yellow>%s\n", room_name);
+				}
+/* and now the sender's copy */
+				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				path_strip(filename);
+
+				if (save_Message(usr->message, filename, SAVE_MAILTO)) {
+					Perror(usr, "Failed to undelete message");
+				} else
+					Put(usr, "<green>Message undeleted\n");
+			} else {
+				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				path_strip(filename);
+
+				if (save_Message(usr->message, filename, 0)) {
+					Perror(usr, "Failed to undelete message");
+				} else
+					Put(usr, "<green>Undeleted only the local copy\n");
+			}
+		} else {
+			bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+			path_strip(filename);
+
+			if (save_Message(usr->message, filename, 0)) {
+				Perror(usr, "Failed to undelete message");
+			} else
+				Put(usr, "<green>Message undeleted\n");
+		}
 	}
 	if (r == YESNO_UNDEF) {
 		Put(usr, "<cyan>Undelete this message, <hotkey>yes or <hotkey>no? (y/N): <white>");
@@ -1190,13 +1297,8 @@ StringIO *tmp;
 			usr->new_message->flags |= MSG_FORWARDED;
 			usr->new_message->flags &= ~MSG_REPLY;
 
-			listdestroy_StringList(usr->new_message->to);
-			if ((usr->new_message->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
-				Perror(usr, "Out of memory");
-				RET(usr);
-				break;
-			}
-			deinit_StringQueue(usr->recipients);
+			listdestroy_MailTo(usr->new_message->to);
+			set_mailto(usr, usr->new_message, usr->recipients);
 
 			usr->new_message->mtime = rtc;
 
@@ -1300,7 +1402,7 @@ int r;
 		}
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
-		listdestroy_StringList(usr->new_message->to);
+		listdestroy_MailTo(usr->new_message->to);
 		usr->new_message->to = NULL;
 
 		if (r == usr->mail) {
@@ -1323,14 +1425,14 @@ int r;
 			} else
 				cstrcpy(recipient, usr->name, MAX_LINE);
 
-			listdestroy_StringList(usr->message->to);
+			listdestroy_MailTo(usr->message->to);
 			usr->message->to = NULL;
 
 			if (mail_access(usr, recipient)) {
 				RET(usr);
 				Return;
 			}
-			if ((usr->new_message->to = new_StringList(recipient)) == NULL) {
+			if ((usr->new_message->to = new_MailTo_from_str(recipient)) == NULL) {
 				Perror(usr, "Out of memory");
 				unload_Room(r);
 				RET(usr);
@@ -1534,7 +1636,7 @@ Joined *j;
 }
 
 /*
-	Send a message as Mail>
+	Send an eXpress message as Mail>
 */
 void mail_msg(User *usr, BufferedMsg *msg) {
 StringList *sl;
@@ -1571,7 +1673,7 @@ char buf[PRINT_BUF], c;
 		Perror(usr, "The recipient has vanished!");
 		Return;
 	}
-	if ((usr->new_message->to = new_StringList(sl->str)) == NULL) {
+	if ((usr->new_message->to = new_MailTo_from_str(sl->str)) == NULL) {
 		Perror(usr, "Out of memory");
 		Return;
 	}
@@ -1656,7 +1758,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 				bufprintf(from, MAX_LINE, "<yellow>%s", msg->from);
 
 	if (msg->to != NULL) {			/* in the Mail> room */
-		StringList *sl;
+		MailTo *to;
 		int l, dl, max_dl;			/* l = strlen, dl = display length */
 
 		max_dl = usr->display->term_width-1;
@@ -1667,36 +1769,36 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
-			for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-				if ((dl + strlen(sl->str)+2) < max_dl)
-					l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", sl->str);
+			for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+				if ((dl + strlen(to->name) + 2) < max_dl)
+					l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
 				else {
 					Put(usr, buf);
 					Put(usr, "\n");
-					l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", sl->str);
+					l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", to->name);
 				}
 				dl = color_strlen(buf);
 			}
-			Print(usr, "%s<yellow>%s<green>\n", buf, sl->str);
+			Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 		} else {
-			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->str, usr->name))
+			if (msg->to != NULL && msg->to->next == NULL && !strcmp(msg->to->name, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
 				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
-				for(sl = msg->to; sl != NULL && sl->next != NULL; sl = sl->next) {
-					if ((dl + strlen(sl->str)+2) < MAX_LINE) {
+				for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+					if ((dl + strlen(to->name) + 2) < MAX_LINE) {
 						l = strlen(buf);
-						l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", sl->str);
+						l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
 					} else {
 						Put(usr, buf);
 						Put(usr, "\n");
-						l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", sl->str);
+						l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", to->name);
 					}
 					dl = color_strlen(buf);
 				}
-				Print(usr, "%s<yellow>%s<green>\n", buf, sl->str);
+				Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 			}
 		}
 	} else

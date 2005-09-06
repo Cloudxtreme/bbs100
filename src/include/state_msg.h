@@ -59,6 +59,7 @@ void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
 void state_press_any_key(User *, char);
 
+void set_mailto(User *, Message *, StringQueue *);
 void enter_message(User *);
 void enter_the_message(User *);
 void edit_text(User *, void (*)(User *, char), void (*)(User *, char));

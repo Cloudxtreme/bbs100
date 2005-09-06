@@ -75,6 +75,8 @@ There are a lot of new options in the Config menu:
 - profile info can be downloaded
 - users can send eXpress messages to themselves again, which is especially
   nice if you want to see what a specific Feeling looks like
+- when deleting a Mail> message, it will also delete the recipient's copy
+- it is possible to undelete multi-Mail>s as well
 
 
 What's new to the admins?
