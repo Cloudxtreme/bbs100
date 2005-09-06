@@ -71,9 +71,7 @@ ListType **root, *l;
 		return (void *)*root;
 
 	l->prev = l->next = NULL;
-	if (*root == NULL)
-		*root = l;
-	else {
+	if (*root != NULL) {
 		ListType *lp;
 
 /* Link in at the beginning of the list */
@@ -82,6 +80,7 @@ ListType **root, *l;
 		lp->prev = l;
 		l->next = lp;
 	}
+	*root = l;
 	return l;
 }
 

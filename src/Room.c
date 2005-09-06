@@ -1080,7 +1080,7 @@ int load_room_flags, len;
 				fflush(stdout);
 
 				if ((newroom = load_Room(u, load_room_flags)) != NULL) {
-					add_Room(&AllRooms, newroom);
+					prepend_Room(&AllRooms, newroom);
 					room_readdir(newroom);
 					printf("%s>\n", newroom->name);
 				} else {

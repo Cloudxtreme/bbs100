@@ -32,6 +32,7 @@
 #include "PList.h"
 
 #define add_Room(x,y)			(Room *)add_List((x), (y))
+#define prepend_Room(x,y)		(Room *)prepend_List((x), (y))
 #define concat_Room(x,y)		(Room *)concat_List((x), (y))
 #define remove_Room(x,y)		(Room *)remove_List((x), (y))
 #define rewind_Room(x)			(Room *)rewind_List(x)

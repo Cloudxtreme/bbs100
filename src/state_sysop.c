@@ -405,7 +405,7 @@ int r;
 		Print(usr, "<yellow>The room has been assigned number <white>%u\n", room->number);
 		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
 
-		add_Room(&AllRooms, room);					/* add room to all rooms list */
+		prepend_Room(&AllRooms, room);		/* add room to all rooms list */
 
 		if (PARAM_HAVE_CATEGORY)
 			AllRooms = sort_Room(AllRooms, room_sort_by_category);
