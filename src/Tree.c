@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "Tree.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -198,6 +199,25 @@ TreeType *t;
 		t = t->right;
 
 	return t;
+}
+
+void dump_Tree(void *v, char *(*print_func)(void *)) {
+TreeType *t;
+
+	if (print_func == NULL)
+		return;
+
+	t = (TreeType *)v;
+	if (t == NULL)
+		return;
+
+	if (t->left != NULL)
+		dump_Tree(t->left, print_func);
+
+	log_debug("tree: %s", print_func(t));
+
+	if (t->right != NULL)
+		dump_Tree(t->right, print_func);
 }
 
 /* EOB */

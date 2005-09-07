@@ -38,6 +38,8 @@ TreeType *in_Tree(void *, void *, int (*)(void *, void *));
 TreeType *min_Tree(void *);
 TreeType *max_Tree(void *);
 
+void dump_Tree(void *, char *(*print_func)(void *));
+
 #endif	/* TREE_H_WJ105 */
 
 /* EOB */
