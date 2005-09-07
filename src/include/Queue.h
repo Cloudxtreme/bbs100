@@ -25,13 +25,10 @@
 
 #include "List.h"
 
-#define Queue(x)	x *head, *tail; int count
-
-typedef struct Queue_tag QueueType;
-
-struct Queue_tag {
-	Queue(ListType);
-};
+typedef struct {
+	ListType *head, *tail;
+	int count;
+} QueueType;
 
 QueueType *new_Queue(void);
 void destroy_Queue(QueueType *, void *);
