@@ -26,19 +26,21 @@
 #include <config.h>
 
 #include "defines.h"
+#include "Queue.h"
 #include "StringList.h"
 #include "sys_time.h"
 #include "CachedFile.h"
 
-#define add_MailTo(x,y)			(MailTo *)add_List((x), (y))
-#define prepend_MailTo(x,y)		(MailTo *)prepend_List((x), (y))
-#define concat_MailTo(x,y)		(MailTo *)concat_List((x), (y))
-#define remove_MailTo(x,y)		(MailTo *)remove_List((x), (y))
-#define pop_MailTo(x)			(MailTo *)pop_List(x)
-#define listdestroy_MailTo(x)	listdestroy_List((x), destroy_MailTo)
-#define rewind_MailTo(x)		(MailTo *)rewind_List(x)
-#define unwind_MailTo(x)		(MailTo *)unwind_List(x)
-#define sort_MailTo(x,y)		(MailTo *)sort_List((x), (y))
+#define new_MailToQueue				new_Queue
+#define add_MailToQueue(x,y)		(MailTo *)add_Queue((x), (y))
+#define prepend_MailToQueue(x,y)	(MailTo *)prepend_Queue((x), (y))
+#define concat_MailToQueue(x,y)		(MailTo *)concat_Queue((x), (y))
+#define remove_MailToQueue(x,y)		(MailTo *)remove_Queue((x), (y))
+#define pop_MailToQueue(x)			(MailTo *)pop_Queue(x)
+#define dequeue_MailToQueue(x)		(MailTo *)dequeue_Queue(x)
+#define destroy_MailToQueue(x)		destroy_Queue((x), destroy_MailTo)
+#define deinit_MailToQueue(x)		deinit_Queue((x), destroy_MailTo)
+#define sort_MailToQueue(x,y)		(MailTo *)sort_Queue((x), (y))
 
 #define MSG_FROM_SYSOP				1
 #define MSG_FROM_ROOMAIDE			2
@@ -50,6 +52,8 @@
 #define MSG_ALL						0x7f	/* MSG_FROM_SYSOP | ... | MSG_.._RA */
 
 #define SAVE_MAILTO		1	/* flag for save_Message() */
+
+typedef QueueType MailToQueue;
 
 typedef struct MailTo_tag MailTo;
 
@@ -67,7 +71,7 @@ typedef struct {
 
 	char from[MAX_NAME], *subject, *anon, *deleted_by;
 
-	MailTo *to;
+	MailToQueue *to;
 	StringIO *msg;
 } Message;
 
@@ -85,7 +89,7 @@ int save_Message_version1(File *, Message *, int);
 Message *copy_Message(Message *);
 
 MailTo *new_MailTo_from_str(char *);
-MailTo *in_MailTo(MailTo *, char *);
+MailTo *in_MailToQueue(MailToQueue *, char *);
 
 #endif	/* MESSAGE_H_WJ99 */
 

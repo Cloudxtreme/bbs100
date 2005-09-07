@@ -814,7 +814,7 @@ char num_buf[MAX_NUMBER];
 		case 'r':
 		case 'R':
 		case KEY_CTRL('R'):
-			if (c == 'R' && usr->message != NULL && usr->message->to != NULL && usr->message->to->next != NULL)
+			if (c == 'R' && usr->message != NULL && count_Queue(usr->message->to) > 1)
 				Print(usr, "<white>%seply to all\n", (c == KEY_CTRL('R')) ? "Upload R" : "R");
 			else
 				Print(usr, "<white>%seply\n", (c == KEY_CTRL('R')) ? "Upload R" : "R");
@@ -847,17 +847,21 @@ char num_buf[MAX_NUMBER];
 					if (mail_access(usr, usr->message->from))
 						break;
 
-					if ((m->to = new_MailTo_from_str(usr->message->from)) == NULL) {
+					if ((m->to = new_MailToQueue()) == NULL) {
+						Perror(usr, "Out of memory");
+						break;
+					}
+					if (add_MailToQueue(m->to, new_MailTo_from_str(usr->message->from)) == NULL) {
 						Perror(usr, "Out of memory");
 						break;
 					}
 /* reply to all */
-					if (c == 'R') {
+					if (c == 'R' && usr->message->to != NULL) {
 						MailTo *to;
 
-						for(to = usr->message->to; to != NULL; to = to->next) {
+						for(to = (MailTo *)usr->message->to->tail; to != NULL; to = to->next) {
 							if (strcmp(to->name, usr->name) && !mail_access(usr, to->name))
-								add_MailTo(&m->to, new_MailTo_from_str(to->name));
+								add_MailToQueue(m->to, new_MailTo_from_str(to->name));
 						}
 					}
 				}

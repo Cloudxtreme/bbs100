@@ -1,5 +1,6 @@
 Changes as of September 7th 2005
 - changed Queue to QueueType so that it works like ListType
+- message->to is now a Queue
 
 Changes as of September 6th 2005
 - room->inside is now PQueue

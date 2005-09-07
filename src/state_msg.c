@@ -230,7 +230,10 @@ StringList *sl;
 	if (msg == NULL || sq == NULL)
 		return -1;
 
-	while((sl = dequeue_StringQueue(sq)) != NULL) {
+	if (msg->to == NULL && (msg->to = new_MailToQueue()) == NULL)
+		return -1;
+
+	while((sl = pop_StringQueue(sq)) != NULL) {
 		if ((m = new_MailTo()) == NULL) {
 			deinit_StringQueue(sq);
 			return -1;
@@ -239,7 +242,7 @@ StringList *sl;
 		sl->str = NULL;
 		destroy_StringList(sl);
 
-		prepend_MailTo(&msg->to, m);
+		add_MailToQueue(msg->to, m);
 	}
 	deinit_StringQueue(sq);
 	return 0;
@@ -1170,7 +1173,7 @@ StringIO *tmp;
 			usr->new_message->flags |= MSG_FORWARDED;
 			usr->new_message->flags &= ~MSG_REPLY;
 
-			listdestroy_MailTo(usr->new_message->to);
+			deinit_MailToQueue(usr->new_message->to);
 			if (set_mailto(usr->new_message, usr->recipients)) {
 				Perror(usr, "Out of memory");
 				RET(usr);
@@ -1278,8 +1281,7 @@ int r;
 		}
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
-		listdestroy_MailTo(usr->new_message->to);
-		usr->new_message->to = NULL;
+		deinit_MailToQueue(usr->new_message->to);
 
 		if (r == usr->mail) {
 			char recipient[MAX_LINE], *p;
@@ -1301,15 +1303,15 @@ int r;
 			} else
 				cstrcpy(recipient, usr->name, MAX_LINE);
 
-			listdestroy_MailTo(usr->message->to);
-			usr->message->to = NULL;
-
 			if (mail_access(usr, recipient)) {
 				RET(usr);
 				Return;
 			}
-			if ((usr->new_message->to = new_MailTo_from_str(recipient)) == NULL) {
+			if ((usr->new_message->to == NULL && (usr->new_message->to = new_MailToQueue()) == NULL)
+				|| add_MailToQueue(usr->new_message->to, new_MailTo_from_str(recipient)) == NULL) {
 				Perror(usr, "Out of memory");
+				destroy_Message(usr->new_message);
+				usr->new_message = NULL;
 				unload_Room(r);
 				RET(usr);
 				Return;
@@ -1547,10 +1549,15 @@ char buf[PRINT_BUF], c;
 	}
 	if (sl == NULL) {
 		Perror(usr, "The recipient has vanished!");
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
 		Return;
 	}
-	if ((usr->new_message->to = new_MailTo_from_str(sl->str)) == NULL) {
+	if ((usr->new_message->to = new_MailToQueue()) == NULL
+		|| add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
 		Perror(usr, "Out of memory");
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
 		Return;
 	}
 	usr->new_message->subject = cstrdup("<lost message>");
@@ -1645,7 +1652,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
-			for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+			for(to = (MailTo *)msg->to->tail; to != NULL && to->next != NULL; to = to->next) {
 				if (to->name == NULL)
 					continue;
 
@@ -1660,13 +1667,13 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			}
 			Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 		} else {
-			if (msg->to != NULL && msg->to->next == NULL && msg->to->name != NULL && !strcmp(msg->to->name, usr->name))
+			if (count_Queue(msg->to) == 1 && msg->to->tail != NULL && ((MailTo *)msg->to->tail)->name != NULL && !strcmp(((MailTo *)msg->to->tail)->name, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
 				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
-				for(to = msg->to; to != NULL && to->next != NULL; to = to->next) {
+				for(to = (MailTo *)msg->to->tail; to != NULL && to->next != NULL; to = to->next) {
 					if (to->name == NULL)
 						continue;
 
@@ -2173,8 +2180,14 @@ void loop_send_mail(User *usr, char c) {
 		RET(usr);
 		Return;
 	}
+	if (usr->new_message->to == NULL) {
+		Perror(usr, "The recipient list has disappeared");
+		LOOP(usr, 0UL);
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE)
-		LOOP(usr, count_List(usr->new_message->to)+1);
+		LOOP(usr, count_Queue(usr->new_message->to)+1);
 	else {
 		MailTo *to;
 		User *u;
@@ -2191,9 +2204,12 @@ void loop_send_mail(User *usr, char c) {
 				Perror(usr, "Error saving mail");
 			else
 				newMsg(usr->mail, usr);
-
-/* update stats */
-			if (usr->new_message->to != NULL && (strcmp(usr->new_message->to->name, usr->name) || usr->new_message->to->next != NULL)) {
+/*
+	update stats
+	it counts if mailing to multiple persons, or someone != sender
+*/
+			if (count_Queue(usr->new_message->to) > 1
+				|| (usr->new_message->to->tail != NULL && ((MailTo *)usr->new_message->to->tail)->name != NULL && strcmp(((MailTo *)usr->new_message->to->tail)->name, usr->name))) {
 				usr->posted++;
 				if (usr->posted > stats.posted) {
 					stats.posted = usr->posted;
@@ -2203,11 +2219,14 @@ void loop_send_mail(User *usr, char c) {
 			stats.posted_boot++;
 			Return;
 		}
-		to = usr->new_message->to;
-		for(i = 1UL; i < usr->conn->loop_counter; i++)
-			if (to != NULL)
-				to = to->next;
-
+		to = (MailTo *)usr->new_message->to->tail;
+		for(i = 1UL; i < usr->conn->loop_counter; i++) {
+			if (to == NULL) {
+				usr->conn->loop_counter = 1UL;
+				Return;
+			}
+			to = to->next;
+		}
 		if (to == NULL || to->name == NULL || !strcmp(usr->name, to->name)) {
 			Return;
 		}
@@ -2269,8 +2288,14 @@ void loop_delete_mail(User *usr, char c) {
 		Put(usr, "<red>The message to delete has now vanished completely\n");
 		Return;
 	}
+	if (usr->message->to == NULL) {
+		Perror(usr, "The recipient list has disappeared");
+		LOOP(usr, 0UL);
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE) {
-		LOOP(usr, count_List(usr->message->to)+1);
+		LOOP(usr, count_Queue(usr->message->to)+1);
 	} else {
 		MailTo *to;
 		unsigned long i;
@@ -2287,11 +2312,14 @@ void loop_delete_mail(User *usr, char c) {
 				Put(usr, "<green>Message deleted\n");
 			Return;
 		}
-		to = usr->message->to;
-		for(i = 1UL; i < usr->conn->loop_counter; i++)
-			if (to != NULL)
-				to = to->next;
-
+		to = (MailTo *)usr->message->to->tail;
+		for(i = 1UL; i < usr->conn->loop_counter; i++) {
+			if (to == NULL) {
+				usr->conn->loop_counter = 1UL;
+				Return;
+			}
+			to = to->next;
+		}
 		if (!strcmp(to->name, usr->name)) {
 			Return;
 		}
@@ -2324,8 +2352,14 @@ void loop_undelete_mail(User *usr, char c) {
 		Put(usr, "<red>The message to undelete has vanished\n");
 		Return;
 	}
+	if (usr->message->to == NULL) {
+		Perror(usr, "The recipient list has disappeared");
+		LOOP(usr, 0UL);
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE) {
-		LOOP(usr, count_List(usr->message->to)+1);
+		LOOP(usr, count_Queue(usr->message->to)+1);
 	} else {
 		MailTo *to;
 		unsigned long i;
@@ -2342,11 +2376,14 @@ void loop_undelete_mail(User *usr, char c) {
 				Put(usr, "<green>Message undeleted\n");
 			Return;
 		}
-		to = usr->message->to;
-		for(i = 1UL; i < usr->conn->loop_counter; i++)
-			if (to != NULL)
-				to = to->next;
-
+		to = (MailTo *)usr->message->to->tail;
+		for(i = 1UL; i < usr->conn->loop_counter; i++) {
+			if (to == NULL) {
+				usr->conn->loop_counter = 1UL;
+				Return;
+			}
+			to = to->next;
+		}
 		if (!strcmp(to->name, usr->name)) {
 			Return;
 		}

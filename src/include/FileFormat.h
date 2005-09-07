@@ -165,15 +165,18 @@
 		}													\
 	} while(0)
 
-#define FF1_LOAD_MAILTO(x,y)								\
-	do {													\
-		if (ff1_continue)									\
-			break;											\
-		if (!strcmp(buf, (x))) {							\
-			if (*p)											\
-				add_MailTo(&(y), new_MailTo_from_str(p));	\
-			ff1_continue = 1;								\
-		}													\
+#define FF1_LOAD_MAILTO(x,y)									\
+	do {														\
+		if (ff1_continue)										\
+			break;												\
+		if (!strcmp(buf, (x))) {								\
+			if (*p) {											\
+				if ((y) == NULL)								\
+					(y) = new_MailToQueue();					\
+				add_MailToQueue((y), new_MailTo_from_str(p));	\
+			}													\
+			ff1_continue = 1;									\
+		}														\
 	} while(0)
 
 #define FF1_LOAD_STRINGIO(x,y)										\
@@ -254,7 +257,7 @@
 #define FF1_SAVE_MAILTO(x,y)												\
 	do {																	\
 		if ((y) != NULL)													\
-			for(to = (y); to != NULL; to = to->next) {						\
+			for(to = (MailTo *)(y)->tail; to != NULL; to = to->next) {		\
 				if (flags == SAVE_MAILTO)									\
 					Fprintf(f, "%s=%s|%lu", (x), to->name, to->number);		\
 				else														\

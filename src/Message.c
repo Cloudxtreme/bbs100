@@ -57,7 +57,7 @@ void destroy_Message(Message *m) {
 	Free(m->subject);
 	Free(m->anon);
 	Free(m->deleted_by);
-	listdestroy_StringList(m->to);
+	destroy_MailToQueue(m->to);
 	destroy_StringIO(m->msg);
 	Free(m);
 }
@@ -221,12 +221,18 @@ StringList *sl, *mailto;
 	m->subject = cstrdup(buf);
 
 /* to */
-	listdestroy_MailTo(m->to);
+	destroy_MailToQueue(m->to);
+	m->to = NULL;
 	sl = mailto = Fgetlist(f);
-	while(sl != NULL) {
-		add_MailTo(&m->to, new_MailTo_from_str(sl->str));
-		destroy_StringList(sl);
-		sl = pop_StringList(&mailto);
+	if (sl != NULL) {
+		if ((m->to = new_MailToQueue()) == NULL)
+			goto err_load_message;
+
+		while(sl != NULL) {
+			add_MailToQueue(m->to, new_MailTo_from_str(sl->str));
+			destroy_StringList(sl);
+			sl = pop_StringList(&mailto);
+		}
 	}
 /* the message */
 	free_StringIO(m->msg);
@@ -329,15 +335,15 @@ char *p;
 	return to;
 }
 
-MailTo *in_MailTo(MailTo *m, char *name) {
+MailTo *in_MailToQueue(MailToQueue *m, char *name) {
+MailTo *l;
+
 	if (name == NULL || !*name)
 		return NULL;
 
-	while(m != NULL) {
-		if (!strcmp(m->name, name))
-			return m;
-
-		m = m->next;
+	for(l = (MailTo *)m->tail; l != NULL; l = l->next) {
+		if (!strcmp(l->name, name))
+			return l;
 	}
 	return NULL;
 }

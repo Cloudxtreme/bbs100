@@ -325,7 +325,7 @@ char buf[MAX_LINE];
 					} else {
 						if ((u->runtime_flags & RTF_BUSY_MAILING)
 							&& u->new_message != NULL
-							&& in_MailTo(u->new_message->to, usr->name) != NULL)
+							&& in_MailToQueue(u->new_message->to, usr->name) != NULL)
 							Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
 					}
 				}
