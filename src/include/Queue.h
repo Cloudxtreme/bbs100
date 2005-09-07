@@ -25,23 +25,26 @@
 
 #include "List.h"
 
-typedef struct {
-	ListType *head, *tail;
-	int count;
-} Queue;
+#define Queue(x)	x *head, *tail; int count
 
-Queue *new_Queue(void);
-void destroy_Queue(Queue *, void *);
-void deinit_Queue(Queue *, void *);
+typedef struct Queue_tag QueueType;
 
-ListType *add_Queue(Queue *, void *);
-ListType *prepend_Queue(Queue *, void *);
-ListType *remove_Queue(Queue *, void *);
-ListType *pop_Queue(Queue *);
-ListType *dequeue_Queue(Queue *);
-ListType *concat_Queue(Queue *, void *);
-void sort_Queue(Queue *, int (*)(void *, void *));
-int count_Queue(Queue *);
+struct Queue_tag {
+	Queue(ListType);
+};
+
+QueueType *new_Queue(void);
+void destroy_Queue(QueueType *, void *);
+void deinit_Queue(QueueType *, void *);
+
+ListType *add_Queue(QueueType *, void *);
+ListType *prepend_Queue(QueueType *, void *);
+ListType *remove_Queue(QueueType *, void *);
+ListType *pop_Queue(QueueType *);
+ListType *dequeue_Queue(QueueType *);
+ListType *concat_Queue(QueueType *, void *);
+void sort_Queue(QueueType *, int (*)(void *, void *));
+int count_Queue(QueueType *);
 
 #endif	/* QUEUE_H_WJ105 */
 

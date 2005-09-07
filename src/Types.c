@@ -59,7 +59,7 @@ Typedef Types_table[NUM_TYPES] = {
 	{ "KVPair",				sizeof(KVPair),				},
 	{ "StringIO",			sizeof(StringIO),			},
 	{ "Display",			sizeof(Display),			},
-	{ "Queue",				sizeof(Queue),				},
+	{ "Queue",				sizeof(QueueType),			},
 	{ "MailTo",				sizeof(MailTo),				},
 };
 

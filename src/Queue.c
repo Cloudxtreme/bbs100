@@ -30,11 +30,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Queue *new_Queue(void) {
-	return (Queue *)Malloc(sizeof(Queue), TYPE_QUEUE);
+QueueType *new_Queue(void) {
+	return (QueueType *)Malloc(sizeof(QueueType), TYPE_QUEUE);
 }
 
-void destroy_Queue(Queue *q, void *destroy_func) {
+void destroy_Queue(QueueType *q, void *destroy_func) {
 	if (q == NULL || destroy_func == NULL)
 		return;
 
@@ -42,7 +42,7 @@ void destroy_Queue(Queue *q, void *destroy_func) {
 	Free(q);
 }
 
-void deinit_Queue(Queue *q, void *destroy_func) {
+void deinit_Queue(QueueType *q, void *destroy_func) {
 	if (q == NULL || destroy_func == NULL)
 		return;
 
@@ -51,7 +51,7 @@ void deinit_Queue(Queue *q, void *destroy_func) {
 	q->count = 0;
 }
 
-ListType *add_Queue(Queue *q, void *l) {
+ListType *add_Queue(QueueType *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
@@ -69,7 +69,7 @@ ListType *ret;
 	return q->head;
 }
 
-ListType *prepend_Queue(Queue *q, void *l) {
+ListType *prepend_Queue(QueueType *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
@@ -87,7 +87,7 @@ ListType *ret;
 	return q->tail;
 }
 
-ListType *remove_Queue(Queue *q, void *l) {
+ListType *remove_Queue(QueueType *q, void *l) {
 ListType *ret;
 
 	if (q == NULL || l == NULL)
@@ -106,7 +106,7 @@ ListType *ret;
 	return ret;
 }
 
-ListType *pop_Queue(Queue *q) {
+ListType *pop_Queue(QueueType *q) {
 ListType *ret;
 
 	if (q == NULL)
@@ -122,7 +122,7 @@ ListType *ret;
 }
 
 /* pop off the end */
-ListType *dequeue_Queue(Queue *q) {
+ListType *dequeue_Queue(QueueType *q) {
 ListType *ret;
 
 	if (q == NULL || q->head == NULL)
@@ -138,7 +138,7 @@ ListType *ret;
 	return ret;
 }
 
-ListType *concat_Queue(Queue *q, void *l) {
+ListType *concat_Queue(QueueType *q, void *l) {
 	if (q == NULL || l == NULL)
 		return NULL;
 
@@ -156,7 +156,7 @@ ListType *concat_Queue(Queue *q, void *l) {
 	return q->tail;
 }
 
-void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {
+void sort_Queue(QueueType *q, int (*sort_func)(void *, void *)) {
 	if (q == NULL || sort_func == NULL)
 		return;
 
@@ -164,7 +164,7 @@ void sort_Queue(Queue *q, int (*sort_func)(void *, void *)) {
 	q->head = unwind_List(q->tail);
 }
 
-int count_Queue(Queue *q) {
+int count_Queue(QueueType *q) {
 	if (q == NULL)
 		return -1;
 

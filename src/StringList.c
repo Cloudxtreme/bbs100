@@ -65,7 +65,7 @@ StringList *in_StringList(StringList *sl, char *p) {
 	return sl;
 }
 
-StringList *in_StringQueue(Queue *q, char *s) {
+StringList *in_StringQueue(QueueType *q, char *s) {
 	if (q == NULL || s == NULL)
 		return NULL;
 

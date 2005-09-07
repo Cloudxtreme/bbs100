@@ -34,7 +34,7 @@
 #define unwind_PList(x)			(PList *)unwind_List(x)
 #define sort_PList(x,y)			(PList *)sort_List((x), (y))
 
-#define PQueue					Queue
+#define PQueue					QueueType
 #define new_PQueue				new_Queue
 #define add_PQueue(x,y)			(PList *)add_Queue((x), (y))
 #define concat_PQueue(x,y)		(PList *)concat_Queue((x), (y))

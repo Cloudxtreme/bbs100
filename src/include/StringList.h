@@ -38,7 +38,7 @@
 #define unwind_StringList(x)		(StringList *)unwind_List(x)
 #define sort_StringList(x, y)		(StringList *)sort_List((x), (y))
 
-#define StringQueue					Queue
+#define StringQueue					QueueType
 #define add_StringQueue(x,y)		(StringList *)add_Queue((x), (y))
 #define remove_StringQueue(x,y)		(StringList *)remove_Queue((x), (y))
 #define concat_StringQueue(x,y)		(StringList *)concat_Queue((x), (y))
@@ -60,7 +60,7 @@ struct StringList_tag {
 StringList *new_StringList(char *);
 void destroy_StringList(StringList *);
 StringList *in_StringList(StringList *, char *);
-StringList *in_StringQueue(Queue *, char *);
+StringList *in_StringQueue(QueueType *, char *);
 char *str_StringList(StringList *);
 StringList *load_StringList(char *);
 int save_StringList(StringList *, char *);
