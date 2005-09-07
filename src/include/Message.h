@@ -51,7 +51,6 @@
 
 #define SAVE_MAILTO		1	/* flag for save_Message() */
 
-
 typedef struct MailTo_tag MailTo;
 
 struct MailTo_tag {

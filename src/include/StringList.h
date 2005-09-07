@@ -38,7 +38,6 @@
 #define unwind_StringList(x)		(StringList *)unwind_List(x)
 #define sort_StringList(x, y)		(StringList *)sort_List((x), (y))
 
-#define StringQueue					QueueType
 #define add_StringQueue(x,y)		(StringList *)add_Queue((x), (y))
 #define remove_StringQueue(x,y)		(StringList *)remove_Queue((x), (y))
 #define concat_StringQueue(x,y)		(StringList *)concat_Queue((x), (y))
@@ -48,6 +47,8 @@
 #define destroy_StringQueue(x)		destroy_Queue((x), destroy_StringList)
 #define deinit_StringQueue(x)		deinit_Queue((x), destroy_StringList)
 #define sort_StringQueue(x, y)		sort_Queue((x), (y))
+
+typedef QueueType StringQueue;
 
 typedef struct StringList_tag StringList;
 

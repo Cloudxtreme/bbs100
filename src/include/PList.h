@@ -23,6 +23,7 @@
 #ifndef PLIST_H_WJ100
 #define PLIST_H_WJ100 1
 
+#include "Queue.h"
 #include "List.h"
 
 #define add_PList(x,y)			(PList *)add_List((x), (y))
@@ -34,7 +35,6 @@
 #define unwind_PList(x)			(PList *)unwind_List(x)
 #define sort_PList(x,y)			(PList *)sort_List((x), (y))
 
-#define PQueue					QueueType
 #define new_PQueue				new_Queue
 #define add_PQueue(x,y)			(PList *)add_Queue((x), (y))
 #define concat_PQueue(x,y)		(PList *)concat_Queue((x), (y))
@@ -43,6 +43,8 @@
 #define destroy_PQueue(x)		destroy_Queue((x), destroy_PList)
 #define deinit_PQueue(x)		deinit_Queue((x), destroy_PList)
 #define sort_PQueue(x,y)		sort_Queue((x), (y))
+
+typedef QueueType PQueue;
 
 typedef struct PList_tag PList;
 
