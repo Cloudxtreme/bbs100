@@ -779,11 +779,13 @@ User *u;
 /* count number of users online */
 	num_users = num_friends = all_users = 0;
 	for(u = AllUsers; u != NULL; u = u->next) {
+		if (u->name[0])
+			all_users++;
+
 		if (u == usr)
 			continue;
 
 		if (u->name[0]) {
-			all_users++;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
