@@ -159,6 +159,9 @@ What's new internally?
   (this saves memory and is much, much faster)
 - patches may be listed in patchlist.c so that everyone can see which
   patches have been applied
+- OnlineUser list is a Tree rather than a Hash ... this has both cons
+  and pros; the biggest pro is that a Tree doesn't have a costly resize
+  like a Hash does
 - some bugs fixed ...
 
 

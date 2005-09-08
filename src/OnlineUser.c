@@ -22,53 +22,100 @@
 
 #include "config.h"
 #include "OnlineUser.h"
-#include "Hash.h"
+#include "defines.h"
 #include "cstring.h"
 #include "Memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-static Hash *online_users = NULL;
+static OnlineUser *online_users = NULL;
 
-int init_OnlineUser(void) {
-	if ((online_users = new_Hash()) == NULL)
-		return -1;
+static int cmp_online_online(void *, void *);
+static int cmp_online_user(void *, void *);
+static int cmp_online_name(void *, void *);
 
-	online_users->hashaddr = hashaddr_ascii;
-	return 0;
+static OnlineUser *new_OnlineUser(User *usr) {
+OnlineUser *o;
+
+	if (usr == NULL || (o = (OnlineUser *)Malloc(sizeof(OnlineUser), TYPE_ONLINEUSER)) == NULL)
+		return NULL;
+
+	o->usr = usr;
+	return o;
 }
 
-void deinit_OnlineUser(void) {
-	destroy_Hash(online_users);
-	online_users = NULL;
+static void destroy_OnlineUser(OnlineUser *o) {
+	Free(o);
 }
 
 
 int add_OnlineUser(User *u) {
-	if (u == NULL || !u->name[0])
+OnlineUser *o;
+
+	if (u == NULL || !u->name[0] || (o = new_OnlineUser(u)) == NULL)
 		return -1;
 
-	return add_Hash(online_users, u->name, u, NULL);
+	if (add_Tree(&online_users, o, cmp_online_online) == NULL) {
+		destroy_OnlineUser(o);
+		return -1;
+	}
+	return 0;
 }
 
 void remove_OnlineUser(User *u) {
+OnlineUser *o;
+
 	if (u == NULL || !u->name[0])
 		return;
 
-	remove_Hash(online_users, u->name);
+	if ((o = (OnlineUser *)remove_Tree(&online_users, u, cmp_online_user)) == NULL)
+		return;
+
+	destroy_OnlineUser(o);
 }
 
 User *is_online(char *name) {
-User *u;
+OnlineUser *o;
 
 	if (name == NULL || !*name)
 		return NULL;
 
-	if ((u = (User *)in_Hash(online_users, name)) != NULL)
-		return u;
+	if ((o = (OnlineUser *)in_Tree(online_users, name, cmp_online_name)) == NULL)
+		return NULL;
 
-	return NULL;
+	return o->usr;
+}
+
+
+static int cmp_online_online(void *v1, void *v2) {
+OnlineUser *o1, *o2;
+
+	o1 = (OnlineUser *)v1;
+	o2 = (OnlineUser *)v2;
+
+	return strcmp(o1->usr->name, o2->usr->name);
+}
+
+static int cmp_online_user(void *v1, void *v2) {
+OnlineUser *o;
+User *u;
+
+	o = (OnlineUser *)v1;
+	u = (User *)v2;
+
+	return strcmp(o->usr->name, u->name);
+}
+
+static int cmp_online_name(void *v1, void *v2) {
+OnlineUser *o;
+char *name;
+
+	o = (OnlineUser *)v1;
+	name = (char *)v2;
+
+	return strcmp(o->usr->name, name);
 }
 
 /* EOB */

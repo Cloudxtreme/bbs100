@@ -45,7 +45,6 @@
 #include "Memory.h"
 #include "CachedFile.h"
 #include "HostMap.h"
-#include "OnlineUser.h"
 #include "AtomicFile.h"
 #include "Timezone.h"
 #include "Worldclock.h"
@@ -327,10 +326,6 @@ char buf[MAX_LONGLINE];
 
 	if (init_Room()) {
 		printf("fatal: failed to initialize the rooms message system\n");
-		exit_program(SHUTDOWN);
-	}
-	if (init_OnlineUser()) {
-		printf("fatal: failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();					/* init salt table for passwd encryption */

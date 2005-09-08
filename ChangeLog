@@ -1,3 +1,7 @@
+Changes as of September 8th 2005
+- added Tree code
+- OnlineUser is now a Tree
+
 Changes as of September 7th 2005
 - changed Queue to QueueType so that it works like ListType
 - message->to is now a Queue

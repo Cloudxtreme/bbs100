@@ -239,3 +239,6 @@ Version 3.0:
 
 - English Buchanan suggested that Delete Mail> also deletes the recipient's
   copy
+
+- English Buchanan suggested that X disable disabled everyone but a specific
+  override list, different from the (default) friend list

@@ -70,7 +70,7 @@ int r;
 			tp = tp->left;
 			continue;
 		}
-		if (r < 0) {
+		if (r > 0) {
 			if (tp->right == NULL) {
 				tp->right = t;
 				return t;
