@@ -1672,18 +1672,20 @@ void state_config_options(User *usr, char c) {
 				"Beep on e<hotkey>Xpress message arrival      <white>%s<magenta>\n"
 				"Messages have <hotkey>sequence numbers       <white>%s<magenta>\n"
 				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
-				"M<hotkey>ulti message reception is ...       <white>%s<magenta>\n",
+				"Always <hotkey>accept messages from Friends  <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
 				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
 				(usr->flags & USR_X_DISABLED) ? "Disabled" : "Enabled",
-				(usr->flags & USR_DENY_MULTI) ? "Disabled" : "Enabled"
+				(usr->flags & USR_BLOCK_FRIENDS) ? "No" : "Yes"
 			);
 			Print(usr,
+				"M<hotkey>ulti message reception is ...       <white>%s<magenta>\n"
 				"<hotkey>Follow up mode (auto reply)          <white>%s<magenta>\n"
 				"<hotkey>Hold message mode when busy          <white>%s<magenta>\n"
 				"Ask for a <hotkey>reason when going away     <white>%s<magenta>\n",
 
+				(usr->flags & USR_DENY_MULTI) ? "Disabled" : "Enabled",
 				(usr->flags & USR_FOLLOWUP) ? "On" : "Off",
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No",
 				(usr->flags & USR_DONT_ASK_REASON) ? "No" : "Yes"
@@ -1741,6 +1743,14 @@ void state_config_options(User *usr, char c) {
 			usr->flags ^= USR_X_DISABLED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Print(usr, "%s message reception\n", (usr->flags & USR_X_DISABLED) ? "Disable" : "Enable");
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'a':
+		case 'A':
+			usr->flags ^= USR_BLOCK_FRIENDS;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Print(usr, "%s friend messages\n", (usr->flags & USR_BLOCK_FRIENDS) ? "Block" : "Accept");
 			CURRENT_STATE(usr);
 			Return;
 

@@ -57,11 +57,9 @@ char *err_msg = NULL;
 	if (in_StringList(u->enemies, usr->name) != NULL && !(usr->runtime_flags & RTF_SYSOP))
 		err_msg = " <white>--> <red>Has blocked you";
 	else
-	if ((u->flags & USR_X_DISABLED) && in_StringList(u->friends, usr->name) == NULL && !(usr->runtime_flags & RTF_SYSOP))
+	if ((u->flags & USR_X_DISABLED) && !(usr->runtime_flags & RTF_SYSOP)
+		&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL))
 		err_msg = " <white>--> <red>Has message reception disabled";
-	else
-	if ((usr->flags & USR_X_DISABLED) && in_StringList(usr->friends, u->name) == NULL && !(usr->runtime_flags & RTF_SYSOP))
-		err_msg = " <white>--> <red>Is not on your friend list";
 
 	if (err_msg != NULL) {
 		Put(usr, err_msg);

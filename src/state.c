@@ -934,7 +934,7 @@ void loop_send_msg(User *usr, char c) {
 					} else {
 						if (!(usr->runtime_flags & RTF_SYSOP)
 							&& (u->flags & USR_X_DISABLED)
-							&& (in_StringList(u->friends, usr->name) == NULL)) {
+							&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)) {
 							Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
 							recv_it = 0;
 						}

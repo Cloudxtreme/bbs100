@@ -800,7 +800,7 @@ int remove;
 				remove = 1;
 			}
 			if (!remove && (usr->flags & USR_X_DISABLED)
-				&& (in_StringList(usr->friends, from->name) == NULL)) {
+				&& ((usr->flags & USR_BLOCK_FRIENDS) || in_StringList(usr->friends, from->name) == NULL)) {
 				Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
 				remove = 1;
 			}
