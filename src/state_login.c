@@ -773,8 +773,12 @@ User *u;
 	if (usr->flags & USR_HELPING_HAND) {
 		if (get_su_passwd(usr->name) == NULL && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
 			usr->flags &= ~USR_HELPING_HAND;
-		else
-			Put(usr, "<magenta>You are available to help others\n");
+		else {
+			if (usr->flags & USR_X_DISABLED)
+				usr->flags &= ~USR_HELPING_HAND;
+			else
+				Put(usr, "<magenta>You are available to help others\n");
+		}
 	}
 /* count number of users online */
 	num_users = num_friends = all_users = 0;
@@ -815,7 +819,7 @@ User *u;
 	log_info("%d users online", all_users);
 
 	if (usr->flags & USR_X_DISABLED)
-		Put(usr, "<magenta>Message reception is turned off\n");
+		Print(usr, "<magenta>Message reception is turned off%s\n", (usr->flags & USR_BLOCK_FRIENDS) ? ", and you are blocking Friends" : "");
 
 	if (usr->runtime_flags & RTF_HOLD)
 		Put(usr, "<magenta>You have put messages on hold\n");
