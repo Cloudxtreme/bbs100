@@ -39,6 +39,7 @@
 #define STATE_UNDELETE_MSG				state_undelete_msg
 #define STATE_ENTER_FORWARD_RECIPIENTS	state_enter_forward_recipients
 #define STATE_FORWARD_ROOM				state_forward_room
+#define STATE_RETURN_FORWARD			state_return_forward
 #define STATE_PRESS_ANY_KEY				state_press_any_key
 #define STATE_SCROLL_TEXT				state_scroll_text
 #define STATE_SCROLL_FIND_PROMPT		state_scroll_find_prompt
@@ -60,6 +61,7 @@ void state_delete_msg(User *, char);
 void state_undelete_msg(User *, char);
 void state_enter_forward_recipients(User *, char);
 void state_forward_room(User *, char);
+void state_return_forward(User *, char);
 void state_press_any_key(User *, char);
 
 int set_mailto(Message *, StringQueue *);

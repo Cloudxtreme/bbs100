@@ -1203,10 +1203,9 @@ StringIO *tmp;
 			usr->text = usr->new_message->msg;
 			usr->new_message->msg = tmp;
 
-			Put(usr, "<green>Message forwarded\n");
-
-			save_message(usr, INIT_STATE);		/* send the forwarded Mail> */
-/*			RET(usr);	save_message() already RET()s for us */
+			PUSH(usr, STATE_RETURN_FORWARD);
+			PUSH(usr, STATE_DUMMY);		/* it will JMP, overwriting this state */
+			save_message_room(usr, usr->mail);		/* send the forwarded Mail> */
 	}
 	Return;
 }
@@ -1230,7 +1229,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		Room *r, *curr_room;
+		Room *r;
 		StringIO *tmp;
 
 		if (!usr->edit_buf[0]) {
@@ -1339,23 +1338,30 @@ int r;
 		usr->text = usr->new_message->msg;
 		usr->new_message->msg = tmp;
 
-		PUSH(usr, STATE_DUMMY);			/* push dummy ret (prevent reprinting prompt in wrong room) */
-		PUSH(usr, STATE_DUMMY);			/* one is not enough (!) */
-		curr_room = usr->curr_room;
-		usr->curr_room = r;
+		PUSH(usr, STATE_RETURN_FORWARD);
+		if (r == usr->mail)
+			PUSH(usr, STATE_DUMMY);		/* it will JMP, overwriting this state */
 
-/*
-	TODO: change this (function cannot continue after the LOOP by save_message()
-*/
-		save_message(usr, INIT_STATE);	/* save forwarded message in other room */
-		usr->curr_room = curr_room;		/* restore current room */
+		save_message_room(usr, r);		/* save forwarded message in other room */
 
-		Put(usr, "<green>Message forwarded\n");
+/* TODO here it leaks for demand loaded rooms */
 
-		unload_Room(r);
-		RET(usr);
 	}
 	Return;
+}
+
+void state_return_forward(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	if (c == INIT_STATE) {
+		Put(usr, "<green>Message forwarded\n");
+
+/*	TODO it leaks for demand loaded rooms; the room should be tracked down
+	and unloaded here */
+
+	}
+	RET(usr);
 }
 
 /*
@@ -1383,7 +1389,7 @@ void state_press_any_key(User *usr, char c) {
 	this is an unseemingly costly operation
 */
 Room *next_unread_room(User *usr) {
-Room *r, *r2, *next_joined = NULL;
+Room *r, *next_joined = NULL;
 Joined *j;
 
 	if (usr == NULL)
@@ -1437,8 +1443,8 @@ Joined *j;
 		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
 			next_joined = r;
 
-		if ((r2 = unread_room(usr, r)) != NULL)
-			return r2;
+		if (unread_room(usr, r) != NULL)
+			return r;
 	}
 /* couldn't find a room, now search from the beginning up to curr_room */
 
@@ -1446,8 +1452,8 @@ Joined *j;
 		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
 			next_joined = r;
 
-		if ((r2 = unread_room(usr, r)) != NULL)
-			return r2;
+		if (unread_room(usr, r) != NULL)
+			return r;
 	}
 /* couldn't find an unread room; goto next joined room */
 	if (PARAM_HAVE_CYCLE_ROOMS && next_joined != NULL)
