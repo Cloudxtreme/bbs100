@@ -1672,7 +1672,7 @@ void state_config_options(User *usr, char c) {
 				"Beep on e<hotkey>Xpress message arrival      <white>%s<magenta>\n"
 				"Messages have <hotkey>sequence numbers       <white>%s<magenta>\n"
 				"<hotkey>Message reception is ...             <white>%s<magenta>\n"
-				"Always <hotkey>accept messages from Friends  <white>%s<magenta>\n",
+				"<hotkey>Accept Xes from Friends regardless   <white>%s<magenta>\n",
 
 				(usr->flags & USR_BEEP) ? "Yes" : "No",
 				(usr->flags & USR_XMSG_NUM) ? "Yes" : "No",
