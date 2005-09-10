@@ -885,6 +885,9 @@ int r;
 	Return;
 }
 
+/*
+	send X messages in a loop
+*/
 void loop_send_msg(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -963,8 +966,6 @@ void loop_send_msg(User *usr, char c) {
 	Note: this state is called from within a loop
 */
 void state_mail_send_msg(User *usr, char c) {
-StringList *sl;
-
 	if (usr == NULL)
 		return;
 
@@ -973,25 +974,129 @@ StringList *sl;
 	if (c == INIT_STATE) {
 		usr->conn->state = CONN_ESTABLISHED;
 		usr->runtime_flags |= RTF_BUSY;
-
 		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'Y')) {
 		case YESNO_YES:
+			POP(usr);			/* don't return here */
 			mail_msg(usr, usr->send_msg);
-			break;
+			Return;
 
 		case YESNO_NO:
+			mail_msg_remove(usr);
 			break;
 
 		case YESNO_UNDEF:
 			Put(usr, "<cyan>Send the message as <yellow>Mail>, <hotkey>yes or <hotkey>no? (Y/n): <white>");
 			Return;
 	}
+	Return;
+}
+
+/*
+	Send an eXpress message as Mail>
+*/
+void mail_msg(User *usr, BufferedMsg *msg) {
+StringList *sl;
+char buf[PRINT_BUF], c;
+
+	if (usr == NULL)
+		return;
+
+	Enter(mail_msg);
+
+	if (msg == NULL) {
+		Perror(usr, "The message is gone all of a sudden!");
+		Return;
+	}
+	if (msg->to == NULL) {
+		Perror(usr, "The recipient list is gone all of a sudden!");
+		Return;
+	}
+	destroy_Message(usr->new_message);
+	if ((usr->new_message = new_Message()) == NULL) {
+		Perror(usr, "Out of memory");
+		Return;
+	}
+	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
+
+	if ((usr->new_message->to = new_MailToQueue()) == NULL) {
+		Perror(usr, "Out of memory");
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
+		Return;
+	}
+	for(sl = msg->to; sl != NULL; sl = sl->next) {
+		if (add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
+			Perror(usr, "Out of memory");
+			destroy_Message(usr->new_message);
+			usr->new_message = NULL;
+			Return;
+		}
+	}
+	usr->new_message->subject = cstrdup("<lost message>");
+
+	free_StringIO(usr->text);
+	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
+/*
+	This is the most ugly hack ever; temporarily reset name to get a correct
+	msg header out of buffered_msg_header();
+	I really must rewrite this some day
+*/
+	c = usr->name[0];
+	usr->name[0] = 0;
+	buffered_msg_header(usr, msg, buf, PRINT_BUF);
+	usr->name[0] = c;
+
+	put_StringIO(usr->text, buf);
+	concat_StringIO(usr->text, msg->msg);
+
+/* save the Mail> message */
+
+	PUSH_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));
+	PUSH(usr, STATE_RETURN_MAIL_MSG);
+	PUSH(usr, STATE_DUMMY);					/* it will JMP, overwriting this state */
+	save_message_room(usr, usr->mail);
+	Return;
+}
+
+/*
+	restore the loop counter that was previously saved on the stack
+*/
+void state_return_mail_msg(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_return_mail_msg);
+
+	if (c == INIT_STATE) {
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
+
+		POP(usr);														/* current call */
+		POP_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));	/* get (previously stored) loop_counter from stack */
+		PUSH(usr, STATE_RETURN_MAIL_MSG);								/* put current call back */
+
+		mail_msg_remove(usr);
+	}
+	Return;
+}
+
 /*
 	The user was already gone, so remove it from the recipient list
 */
+void mail_msg_remove(User *usr) {
+StringList *sl;
+
+	if (usr == NULL)
+		return;
+
+	Enter(mail_msg_remove);
+
+	if (usr->recipients == NULL) {
+		Return;
+	}
 	sl = (StringList *)usr->recipients->tail;
 	if (sl != NULL) {
 		unsigned long i;
@@ -1007,11 +1112,7 @@ StringList *sl;
 		}
 	}
 	POP(usr);
-	LOOP(usr, usr->conn->loop_counter);
-	if (!usr->conn->loop_counter) {
-		POP(usr);
-		RET(usr);
-	}
+	usr->conn->state = CONN_LOOPING;
 	Return;
 }
 

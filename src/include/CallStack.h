@@ -38,6 +38,8 @@
 
 #define PUSH(x,y)					Push((x)->conn,(void (*)(void *, char))(y))
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
+#define PUSH_ARG(x,y,z)				PushArg((x)->conn, (y), (z))
+#define POP_ARG(x,y,z)				PopArg((x)->conn, (y), (z))
 #define CALL(x,y)					Callx((x)->conn,(void (*)(void *, char))(y), (char)INIT_STATE)
 #define CALLX(x,y,z)				Callx((x)->conn,(void (*)(void *, char))(y), (char)(z))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
@@ -47,7 +49,7 @@
 #define LOOP(x,y)					loop_Conn((x)->conn, (y))
 
 #ifndef CONN_DEFINED
-#define CONN_DEFINED 1
+#define CONN_DEFINED	1
 typedef struct Conn_tag Conn;
 #endif
 
@@ -67,6 +69,8 @@ void Callx(Conn *, void (*)(void *, char), char);
 void Move(Conn *, void (*)(void *, char));
 void Jump(Conn *, void (*)(void *, char));
 void Retx(Conn *, char);
+void PushArg(Conn *, void *, int);
+void PopArg(Conn *, void *, int);
 
 #endif	/* CALLSTACK_H_WJ99 */
 

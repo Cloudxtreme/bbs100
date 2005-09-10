@@ -56,6 +56,7 @@
 
 #define LOOP_PING						loop_ping
 #define LOOP_SEND_MSG					loop_send_msg
+#define STATE_RETURN_MAIL_MSG			state_return_mail_msg
 
 int fun_common(User *, char);
 void state_dummy(User *, char);
@@ -82,6 +83,8 @@ void state_ask_away_reason(User *, char);
 
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);
+void state_return_mail_msg(User *, char);
+void mail_msg_remove(User *);
 
 void print_version_info(User *);
 void enter_recipients(User *, void (*)(User *, char));

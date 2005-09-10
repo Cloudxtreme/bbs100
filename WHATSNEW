@@ -146,6 +146,8 @@ What's new internally?
   prompt by a simple call to buffer_text()
 - CALLX() can directly call into a substate different from INIT_STATE
 - RETX() can return to a substate different from INIT_STATE
+- temp variables between states can be passed via the CallStack by using
+  PUSH_ARG() and POP_ARG(), eliminating some dirty hacks
 - state_room.c holds room prompt functions; most common functions are
   done in state.c in fun_common()
 - bufprintf() and bufvprintf(), which map to snprintf() and vsnprintf(),

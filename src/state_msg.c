@@ -308,6 +308,28 @@ void enter_the_message(User *usr) {
 }
 
 void save_message(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	if (usr->curr_room == NULL) {
+		Print(usr, "<red>In the meantime, the current room has vanished\n"
+			"You are dropped off in the <yellow>%s>\n", Lobby_room->name);
+
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
+
+		POP(usr);
+		goto_room(usr, Lobby_room);
+		return;
+	}
+	save_message_room(usr, usr->curr_room);
+}
+
+/*
+	save a posted message in a room
+	Mail> is sent in a loop
+*/
+void save_message_room(User *usr, Room *room) {
 char filename[MAX_PATHLEN], *p;
 int err = 0;
 Joined *j;
@@ -316,8 +338,13 @@ StringIO *tmp;
 	if (usr == NULL)
 		return;
 
-	Enter(save_message);
+	Enter(save_message_room);
 
+	if (room == NULL) {
+		Perror(usr, "The room has vanished");
+		RET(usr);
+		Return;
+	}
 	if (usr->new_message == NULL) {
 		Perror(usr, "The message has disappeared!");
 		RET(usr);
@@ -329,17 +356,6 @@ StringIO *tmp;
 	usr->text = tmp;
 	free_StringIO(usr->text);
 
-	if (usr->curr_room == NULL) {
-		Print(usr, "<red>In the meantime, the current room has vanished\n"
-			"You are dropped off in the <yellow>%s>\n", Lobby_room->name);
-
-		destroy_Message(usr->new_message);
-		usr->new_message = NULL;
-
-		POP(usr);
-		goto_room(usr, Lobby_room);
-		Return;
-	}
 /*
 	crude check for empty messages (completely empty or only containing spaces)
 	The check is crude because a single color code already counts as 'not empty'
@@ -356,20 +372,20 @@ StringIO *tmp;
 		RET(usr);
 		Return;
 	}
-	if (usr->curr_room == usr->mail) {
+	if (room == usr->mail) {
 		JMP(usr, LOOP_SEND_MAIL);
 		Return;
 	} else {
-		if ((usr->curr_room->flags & ROOM_READONLY) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))) {
+		if ((room->flags & ROOM_READONLY) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))) {
 			Put(usr, "<red>You are suddenly not allowed to post in this room\n");
 			destroy_Message(usr->new_message);
 			usr->new_message = NULL;
 			RET(usr);
 			Return;
 		}
-		if (!(usr->runtime_flags & RTF_SYSOP) && in_StringList(usr->curr_room->kicked, usr->name) != NULL) {
+		if (!(usr->runtime_flags & RTF_SYSOP) && in_StringList(room->kicked, usr->name) != NULL) {
 			Put(usr, "<red>In the meantime, you have been kicked from this room\n");
-			if ((j = in_Joined(usr->rooms, usr->curr_room->number)) != NULL)
+			if ((j = in_Joined(usr->rooms, room->number)) != NULL)
 				j->zapped = 1;
 
 			destroy_Message(usr->new_message);
@@ -378,13 +394,13 @@ StringIO *tmp;
 			goto_room(usr, Lobby_room);
 			Return;
 		}
-		usr->new_message->number = room_top(usr->curr_room)+1;
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->new_message->number);
+		usr->new_message->number = room_top(room)+1;
+		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, usr->new_message->number);
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename, 0)) {
-			newMsg(usr->curr_room, usr);
-			room_beep(usr, usr->curr_room);
+			newMsg(room, usr);
+			room_beep(usr, room);
 		} else {
 			err++;
 			Perror(usr, "Error saving message");
@@ -1327,6 +1343,10 @@ int r;
 		PUSH(usr, STATE_DUMMY);			/* one is not enough (!) */
 		curr_room = usr->curr_room;
 		usr->curr_room = r;
+
+/*
+	TODO: change this (function cannot continue after the LOOP by save_message()
+*/
 		save_message(usr, INIT_STATE);	/* save forwarded message in other room */
 		usr->curr_room = curr_room;		/* restore current room */
 
@@ -1511,85 +1531,6 @@ Joined *j;
 		j->last_read = 0UL;				/* re-read changed room */
 	}
 	Return j;
-}
-
-/*
-	Send an eXpress message as Mail>
-*/
-void mail_msg(User *usr, BufferedMsg *msg) {
-StringList *sl;
-Room *room;
-char buf[PRINT_BUF], c;
-
-	if (usr == NULL)
-		return;
-
-	Enter(mail_msg);
-
-	if (msg == NULL) {
-		Perror(usr, "The message is gone all of a sudden!");
-		Return;
-	}
-	destroy_Message(usr->new_message);
-	if ((usr->new_message = new_Message()) == NULL) {
-		Perror(usr, "Out of memory");
-		Return;
-	}
-	cstrcpy(usr->new_message->from, usr->name, MAX_NAME);
-
-	sl = (StringList *)usr->recipients->tail;
-	if (sl != NULL) {
-		unsigned long i;
-
-		for(i = 0UL; i < usr->conn->loop_counter; i++) {
-			sl = sl->next;
-			if (sl == NULL)
-				break;
-		}
-	}
-	if (sl == NULL) {
-		Perror(usr, "The recipient has vanished!");
-		destroy_Message(usr->new_message);
-		usr->new_message = NULL;
-		Return;
-	}
-	if ((usr->new_message->to = new_MailToQueue()) == NULL
-		|| add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
-		Perror(usr, "Out of memory");
-		destroy_Message(usr->new_message);
-		usr->new_message = NULL;
-		Return;
-	}
-	usr->new_message->subject = cstrdup("<lost message>");
-
-	free_StringIO(usr->text);
-	put_StringIO(usr->text, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
-/*
-	This is the most ugly hack ever; temporarily reset name to get a correct
-	msg header out of buffered_msg_header();
-	I really must rewrite this some day
-*/
-	c = usr->name[0];
-	usr->name[0] = 0;
-	buffered_msg_header(usr, usr->send_msg, buf, PRINT_BUF);
-	usr->name[0] = c;
-
-	put_StringIO(usr->text, buf);
-	concat_StringIO(usr->text, usr->send_msg->msg);
-
-	room = usr->curr_room;
-	usr->curr_room = usr->mail;
-
-/* save the Mail> message */
-	PUSH(usr, STATE_DUMMY);
-	PUSH(usr, STATE_DUMMY);
-	save_message(usr, INIT_STATE);
-
-	destroy_Message(usr->new_message);
-	usr->new_message = NULL;
-
-	usr->curr_room = room;
-	Return;
 }
 
 void room_beep(User *usr, Room *r) {
