@@ -616,22 +616,6 @@ char num_buf[MAX_NUMBER];
 			enter_message(usr);
 			Return;
 
-		case 's':
-			if (!(usr->curr_room->flags & ROOM_CHATROOM)) {
-				Room *r;
-
-				Put(usr, "<white>Skip\n");
-
-				r = next_unread_room(usr);
-				if (r != usr->curr_room) {
-					Print(usr, "<white>Goto <yellow>%s<white>\n", r->name);
-					goto_room(usr, r);
-					Return;
-				}
-				Put(usr, "<red>No new messages\n");
-			}
-			break;
-
 /*
 	read again
 	contributed by Mutation of MatrixBBS
@@ -699,6 +683,9 @@ char num_buf[MAX_NUMBER];
 			}
 			break;
 
+		case 's':
+			Put(usr, "<white>Skip\n");
+
 		case 'g':
 		case 'G':
 			do {
@@ -706,7 +693,7 @@ char num_buf[MAX_NUMBER];
 
 				r = next_unread_room(usr);
 				if (r != usr->curr_room) {
-					Print(usr, "<white>Goto <yellow>%s<white>\n", r->name);
+					Print(usr, "<white>Goto <yellow>%s\n", r->name);
 					goto_room(usr, r);
 					Return;
 				}

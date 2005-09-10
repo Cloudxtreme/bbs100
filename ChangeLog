@@ -1,6 +1,7 @@
 Changes as of September 10th 2005
 - added PUSH_ARG and POP_ARG: argument passing via CallStack
 - sending mail in loop broke some stuff, took a lot of time to fix...
+- bugfix: it was not possible to Skip Lobby> nor Mail>
 
 Changes as of September 9th 2005
 - added option to block friends when X disabled

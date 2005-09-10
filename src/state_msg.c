@@ -1406,12 +1406,12 @@ Joined *j;
 /*
 	anything new in the Lobby?
 */
-	if (unread_room(usr, Lobby_room) != NULL)
+	if (usr->curr_room != Lobby_room && unread_room(usr, Lobby_room) != NULL)
 		return Lobby_room;
 
 /* then check the mail room */
 
-	if (PARAM_HAVE_MAILROOM) {
+	if (PARAM_HAVE_MAILROOM && usr->curr_room != usr->mail) {
 		if ((j = in_Joined(usr->rooms, MAIL_ROOM)) == NULL) {
 			if ((j = new_Joined()) == NULL) {			/* this should never happen, but hey... */
 				Perror(usr, "Out of memory");
@@ -1429,10 +1429,14 @@ Joined *j;
 	scan for next unread rooms
 	we search the current room, and we proceed our search from there
 */
-	for(r = AllRooms; r != NULL; r = r->next) {
-		if (r->number == usr->curr_room->number)
-			break;
-	}
+	if (usr->curr_room->number < SPECIAL_ROOMS) {
+		for(r = AllRooms; r != NULL; r = r->next) {
+			if (r->number == usr->curr_room->number)
+				break;
+		}
+	} else
+		r = usr->curr_room;
+
 	if (r == NULL) {								/* current room does not exist anymore */
 		Perror(usr, "Your environment has vaporized!");
 		return Lobby_room;
