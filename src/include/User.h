@@ -55,6 +55,7 @@
 #define notify_hold(x)			notify_friends((x), PARAM_NOTIFY_HOLD, 0)
 #define notify_unhold(x)		notify_friends((x), PARAM_NOTIFY_UNHOLD, 0)
 
+/* usr->flags */
 #define USR_ANSI				1			/* ANSI terminal */
 #define USR_BOLD				2			/* bright/bold enabled */
 #define USR_BEEP				4			/* beeping enabled */
@@ -88,6 +89,10 @@
 #define USR_BLOCK_FRIENDS		0x40000000	/* when X disabled, also block friends */
 #define USR_DONT_CYCLE_ROOMS	0x80000000	/* don't cycle through rooms when there are no new messages */
 #define USR_ALL					0xffffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
+
+/* usr->flags2 */
+#define USR2_ENTER_UPLOAD		1			/* enter uploads by default */
+#define USR2_ALL				1
 
 /* runtime flags (not saved in userfile) */
 #define RTF_BUSY				1			/* user is currently busy */
@@ -157,7 +162,7 @@ struct User_tag {
 	unsigned long logins, total_time, last_online_time;
 	unsigned long xsent, xrecv, esent, erecv, fsent, frecv, qsent, qansw, posted, read;
 	long curr_msg;
-	unsigned int flags, runtime_flags, default_room;
+	unsigned int flags, flags2, runtime_flags, default_room;
 	int colors[9], symbol_colors[8], color, msg_seq_recv, msg_seq_sent;
 
 	char *quick[NUM_QUICK];

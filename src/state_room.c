@@ -613,6 +613,9 @@ char num_buf[MAX_NUMBER];
 			else
 				usr->runtime_flags &= ~RTF_UPLOAD;
 
+			if (usr->flags2 & USR2_ENTER_UPLOAD)
+				usr->runtime_flags ^= RTF_UPLOAD;
+
 			enter_message(usr);
 			Return;
 
@@ -801,21 +804,24 @@ char num_buf[MAX_NUMBER];
 		case 'r':
 		case 'R':
 		case KEY_CTRL('R'):
-			if (c == 'R' && usr->message != NULL && count_Queue(usr->message->to) > 1)
-				Print(usr, "<white>%seply to all\n", (c == KEY_CTRL('R')) ? "Upload R" : "R");
-			else
-				Print(usr, "<white>%seply\n", (c == KEY_CTRL('R')) ? "Upload R" : "R");
-
-			if (is_guest(usr->name)) {
-				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot reply to messages\n", PARAM_NAME_GUEST);
-				break;
-			}
 			if (c == KEY_CTRL('R')) {
 				usr->runtime_flags |= RTF_UPLOAD;
 				c = 'R';
 			} else
 				usr->runtime_flags &= ~RTF_UPLOAD;
 
+			if (usr->flags2 & USR2_ENTER_UPLOAD)
+				usr->runtime_flags ^= RTF_UPLOAD;
+
+			if (c == 'R' && usr->message != NULL && count_Queue(usr->message->to) > 1)
+				Print(usr, "<white>%seply to all\n", (usr->runtime_flags & RTF_UPLOAD) ? "Upload R" : "R");
+			else
+				Print(usr, "<white>%seply\n", (usr->runtime_flags & RTF_UPLOAD) ? "Upload R" : "R");
+
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot reply to messages\n", PARAM_NAME_GUEST);
+				break;
+			}
 			if (usr->message != NULL && usr->message->from[0]) {
 				Message *m;
 

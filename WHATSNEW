@@ -46,6 +46,7 @@ There are a lot of new options in the Config menu:
   - users may choose to hide their profile info from enemies
   - default room can be set; this is convenient when posting a lot in a
     specific high traffic room, eg. Babble>
+  - user can set that Upload is the default for entering messages
 
 - 'p' shows long profile info, 'P' shows short profile info
 - when entering colors into a message, the colors are immediately displayed
@@ -166,6 +167,7 @@ What's new internally?
 - OnlineUser list is a Tree rather than a Hash ... this has both cons
   and pros; the biggest pro is that a Tree doesn't have a costly resize
   like a Hash does
+- usr->flags2 adds some more config bits
 - some bugs fixed ...
 
 

@@ -321,6 +321,7 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 
 		Fclose(f);
 		usr->flags &= USR_ALL;
+		usr->flags2 &= USR2_ALL;
 
 		if (usr->timezone == NULL)
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
@@ -431,6 +432,7 @@ int term_width, term_height, ff1_continue;
 			FF1_LOAD_INT("term_height", term_height);
 			FF1_LOAD_UINT("default_room", usr->default_room);
 			FF1_LOAD_HEX("flags", usr->flags);
+			FF1_LOAD_HEX("flags2", usr->flags2);
 
 /* custom colors */
 			if (!strcmp(buf, "colors")) {
@@ -500,6 +502,7 @@ int term_width, term_height, ff1_continue;
 			FF1_SKIP("term_height");
 			FF1_SKIP("default_room");
 			FF1_SKIP("flags");
+			FF1_SKIP("flags2");
 			FF1_SKIP("colors");
 			FF1_SKIP("symbol_colors");
 		}
@@ -1074,6 +1077,7 @@ File *f;
 		return -1;
 	}
 	usr->flags &= USR_ALL;
+	usr->flags2 &= USR2_ALL;
 	ret = save_User_version1(f, usr);
 	Fclose(f);
 
@@ -1118,6 +1122,7 @@ char buf[PRINT_BUF];
 	Fprintf(f, "last_online_time=%lu", usr->last_online_time);
 	Fprintf(f, "default_room=%u", usr->default_room);
 	Fprintf(f, "flags=0x%x", usr->flags);
+	Fprintf(f, "flags2=0x%x", usr->flags2);
 	Fprintf(f, "logins=%lu", usr->logins);
 	Fprintf(f, "total_time=%lu", usr->total_time);
 

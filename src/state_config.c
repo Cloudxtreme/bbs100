@@ -52,6 +52,15 @@
 		Return;										\
 	} while(0)
 
+#define CONFIG_OPTION2(x, y)						\
+	do {											\
+		usr->flags2 ^= (x);							\
+		usr->runtime_flags |= RTF_CONFIG_EDITED;	\
+		Print(usr, "%s\n", (y));					\
+		CURRENT_STATE(usr);							\
+		Return;										\
+	} while(0)
+
 
 void state_config_menu(User *usr, char c) {
 	if (usr == NULL)
@@ -1694,19 +1703,24 @@ char buf[MAX_LINE];
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No",
 				(usr->flags & USR_DONT_ASK_REASON) ? "No" : "Yes"
 			);
+			Print(usr, "\n"
+				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
+				"<hotkey>Enter message defaults to Upload     <white>%s<magenta>\n"
+				"C<hotkey>ycle rooms on no new messages       <white>%s<magenta>\n"
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
+
+				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
+				(usr->flags2 & USR2_ENTER_UPLOAD) ? "Yes" : "No",
+				(usr->flags & USR_DONT_CYCLE_ROOMS) ? "No" : "Yes",
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
+			);
 			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || room_access(r, usr->name) < ACCESS_OK) {
 				usr->default_room = LOBBY_ROOM;
 				r = Lobby_room;
 			}
-			Print(usr, "\n"
-				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
-				"C<hotkey>ycle rooms on no new messages       <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
+			Print(usr,
 				"Default r<hotkey>oom is set to ...           <yellow>%s<magenta>\n",
 
-				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_DONT_CYCLE_ROOMS) ? "No" : "Yes",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
 				room_name(usr, r, buf, MAX_LINE)
 			);
 			Print(usr, "\n"
@@ -1813,6 +1827,14 @@ char buf[MAX_LINE];
 		case 'b':
 		case 'B':
 			CONFIG_OPTION(USR_ROOMBEEP, "Beep on new posts");
+
+		case 'e':
+		case 'E':
+			usr->flags2 ^= USR2_ENTER_UPLOAD;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+			Print(usr, "%s message\n", (usr->flags2 & USR2_ENTER_UPLOAD) ? "Upload" : "Enter");
+			CURRENT_STATE(usr);
+			Return;
 
 		case 'y':
 		case 'Y':
