@@ -101,7 +101,6 @@ have_chatrooms          yes
 have_homeroom           yes
 have_mailroom           yes
 have_category           yes
-have_cycle_rooms        yes
 have_wrapper_all        yes
 have_binalloc           yes
 have_filecache          yes

@@ -1700,10 +1700,12 @@ char buf[MAX_LINE];
 			}
 			Print(usr, "\n"
 				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
+				"C<hotkey>ycle rooms on no new messages       <white>%s<magenta>\n"
 				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
 				"Default r<hotkey>oom is set to ...           <yellow>%s<magenta>\n",
 
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
+				(usr->flags & USR_DONT_CYCLE_ROOMS) ? "No" : "Yes",
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
 				room_name(usr, r, buf, MAX_LINE)
 			);
@@ -1811,6 +1813,10 @@ char buf[MAX_LINE];
 		case 'b':
 		case 'B':
 			CONFIG_OPTION(USR_ROOMBEEP, "Beep on new posts");
+
+		case 'y':
+		case 'Y':
+			CONFIG_OPTION(USR_DONT_CYCLE_ROOMS, "Cycle rooms");
 
 		case 'n':
 		case 'N':

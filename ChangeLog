@@ -1,5 +1,6 @@
 Changes as of September 13th 2005
 - option: set default room
+- removed PARAM_HAVE_CYCLE_ROOMS and turned it into an option
 
 Changes as of September 10th 2005
 - added PUSH_ARG and POP_ARG: argument passing via CallStack

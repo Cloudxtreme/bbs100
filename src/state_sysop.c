@@ -3625,37 +3625,34 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"X <hotkey>Reply               <white>%-3s<magenta>      eXpres<hotkey>s message header  <white>%s<magenta>\n"
-				"<hotkey>Vanity flag           <white>%-3s<magenta>      Cate<hotkey>gories              <white>%s<magenta>\n"
-				"C<hotkey>ycle unread rooms    <white>%-3s<magenta>      Ch<hotkey>at rooms              <white>%s<magenta>\n"
+				"<hotkey>Vanity flag           <white>%-3s<magenta>      Resident <hotkey>info           <white>%s<magenta>\n"
+				"Ch<hotkey>at rooms            <white>%-3s<magenta>      Cate<hotkey>gories              <white>%s<magenta>\n"
 				"<hotkey>Home> room            <white>%-3s<magenta>      <hotkey>Mail> room              <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_XMSG_HDR == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_VANITY == PARAM_FALSE) ? "off" : "on",
-				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "off" : "on",
 
-				(PARAM_HAVE_CYCLE_ROOMS == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on"
 			);
 			Print(usr,
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
-				"Resident <hotkey>info         <white>%-3s<magenta>      <hotkey>File cache              <white>%s<magenta>\n"
-				"<hotkey>Bin allocator         <white>%-3s<magenta>      Wrapper a<hotkey>pply to All    <white>%s<magenta>\n"
-				"<hotkey>Display warnings      <white>%s<magenta>\n",
+				"<hotkey>File cache            <white>%-3s<magenta>      <hotkey>Bin allocator           <white>%s<magenta>\n"
+				"Wrapper a<hotkey>pply to all  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
 
-				(PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_FILECACHE == PARAM_FALSE) ? "off" : "on",
-
 				(PARAM_HAVE_BINALLOC == PARAM_FALSE) ? "off" : "on",
-				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
 
+				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
 			);
 			read_menu(usr);
@@ -3753,10 +3750,6 @@ void state_features_menu(User *usr, char c) {
 
 			CURRENT_STATE(usr);
 			Return;
-
-		case 'y':
-		case 'Y':
-			TOGGLE_FEATURE(PARAM_HAVE_CYCLE_ROOMS, "Cycle unread rooms");
 
 		case 'i':
 		case 'I':

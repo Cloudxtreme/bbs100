@@ -1444,7 +1444,7 @@ Joined *j;
 /* we've seen the current room, skip to the next and search for an unread room */
 
 	for(r = r->next; r != NULL; r = r->next) {
-		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
+		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, r) != NULL)
 			next_joined = r;
 
 		if (unread_room(usr, r) != NULL)
@@ -1453,14 +1453,14 @@ Joined *j;
 /* couldn't find a room, now search from the beginning up to curr_room */
 
 	for(r = AllRooms; r != NULL && r->number != usr->curr_room->number; r = r->next) {
-		if (PARAM_HAVE_CYCLE_ROOMS && next_joined == NULL && joined_room(usr, r) != NULL)
+		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, r) != NULL)
 			next_joined = r;
 
 		if (unread_room(usr, r) != NULL)
 			return r;
 	}
 /* couldn't find an unread room; goto next joined room */
-	if (PARAM_HAVE_CYCLE_ROOMS && next_joined != NULL)
+	if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined != NULL)
 		return next_joined;
 
 /* couldn't find an unread room; goto the default room */
