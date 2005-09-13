@@ -429,6 +429,7 @@ File *f;
 
 void state_go_online(User *usr, char c) {
 Joined *j;
+Room *r;
 char num_buf[MAX_NUMBER];
 int i, new_mail;
 
@@ -540,13 +541,17 @@ int i, new_mail;
 	after having read the Lobby> anyway
 */
 	if ((j = in_Joined(usr->rooms, LOBBY_ROOM)) != NULL && newMsgs(Lobby_room, j->last_read) >= 0)
-		goto_room(usr, Lobby_room);
+		r = Lobby_room;
 	else {
 		if (PARAM_HAVE_MAILROOM && new_mail)
-			goto_room(usr, usr->mail);
-		else
-			goto_room(usr, Lobby_room);
+			r = usr->mail;
+		else {
+			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || joined_room(usr, r) == NULL)
+				r = Lobby_room;
+		}
 	}
+	goto_room(usr, r);
+
 	add_OnlineUser(usr);		/* add user to hash of online users */
 	Return;
 }

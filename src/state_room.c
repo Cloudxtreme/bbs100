@@ -1062,13 +1062,13 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		Room *r;
+		Room *rm;
 
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
-		if ((r = find_abbrevRoom(usr, usr->edit_buf)) == NULL) {
+		if ((rm = find_abbrevRoom(usr, usr->edit_buf)) == NULL) {
 			Put(usr, "<red>No such room\n");
 			RET(usr);
 			Return;
@@ -1076,32 +1076,32 @@ int r;
 
 /* already there */
 
-		if (r == usr->curr_room) {
+		if (rm == usr->curr_room) {
 			Put(usr, "<white>Bounce! Bounce!\n");
 			RET(usr);
 			Return;
 		}
 		if (!(usr->runtime_flags & RTF_SYSOP)) {
-			switch(room_access(r, usr->name)) {
+			switch(room_access(rm, usr->name)) {
 				case ACCESS_INVITE_ONLY:
 					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
-					unload_Room(r);
+					unload_Room(rm);
 					RET(usr);
 					Return;
 
 				case ACCESS_KICKED:
 					Put(usr, "<red>You have been kicked from that room\n");
-					unload_Room(r);
+					unload_Room(rm);
 					RET(usr);
 					Return;
 
 				case ACCESS_INVITED:
-					if (r != usr->mail)
+					if (rm != usr->mail)
 						Put(usr, "<yellow>You are invited in this room\n");
 			}
 		}
 		POP(usr);
-		goto_room(usr, r);
+		goto_room(usr, rm);
 	}
 	Return;
 }

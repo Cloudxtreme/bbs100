@@ -1463,7 +1463,14 @@ Joined *j;
 	if (PARAM_HAVE_CYCLE_ROOMS && next_joined != NULL)
 		return next_joined;
 
-/* couldn't find an unread room; goto the Lobby> */
+/* couldn't find an unread room; goto the default room */
+
+	if ((r = find_Roombynumber(usr, usr->default_room)) != NULL && room_access(r, usr->name) >= 0)
+		return r;
+
+	unload_Room(r);
+
+	usr->default_room = LOBBY_ROOM;
 	return Lobby_room;
 }
 

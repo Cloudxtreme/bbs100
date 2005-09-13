@@ -37,6 +37,7 @@
 #include "Timezone.h"
 #include "Param.h"
 #include "bufprintf.h"
+#include "access.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1654,6 +1655,9 @@ void state_config_who_sysop(User *usr, char c) {
 
 
 void state_config_options(User *usr, char c) {
+Room *r;
+char buf[MAX_LINE];
+
 	if (usr == NULL)
 		return;
 
@@ -1690,12 +1694,18 @@ void state_config_options(User *usr, char c) {
 				(usr->flags & USR_HOLD_BUSY) ? "Yes" : "No",
 				(usr->flags & USR_DONT_ASK_REASON) ? "No" : "Yes"
 			);
+			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || room_access(r, usr->name) < ACCESS_OK) {
+				usr->default_room = LOBBY_ROOM;
+				r = Lobby_room;
+			}
 			Print(usr, "\n"
 				"Rooms <hotkey>beep on new posts              <white>%s<magenta>\n"
-				"Show room <hotkey>number in prompt           <white>%s<magenta>\n",
+				"Show room <hotkey>number in prompt           <white>%s<magenta>\n"
+				"Default r<hotkey>oom is set to ...           <yellow>%s<magenta>\n",
 
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
-				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
+				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No",
+				room_name(usr, r, buf, MAX_LINE)
 			);
 			Print(usr, "\n"
 				"<hotkey>Downloads pause every page           <white>%s<magenta>\n"
@@ -1806,6 +1816,11 @@ void state_config_options(User *usr, char c) {
 		case 'N':
 			CONFIG_OPTION(USR_ROOMNUMBERS, "Show room number");
 
+		case 'o':
+		case 'O':
+			CALL(usr, STATE_DEFAULT_ROOM);
+			Return;
+
 		case 'p':
 		case 'P':
 			CONFIG_OPTION(USR_SHORT_PROFILE, "Profile");
@@ -1818,6 +1833,86 @@ void state_config_options(User *usr, char c) {
 	Return;
 }
 
+void state_default_room(User *usr, char c) {
+int r;
+Room *rm;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_default_room);
+
+	if (c == INIT_STATE) {
+		char buf[MAX_LINE];
+
+		if ((rm = find_Roombynumber(usr, usr->default_room)) == NULL || room_access(rm, usr->name) < ACCESS_OK) {
+			usr->default_room = LOBBY_ROOM;
+			rm = Lobby_room;
+		}
+		Print(usr, "<cyan>Your default room is <yellow>%s<cyan>\n"
+			"Enter new default room: <yellow>", room_name(usr, rm, buf, MAX_LINE));
+	}
+	r = edit_roomname(usr, c);
+	switch(r) {
+		case EDIT_BREAK:
+			Put(usr, "<red>Not changed\n");
+			RET(usr);
+			Return;
+
+		case EDIT_RETURN:
+			if (!usr->edit_buf[0]) {
+				Put(usr, "<red>Not changed\n");
+				RET(usr);
+				Return;
+			}
+			if ((rm = find_abbrevRoom(usr, usr->edit_buf)) == NULL) {
+				Put(usr, "<red>No such room\n");
+				RET(usr);
+				Return;
+			}
+			if (rm->number == HOME_ROOM) {
+				char buf[MAX_LINE];
+
+				possession(usr->name, "Home", buf, MAX_LINE);
+				if (strcmp(rm->name, buf))
+					Put(usr, "<white>Note: <red>This only works for your own <yellow>Home><red> room");
+			}
+			switch(room_access(rm, usr->name)) {
+				case ACCESS_INVITE_ONLY:
+					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
+					unload_Room(rm);
+					RET(usr);
+					Return;
+
+				case ACCESS_KICKED:
+					Put(usr, "<red>You have been kicked from that room\n");
+					unload_Room(rm);
+					RET(usr);
+					Return;
+
+				case ACCESS_INVITED:
+					if (rm != usr->mail)
+						Put(usr, "<yellow>You are invited in this room\n");
+					break;
+
+				case ACCESS_OK:
+					break;
+
+				default:
+					Perror(usr, "failed to check whether you have access or not");
+					unload_Room(rm);
+					RET(usr);
+					Return;
+			}
+			usr->default_room = rm->number;
+			usr->runtime_flags |= RTF_CONFIG_EDITED;
+
+			unload_Room(rm);
+			RET(usr);
+			Return;
+	}
+	Return;
+}
 
 void state_config_timezone(User *usr, char c) {
 char buf[MAX_LINE], *p;

@@ -44,6 +44,8 @@ There are a lot of new options in the Config menu:
   - 'verbose friend notification' shows even more friend notifications
   - choose whether 'p' shows long or short profile
   - users may choose to hide their profile info from enemies
+  - default room can be set; this is convenient when posting a lot in a
+    specific high traffic room, eg. Babble>
 
 - 'p' shows long profile info, 'P' shows short profile info
 - when entering colors into a message, the colors are immediately displayed

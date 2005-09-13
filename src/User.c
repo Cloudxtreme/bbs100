@@ -96,6 +96,7 @@ User *usr;
 
 /* set sane defaults */
 	usr->flags = USR_HIDE_ADDRESS|USR_HIDE_INFO;
+	usr->default_room = LOBBY_ROOM;
 	default_colors(usr);
 	default_symbol_colors(usr);
 
@@ -316,6 +317,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			log_err("load_User(): don't know how to load file format version %d of %s", version, filename);
 	}
 	if (load_func != NULL && !load_func(f, usr, username, flags)) {
+		Room *rm;
+
 		Fclose(f);
 		usr->flags &= USR_ALL;
 
@@ -323,6 +326,10 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			usr->timezone = cstrdup(PARAM_DEFAULT_TIMEZONE);
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
+
+		if ((rm = find_Roombynumber(usr, usr->default_room)) == NULL || room_access(rm, username) < 0)
+			usr->default_room = LOBBY_ROOM;
+		unload_Room(rm);
 
 		sort_StringList(&usr->friends, alphasort_StringList);
 		sort_StringList(&usr->enemies, alphasort_StringList);
@@ -422,7 +429,7 @@ int term_width, term_height, ff1_continue;
 			FF1_LOAD_ULONG("read", usr->read);
 			FF1_LOAD_INT("term_width", term_width);
 			FF1_LOAD_INT("term_height", term_height);
-
+			FF1_LOAD_UINT("default_room", usr->default_room);
 			FF1_LOAD_HEX("flags", usr->flags);
 
 /* custom colors */
@@ -491,6 +498,7 @@ int term_width, term_height, ff1_continue;
 			FF1_SKIP("read");
 			FF1_SKIP("term_width");
 			FF1_SKIP("term_height");
+			FF1_SKIP("default_room");
 			FF1_SKIP("flags");
 			FF1_SKIP("colors");
 			FF1_SKIP("symbol_colors");
@@ -1108,6 +1116,7 @@ char buf[PRINT_BUF];
 	Fprintf(f, "birth=%lu", (unsigned long)usr->birth);
 	Fprintf(f, "last_logout=%lu", (unsigned long)usr->last_logout);
 	Fprintf(f, "last_online_time=%lu", usr->last_online_time);
+	Fprintf(f, "default_room=%u", usr->default_room);
 	Fprintf(f, "flags=0x%x", usr->flags);
 	Fprintf(f, "logins=%lu", usr->logins);
 	Fprintf(f, "total_time=%lu", usr->total_time);

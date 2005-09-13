@@ -1,3 +1,6 @@
+Changes as of September 13th 2005
+- option: set default room
+
 Changes as of September 10th 2005
 - added PUSH_ARG and POP_ARG: argument passing via CallStack
 - sending mail in loop broke some stuff, took a lot of time to fix...
