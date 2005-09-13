@@ -3645,7 +3645,7 @@ void state_features_menu(User *usr, char c) {
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
 				"Resident <hotkey>info         <white>%-3s<magenta>      <hotkey>File cache              <white>%s<magenta>\n"
 				"<hotkey>Bin allocator         <white>%-3s<magenta>      Wrapper a<hotkey>pply to All    <white>%s<magenta>\n"
-				"Wrapper a<hotkey>pply to All  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
+				"<hotkey>Display warnings      <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
