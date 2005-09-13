@@ -1903,7 +1903,7 @@ Room *rm;
 
 				possession(usr->name, "Home", buf, MAX_LINE);
 				if (strcmp(rm->name, buf))
-					Put(usr, "<white>Note: <red>This only works for your own <yellow>Home><red> room");
+					Put(usr, "<white>Note: <red>This only works for your own <yellow>Home><red> room\n");
 			}
 			switch(room_access(rm, usr->name)) {
 				case ACCESS_INVITE_ONLY:
@@ -1919,7 +1919,7 @@ Room *rm;
 					Return;
 
 				case ACCESS_INVITED:
-					if (rm != usr->mail)
+					if (rm != usr->mail && rm->number != HOME_ROOM)
 						Put(usr, "<yellow>You are invited in this room\n");
 					break;
 
