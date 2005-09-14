@@ -1,3 +1,6 @@
+Changes as of September 14th 2005
+- bugfixes in forwarding messages
+
 Changes as of September 13th 2005
 - option: set default room
 - removed PARAM_HAVE_CYCLE_ROOMS and turned it into an option

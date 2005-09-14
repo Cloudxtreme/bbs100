@@ -970,6 +970,17 @@ void unload_Room(Room *r) {
 				destroy_Room(r);
 				return;
 			}
+/*
+	do some house-cleaning
+	Note: due the 'return' statement just above, we may not complete the
+	house-cleaning work...
+*/
+			if (count_Queue(h->inside) <= 0) {
+				log_debug("unload_Room(): cleaning up %s", h->name);
+				remove_Room(&HomeRooms, r);
+				save_Room(r);
+				destroy_Room(r);
+			}
 		}
 	}
 }

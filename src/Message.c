@@ -298,7 +298,6 @@ char buf[PRINT_BUF];
 */
 Message *copy_Message(Message *msg) {
 Message *m;
-StringIO *s;
 
 	if (msg == NULL)
 		return NULL;
@@ -306,9 +305,19 @@ StringIO *s;
 	if ((m = new_Message()) == NULL)
 		return NULL;
 
-	s = m->msg;
-	memcpy(m, msg, sizeof(Message));
-	m->msg = s;
+	m->number = msg->number;
+	m->reply_number = msg->reply_number;
+	m->mtime = msg->mtime;
+	m->deleted = msg->deleted;
+	m->flags = msg->flags;
+	strcpy(m->from, msg->from);
+
+	m->subject = cstrdup(msg->subject);
+	m->anon = cstrdup(msg->anon);
+	m->deleted_by = cstrdup(msg->deleted_by);
+
+	m->to = NULL;			/* this is not copied */
+
 	copy_StringIO(m->msg, msg->msg);
 	return m;
 }

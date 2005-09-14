@@ -238,10 +238,12 @@ StringList *sl;
 			deinit_StringQueue(sq);
 			return -1;
 		}
-		m->name = sl->str;
-		sl->str = NULL;
+		if ((m->name = cstrdup(sl->str)) == NULL) {
+			destroy_MailTo(m);
+			deinit_StringQueue(sq);
+			return -1;
+		}
 		destroy_StringList(sl);
-
 		add_MailToQueue(msg->to, m);
 	}
 	deinit_StringQueue(sq);
@@ -347,6 +349,7 @@ StringIO *tmp;
 	}
 	if (usr->new_message == NULL) {
 		Perror(usr, "The message has disappeared!");
+		unload_Room(room);
 		RET(usr);
 		Return;
 	}
@@ -369,6 +372,7 @@ StringIO *tmp;
 
 		destroy_Message(usr->new_message);
 		usr->new_message = NULL;
+		unload_Room(room);
 		RET(usr);
 		Return;
 	}
@@ -378,8 +382,10 @@ StringIO *tmp;
 	} else {
 		if ((room->flags & ROOM_READONLY) && !(usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))) {
 			Put(usr, "<red>You are suddenly not allowed to post in this room\n");
+
 			destroy_Message(usr->new_message);
 			usr->new_message = NULL;
+			unload_Room(room);
 			RET(usr);
 			Return;
 		}
@@ -390,8 +396,9 @@ StringIO *tmp;
 
 			destroy_Message(usr->new_message);
 			usr->new_message = NULL;
-			POP(usr);
+			unload_Room(room);
 			goto_room(usr, Lobby_room);
+			RET(usr);
 			Return;
 		}
 		usr->new_message->number = room_top(room)+1;
@@ -415,6 +422,7 @@ StringIO *tmp;
 		}
 		stats.posted_boot++;
 	}
+	unload_Room(room);
 	RET(usr);
 	Return;
 }
@@ -1339,13 +1347,8 @@ int r;
 		usr->new_message->msg = tmp;
 
 		PUSH(usr, STATE_RETURN_FORWARD);
-		if (r == usr->mail)
-			PUSH(usr, STATE_DUMMY);		/* it will JMP, overwriting this state */
-
+		PUSH(usr, STATE_DUMMY);
 		save_message_room(usr, r);		/* save forwarded message in other room */
-
-/* TODO here it leaks for demand loaded rooms */
-
 	}
 	Return;
 }
@@ -1356,12 +1359,9 @@ void state_return_forward(User *usr, char c) {
 
 	if (c == INIT_STATE) {
 		Put(usr, "<green>Message forwarded\n");
-
-/*	TODO it leaks for demand loaded rooms; the room should be tracked down
-	and unloaded here */
-
 	}
-	RET(usr);
+	POP(usr);		/* remove STATE_RETURN_FORWARD */
+	RET(usr);		/* return from STATE_FORWARD_ROOM */
 }
 
 /*
