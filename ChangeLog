@@ -1,5 +1,6 @@
 Changes as of September 14th 2005
 - bugfixes in forwarding messages
+- bugfixes for skip and read minus <n> messages
 
 Changes as of September 13th 2005
 - option: set default room

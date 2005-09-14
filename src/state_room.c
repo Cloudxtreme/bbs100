@@ -1543,7 +1543,7 @@ int r;
 			Return;
 		}
 		if (usr->curr_msg <= 0L) {
-			usr->curr_msg = usr->curr_room->tail_msg;
+			usr->curr_msg = usr->curr_room->head_msg;
 			if (usr->curr_room->head_msg <= 0L) {
 				Put(usr, "<red>No messages\n");
 				RET(usr);
@@ -1552,8 +1552,8 @@ int r;
 		}
 		usr->curr_msg -= num;
 
-		if (usr->curr_msg >= usr->curr_room->head_msg)
-			usr->curr_msg = usr->curr_room->head_msg - 1;
+		if (usr->curr_msg > usr->curr_room->head_msg)
+			usr->curr_msg = usr->curr_room->head_msg;
 		if (usr->curr_msg < usr->curr_room->tail_msg)
 			usr->curr_msg = usr->curr_room->tail_msg;
 
@@ -1588,7 +1588,7 @@ int r;
 			Return;
 		}
 		if (usr->curr_msg <= 0L) {
-			usr->curr_msg = usr->curr_room->tail_msg;
+			usr->curr_msg = usr->curr_room->head_msg;
 			if (usr->curr_room->head_msg <= 0L) {
 				Put(usr, "<red>No messages\n");
 				RET(usr);
@@ -1597,8 +1597,8 @@ int r;
 		}
 		usr->curr_msg += num;
 
-		if (usr->curr_msg >= usr->curr_room->head_msg)
-			usr->curr_msg = usr->curr_room->head_msg - 1;
+		if (usr->curr_msg > usr->curr_room->head_msg)
+			usr->curr_msg = usr->curr_room->head_msg;
 		if (usr->curr_msg < usr->curr_room->tail_msg)
 			usr->curr_msg = usr->curr_room->tail_msg;
 
