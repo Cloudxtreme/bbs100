@@ -1811,6 +1811,9 @@ void screen_menu(User *usr, char *desc, char *filename) {
 	Free(usr->tmpbuf[TMP_PASSWD]);
 	usr->tmpbuf[TMP_PASSWD] = desc;
 
+	Free(usr->tmpbuf[TMP_FROM_HOST]);
+	usr->tmpbuf[TMP_FROM_HOST] = cstrdup(desc);
+
 	CALL(usr, STATE_SCREEN_ACTION);
 	Return;
 }
@@ -1823,6 +1826,10 @@ void state_screen_action(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
+			Put(usr, "<magenta>\n"
+				"<hotkey>View                     <hotkey>Upload\n"
+				"<hotkey>Reload                   <hotkey>Download\n"
+			);
 			break;
 
 		case ' ':
@@ -1834,7 +1841,8 @@ void state_screen_action(User *usr, char c) {
 			usr->tmpbuf[TMP_NAME] = NULL;
 /*			Free(usr->tmpbuf[TMP_PASSWD]);		don't free the 'const' pointer */
 			usr->tmpbuf[TMP_PASSWD] = NULL;
-
+			Free(usr->tmpbuf[TMP_FROM_HOST]);
+			usr->tmpbuf[TMP_FROM_HOST] = NULL;
 			RET(usr);
 			Return;
 
@@ -1871,7 +1879,10 @@ void state_screen_action(User *usr, char c) {
 			upload_file(usr, usr->tmpbuf[TMP_PASSWD], usr->tmpbuf[TMP_NAME]);
 			Return;
 	}
-	Put(usr, "<magenta>\n<hotkey>View, <hotkey>Reload, <hotkey>Download, <hotkey>Upload: <white>");
+	if (usr->tmpbuf[TMP_FROM_HOST] != NULL)
+		Print(usr, "<yellow>\n[%s] %s# <white>", PARAM_NAME_SYSOP, usr->tmpbuf[TMP_FROM_HOST]);
+	else
+		Print(usr, "<yellow>\n[%s] Screens# <white>", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -1893,6 +1904,7 @@ void view_file(User *usr, char *desc, char *filename) {
 		CURRENT_STATE_X(usr, KEY_RETURN);
 		Return;
 	}
+	PUSH(usr, STATE_PRESS_ANY_KEY);
 	Put(usr, "<green>");
 	read_text(usr);
 	Return;

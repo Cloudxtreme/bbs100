@@ -524,8 +524,8 @@ void state_change_roominfo(User *usr, char c) {
 	switch(c) {
 		case INIT_STATE:
 			Put(usr, "<magenta>\n"
-				"<hotkey>View current                 <hotkey>Upload\n"
-				"<hotkey>Enter new                    <hotkey>Download\n"
+				"<hotkey>View current                   <hotkey>Upload\n"
+				"<hotkey>Enter new                      <hotkey>Download\n"
 			);
 			break;
 

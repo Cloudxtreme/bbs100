@@ -2,6 +2,7 @@ Changes as of September 14th 2005
 - bugfixes in forwarding messages
 - bugfixes for skip and read minus <n> messages
 - change room info in the same way as profile info
+- consistent with screens menu in sysop menu
 
 Changes as of September 13th 2005
 - option: set default room
