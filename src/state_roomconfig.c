@@ -523,6 +523,10 @@ void state_change_roominfo(User *usr, char c) {
 
 	switch(c) {
 		case INIT_STATE:
+			Put(usr, "<magenta>\n"
+				"<hotkey>View current                 <hotkey>Upload\n"
+				"<hotkey>Enter new                    <hotkey>Download\n"
+			);
 			break;
 
 		case ' ':
@@ -558,13 +562,14 @@ void state_change_roominfo(User *usr, char c) {
 				Return;
 			}
 			copy_StringIO(usr->text, usr->curr_room->info);
+			PUSH(usr, STATE_PRESS_ANY_KEY);
 			Put(usr, "<green>");
 			read_text(usr);
 			Return;
 
 		case 'e':
 		case 'E':
-			Put(usr, "Edit\n"
+			Put(usr, "Enter\n"
 				"<green>\n"
 				"Enter new room info, press <yellow><return><green> twice or press <yellow><Ctrl-C><green> to end\n"
 			);
@@ -594,7 +599,10 @@ void state_change_roominfo(User *usr, char c) {
 			CALL(usr, STATE_DOWNLOAD_TEXT);
 			Return;
 	}
-	Put(usr, "<magenta>\n<hotkey>View, <hotkey>Edit, <hotkey>Upload, <hotkey>Download: <white>");
+	if (usr->flags & USR_ROOMNUMBERS)
+		Print(usr, "<yellow>\n[%u %s] Room Info%c <white>", usr->curr_room->number, usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	else
+		Print(usr, "<yellow>\n[%s] Room Info%c <white>", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
 }
 
