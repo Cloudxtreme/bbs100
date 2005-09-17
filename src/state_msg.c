@@ -844,9 +844,10 @@ int remove;
 		}
 	}
 /* there is intent to receive it, so from may talk to usr */
-	if ((from->flags & USR_X_DISABLED) && in_StringList(from->override, usr->name) == NULL)
+	if ((from->flags & USR_X_DISABLED) && in_StringList(from->override, usr->name) == NULL) {
 		prepend_StringList(&from->override, new_StringList(usr->name));
-
+		sort_StringList(&usr->override, alphasort_StringList);
+	}
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG) {
 		cstrcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header, MAX_LINE);
 

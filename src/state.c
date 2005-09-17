@@ -192,6 +192,7 @@ int fun_common(User *usr, char c) {
 			}
 			usr->flags ^= USR_X_DISABLED;
 			listdestroy_StringList(usr->override);
+			usr->override = NULL;
 
 			Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
 
@@ -213,11 +214,17 @@ int fun_common(User *usr, char c) {
 			break;
 
 		case 'o':
+			Put(usr, "<white>Override\n");
 			if (!(usr->flags & USR_X_DISABLED)) {
-				Put(usr, "<red>Override is non-functional when you are able to receive messages.\n");
+				Put(usr, "<red>Override is non-functional when you are able to receive messages\n");
 				break;
 			}
-			break;
+			if (is_guest(usr->name)) {
+				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot use the Override function\n", PARAM_NAME_GUEST);
+				break;
+			}
+			CALL(usr, STATE_OVERRIDE_MENU);
+			Return 1;
 
 		case '$':
 			if (usr->runtime_flags & RTF_SYSOP) {

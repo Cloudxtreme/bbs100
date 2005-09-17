@@ -31,6 +31,7 @@
 #include "debug.h"
 #include "cstring.h"
 #include "Param.h"
+#include "access.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +62,8 @@ StringList *sl;
 			Print(usr, "<magenta>\n"
 				"<hotkey>Add friend%s", (usr->friends == NULL) ? "\n" : "                   <hotkey>Remove friend\n");
 
-			Put(usr, "Switch to <hotkey>enemy list\n");
+			Print(usr, "Switch to <hotkey>enemy list%s\n",
+				((usr->flags & USR_X_DISABLED) && !is_guest(usr->name)) ? "         Switch to <hotkey>override list" : "");
 			read_menu(usr);
 			Return;
 
@@ -127,6 +129,15 @@ StringList *sl;
 			Put(usr, "Enemies\n");
 			JMP(usr, STATE_ENEMYLIST_PROMPT);
 			Return;
+
+		case 'o':
+		case 'O':
+			if ((usr->flags & USR_X_DISABLED) && !is_guest(usr->name)) {
+				Put(usr, "Override\n");
+				JMP(usr, STATE_OVERRIDE_MENU);
+				Return;
+			}
+			break;
 	}
 	Print(usr, "<yellow>\n[Config] Friends%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -254,7 +265,8 @@ StringList *sl;
 			Print(usr, "<magenta>\n"
 				"<hotkey>Add enemy%s", (usr->enemies == NULL) ? "\n" : "                    <hotkey>Remove enemy\n");
 
-			Put(usr, "Switch to <hotkey>friend list\n");
+			Print(usr, "Switch to <hotkey>friend list%s\n",
+				(usr->flags & USR_X_DISABLED) ? "        Switch to <hotkey>override list" : "");
 			read_menu(usr);
 			Return;
 
@@ -322,6 +334,15 @@ StringList *sl;
 			Put(usr, "Friends\n");
 			JMP(usr, STATE_FRIENDLIST_PROMPT);
 			Return;
+
+		case 'o':
+		case 'O':
+			if ((usr->flags & USR_X_DISABLED) && !is_guest(usr->name)) {
+				Put(usr, "Override\n");
+				JMP(usr, STATE_OVERRIDE_MENU);
+				Return;
+			}
+			break;
 	}
 	Print(usr, "<yellow>\n[Config] Enemies%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
@@ -421,6 +442,209 @@ int r;
 				destroy_StringList(rm_enemy);
 			} else
 				Put(usr, "<red>There is no such person on your enemy list\n");
+		}
+		RET(usr);
+	}
+	Return;
+}
+
+
+/* override list for when having Xes disabled */
+
+void state_override_menu(User *usr, char c) {
+int n;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_override_menu);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
+			if (usr->override == NULL)
+				Put(usr, "<cyan>\nYour override list is empty\n");
+			else {
+				Put(usr, "\n");
+				print_columns(usr, usr->override, 0);
+			}
+			Print(usr, "<magenta>\n"
+				"<hotkey>Add override%s", (usr->override == NULL) ? "\n" : "                 <hotkey>Remove override\n");
+
+			if (usr->override != NULL)
+				Put(usr, "<hotkey>Clean out\n"
+					"\n");
+
+			Put(usr, "Switch to <hotkey>friend list        Switch to <hotkey>enemy list\n");
+			read_menu(usr);
+			Return;
+
+		case KEY_CTRL('C'):
+		case KEY_CTRL('D'):
+		case KEY_ESC:
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Put(usr, "Exit\n");
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'A':
+		case 'a':
+		case '+':
+		case '=':
+			Put(usr, "Add override\n");
+			n = count_List(usr->override);
+			if (n >= PARAM_MAX_FRIEND) {
+				Print(usr, "<red>You already have %d overrides defined\n", n);
+				break;
+			}
+			enter_name(usr, STATE_ADD_OVERRIDE);
+			Return;
+
+		case 'd':
+		case 'D':
+		case 'R':
+		case 'r':
+		case '-':
+		case '_':
+			if (usr->override == NULL)
+				break;
+
+			Put(usr, "Remove override\n");
+			enter_name(usr, STATE_REMOVE_OVERRIDE);
+			Return;
+
+		case 'c':
+		case 'C':
+			if (usr->override != NULL) {
+				Put(usr, "Clean out\n");
+				listdestroy_StringList(usr->override);
+				usr->override = NULL;
+				CURRENT_STATE(usr);
+				Return;
+			}
+			break;
+
+		case '>':
+		case 'f':
+		case 'F':
+			Put(usr, "Friends\n");
+			JMP(usr, STATE_FRIENDLIST_PROMPT);
+			Return;
+
+		case '<':
+		case 'e':
+		case 'E':
+			Put(usr, "Enemies\n");
+			JMP(usr, STATE_ENEMYLIST_PROMPT);
+			Return;
+	}
+	Print(usr, "<yellow>\n[Config] Override%c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+	Return;
+}
+
+void state_add_override(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_add_override);
+
+	r = edit_tabname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		StringList *new_override;
+
+		if (!usr->edit_buf[0]) {
+			if (count_Queue(usr->recipients) <= 0) {
+				RET(usr);
+				Return;
+			}
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
+		}
+		if (!user_exists(usr->edit_buf)) {
+			Put(usr, "<red>No such user\n");
+			RET(usr);
+			Return;
+		}
+		if (!strcmp(usr->name, usr->edit_buf)) {
+			Put(usr, "<green>You may always send yourself messages\n");
+			RET(usr);
+			Return;
+		}
+		if (in_StringList(usr->override, usr->edit_buf) != NULL) {
+			Print(usr, "<yellow>%s<red> already is on your override list\n", usr->edit_buf);
+			RET(usr);
+			Return;
+		}
+		if (in_StringList(usr->enemies, usr->edit_buf) != NULL) {
+			Print(usr, "<red>But <yellow>%s<red> is on your enemy list!\n", usr->edit_buf);
+			RET(usr);
+			Return;
+		}
+		if ((new_override = new_StringList(usr->edit_buf)) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		prepend_StringList(&usr->override, new_override);
+		sort_StringList(&usr->override, alphasort_StringList);
+		RET(usr);
+	}
+	Return;
+}
+
+void state_remove_override(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_remove_override);
+
+	r = edit_tabname(usr, c);
+	if (r == EDIT_BREAK) {
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		StringList *rm_override;
+
+		if (!usr->edit_buf[0]) {
+			if (count_Queue(usr->recipients) <= 0) {
+				RET(usr);
+				Return;
+			}
+			cstrcpy(usr->edit_buf, ((StringList *)usr->recipients->head)->str, MAX_LINE);
+		}
+		if (!strcmp(usr->name, usr->edit_buf))
+			Put(usr, "<green>You may always send yourself messages\n");
+		else {
+			if ((rm_override = in_StringList(usr->override, usr->edit_buf)) != NULL) {
+				remove_StringList(&usr->override, rm_override);
+				destroy_StringList(rm_override);
+			} else
+				Put(usr, "<red>There is no such person on your override list\n");
 		}
 		RET(usr);
 	}

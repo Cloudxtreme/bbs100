@@ -31,6 +31,9 @@
 #define STATE_ENEMYLIST_PROMPT			state_enemylist_prompt
 #define STATE_ADD_ENEMY					state_add_enemy
 #define STATE_REMOVE_ENEMY				state_remove_enemy
+#define STATE_OVERRIDE_MENU				state_override_menu
+#define STATE_ADD_OVERRIDE				state_add_override
+#define STATE_REMOVE_OVERRIDE			state_remove_override
 
 void state_friendlist_prompt(User *, char);
 void state_add_friend(User *, char);
@@ -38,6 +41,9 @@ void state_remove_friend(User *, char);
 void state_enemylist_prompt(User *, char);
 void state_add_enemy(User *, char);
 void state_remove_enemy(User *, char);
+void state_override_menu(User *, char);
+void state_add_override(User *, char);
+void state_remove_override(User *, char);
 
 #endif	/* STATE_FRIENDLIST_H_WJ99 */
 

@@ -30,6 +30,7 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
      <key>P    Short profile user
      <key>>    Edit friend list
      <key><    Block users; edit enemy list
+     <key>o    Edit override list
      <key>t    Time and date
 <white>Shft-<key>S<green>    Display statistics
 <white>Ctrl-<key>D<green>    Change Doing field

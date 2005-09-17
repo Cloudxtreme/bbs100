@@ -39,6 +39,9 @@ int multi_x_access(User *usr) {
 User *u;
 char *err_msg = NULL;
 
+	if (!strcmp(usr->edit_buf, usr->name))
+		return 1;
+
 	if (!is_guest(usr->edit_buf) && !user_exists(usr->edit_buf))
 		err_msg = " <white>--> <red>No such user";
 	else
@@ -219,6 +222,9 @@ User *u;
 
 	for(sl = (StringList *)usr->recipients->tail; sl != NULL; sl = sl_next) {
 		sl_next = sl->next;
+
+		if (!strcmp(sl->str, usr->name))
+			continue;
 
 		if ((u = is_online(sl->str)) == NULL) {
 			Print(usr, "<red>In the meantime, <yellow>%s<red> has logged off\n", sl->str);

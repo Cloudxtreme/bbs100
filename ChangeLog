@@ -3,6 +3,8 @@ Changes as of September 17th 2005
 - toggle USR_BLOCK_FRIENDS removes friends from override list
 - 'X' disable resets the override list
 - (the override list is not saved upon logout)
+- override list can be managed by pressing 'o' at roomlevel or via the
+  friend/enemy list menus
 
 Changes as of September 14th 2005
 - bugfixes in forwarding messages
