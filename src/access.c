@@ -58,7 +58,8 @@ char *err_msg = NULL;
 		err_msg = " <white>--> <red>Has blocked you";
 	else
 	if ((u->flags & USR_X_DISABLED) && !(usr->runtime_flags & RTF_SYSOP)
-		&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL))
+		&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
+		&& in_StringList(u->override, usr->name) == NULL)
 		err_msg = " <white>--> <red>Has message reception disabled";
 
 	if (err_msg != NULL) {
@@ -243,12 +244,10 @@ User *u;
 				Print(usr, "<red>Sorry, but <yellow>%s<red> does not wish to receive messages from you anymore\n", sl->str);
 				goto Remove_Checked_Recipient;
 			}
-			if ((u->flags & USR_X_DISABLED) && (in_StringList(u->friends, usr->name) == NULL)) {
+			if ((u->flags & USR_X_DISABLED) && !(usr->runtime_flags & RTF_SYSOP)
+				&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
+				&& in_StringList(u->override, usr->name) == NULL) {
 				Print(usr, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages right now\n", sl->str);
-				goto Remove_Checked_Recipient;
-			}
-			if ((usr->flags & USR_X_DISABLED) && (in_StringList(usr->friends, u->name) == NULL)) {
-				Print(usr, "<red>Sorry, but <yellow>%s<red> is not on your friend list\n", sl->str);
 
 Remove_Checked_Recipient:
 				remove_StringQueue(usr->recipients, sl);

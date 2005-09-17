@@ -823,11 +823,17 @@ int remove;
 				Print(from, "<yellow>%s<green> doesn't wish to receive multi messages\n", usr->name);
 				remove = 1;
 			}
+/*
+	this is a double check ... already done in loop_send_msg()
+	(commented out, but still in here for your understanding)
+
 			if (!remove && (usr->flags & USR_X_DISABLED)
-				&& ((usr->flags & USR_BLOCK_FRIENDS) || in_StringList(usr->friends, from->name) == NULL)) {
+				&& ((usr->flags & USR_BLOCK_FRIENDS) || in_StringList(usr->friends, from->name) == NULL)
+				&& in_StringList(usr->override, from->name) == NULL) {
 				Print(from, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", usr->name);
 				remove = 1;
 			}
+*/
 		}
 		if (remove) {
 			if ((sl = in_StringQueue(from->recipients, usr->name)) != NULL) {
@@ -837,6 +843,10 @@ int remove;
 			Return;
 		}
 	}
+/* there is intent to receive it, so from may talk to usr */
+	if ((from->flags & USR_X_DISABLED) && in_StringList(from->override, usr->name) == NULL)
+		prepend_StringList(&from->override, new_StringList(usr->name));
+
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG) {
 		cstrcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header, MAX_LINE);
 

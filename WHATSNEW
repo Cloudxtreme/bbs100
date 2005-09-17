@@ -47,6 +47,7 @@ There are a lot of new options in the Config menu:
   - default room can be set; this is convenient when posting a lot in a
     specific high traffic room, eg. Babble>
   - user can set that Upload is the default for entering messages
+  - you can have X disable block friends as well
 
 - 'p' shows long profile info, 'P' shows short profile info
 - when entering colors into a message, the colors are immediately displayed
@@ -80,6 +81,8 @@ There are a lot of new options in the Config menu:
   nice if you want to see what a specific Feeling looks like
 - when deleting a Mail> message, it will also delete the recipient's copy
 - it is possible to undelete multi-Mail>s as well
+- when message reception is turned off, the people that you X, may X you
+  back
 
 
 What's new to the admins?

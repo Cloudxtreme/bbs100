@@ -142,6 +142,7 @@ int i;
 
 	listdestroy_StringList(usr->friends);
 	listdestroy_StringList(usr->enemies);
+	listdestroy_StringList(usr->override);
 
 	destroy_StringQueue(usr->recipients);
 	destroy_StringQueue(usr->tablist);

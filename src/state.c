@@ -191,6 +191,8 @@ int fun_common(User *usr, char c) {
 				break;
 			}
 			usr->flags ^= USR_X_DISABLED;
+			listdestroy_StringList(usr->override);
+
 			Print(usr, "<magenta>Message reception is now turned <yellow>%s\n", (usr->flags & USR_X_DISABLED) ? "off" : "on");
 
 			if (usr->flags & USR_X_DISABLED) {
@@ -207,6 +209,13 @@ int fun_common(User *usr, char c) {
 					add_helper(usr);
 					Put(usr, "<magenta>You are now available to help others\n");
 				}
+			}
+			break;
+
+		case 'o':
+			if (!(usr->flags & USR_X_DISABLED)) {
+				Put(usr, "<red>Override is non-functional when you are able to receive messages.\n");
+				break;
 			}
 			break;
 
@@ -802,9 +811,13 @@ char total_buf[MAX_LINE], *hidden;
 			Print(usr, "<green>First login was on <cyan>%s\n", print_date(usr, u->birth, total_buf, MAX_LINE));
 		Print(usr, "<green>Total online time: <yellow>%s\n", print_total_time(u->total_time, total_buf, MAX_LINE));
 	}
-	if (u->flags & USR_X_DISABLED)
-		Print(usr, "<red>%s has message reception turned off\n", u->name);
-
+	if (u->flags & USR_X_DISABLED) {
+		Print(usr, "<red>%s has message reception turned off", u->name);
+		if ((!(u->flags & USR_BLOCK_FRIENDS) && in_StringList(u->friends, usr->name) != NULL)
+			|| in_StringList(u->override, usr->name) != NULL)
+			Put(usr, ", but is accepting messages from you");
+		Put(usr, "\n");
+	}
 	if (flags == PROFILE_LONG) {
 		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
@@ -937,7 +950,8 @@ void loop_send_msg(User *usr, char c) {
 					} else {
 						if (!(usr->runtime_flags & RTF_SYSOP)
 							&& (u->flags & USR_X_DISABLED)
-							&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)) {
+							&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
+							&& in_StringList(u->override, usr->name) == NULL) {
 							Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
 							recv_it = 0;
 						}

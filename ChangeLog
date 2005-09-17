@@ -1,3 +1,9 @@
+Changes as of September 17th 2005
+- automatic override: when X disabled, people that you X, can X you back
+- toggle USR_BLOCK_FRIENDS removes friends from override list
+- 'X' disable resets the override list
+- (the override list is not saved upon logout)
+
 Changes as of September 14th 2005
 - bugfixes in forwarding messages
 - bugfixes for skip and read minus <n> messages

@@ -1777,6 +1777,18 @@ char buf[MAX_LINE];
 			usr->flags ^= USR_BLOCK_FRIENDS;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Print(usr, "%s friend messages\n", (usr->flags & USR_BLOCK_FRIENDS) ? "Block" : "Accept");
+
+/* if blocking friends, remove them from the override list */
+			if ((usr->flags & USR_BLOCK_FRIENDS) && usr->override != NULL) {
+				StringList *sl, *sl2;
+
+				for(sl = usr->friends; sl != NULL; sl = sl->next) {
+					if ((sl2 = in_StringList(usr->override, sl->str)) != NULL) {
+						remove_StringList(&usr->override, sl2);
+						destroy_StringList(sl2);
+					}
+				}
+			}
 			CURRENT_STATE(usr);
 			Return;
 
