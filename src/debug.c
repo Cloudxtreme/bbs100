@@ -38,7 +38,7 @@ int debug_stackp = 0;
 void dump_debug_stack(void) {
 int i;
 
-	fprintf(stderr, "TD\n"
+	printf("TD\n"
 		"TD *** debug stack dump ***\n");
 
 	if (symbol_table != NULL) {
@@ -46,18 +46,19 @@ int i;
 
 		for(i = 0; i < debug_stackp; i++) {
 			if ((st = in_SymbolTable(debug_stack[i], 'T')) == NULL)
-				fprintf(stderr, "TD   %08lx (unknown symbol) ??\n", debug_stack[i]);
+				printf("TD   %08lx (unknown symbol) ??\n", debug_stack[i]);
 			else
-				fprintf(stderr, "TD   %08lx %s()\n", debug_stack[i], st->name);
+				printf("TD   %08lx %s()\n", debug_stack[i], st->name);
 		}
 	} else {
-		fprintf(stderr, "TD (missing symbol table)\n");
+		printf("TD (missing symbol table)\n");
 
 		for(i = 0; i < debug_stackp; i++)
-			fprintf(stderr, "TD   %08lx\n", debug_stack[i]);
+			printf("TD   %08lx\n", debug_stack[i]);
 	}
-	fprintf(stderr, "TD *** dump completed ***\n"
+	printf("TD *** dump completed ***\n"
 		"TD\n");
+	fflush(stdout);
 }
 
 void debug_breakpoint(void) {
