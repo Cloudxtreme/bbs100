@@ -844,7 +844,7 @@ int remove;
 		}
 	}
 /* there is intent to receive it, so from may talk to usr */
-	if ((from->flags & USR_X_DISABLED) && in_StringList(from->override, usr->name) == NULL) {
+	if ((from->flags & USR_X_DISABLED) && strcmp(from->name, usr->name) && in_StringList(from->override, usr->name) == NULL) {
 		prepend_StringList(&from->override, new_StringList(usr->name));
 		sort_StringList(&usr->override, alphasort_StringList);
 	}
