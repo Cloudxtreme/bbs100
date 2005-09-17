@@ -1182,7 +1182,7 @@ void (*func)(User *, char *, ...);
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */
 	rename_dir(path, newpath);
 
-	log_msg("SYSOP room %d %s removed by %s", room->number, room->name, usr->name);
+	log_msg("SYSOP %s deleted room %d %s removed", usr->name, room->number, room->name);
 	Print(usr, "<yellow>%s><red> deleted\n", room->name);
 
 	destroy_Room(room);

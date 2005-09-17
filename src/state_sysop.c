@@ -1518,10 +1518,9 @@ int r;
 
 						if (save_SU_Passwd(PARAM_SU_PASSWD_FILE)) {
 							Perror(usr, "failed to save su_passwd_file");
-						} else {
+						} else
 							Print(usr, "<red>%s mode password changed\n", PARAM_NAME_SYSOP);
-							log_msg("SYSOP %s changed %s mode password", usr->name, PARAM_NAME_SYSOP);
-						}
+
 						Free(usr->tmpbuf[TMP_PASSWD]);
 						usr->tmpbuf[TMP_PASSWD] = NULL;
 
@@ -1995,7 +1994,9 @@ void upload_save(User *usr, char c) {
 	if (save_StringIO(usr->text, usr->tmpbuf[TMP_NAME]) < 0) {
 		Print(usr, "<red>Failed to save file<white> %s\n", usr->tmpbuf[TMP_NAME]);
 		log_err("upload_save(): failed to save file %s", usr->tmpbuf[TMP_NAME]);
-	}
+	} else
+		log_msg("SYSOP %s uploaded new %s", usr->name, usr->tmpbuf[TMP_PASSWD]);
+
 	if (usr->tmpbuf[TMP_NAME] == PARAM_CRASH_SCREEN) {
 		free_StringIO(crash_screen);
 		if (load_StringIO(crash_screen, PARAM_CRASH_SCREEN) < 0)
@@ -2189,7 +2190,7 @@ KVPair *f;
 	prepend_KVPair(&feelings, f);
 	sort_KVPair(&feelings, feeling_sort_func);
 	feelings_generation++;
-
+	log_msg("SYSOP %s added Feeling %s", usr->name, f->key);
 	RET(usr);
 }
 
@@ -2292,6 +2293,7 @@ int r;
 			if (unlink_file((char *)KVPair_getpointer(f)) < 0)
 				Perror(usr, "Failed to delete feeling");
 			else {
+				log_msg("SYSOP %s deleted Feeling %s", usr->name, f->key);
 				remove_KVPair(&feelings, f);
 				destroy_KVPair(f);
 				feelings_generation++;
@@ -3093,6 +3095,7 @@ void state_maximums_menu(User *usr, char c) {
 				"Max number of messages kept in <hotkey>Mail>  <white>%6u<magenta>\n"
 				"Max number of lines in an <hotkey>X message   <white>%6u<magenta>\n"
 				"Max number of <hotkey>lines in a message      <white>%6u<magenta>\n",
+
 				PARAM_MAX_CACHED,
 				PARAM_MAX_MESSAGES,
 				PARAM_MAX_MAIL_MSGS,
@@ -3104,6 +3107,7 @@ void state_maximums_menu(User *usr, char c) {
 				"Max number of messages in X <hotkey>history   <white>%6u<magenta>\n"
 				"Max number of <hotkey>Friends                 <white>%6u<magenta>\n"
 				"Max number of <hotkey>Enemies                 <white>%6u<magenta>\n",
+
 				PARAM_MAX_CHAT_HISTORY,
 				PARAM_MAX_HISTORY,
 				PARAM_MAX_FRIEND,
@@ -3114,6 +3118,7 @@ void state_maximums_menu(User *usr, char c) {
 				"Loc<hotkey>k timeout                          <white>%6u %s<magenta>\n"
 				"Periodic <hotkey>saving                       <white>%6u %s<magenta>\n"
 				"Cache expire <hotkey>time                     <white>%6u %s<magenta>\n",
+
 				PARAM_IDLE_TIMEOUT, (PARAM_IDLE_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_LOCK_TIMEOUT, (PARAM_LOCK_TIMEOUT == 1) ? "minute" : "minutes",
 				PARAM_SAVE_TIMEOUT, (PARAM_SAVE_TIMEOUT == 1) ? "minute" : "minutes",
@@ -3121,6 +3126,7 @@ void state_maximums_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"Minimum helper a<hotkey>ge                    <white>%6u %s<magenta>\n",
+
 				PARAM_HELPER_AGE, (PARAM_HELPER_AGE == 1) ? "day" : "days"
 			);
 			read_menu(usr);
