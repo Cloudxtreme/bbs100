@@ -96,6 +96,7 @@ int sort_who_desc_byname(void *, void *);
 int sort_who_desc_bytime(void *, void *);
 
 void who_list(User *, int);
+void who_list_status(User *, User *, char *, char *);
 int long_who_list(User *, PQueue *);
 int short_who_list(User *, PQueue *);
 void who_list_header(User *, int, int);

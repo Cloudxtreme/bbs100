@@ -1852,6 +1852,58 @@ int total;
 }
 
 /*
+	helper function for long_ and short_who_list()
+	it sets the status flag and the color of the who list entry
+*/
+void who_list_status(User *usr, User *u, char *stat, char *col) {
+	if (usr == NULL || u == NULL || stat == NULL || col == NULL)
+		return;
+
+	*stat = ' ';
+	*col = (char)color_by_name("yellow");
+
+	if (u == usr)
+		*col = (char)color_by_name("white");
+	else {
+		if (in_StringList(u->enemies, usr->name) != NULL
+			|| ((usr->flags & USR_SHOW_ENEMIES)
+			&& in_StringList(usr->enemies, u->name) != NULL)) {
+			*col = (char)color_by_name("red");
+			if (!(usr->flags & USR_ANSI))
+				*stat = '-';				/* indicate enemy /wo colors */
+		} else {
+			if (in_StringList(usr->friends, u->name) != NULL) {
+				*col = (char)color_by_name("green");
+				if (!(usr->flags & USR_ANSI))
+					*stat = '+';			/* indicate friend /wo colors */
+			}
+		}
+	}
+	if (u->flags & USR_HELPING_HAND)
+		*stat = '%';
+
+	if (u->runtime_flags & RTF_SYSOP)
+		*stat = '$';
+
+	if (u->runtime_flags & RTF_HOLD)
+		*stat = 'b';
+
+	if ((u->flags & USR_X_DISABLED) && !(usr->runtime_flags & RTF_SYSOP)
+		&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
+		&& in_StringList(u->override, usr->name) == NULL)
+		*stat = '*';
+
+	if (u->runtime_flags & RTF_LOCKED)
+		*stat = '#';
+
+	if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringQueue(u->recipients, usr->name) != NULL)
+		*stat = 'x';
+
+	if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_MailToQueue(u->new_message->to, usr->name) != NULL)
+		*stat = 'm';
+}
+
+/*
 	construct a long format who list
 */
 int long_who_list(User *usr, PQueue *pq) {
@@ -1878,49 +1930,7 @@ User *u;
 		if (u == NULL)
 			continue;
 
-		stat = ' ';
-		col = (char)color_by_name("yellow");
-
-		if (u == usr)
-			col = (char)color_by_name("white");
-		else
-			if (in_StringList(u->enemies, usr->name) != NULL
-				|| ((usr->flags & USR_SHOW_ENEMIES)
-					&& in_StringList(usr->enemies, u->name) != NULL)) {
-
-				col = (char)color_by_name("red");
-				if (!(usr->flags & USR_ANSI))
-					stat = '-';				/* indicate enemy /wo colors */
-			} else
-				if (in_StringList(usr->friends, u->name) != NULL) {
-					col = (char)color_by_name("green");
-					if (!(usr->flags & USR_ANSI))
-						stat = '+';			/* indicate friend /wo colors */
-				}
-
-		if (u->flags & USR_HELPING_HAND)
-			stat = '%';
-
-		if (u->runtime_flags & RTF_SYSOP)
-			stat = '$';
-
-		if (u->runtime_flags & RTF_HOLD)
-			stat = 'b';
-
-		if (u->flags & USR_X_DISABLED)
-			stat = '*';
-
-		if (u->runtime_flags & RTF_LOCKED)
-			stat = '#';
-/*
-	you can see it when someone is X-ing or Mail>-ing you
-	this is after a (good) idea by Richard of MatrixBBS
-*/
-		if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringQueue(u->recipients, usr->name) != NULL)
-			stat = 'x';
-
-		if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_MailToQueue(u->new_message->to, usr->name) != NULL)
-			stat = 'm';
+		who_list_status(usr, u, &stat, &col);
 
 		t = time_now - u->login_time;
 		hrs = t / SECS_IN_HOUR;
@@ -2003,48 +2013,7 @@ PList *pl, *pl_cols[16];
 
 			u = (User *)pl_cols[i]->p;
 
-/* add who-list entry for User *u */
-			stat = ' ';
-			col = (char)color_by_name("yellow");
-
-			if (u == usr)
-				col = (char)color_by_name("white");
-			else {
-				if (in_StringList(u->enemies, usr->name) != NULL
-					|| ((usr->flags & USR_SHOW_ENEMIES)
-						&& in_StringList(usr->enemies, u->name) != NULL)) {
-
-					col = (char)color_by_name("red");
-					if (!(usr->flags & USR_ANSI))
-						stat = '-';				/* indicate enemy /wo colors */
-				} else {
-					if (in_StringList(usr->friends, u->name) != NULL) {
-						col = (char)color_by_name("green");
-						if (!(usr->flags & USR_ANSI))
-							stat = '+';			/* indicate friend /wo colors */
-					}
-				}
-			}
-			if (u->flags & USR_HELPING_HAND)
-				stat = '%';
-
-			if (u->runtime_flags & RTF_SYSOP)
-				stat = '$';
-
-			if (u->runtime_flags & RTF_HOLD)
-				stat = 'b';
-
-			if (u->flags & USR_X_DISABLED)
-				stat = '*';
-
-			if (u->runtime_flags & RTF_LOCKED)
-				stat = '#';
-
-			if ((u->runtime_flags & RTF_BUSY_SENDING) && in_StringQueue(u->recipients, usr->name) != NULL)
-				stat = 'x';
-
-			if ((u->runtime_flags & RTF_BUSY_MAILING) && u->new_message != NULL && in_MailToQueue(u->new_message->to, usr->name) != NULL)
-				stat = 'm';
+			who_list_status(usr, u, &stat, &col);
 
 			bufprintf(buf+buflen, PRINT_BUF - buflen, "<white>%c%c%-18s", stat, col, u->name);
 			buflen = strlen(buf);
