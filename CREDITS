@@ -244,3 +244,5 @@ Version 3.0:
   override list, different from the (default) friend list
 
 - WHYz suggested that the default room can be set
+
+- WHYz suggested that Tab name completion for rooms works in a better way

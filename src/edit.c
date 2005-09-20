@@ -1830,6 +1830,7 @@ User *u;
 void make_rooms_tablist(User *usr) {
 Room *r, *r_next;
 Joined *j;
+StringList *sl = NULL;
 
 	if (usr == NULL)
 		return;
@@ -1856,12 +1857,19 @@ Joined *j;
 			|| ((r->flags & ROOM_HIDDEN) && j == NULL)
 			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
 
-			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos) || cstristr(r->name, usr->edit_buf) != NULL)
+			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos))
 				add_StringQueue(usr->tablist, new_StringList(r->name));
+			else
+				if (cstristr(r->name, usr->edit_buf) != NULL)
+					sl = add_StringList(&sl, new_StringList(r->name));
 		}
 		if (r->number == HOME_ROOM)
 			unload_Room(r);
 	}
+/* sl contains room names that are 'similar' to what the user typed */
+	sl = rewind_StringList(sl);
+	concat_StringQueue(usr->tablist, sl);
+
 /* now link end to beginning and beginning to end, forming a cyclic chain */
 	if (count_Queue(usr->tablist) > 0) {
 		usr->tablist->head->next = usr->tablist->tail;
@@ -1892,13 +1900,13 @@ void tab_list(User *usr, void (*make_tablist)(User *)) {
 	if (count_Queue(usr->tablist) <= 0)
 		make_tablist(usr);
 	else
-		usr->tablist->head = usr->tablist->head->next;
+		usr->tablist->tail = usr->tablist->tail->next;
 
-	if (usr->tablist->head != NULL) {
+	if (usr->tablist->tail != NULL) {
 		erase_tabname(usr);
-		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->head)->str, MAX_LINE);
-		usr->edit_pos = strlen(((StringList *)usr->tablist->head)->str);
-		Put(usr, ((StringList *)usr->tablist->head)->str);
+		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->tail)->str, MAX_LINE);
+		usr->edit_pos = strlen(((StringList *)usr->tablist->tail)->str);
+		Put(usr, ((StringList *)usr->tablist->tail)->str);
 	}
 	Return;
 }
@@ -1910,13 +1918,13 @@ void backtab_list(User *usr, void (*make_tablist)(User *)) {
 	if (count_Queue(usr->tablist) <= 0)
 		make_tablist(usr);
 	else
-		usr->tablist->head = usr->tablist->head->prev;
+		usr->tablist->tail = usr->tablist->tail->prev;
 
 	if (usr->tablist->head != NULL) {
 		erase_tabname(usr);
-		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->head)->str, MAX_LINE);
-		usr->edit_pos = strlen(((StringList *)usr->tablist->head)->str);
-		Put(usr, ((StringList *)usr->tablist->head)->str);
+		cstrcpy(usr->edit_buf, ((StringList *)usr->tablist->tail)->str, MAX_LINE);
+		usr->edit_pos = strlen(((StringList *)usr->tablist->tail)->str);
+		Put(usr, ((StringList *)usr->tablist->tail)->str);
 	}
 }
 
@@ -1925,7 +1933,7 @@ void reset_tablist(User *usr, char c) {
 		return;
 
 	if (c != KEY_TAB && c != KEY_BACKTAB && usr->tablist->tail != NULL) {
-		usr->tablist->head = usr->tablist->tail->prev;	/* break the cyclic chain */
+		usr->tablist->tail = usr->tablist->head->next;	/* break the cyclic chain */
 		usr->tablist->tail->prev = NULL;
 		usr->tablist->head->next = NULL;
 		deinit_StringQueue(usr->tablist);
