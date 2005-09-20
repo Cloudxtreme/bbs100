@@ -1564,6 +1564,7 @@ Joined *j;
 void room_beep(User *usr, Room *r) {
 PList *p;
 User *u;
+Joined *j;
 
 	if (usr == NULL || r == NULL)
 		return;
@@ -1575,11 +1576,21 @@ User *u;
 		if (u == NULL || u == usr)
 			continue;
 
-		if (u->runtime_flags & RTF_BUSY)
+		if (u->runtime_flags & (RTF_BUSY|RTF_HOLD|RTF_LOCKED))
 			continue;
 
 		if (u->flags & USR_ROOMBEEP)
 			Put(u, "<beep>");
+
+/*
+	display message that there are new messages, but we want to see
+	it only once, even if there are many new messages in a row
+*/
+		if (u->conn->callstack->ip == (void (*)(void *, char))STATE_ROOM_PROMPT && usr->curr_msg < 0L
+			&& (j = in_Joined(u->rooms, r->number)) != NULL && (r->head_msg - j->last_read) == 1L) {
+			Put(u, "<green>There are new messages");
+			PrintPrompt(u);
+		}
 	}
 	Return;
 }

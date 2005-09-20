@@ -1,6 +1,7 @@
 Changes as of September 20th 2005
 - view bbslog and authlog from sysop menu
 - tab completion for room names works better
+- it tells you when there are new messages in a room
 
 Changes as of September 17th 2005
 - automatic override: when X disabled, people that you X, can X you back
