@@ -1573,10 +1573,7 @@ Joined *j;
 
 	for(p = (PList *)r->inside->tail; p != NULL; p = p->next) {
 		u = (User *)p->p;
-		if (u == NULL || u == usr)
-			continue;
-
-		if (u->runtime_flags & (RTF_BUSY|RTF_HOLD|RTF_LOCKED))
+		if (u == NULL || u == usr || !u->name[0] || (u->runtime_flags & (RTF_BUSY|RTF_HOLD|RTF_LOCKED)))
 			continue;
 
 		if (u->flags & USR_ROOMBEEP)
