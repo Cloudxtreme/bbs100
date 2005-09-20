@@ -44,6 +44,7 @@
 #define STATE_MALLOC_STATUS				state_malloc_status
 #define STATE_SCREENS_MENU				state_screens_menu
 #define STATE_SCREEN_ACTION				state_screen_action
+#define STATE_VIEW_LOGS					state_view_logs
 #define STATE_FEELINGS_MENU				state_feelings_menu
 #define STATE_ADD_FEELING				state_add_feeling
 #define STATE_REMOVE_FEELING			state_remove_feeling
@@ -169,6 +170,7 @@ void download_file(User *, char *, char *);
 void upload_file(User *, char *, char *);
 void upload_save(User *, char);
 void upload_abort(User *, char);
+void state_view_logs(User *, char);
 void state_feelings_menu(User *, char);
 void state_add_feeling(User *, char);
 void save_feeling(User *, char);

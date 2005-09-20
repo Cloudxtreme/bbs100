@@ -1,3 +1,6 @@
+Changes as of September 20th 2005
+- view bbslog and authlog from sysop menu
+
 Changes as of September 17th 2005
 - automatic override: when X disabled, people that you X, can X you back
 - toggle USR_BLOCK_FRIENDS removes friends from override list

@@ -88,15 +88,19 @@ void state_sysop_menu(User *usr, char c) {
 				"<hotkey>Disconnect user                   <white>Ctrl-<hotkey>N<magenta>uke user\n"
 				"<hotkey>Banish user                       Edit <hotkey>wrappers\n"
 			);
+			if (PARAM_HAVE_FEELINGS)
+				Put(usr, "Manage <hotkey>feelings                   ");
+			if (PARAM_HAVE_CATEGORY)
+				Put(usr, "Manage <hotkey>categories\n");
+			else
+				Put(usr, "\n");
+
+			Put(usr,
+				"Manage <hotkey>screens and help files     View <hotkey>log files\n");
+
 			if (PARAM_HAVE_FILECACHE)
 				Put(usr, "<hotkey>Uncache file                      ");
 			Print(usr, "<hotkey>Memory allocation status\n");
-
-			Put(usr, "Manage <hotkey>screens and help files     ");
-			if (PARAM_HAVE_FEELINGS)
-				Put(usr, "Manage <hotkey>feelings\n");
-			if (PARAM_HAVE_CATEGORY)
-				Put(usr, "Manage <hotkey>categories\n");
 
 			Print(usr, "\n"
 				"<white>Ctrl-<hotkey>P<magenta>arameters                   %s <hotkey>password\n"
@@ -207,6 +211,12 @@ void state_sysop_menu(User *usr, char c) {
 		case 'S':
 			Put(usr, "Screens and help files\n");
 			CALL(usr, STATE_SCREENS_MENU);
+			Return;
+
+		case 'l':
+		case 'L':
+			Put(usr, "Log files\n");
+			CALL(usr, STATE_VIEW_LOGS);
 			Return;
 
 		case 'f':
@@ -816,7 +826,7 @@ int i;
 		if (PARAM_HAVE_WRAPPER_ALL && !allow_Wrapper(usr->conn->ipnum, WRAPPER_ALL_USERS))
 			Put(usr, "\n<red>WARNING: You are currently locked out yourself\n");
 
-		Print(usr, "\n<yellow> 1 <white>Add new wrapper\n");
+		Print(usr, "\n<yellow> 1 <magenta>Add new wrapper\n");
 		i = 2;
 		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (PARAM_HAVE_WRAPPER_ALL)
@@ -1693,14 +1703,14 @@ void state_screens_menu(User *usr, char c) {
 			buffer_text(usr);
 
 			Put(usr, "<magenta>\n"
-				"Log<hotkey>in screen             <hotkey>1st login screen\n"
-				"Log<hotkey>out screen            <hotkey>User help\n"
-				"<hotkey>Motd screen              <hotkey>Config menu help\n"
+				"Log<hotkey>in screen                      <hotkey>1st login screen\n"
+				"Log<hotkey>out screen                     <hotkey>User help\n"
+				"<hotkey>Motd screen                       <hotkey>Config menu help\n"
 			);
 			Put(usr,
-				"Cr<hotkey>ash screen             <hotkey>Room config menu help\n"
-				"<hotkey>Boss screen              <hotkey>Sysop menu help\n"
-				"<hotkey>Hostmap                  <hotkey>Nologin screen\n"
+				"Cr<hotkey>ash screen                      <hotkey>Room config menu help\n"
+				"<hotkey>Boss screen                       <hotkey>Sysop menu help\n"
+				"<hotkey>Hostmap                           <hotkey>Nologin screen\n"
 				"<hotkey>Local modifications\n"
 			);
 			read_menu(usr);
@@ -2011,8 +2021,91 @@ void upload_abort(User *usr, char c) {
 }
 
 
+void state_view_logs(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_view_logs);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			buffer_text(usr);
+			Put(usr, "<magenta>\n"
+				"View <hotkey>bbslog\n"
+				"View <hotkey>authlog\n"
+				"View <hotkey>newusers log\n"
+				"\n"
+				"Access <hotkey>old logs\n"
+			);
+			read_menu(usr);
+			Return;
+
+		case ' ':
+		case KEY_BS:
+		case KEY_RETURN:
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'b':
+		case 'B':
+			Put(usr, "View bbslog\n<green>");
+			if (load_screen(usr->text, PARAM_SYSLOG) < 0) {
+				Perror(usr, "failed to load bbslog");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_text(usr);
+			Return;
+
+		case 'a':
+		case 'A':
+			Put(usr, "View authlog\n<green>");
+			if (load_screen(usr->text, PARAM_AUTHLOG) < 0) {
+				Perror(usr, "failed to load authlog");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_text(usr);
+			Return;
+
+		case 'n':
+		case 'N':
+			Put(usr, "View newusers log\n");
+			Perror(usr, "NYI");
+			CURRENT_STATE(usr);
+			Return;
+
+		case 'o':
+		case 'O':
+			Put(usr, "Access old logs\n");
+			Perror(usr, "NYI");
+			CURRENT_STATE(usr);
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Logs# <white>", PARAM_NAME_SYSOP);
+	Return;
+}
+
 void state_feelings_menu(User *usr, char c) {
 StringIO *s;
+
+	if (usr == NULL)
+		return;
 
 	Enter(state_feelings_menu);
 
