@@ -502,7 +502,7 @@ User *usr;
 			else
 				log_err("CRASH *** disconnecting user");
 
-			Print(usr, "\n<beep><white>*** <yellow>System message received at <white>%d:%02d ***\n"
+			Print(usr, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***\n"
 				"<red>Something's wrong, the BBS made an illegal instruction\n"
 				"You are automatically being disconnected -- our apologies..!\n",
 				tm->tm_hour, tm->tm_min);

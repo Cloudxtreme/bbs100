@@ -1830,7 +1830,7 @@ User *u;
 void make_rooms_tablist(User *usr) {
 Room *r, *r_next;
 Joined *j;
-StringList *sl = NULL;
+StringList *zapped = NULL, *similar = NULL;
 
 	if (usr == NULL)
 		return;
@@ -1858,20 +1858,21 @@ StringList *sl = NULL;
 			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
 
 			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos)) {
-				if (j->zapped)
-					sl = prepend_StringList(&sl, new_StringList(r->name));
+				if (j != NULL && j->zapped)
+					zapped = add_StringList(&zapped, new_StringList(r->name));
 				else
 					add_StringQueue(usr->tablist, new_StringList(r->name));
 			} else
 				if (cstristr(r->name, usr->edit_buf) != NULL)
-					sl = add_StringList(&sl, new_StringList(r->name));
+					similar = add_StringList(&similar, new_StringList(r->name));
 		}
 		if (r->number == HOME_ROOM)
 			unload_Room(r);
 	}
-/* sl contains room names that are 'similar' to what the user typed */
-	sl = rewind_StringList(sl);
-	concat_StringQueue(usr->tablist, sl);
+	zapped = rewind_StringList(zapped);
+	concat_StringQueue(usr->tablist, zapped);
+	similar = rewind_StringList(similar);
+	concat_StringQueue(usr->tablist, similar);
 
 /* now link end to beginning and beginning to end, forming a cyclic chain */
 	if (count_Queue(usr->tablist) > 0) {
