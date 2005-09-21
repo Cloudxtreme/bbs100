@@ -148,7 +148,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	if (in_StringList(r->invited, username) == NULL)
 		prepend_StringList(&r->invited, new_StringList(username));
 
-	r->flags = ROOM_CHATROOM | ROOM_NOZAP | ROOM_INVITE_ONLY | ROOM_HOME;
+	r->flags = ROOM_CHATROOM | ROOM_NOZAP | ROOM_INVITE_ONLY;
 	Return r;
 }
 

@@ -58,9 +58,8 @@
 #define ROOM_HIDDEN				0x10
 #define ROOM_NOZAP				0x20
 #define ROOM_CHATROOM			0x40
-#define ROOM_HOME				0x80
-#define ROOM_ALL				0xff	/* ROOM_READONLY | ROOM_SUBJECTS | ... | ROOM_HOME */
-#define ROOM_DIRTY				0x100
+#define ROOM_ALL				0x7f	/* ROOM_READONLY | ROOM_SUBJECTS | ... | ROOM_HOME */
+#define ROOM_DIRTY				0x80
 
 #define LOAD_ROOM_DATA			1
 #define LOAD_ROOM_AIDES			2
