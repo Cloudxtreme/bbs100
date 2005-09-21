@@ -300,6 +300,7 @@ int r;
 
 void state_logout_prompt(User *usr, char c) {
 char buf[MAX_LINE];
+Timer *t;
 
 	if (usr == NULL)
 		return;
@@ -346,7 +347,18 @@ char buf[MAX_LINE];
 			display_screen(usr, PARAM_LOGOUT_SCREEN);
 
 			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->hostname);
-			close_connection(usr, "%s has logged out from %s", usr->name, usr->conn->hostname);
+			logout_user(usr);
+/*
+	keep the logout screen visible for a couple of seconds
+	(X-)Windows programs have a habit of closing the window when the connection
+	is terminated
+*/
+			if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
+				listdestroy_Timer(usr->timerq);
+				usr->timerq = usr->idle_timer = NULL;
+				add_Timer(&usr->timerq, t);
+			} else
+				close_logout(usr);
 			break;
 
 		case YESNO_NO:

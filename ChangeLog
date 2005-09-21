@@ -3,6 +3,7 @@ Changes as of September 21st 2005
 - new users are logged in a special newusers log;
 - sysop can have a look at the newusers log
 - new params NEWUSERLOG (filename) and MAX_NEWUSERLOG (# of entries)
+- logout pauses a short while before closing the connection
 
 Changes as of September 20th 2005
 - view bbslog and authlog from sysop menu

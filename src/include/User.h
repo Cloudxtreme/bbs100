@@ -210,7 +210,9 @@ void Put(User *, char *);
 void Print(User *, char *, ...);
 void Tell(User *, char *, ...);
 void notify_friends(User *, char *, int);
+void logout_user(User *);
 void close_connection(User *, char *, ...);
+void close_logout(void *);
 
 extern User *AllUsers;
 extern User *this_user;

@@ -1183,11 +1183,8 @@ char buf[PRINT_BUF];
 	return 0;
 }
 
-void close_connection(User *usr, char *reason, ...) {
-	if (usr == NULL)
-		return;
-
-	Enter(close_connection);
+void logout_user(User *usr) {
+	Enter(logout_user);
 
 	if (usr->name[0]) {
 		if (usr->flags & USR_HELPING_HAND)
@@ -1204,6 +1201,17 @@ void close_connection(User *usr, char *reason, ...) {
 
 		remove_OnlineUser(usr);
 	}
+	leave_room(usr);
+	usr->name[0] = 0;
+	Return;
+}
+
+void close_connection(User *usr, char *reason, ...) {
+	if (usr == NULL)
+		return;
+
+	Enter(close_connection);
+
 	if (reason != NULL) {			/* log why we're being disconnected */
 		va_list ap;
 		char buf[PRINT_BUF];
@@ -1220,15 +1228,24 @@ void close_connection(User *usr, char *reason, ...) {
 
 		log_auth(buf);
 	}
+	logout_user(usr);
+	close_logout(usr);
+	Return;
+}
+
+void close_logout(void *v) {
+User *usr;
+
+	if (v == NULL)
+		return;
+
+	usr = (User *)v;
+
 	if (usr->conn->sock > 0) {
 		Put(usr, "<default>\n");
 		Flush(usr);
 		close_Conn(usr->conn);
 	}
-	leave_room(usr);
-
-	usr->name[0] = 0;
-	Return;
 }
 
 /* EOB */

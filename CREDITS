@@ -249,3 +249,7 @@ Version 3.0:
 
 - English Buchanan suggested that Sysop can check what new users have been
   created lately
+
+- WHYz suggested that the logout screen remains visible for a while after
+  logging out, because Windows clients have a habit of closing the terminal
+  window immediately when disconnecting

@@ -26,6 +26,7 @@
 #include "Timer.h"
 
 #define LOGIN_TIMEOUT		20		/* 20 secs at login */
+#define LOGOUT_TIMEOUT		2		/* logout screen is shown this long */
 
 /*
 	Note: these timers have a restart of 10 (way too large) because they are
