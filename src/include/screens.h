@@ -32,6 +32,8 @@ int load_screen(StringIO *, char *);
 int display_screen(User *, char *);
 void display_text(User *, StringIO *);
 
+int load_logfile(StringIO *, char *);
+
 #endif	/* SCREENS_H_WJ99 */
 
 /* EOB */

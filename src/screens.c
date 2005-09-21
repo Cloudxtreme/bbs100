@@ -27,6 +27,7 @@
 #include "Param.h"
 #include "util.h"
 #include "log.h"
+#include "cstring.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -135,6 +136,60 @@ char buf[PRINT_BUF];
 		Put(usr, "\n");
 	}
 	Return;
+}
+
+/*
+	view a log file with colors
+*/
+int load_logfile(StringIO *s, char *filename) {
+File *f;
+char buf[PRINT_BUF];
+int color;
+
+	if (s == NULL || filename == NULL || !*filename || (f = Fopen(filename)) == NULL)
+		return -1;
+
+	color = 0;
+	while(Fgets(f, buf, PRINT_BUF - 16) != NULL) {
+		if (cstrmatch(buf, "Aaa ?d dd:dd:dd *")) {
+			buf[15] = 0;
+			put_StringIO(s, "<yellow>");
+			put_StringIO(s, buf);
+
+			buf[15] = ' ';
+			switch(buf[16]) {
+				case 'I':
+					put_StringIO(s, "<cyan>");
+					color = 1;
+					break;
+
+				case 'E':
+					put_StringIO(s, "<red>");
+					color = 1;
+					break;
+
+				case 'D':
+					put_StringIO(s, "<yellow>");
+					color = 1;
+					break;
+
+				case 'A':
+				default:
+					put_StringIO(s, "<green>");
+					color = 0;
+			}
+			put_StringIO(s, buf+15);
+		} else {
+			if (color) {
+				color = 0;
+				put_StringIO(s, "<green>");
+			}
+			put_StringIO(s, buf);
+		}
+		write_StringIO(s, "\n", 1);
+	}
+	Fclose(f);
+	return 0;
 }
 
 /* EOB */

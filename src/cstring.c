@@ -311,4 +311,121 @@ long l = -1L;
 	return (unsigned long)-1L;
 }
 
+/*
+	this is a cstrmatch() helper function
+*/
+int cstrmatch_char(char buf, char pattern) {
+	switch(pattern) {
+		case 'A':
+			if (buf >= 'A' && buf <= 'Z')
+				break;
+
+			return 0;
+
+		case 'a':
+			if ((buf >= 'A' && buf <= 'Z') || (buf >= 'a' && buf <= 'z'))
+				break;
+
+			return 0;
+
+		case 'd':
+			if (buf >= '0' && buf <= '9')
+				break;
+
+			return 0;
+
+		case '?':
+			break;
+
+		case ' ':
+			if (buf == ' ' || buf == '\t')
+				break;
+
+			return 0;
+
+		case '\n':
+			if (buf == '\n' || buf == '\r')
+				break;
+
+			return 0;
+
+		case '$':
+			if (buf == ' ' || buf == '\t' || buf == '\r' || buf == '\n'
+				|| (buf >= 'A' && buf <= 'Z') || (buf >= 'a' && buf <= 'z')
+				|| (buf >= '0' && buf <= '9'))
+				return 0;
+
+			break;
+
+		default:
+			if (buf == pattern)
+				break;
+
+			return 0;
+	}
+	return 1;
+}
+
+/*
+	my simple string matcher
+	it's not very powerful, but it's OK for doing 'one-on-one' matches
+*/
+int cstrmatch(char *buf, char *pattern) {
+	if (buf == NULL || pattern == NULL || !*pattern)
+		return 0;
+
+	while(*pattern) {
+		if (!*buf)
+			return 0;
+
+		switch(*pattern) {
+			case ' ':
+				if (*buf == ' ' || *buf == '\t') {
+					buf++;
+					while(*buf == ' ' || *buf == '\t')
+						buf++;
+					buf--;
+				} else
+					return 0;
+
+				break;
+
+			case '\n':
+				if (*buf == '\r' || *buf == '\n') {
+					buf++;
+					while(*buf == '\r' || *buf == '\n')
+						buf++;
+					buf--;
+				} else
+					return 0;
+
+				break;
+
+			case '*':
+				buf++;
+				pattern++;
+				if (!*pattern)
+					return 1;
+
+				if (!*buf)
+					return 0;
+
+/* find the point where it matches again */
+				while(!cstrmatch_char(*buf, *pattern)) {
+					buf++;
+					if (!*buf)
+						return 0;		/* not found, so it doesn't match */
+				}
+				break;
+
+			default:
+				if (!cstrmatch_char(*buf, *pattern))
+					return 0;
+		}
+		buf++;
+		pattern++;
+	}
+	return 1;
+}
+
 /* EOB */

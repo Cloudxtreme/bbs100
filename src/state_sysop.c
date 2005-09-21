@@ -2062,7 +2062,7 @@ void state_view_logs(User *usr, char c) {
 		case 'b':
 		case 'B':
 			Put(usr, "View bbslog\n<green>");
-			if (load_screen(usr->text, PARAM_SYSLOG) < 0) {
+			if (load_logfile(usr->text, PARAM_SYSLOG) < 0) {
 				Perror(usr, "failed to load bbslog");
 				CURRENT_STATE(usr);
 				Return;
@@ -2074,7 +2074,7 @@ void state_view_logs(User *usr, char c) {
 		case 'a':
 		case 'A':
 			Put(usr, "View authlog\n<green>");
-			if (load_screen(usr->text, PARAM_AUTHLOG) < 0) {
+			if (load_logfile(usr->text, PARAM_AUTHLOG) < 0) {
 				Perror(usr, "failed to load authlog");
 				CURRENT_STATE(usr);
 				Return;

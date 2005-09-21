@@ -74,6 +74,9 @@ int is_octal(char *);
 
 unsigned long cstrtoul(char *, int);
 
+int cstrmatch_char(char, char);
+int cstrmatch(char *, char *);
+
 #endif /* _CSTRING_H_WJ97 */
 
 /* EOB */
