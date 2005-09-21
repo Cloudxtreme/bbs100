@@ -27,6 +27,7 @@
 
 #define push_CallStack(x,y)			(CallStack *)prepend_List((x), (y))
 #define pop_CallStack(x)			(CallStack *)pop_List(x)
+#define remove_CallStack(x,y)		(CallStack *)remove_List((x), (y))
 #define listdestroy_CallStack(x)	listdestroy_List((x), destroy_CallStack)
 
 #define INIT_STATE	0

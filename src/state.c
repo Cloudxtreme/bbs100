@@ -1095,9 +1095,7 @@ void state_return_mail_msg(User *usr, char c) {
 		destroy_Message(usr->new_message);
 		usr->new_message = NULL;
 
-		POP(usr);														/* current call */
 		POP_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));	/* get (previously stored) loop_counter from stack */
-		PUSH(usr, STATE_RETURN_MAIL_MSG);								/* put current call back */
 
 		mail_msg_remove(usr);
 	}

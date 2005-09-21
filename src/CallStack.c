@@ -138,10 +138,17 @@ char *cs;
 	push_CallStack(&conn->callstack, (CallStack *)cs);
 }
 
+/*
+	assumes that there is also a return address on the stack
+	therefore it takes the next element from the stack
+*/
 void PopArg(Conn *conn, void *arg, int size) {
 CallStack *cs;
 
-	if (conn == NULL || arg == NULL || (cs = pop_CallStack(&conn->callstack)) == NULL)
+	if (conn == NULL || arg == NULL || conn->callstack == NULL || conn->callstack->next == NULL)
+		return;
+
+	if ((cs = remove_CallStack(&conn->callstack, conn->callstack->next)) == NULL)
 		return;
 
 	memcpy(arg, (char *)cs + sizeof(ListType), size);
