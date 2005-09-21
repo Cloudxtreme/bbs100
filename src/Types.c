@@ -29,6 +29,7 @@
 #include "Display.h"
 #include "Queue.h"
 #include "OnlineUser.h"
+#include "NewUserLog.h"
 #include "Types.h"
 
 Typedef Types_table[NUM_TYPES] = {
@@ -63,6 +64,7 @@ Typedef Types_table[NUM_TYPES] = {
 	{ "Queue",				sizeof(QueueType),			},
 	{ "MailTo",				sizeof(MailTo),				},
 	{ "OnlineUser",			sizeof(OnlineUser),			},
+	{ "NewUserLog",			sizeof(NewUserLog),			},
 };
 
 /* EOB */

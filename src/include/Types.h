@@ -61,7 +61,8 @@
 #define TYPE_QUEUE			28
 #define TYPE_MAILTO			29
 #define TYPE_ONLINEUSER		30
-#define NUM_TYPES			31
+#define TYPE_NEWUSERLOG		31
+#define NUM_TYPES			32
 
 typedef struct Typedef_tag Typedef;
 

@@ -51,6 +51,7 @@
 #include "sys_time.h"
 #include "bufprintf.h"
 #include "helper.h"
+#include "NewUserLog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -751,6 +752,7 @@ int r;
 			Perror(usr, "Failed to create user directory");
 
 		log_auth("NEWUSER %s (%s)", usr->name, usr->conn->hostname);
+		log_newuser(usr->name);
 
 /* new user gets default timezone */
 		if (usr->timezone == NULL)

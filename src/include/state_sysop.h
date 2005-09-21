@@ -116,6 +116,7 @@
 #define STATE_PARAM_HISTORY				state_param_history
 #define STATE_PARAM_FRIEND				state_param_friend
 #define STATE_PARAM_ENEMY				state_param_enemy
+#define STATE_PARAM_MAX_NEWUSERLOG		state_param_max_newuserlog
 #define STATE_PARAM_IDLE				state_param_idle
 #define STATE_PARAM_LOCK				state_param_lock
 #define STATE_PARAM_SAVE				state_param_save
@@ -141,6 +142,7 @@
 #define STATE_LOG_MENU					state_log_menu
 #define STATE_PARAM_SYSLOG				state_param_syslog
 #define STATE_PARAM_AUTHLOG				state_param_authlog
+#define STATE_PARAM_NEWUSERLOG			state_param_newuserlog
 #define STATE_PARAM_ARCHIVEDIR			state_param_archivedir
 #define STATE_PARAM_CRASHDIR			state_param_crashdir
 
@@ -171,6 +173,8 @@ void upload_file(User *, char *, char *);
 void upload_save(User *, char);
 void upload_abort(User *, char);
 void state_view_logs(User *, char);
+int load_logfile(StringIO *, char *);
+int load_newuserlog(User *);
 void state_feelings_menu(User *, char);
 void state_add_feeling(User *, char);
 void save_feeling(User *, char);
@@ -246,6 +250,7 @@ void state_param_chat_history(User *, char);
 void state_param_history(User *, char);
 void state_param_friend(User *, char);
 void state_param_enemy(User *, char);
+void state_param_max_newuserlog(User *, char);
 void state_param_idle(User *, char);
 void state_param_lock(User *, char);
 void state_param_save(User *, char);
@@ -271,6 +276,7 @@ void state_param_notify_leave_chat(User *, char);
 void state_log_menu(User *, char);
 void state_param_syslog(User *, char);
 void state_param_authlog(User *, char);
+void state_param_newuserlog(User *, char);
 void state_param_archivedir(User *, char);
 void state_param_crashdir(User *, char);
 

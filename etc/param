@@ -48,6 +48,7 @@ default_timezone        other/GMT
 
 syslog                  log/bbslog
 authlog                 log/authlog
+newusers                log/newusers
 logrotate               daily
 archivedir              log/archive/
 oncrash                 recover
@@ -62,6 +63,7 @@ max_history             50
 max_chat_history        10
 max_friend              100
 max_enemy               100
+max_newuserlog          20
 idle_timeout            10
 lock_timeout            30
 periodic_saving         5

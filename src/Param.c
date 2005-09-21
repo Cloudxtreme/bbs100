@@ -103,6 +103,7 @@ int i;
 
 	KVPair_setstring(KVPARAM_SYSLOG,			"syslog",			"log/bbslog");
 	KVPair_setstring(KVPARAM_AUTHLOG,			"authlog",			"log/authlog");
+	KVPair_setstring(KVPARAM_NEWUSERLOG,		"newusers",			"log/newusers");
 	KVPair_setstring(KVPARAM_LOGROTATE,			"logrotate",		"daily");
 	KVPair_setstring(KVPARAM_ARCHIVEDIR,		"archivedir",		"log/archive/");
 	KVPair_setstring(KVPARAM_ONCRASH,			"oncrash",			"dumpcore");
@@ -119,6 +120,7 @@ int i;
 	KVPair_setint(KVPARAM_MAX_CHAT_HISTORY,		"max_chat_history",	DEFAULT_MAX_CHAT_HISTORY);
 	KVPair_setint(KVPARAM_MAX_FRIEND,			"max_friend",		DEFAULT_MAX_FRIEND);
 	KVPair_setint(KVPARAM_MAX_ENEMY,			"max_enemy",		DEFAULT_MAX_ENEMY);
+	KVPair_setint(KVPARAM_MAX_NEWUSERLOG,		"max_newuserlog",	DEFAULT_MAX_NEWUSERLOG);
 	KVPair_setint(KVPARAM_IDLE_TIMEOUT,			"idle_timeout",		DEFAULT_IDLE_TIMEOUT);
 	KVPair_setint(KVPARAM_LOCK_TIMEOUT,			"lock_timeout",		DEFAULT_LOCK_TIMEOUT);
 	KVPair_setint(KVPARAM_SAVE_TIMEOUT,			"periodic_saving",	DEFAULT_SAVE_TIMEOUT);

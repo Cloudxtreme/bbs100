@@ -58,6 +58,7 @@
 #include "memset.h"
 #include "bufprintf.h"
 #include "BinAlloc.h"
+#include "NewUserLog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2086,8 +2087,13 @@ void state_view_logs(User *usr, char c) {
 		case 'n':
 		case 'N':
 			Put(usr, "View newusers log\n");
-			Perror(usr, "NYI");
-			CURRENT_STATE(usr);
+			if (load_newuserlog(usr) < 0) {
+				Perror(usr, "failed to load newusers log");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			PUSH(usr, STATE_PRESS_ANY_KEY);
+			read_text(usr);
 			Return;
 
 		case 'o':
@@ -2099,6 +2105,78 @@ void state_view_logs(User *usr, char c) {
 	}
 	Print(usr, "<yellow>\n[%s] Logs# <white>", PARAM_NAME_SYSOP);
 	Return;
+}
+
+/*
+	view a log file with colors
+*/
+int load_logfile(StringIO *s, char *filename) {
+File *f;
+char buf[PRINT_BUF];
+int color;
+
+	if (s == NULL || filename == NULL || !*filename || (f = Fopen(filename)) == NULL)
+		return -1;
+
+	color = 0;
+	while(Fgets(f, buf, PRINT_BUF - 16) != NULL) {
+		if (cstrmatch(buf, "Aaa ?d dd:dd:dd *")) {
+			buf[15] = 0;
+			put_StringIO(s, "<cyan>");
+			put_StringIO(s, buf);
+
+			buf[15] = ' ';
+			switch(buf[16]) {
+				case 'I':
+					put_StringIO(s, "<yellow>");
+					color = 1;
+					break;
+
+				case 'E':
+					put_StringIO(s, "<red>");
+					color = 1;
+					break;
+
+				case 'D':
+					put_StringIO(s, "<magenta>");
+					color = 1;
+					break;
+
+				case 'A':
+				default:
+					put_StringIO(s, "<green>");
+					color = 0;
+			}
+			put_StringIO(s, buf+15);
+		} else {
+			if (color) {
+				color = 0;
+				put_StringIO(s, "<yellow>");
+			}
+			put_StringIO(s, buf);
+		}
+		write_StringIO(s, "\n", 1);
+	}
+	Fclose(f);
+	return 0;
+}
+
+int load_newuserlog(User *usr) {
+NewUserQueue *q;
+NewUserLog *l;
+char date_buf[MAX_LINE];
+
+	if (usr == NULL || (q = load_NewUserQueue(PARAM_NEWUSERLOG)) == NULL)
+		return -1;
+
+	buffer_text(usr);
+
+	for(l = (NewUserLog *)q->tail; l != NULL; l = l->next)
+		Print(usr, "<cyan>%s  <yellow>%s\n", print_date(usr, l->timestamp, date_buf, MAX_LINE), l->name);
+	Put(usr, "\n");
+
+	destroy_NewUserQueue(q);
+	return 0;
 }
 
 void state_feelings_menu(User *usr, char c) {
@@ -3199,12 +3277,14 @@ void state_maximums_menu(User *usr, char c) {
 				"Max lines in ch<hotkey>at room history        <white>%6u<magenta>\n"
 				"Max number of messages in X <hotkey>history   <white>%6u<magenta>\n"
 				"Max number of <hotkey>Friends                 <white>%6u<magenta>\n"
-				"Max number of <hotkey>Enemies                 <white>%6u<magenta>\n",
+				"Max number of <hotkey>Enemies                 <white>%6u<magenta>\n"
+				"Max number of entries <hotkey>New user log    <white>%6u<magenta>\n",
 
 				PARAM_MAX_CHAT_HISTORY,
 				PARAM_MAX_HISTORY,
 				PARAM_MAX_FRIEND,
-				PARAM_MAX_ENEMY
+				PARAM_MAX_ENEMY,
+				PARAM_MAX_NEWUSERLOG
 			);
 			Print(usr,
 				"<hotkey>Idle timeout                          <white>%6u %s<magenta>\n"
@@ -3314,6 +3394,12 @@ void state_maximums_menu(User *usr, char c) {
 			CALL(usr, STATE_PARAM_ENEMY);
 			Return;
 
+		case 'n':
+		case 'N':
+			Put(usr, "Max entries in New user log\n");
+			CALL(usr, STATE_PARAM_MAX_NEWUSERLOG);
+			Return;
+
 		case 'i':
 		case 'I':
 			Put(usr, "Idle timeout\n");
@@ -3404,6 +3490,12 @@ void state_param_friend(User *usr, char c) {
 void state_param_enemy(User *usr, char c) {
 	Enter(state_param_enemy);
 	change_int_param(usr, c, &PARAM_MAX_ENEMY);
+	Return;
+}
+
+void state_param_max_newuserlog(User *usr, char c) {
+	Enter(state_param_max_newuserlog);
+	change_int_param(usr, c, &PARAM_MAX_NEWUSERLOG);
 	Return;
 }
 
@@ -3920,11 +4012,16 @@ char *new_val;
 			Print(usr, "\n<magenta>"
 				"<hotkey>Syslog              <white>%s<magenta>\n"
 				"<hotkey>Authlog             <white>%s<magenta>\n"
-				"<hotkey>Rotate              <white>%s<magenta>\n"
-				"Arch<hotkey>ive directory   <white>%s<magenta>\n",
+				"<hotkey>New users log       <white>%s<magenta>\n",
 
 				PARAM_SYSLOG,
 				PARAM_AUTHLOG,
+				PARAM_NEWUSERLOG
+			);
+			Print(usr,
+				"<hotkey>Rotate              <white>%s<magenta>\n"
+				"Arch<hotkey>ive directory   <white>%s<magenta>\n",
+
 				PARAM_LOGROTATE,
 				PARAM_ARCHIVEDIR
 			);
@@ -3972,6 +4069,12 @@ char *new_val;
 		case 'A':
 			Put(usr, "Authlog\n");
 			CALL(usr, STATE_PARAM_AUTHLOG);
+			Return;
+
+		case 'n':
+		case 'N':
+			Put(usr, "New users log\n");
+			CALL(usr, STATE_PARAM_NEWUSERLOG);
 			Return;
 
 		case 'r':
@@ -4038,6 +4141,13 @@ void state_param_syslog(User *usr, char c) {
 void state_param_authlog(User *usr, char c) {
 	Enter(state_param_authlog);
 	change_string_param(usr, c, &PARAM_AUTHLOG, "<green>Enter authlog file: ");
+	usr->runtime_flags |= RTF_WRAPPER_EDITED;
+	Return;
+}
+
+void state_param_newuserlog(User *usr, char c) {
+	Enter(state_param_newuserlog);
+	change_string_param(usr, c, &PARAM_NEWUSERLOG, "<green>Enter newuser log file: ");
 	usr->runtime_flags |= RTF_WRAPPER_EDITED;
 	Return;
 }
