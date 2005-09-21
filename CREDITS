@@ -195,8 +195,8 @@ Version 3.0:
 - Richard of MatrixBBS suggested (ages ago) that the BBS name be shown
   when locked
 
-- WHYz of MatrixBBS suggested the minus key for removing recipients in
-  recipient list editing (this was already available with Ctrl-R)
+- Vonda suggested the minus key for removing recipients in recipient list
+  editing (this was already available with Ctrl-R)
 
 - Lord Lerkista reported a bug in restartable timers
 
@@ -205,7 +205,7 @@ Version 3.0:
 
 - Martin Bethlehem provided a patch for supporting cygwin on Win32
 
-- WHYz' comments led to the implementation of parameter helper_age
+- Vonda's comments led to the implementation of parameter helper_age
 
 - Customizable eXpress Message header as implemented by Richard
 
@@ -213,21 +213,21 @@ Version 3.0:
 
 - disable reception of multi messages like implemented by Richard
 
-- WHYz came with the idea of auto-coloring
+- Vonda came with the idea of auto-coloring
 
 - English Buchanan pointed out that when being in Sysop or Room Aide mode,
   the new message header doesn't reflect that status until you read the
   posted message
 
-- WHYz suggested asking for a reason when going away, like on MalteBBS
+- Vonda suggested asking for a reason when going away, like on MalteBBS
 
 - English Buchanan (among others) suggested using the caret ^ for color
   editing and not just Ctrl-V. Although it tends to mess up ASCII art,
-  I eventually gave in
+  eventually I gave in
 
 - News reported a bug in the profile of an online Guest user
 
-- WHYz suggested that people who have messages put on hold, are not able
+- Vonda suggested that people who have messages put on hold, are not able
   to send messages themselves
 
 - Cancel reboot/shutdown work with the same keys as reboot/shutdown
@@ -243,13 +243,13 @@ Version 3.0:
 - English Buchanan suggested that X disable disabled everyone but a specific
   override list, different from the (default) friend list
 
-- WHYz suggested that the default room can be set
+- Vonda suggested that the default room can be set
 
-- WHYz suggested that it tells you when there are new messages
+- Vonda suggested that it tells you when there are new messages
 
 - English Buchanan suggested that Sysop can check what new users have been
   created lately
 
-- WHYz suggested that the logout screen remains visible for a while after
+- Vonda suggested that the logout screen remains visible for a while after
   logging out, because Windows clients have a habit of closing the terminal
   window immediately when disconnecting
