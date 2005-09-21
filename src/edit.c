@@ -1857,9 +1857,12 @@ StringList *sl = NULL;
 			|| ((r->flags & ROOM_HIDDEN) && j == NULL)
 			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
 
-			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos))
-				add_StringQueue(usr->tablist, new_StringList(r->name));
-			else
+			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos)) {
+				if (j->zapped)
+					sl = prepend_StringList(&sl, new_StringList(r->name));
+				else
+					add_StringQueue(usr->tablist, new_StringList(r->name));
+			} else
 				if (cstristr(r->name, usr->edit_buf) != NULL)
 					sl = add_StringList(&sl, new_StringList(r->name));
 		}
