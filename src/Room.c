@@ -1084,7 +1084,7 @@ int load_room_flags, len;
 			if (stat(buf, &statbuf))
 				continue;
 
-			if ((statbuf.st_mode & S_IFDIR) == S_IFDIR) {
+			if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
 				u = (unsigned int)cstrtoul(bufp, 10);
 
 				printf("loading room %3u ... ", u);

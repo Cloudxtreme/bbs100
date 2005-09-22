@@ -88,7 +88,7 @@ int len;
 	while((direntp = readdir(dirp)) != NULL) {
 		cstrcpy(bufp, direntp->d_name, MAX_PATHLEN - len);
 
-		if (!stat(buf, &statbuf) && S_ISREG(statbuf.st_mode)) {
+		if (!stat(buf, &statbuf) && (statbuf.st_mode & S_IFMT) == S_IFREG) {
 			if ((f = load_Feeling(buf)) != NULL)
 				feelings = prepend_KVPair(&feelings, f);
 		}

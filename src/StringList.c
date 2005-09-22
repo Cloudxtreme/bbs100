@@ -168,9 +168,12 @@ va_list ap;
 
 /*
 	sortfunc for sort_StringList()
+	also handles strings that end with a numeric value
 */
 int alphasort_StringList(void *v1, void *v2) {
 StringList *s1, *s2;
+char *p, *q;
+int i, j;
 
 	if (v1 == NULL || v2 == NULL)
 		return 0;
@@ -181,9 +184,39 @@ StringList *s1, *s2;
 	if (s1 == NULL || s2 == NULL)
 		return 0;
 
-	if (s1->str == NULL || s2->str == NULL)
+	p = s1->str;
+	if (p == NULL)
 		return 0;
 
+	q = s2->str;
+	if (q == NULL)
+		return 0;
+
+	i = strlen(p) - 1;
+	j = strlen(q) - 1;
+	if (i >= 0 && p[i] >= '0' && p[i] <= '9'
+		&& j >= 0 && q[j] >= '0' && q[j] <= '9') {
+		while(i >= 0 && p[i] >= '0' && p[i] <= '9')
+			i--;
+		i++;
+
+		while(j >= 0 && q[j] >= '0' && q[j] <= '9')
+			j--;
+		j++;
+
+		if (i == j && (!i || !strncmp(p, q, i))) {
+			i = atoi(p+i);
+			j = atoi(q+j);
+
+			if (i < j)
+				return -1;
+
+			if (i > j)
+				return 1;
+
+			return 0;
+		}
+	}
 	return strcmp(s1->str, s2->str);
 }
 

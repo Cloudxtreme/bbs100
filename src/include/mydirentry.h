@@ -17,11 +17,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	direntry.h	WJ99
+	mydirentry.h	WJ99
 */
 
-#ifndef DIRENTRY_H_WJ99
-#define DIRENTRY_H_WJ99 1
+#ifndef MYDIRENTRY_H_WJ99
+#define MYDIRENTRY_H_WJ99	1
 
 #ifdef HAVE_DIRENT_H
 # include <dirent.h>
@@ -40,6 +40,6 @@
 # endif
 #endif
 
-#endif	/* DIRENTRY_H_WJ99 */
+#endif	/* MYDIRENTRY_H_WJ99 */
 
 /* EOB */

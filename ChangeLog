@@ -1,3 +1,6 @@
+Changes as of September 22nd 2005
+- added listdir(), but not using it yet
+
 Changes as of September 21st 2005
 - view logfiles in full color
 - new users are logged in a special newusers log;

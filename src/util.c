@@ -1751,4 +1751,73 @@ BufferedMsg *m;
 	return talked_to;
 }
 
+/*
+	create a directory listing in a StringQueue
+*/
+StringQueue *listdir(char *dirname, int ignore_symlinks) {
+StringQueue *l;
+StringList *sl;
+DIR *dir;
+struct dirent *entry;
+char fullpath[MAX_PATHLEN], *path;
+struct stat statbuf;
+int max, n;
+
+	if (dirname == NULL || !*dirname)
+		return NULL;
+
+	if ((dir = opendir(dirname)) == NULL) {
+		log_err("listdir(): opendir(%s) failed %s", dirname, cstrerror(errno));
+		return NULL;
+	}
+	if ((l = new_StringQueue()) == NULL) {
+		closedir(dir);
+		return NULL;
+	}
+	cstrcpy(fullpath, dirname, MAX_PATHLEN);
+	max = strlen(fullpath);
+	path = fullpath + max;
+	*path = '/';
+	path++;
+	*path = 0;
+	max = MAX_PATHLEN - max - 1;
+
+	while((entry = readdir(dir)) != NULL) {
+		cstrcpy(path, entry->d_name, max);
+		if (lstat(fullpath, &statbuf) < 0) {
+			log_err("listdir(): lstat(%s) failed: %s", fullpath, cstrerror(errno));
+			continue;
+		}
+		switch(statbuf.st_mode & S_IFMT) {
+			case S_IFREG:
+				break;
+
+			case S_IFDIR:				/* for directories, append a slash */
+				n = strlen(path);
+				path[n++] = '/';
+				path[n] = 0;
+				break;
+
+			case S_IFLNK:
+				if (!ignore_symlinks)
+					break;
+
+			default:
+				*path = 0;
+		}
+		if (!*path)
+			continue;
+
+		if ((sl = new_StringList(path)) == NULL) {
+			log_err("listdir(): out of memory for directory %s", dirname);
+			break;
+		}
+		add_StringQueue(l, sl);
+	}
+	closedir(dir);
+	sort_StringQueue(l, alphasort_StringList);
+	return l;
+}
+
+
 /* EOB */

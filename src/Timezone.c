@@ -537,12 +537,12 @@ StringList *sl;
 		path_strip(filename);
 
 		if (subdir) {
-			if (!stat(filename, &statbuf) && S_ISDIR(statbuf.st_mode)) {
+			if (!stat(filename, &statbuf) && (statbuf.st_mode & S_IFMT) == S_IFDIR) {
 				prepend_StringList(&sl, new_StringList(direntp->d_name));
 				generate_tz_index(filename, 0);				/* recurse */
 			}
 		} else {
-			if (!stat(filename, &statbuf) && S_ISREG(statbuf.st_mode))
+			if (!stat(filename, &statbuf) && (statbuf.st_mode & S_IFMT) == S_IFREG)
 				prepend_StringList(&sl, new_StringList(direntp->d_name));
 		}
 	}

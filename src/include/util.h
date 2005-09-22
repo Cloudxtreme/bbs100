@@ -131,6 +131,7 @@ void buffer_text(User *);
 void clear_buffer(User *);
 void clear_screen(User *);
 StringList *make_talked_to(User *);
+StringQueue *listdir(char *, int);
 
 extern ColorTable color_table[NUM_COLORS];
 extern char *Default_Symbols;
