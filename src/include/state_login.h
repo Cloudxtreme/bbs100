@@ -37,6 +37,7 @@
 #define STATE_ANSI_PROMPT				state_ansi_prompt
 #define STATE_DISPLAY_MOTD				state_display_motd
 #define STATE_GO_ONLINE					state_go_online
+#define STATE_LOGGED_OUT				state_logged_out
 
 void state_login_prompt(User *, char);
 void state_password_prompt(User *, char);
@@ -48,6 +49,7 @@ void state_new_password_again(User *, char);
 void state_ansi_terminal(User *, char);
 void state_display_motd(User *, char);
 void state_go_online(User *, char);
+void state_logged_out(User *, char);
 
 int print_user_status(User *);
 

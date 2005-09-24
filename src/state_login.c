@@ -357,6 +357,7 @@ Timer *t;
 				listdestroy_Timer(usr->timerq);
 				usr->timerq = usr->idle_timer = NULL;
 				add_Timer(&usr->timerq, t);
+				JMP(usr, STATE_LOGGED_OUT);
 			} else
 				close_logout(usr);
 			break;
@@ -779,6 +780,14 @@ int r;
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;
+}
+
+/*
+	the user has logged out and really can't do anything but wait for
+	the connection to close
+*/
+void state_logged_out(User *usr, char c) {
+	;
 }
 
 int print_user_status(User *usr) {
