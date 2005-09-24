@@ -1753,8 +1753,9 @@ BufferedMsg *m;
 
 /*
 	create a directory listing in a StringQueue
+	flags can be IGNORE_SYMLINKS|IGNORE_HIDDEN
 */
-StringQueue *listdir(char *dirname, int ignore_symlinks) {
+StringQueue *listdir(char *dirname, int flags) {
 StringQueue *l;
 StringList *sl;
 DIR *dir;
@@ -1783,7 +1784,7 @@ int max, n;
 	max = MAX_PATHLEN - max - 1;
 
 	while((entry = readdir(dir)) != NULL) {
-		if (entry->d_name[0] == '.')				/* skip hidden files */
+		if ((flags & IGNORE_HIDDEN) && entry->d_name[0] == '.')			/* skip hidden files */
 			continue;
 
 		cstrcpy(path, entry->d_name, max);
@@ -1802,8 +1803,9 @@ int max, n;
 				break;
 
 			case S_IFLNK:
-				if (!ignore_symlinks)
+				if (!(flags & IGNORE_SYMLINKS))
 					break;
+/* fall through */
 
 			default:
 				*path = 0;
