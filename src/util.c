@@ -1783,6 +1783,9 @@ int max, n;
 	max = MAX_PATHLEN - max - 1;
 
 	while((entry = readdir(dir)) != NULL) {
+		if (entry->d_name[0] == '.')				/* skip hidden files */
+			continue;
+
 		cstrcpy(path, entry->d_name, max);
 		if (lstat(fullpath, &statbuf) < 0) {
 			log_err("listdir(): lstat(%s) failed: %s", fullpath, cstrerror(errno));
