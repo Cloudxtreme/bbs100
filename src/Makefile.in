@@ -203,4 +203,13 @@ uninstall:
 	@echo "*** uninstall bbs100-$(VERSION) from $(bindir)/"
 	@( cd $(bindir) ; $(RM_F) $(TARGETS) $(SCRIPTS) )
 
+
+test: install
+	@(	$(bindir)/bbs stop ; \
+		$(bindir)/bbs start ; \
+		sleep 4 ; \
+		telnet localhost 1234 ; \
+		exit 0 ; \
+	)
+
 # EOB

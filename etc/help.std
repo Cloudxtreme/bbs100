@@ -39,7 +39,9 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
 <yellow>
 <space><green>   Read next unread message
      <key>e    Enter a message in a room
+<white>Shft-<key>E<green>    Upload a message in a room
      <key>m    Mail a message
+<white>Shft-<key>M<green>    Upload a mail message
      <key>d    Delete message
      <key>u    Undelete a deleted message
      <key>j    Jump to a specific room

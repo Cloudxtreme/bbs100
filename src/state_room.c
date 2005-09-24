@@ -608,7 +608,7 @@ char num_buf[MAX_NUMBER];
 		case 'e':
 		case 'E':
 		case KEY_CTRL('E'):
-			if (c == KEY_CTRL('E'))
+			if (c == 'E' || c == KEY_CTRL('E') || c == 'M')
 				usr->runtime_flags |= RTF_UPLOAD;
 			else
 				usr->runtime_flags &= ~RTF_UPLOAD;

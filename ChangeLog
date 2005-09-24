@@ -1,3 +1,6 @@
+Changes as of September 24th 2005
+- 'E' uploads message, as does 'M' for Mail
+
 Changes as of September 22nd 2005
 - added listdir(), but not using it yet
 
