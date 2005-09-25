@@ -432,6 +432,7 @@ File *f;
 		Fget_StringIO(f, usr->text);
 		Fclose(f);
 
+		POP(usr);							/* remove this call, it's not needed anymore */
 		PUSH(usr, STATE_GO_ONLINE);
 		Put(usr, "<green>");
 		read_text(usr);						/* read with --More-- prompt */
