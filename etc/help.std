@@ -18,7 +18,7 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
 <white>Ctrl-<key>X<green>    Message history
      <key>v    Reply to sender of last received message
 <white>Shft-<key>V<green>    Reply to all receipents of the last received message
-     <key>X    Toggle message receiption on/off
+     <key>X    Toggle message reception on/off
      <key>B    Toggle beeping on/off
 <white>Ctrl-<key>B<green>    Toggle hold messages on/off
 <white>Shft-<key>F<green>    Toggle Follow up (auto-reply) mode
@@ -81,9 +81,12 @@ On the<yellow> --More--<green> prompt, you can use the following keys:
      <key>?    Find backwards
 <white>Ctrl-<key>L<green>    Reprint page
 
-Users can send you messages, unless you have message receiption disabled.
-Users that are on your friend list can always contact you. You can use
-your enemy list to block annoying users.
+Users can send you messages, unless you have message reception disabled.
+You can use your enemy list to block annoying users. Users that are on your
+friend list can always contact you, unless you are explicitly blocking them;
+there is an option to do this in the Config menu. When you have turned off
+message reception, you can still send messages to people, and they will be
+able to answer as they are automatically unblocked.
 
 You may need an invitation for certain rooms. Please contact the room aide
 for an invitation if necessary.
