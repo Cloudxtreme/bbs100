@@ -41,6 +41,7 @@
 #define POP(x)						destroy_CallStack(pop_CallStack(&(x)->conn->callstack))
 #define PUSH_ARG(x,y,z)				PushArg((x)->conn, (y), (z))
 #define POP_ARG(x,y,z)				PopArg((x)->conn, (y), (z))
+#define PEEK_ARG(x,y,z)				PeekArg((x)->conn, (y), (z))
 #define CALL(x,y)					Callx((x)->conn,(void (*)(void *, char))(y), (char)INIT_STATE)
 #define CALLX(x,y,z)				Callx((x)->conn,(void (*)(void *, char))(y), (char)(z))
 #define JMP(x,y)					Jump((x)->conn,(void (*)(void *, char))(y))
@@ -72,6 +73,7 @@ void Jump(Conn *, void (*)(void *, char));
 void Retx(Conn *, char);
 void PushArg(Conn *, void *, int);
 void PopArg(Conn *, void *, int);
+void PeekArg(Conn *, void *, int);
 
 #endif	/* CALLSTACK_H_WJ99 */
 

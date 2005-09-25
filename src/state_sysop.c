@@ -59,6 +59,7 @@
 #include "bufprintf.h"
 #include "BinAlloc.h"
 #include "NewUserLog.h"
+#include "DirList.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2023,6 +2024,8 @@ void upload_abort(User *usr, char c) {
 
 
 void state_view_logs(User *usr, char c) {
+DirList *dl;
+
 	if (usr == NULL)
 		return;
 
@@ -2099,8 +2102,32 @@ void state_view_logs(User *usr, char c) {
 		case 'o':
 		case 'O':
 			Put(usr, "Access old logs\n");
-			Perror(usr, "NYI");
-			CURRENT_STATE(usr);
+
+			if ((dl = new_DirList()) == NULL) {
+				Perror(usr, "Out of memory");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			if ((dl->name = cstrdup(PARAM_ARCHIVEDIR)) == NULL) {
+				Perror(usr, "Out of memory");
+				destroy_DirList(dl);
+				CURRENT_STATE(usr);
+				Return;
+			}
+			if ((dl->list = listdir(dl->name, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+				Perror(usr, "failed to access the archive");
+				destroy_DirList(dl);
+				CURRENT_STATE(usr);
+				Return;
+			}
+			if (count_Queue(dl->list) <= 0) {
+				Put(usr, "<red>There are no files in the archive\n");
+				destroy_DirList(dl);
+				CURRENT_STATE(usr);
+				Return;
+			}
+			PUSH_ARG(usr, &dl, sizeof(DirList *));
+			CALL(usr, STATE_OLD_LOGS_YEAR);
 			Return;
 	}
 	Print(usr, "<yellow>\n[%s] Logs# <white>", PARAM_NAME_SYSOP);
@@ -2178,6 +2205,263 @@ char date_buf[MAX_LINE];
 	destroy_NewUserQueue(q);
 	return 0;
 }
+
+void state_old_logs_year(User *usr, char c) {
+DirList *dl;
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_old_logs_year);
+
+	debug_breakpoint();
+	PEEK_ARG(usr, &dl, sizeof(DirList *));
+	if (dl == NULL || dl->list == NULL) {
+		Perror(usr, "The directory listing has disappeared");
+		destroy_DirList(dl);
+		RET(usr);
+		Return;
+	}
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			edit_number(usr, EDIT_INIT);
+
+			buffer_text(usr);
+			Put(usr, "\n");
+			print_columns(usr, (StringList *)dl->list->tail, 0);
+			read_menu(usr);
+			Return;
+
+		default:
+			r = edit_number(usr, c);
+			if (r == EDIT_RETURN) {
+				if (!usr->edit_buf[0])
+					r = EDIT_BREAK;
+				else {
+					char dirname[MAX_PATHLEN];
+					StringQueue *sq;
+					DirList *dl2;
+
+					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
+					if ((sq = listdir(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					if (count_Queue(sq) <= 0) {
+						Put(usr, "<red>That archive is empty\n");
+						destroy_StringQueue(sq);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					if ((dl2 = new_DirList()) == NULL) {
+						Perror(usr, "Out of memory");
+						destroy_StringQueue(sq);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					if ((dl2->name = cstrdup(dirname)) == NULL) {
+						Perror(usr, "Out of memory");
+						destroy_StringQueue(sq);
+						destroy_DirList(dl2);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					dl2->list = sq;
+
+					PUSH_ARG(usr, &dl2, sizeof(DirList *));
+					CALL(usr, STATE_OLD_LOGS_MONTH);
+					Return;
+				}
+			}
+			if (r == EDIT_BREAK) {
+				POP_ARG(usr, &dl, sizeof(DirList *));
+				destroy_DirList(dl);
+				RET(usr);
+				Return;
+			}
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter year: ", PARAM_NAME_SYSOP);
+	Return;
+}
+
+/*
+	practically the same as for a year
+*/
+void state_old_logs_month(User *usr, char c) {
+DirList *dl;
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_old_logs_month);
+
+	debug_breakpoint();
+	PEEK_ARG(usr, &dl, sizeof(DirList *));
+	if (dl == NULL || dl->list == NULL) {
+		Perror(usr, "The directory listing has disappeared");
+		destroy_DirList(dl);
+		RET(usr);
+		Return;
+	}
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			edit_number(usr, EDIT_INIT);
+
+			buffer_text(usr);
+			Put(usr, "\n");
+			print_columns(usr, (StringList *)dl->list->tail, 0);
+			read_menu(usr);
+			Return;
+
+		default:
+			r = edit_number(usr, c);
+			if (r == EDIT_RETURN) {
+				if (!usr->edit_buf[0])
+					r = EDIT_BREAK;
+				else {
+					char dirname[MAX_PATHLEN];
+					StringQueue *sq;
+					DirList *dl2;
+
+					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
+					if ((sq = listdir(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
+						break;
+					}
+					if (count_Queue(sq) <= 0) {
+						Put(usr, "<red>That archive is empty\n");
+						destroy_StringQueue(sq);
+						break;
+					}
+					if ((dl2 = new_DirList()) == NULL) {
+						Perror(usr, "Out of memory");
+						destroy_StringQueue(sq);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					if ((dl2->name = cstrdup(dirname)) == NULL) {
+						Perror(usr, "Out of memory");
+						destroy_StringQueue(sq);
+						destroy_DirList(dl2);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					dl2->list = sq;
+
+					PUSH_ARG(usr, &dl2, sizeof(DirList *));
+					CALL(usr, STATE_OLD_LOGS_FILES);
+					Return;
+				}
+			}
+			if (r == EDIT_BREAK) {
+				POP_ARG(usr, &dl, sizeof(DirList *));
+				destroy_DirList(dl);
+				RET(usr);
+				Return;
+			}
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter month: ", PARAM_NAME_SYSOP);
+	Return;
+}
+
+void state_old_logs_files(User *usr, char c) {
+DirList *dl;
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_old_logs_files);
+
+	debug_breakpoint();
+	PEEK_ARG(usr, &dl, sizeof(DirList *));
+	if (dl == NULL || dl->list == NULL) {
+		Perror(usr, "The directory listing has disappeared");
+		destroy_DirList(dl);
+		RET(usr);
+		Return;
+	}
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			edit_number(usr, EDIT_INIT);
+
+			buffer_text(usr);
+			Put(usr, "\n");
+			print_columns(usr, (StringList *)dl->list->tail, FORMAT_NUMBERED);
+			read_menu(usr);
+			Return;
+
+		default:
+			r = edit_number(usr, c);
+			if (r == EDIT_RETURN) {
+				if (!usr->edit_buf[0])
+					r = EDIT_BREAK;
+				else {
+					char filename[MAX_PATHLEN];
+					StringList *sl;
+					int n;
+
+					n = atoi(usr->edit_buf);
+					if (n <= 0) {
+						Put(usr, "<red>Invalid number\n");
+						CURRENT_STATE(usr);
+						Return;
+					}
+					if (n > count_Queue(dl->list)) {
+						Put(usr, "<red>No such log file\n");
+						CURRENT_STATE(usr);
+						Return;
+					}
+					n--;
+					for(sl = (StringList *)dl->list->tail; n > 0 && sl != NULL; sl = sl->next)
+						n--;
+
+					if (sl == NULL) {
+						Put(usr, "<red>No such log file\n");
+						CURRENT_STATE(usr);
+						Return;
+					}
+					bufprintf(filename, MAX_PATHLEN, "%s/%s", dl->name, sl->str);
+/* view the log file */
+					free_StringIO(usr->text);
+					if (load_StringIO(usr->text, filename) < 0) {
+						Print(usr, "<red>Failed to load file <white>%s\n", sl->str);
+						CURRENT_STATE(usr);
+						Return;
+					}
+					PUSH(usr, STATE_PRESS_ANY_KEY);
+					Put(usr, "<green>");
+					debug_breakpoint();
+					read_text(usr);
+					Return;
+				}
+			}
+			if (r == EDIT_BREAK) {
+				POP_ARG(usr, &dl, sizeof(DirList *));
+				destroy_DirList(dl);
+				RET(usr);
+				Return;
+			}
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter number: ", PARAM_NAME_SYSOP);
+	Return;
+}
+
 
 void state_feelings_menu(User *usr, char c) {
 StringIO *s;

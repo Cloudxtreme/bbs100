@@ -79,16 +79,11 @@
 #define FORMAT_NUMBERED			1	/* number the entries in print_columns() */
 #define FORMAT_NO_UNDERSCORES	2	/* convert underscores to spaces */
 
-#define IGNORE_SYMLINKS			1	/* listdir() does not list symlinks */
-#define IGNORE_HIDDEN			2	/* listdir() does not list hidden files */
-
-
 typedef struct {
 	char *name;
 	int value;
 	char key;
 } ColorTable;
-
 
 int Out(User *, char *);
 int Out_text(StringIO *, User *, char *, int *, int *, int, int);

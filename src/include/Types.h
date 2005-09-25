@@ -62,7 +62,8 @@
 #define TYPE_MAILTO			29
 #define TYPE_ONLINEUSER		30
 #define TYPE_NEWUSERLOG		31
-#define NUM_TYPES			32
+#define TYPE_DIRLIST		32
+#define NUM_TYPES			33
 
 typedef struct Typedef_tag Typedef;
 

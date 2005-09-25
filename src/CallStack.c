@@ -155,4 +155,24 @@ CallStack *cs;
 	Free(cs);
 }
 
+/*
+	read the argument, but do not remove it from the stack
+
+	assumes that there is also a return address on the stack
+	therefore it takes the next element from the stack
+*/
+void PeekArg(Conn *conn, void *arg, int size) {
+CallStack *cs;
+
+	if (conn == NULL || arg == NULL || conn->callstack == NULL || conn->callstack->next == NULL)
+		return;
+
+	cs = conn->callstack->next;
+	if (cs == NULL) {
+		memset(arg, 0, size);
+		return;
+	}
+	memcpy(arg, (char *)cs + sizeof(ListType), size);
+}
+
 /* EOB */

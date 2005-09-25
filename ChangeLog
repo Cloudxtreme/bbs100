@@ -1,9 +1,10 @@
-Changes as of September 24th 2005
-- 'E' uploads message, as does 'M' for Mail
-- logged out users linger in an idle state
+Changes as of September 25th 2005
+- sysop has access to the log archive
 
 Changes as of September 22nd 2005
 - added listdir(), but not using it yet
+- 'E' uploads message, as does 'M' for Mail
+- logged out users linger in an idle state
 
 Changes as of September 21st 2005
 - view logfiles in full color

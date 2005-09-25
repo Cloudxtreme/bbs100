@@ -45,6 +45,9 @@
 #define STATE_SCREENS_MENU				state_screens_menu
 #define STATE_SCREEN_ACTION				state_screen_action
 #define STATE_VIEW_LOGS					state_view_logs
+#define STATE_OLD_LOGS_YEAR				state_old_logs_year
+#define STATE_OLD_LOGS_MONTH			state_old_logs_month
+#define STATE_OLD_LOGS_FILES			state_old_logs_files
 #define STATE_FEELINGS_MENU				state_feelings_menu
 #define STATE_ADD_FEELING				state_add_feeling
 #define STATE_REMOVE_FEELING			state_remove_feeling
@@ -173,6 +176,9 @@ void upload_file(User *, char *, char *);
 void upload_save(User *, char);
 void upload_abort(User *, char);
 void state_view_logs(User *, char);
+void state_old_logs_year(User *, char);
+void state_old_logs_month(User *, char);
+void state_old_logs_files(User *, char);
 int load_logfile(StringIO *, char *);
 int load_newuserlog(User *);
 void state_feelings_menu(User *, char);
