@@ -2276,7 +2276,9 @@ int r;
 		} else
 			Put(usr, "\n\n");
 
-		usr->read_lines = (unsigned int)usr->flags;
+		POP(usr);
+		PUSH_ARG(usr, &usr->flags, sizeof(unsigned int));
+		PUSH(usr, STATE_BOSS);
 		usr->flags &= ~(USR_ANSI|USR_BOLD);			/* turn off colors */
 
 		if (load_screen(usr->text, PARAM_BOSS_SCREEN) >= 0) {
@@ -2330,7 +2332,7 @@ int r;
 				usr->flags |= USR_HELPING_HAND;
 				add_helper(usr);
 			}
-			usr->flags = (unsigned int)usr->read_lines;		/* restore color flags */
+			POP_ARG(usr, &usr->flags, sizeof(unsigned int));	/* restore flags */
 
 			Put(usr, "\n");
 			print_user_status(usr);
@@ -2397,6 +2399,7 @@ char buf[MAX_LONGLINE], *p;
 			"state_msg.c",
 			"state_friendlist.c",
 			"state_config.c",
+			"state_room.c",
 			"state_roomconfig.c",
 			"state_sysop.c",
 			"Message.c",
@@ -2429,6 +2432,8 @@ char buf[MAX_LONGLINE], *p;
 			"Display.c",
 			"patchlist.c",
 			"BinAlloc.c",
+			"DirList.c",
+			"NewUserLog.c",
 			"main.c",
 			NULL
 		};
@@ -2472,6 +2477,7 @@ char buf[MAX_LONGLINE], *p;
 	Print(usr, "-bbs: %s: command not found\n", cmd);
 	Return -1;
 }
+
 
 void state_ask_away_reason(User *usr, char c) {
 	Enter(state_ask_away_reason);

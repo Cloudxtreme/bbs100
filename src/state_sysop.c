@@ -2103,7 +2103,7 @@ DirList *dl;
 		case 'O':
 			Put(usr, "Access old logs\n");
 
-			if ((dl = list_DirList(PARAM_ARCHIVEDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+			if ((dl = list_DirList(PARAM_ARCHIVEDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
 				Perror(usr, "failed to access the archive");
 				destroy_DirList(dl);
 				CURRENT_STATE(usr);
@@ -2225,6 +2225,10 @@ int r;
 			read_menu(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		default:
 			r = edit_number(usr, c);
 			if (r == EDIT_RETURN) {
@@ -2235,7 +2239,7 @@ int r;
 					DirList *dl2;
 
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
-					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						CURRENT_STATE(usr);
 						Return;
@@ -2296,6 +2300,10 @@ int r;
 			read_menu(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		default:
 			r = edit_number(usr, c);
 			if (r == EDIT_RETURN) {
@@ -2306,7 +2314,7 @@ int r;
 					DirList *dl2;
 
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
-					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						break;
 					}
@@ -2360,6 +2368,10 @@ int r;
 			Put(usr, "\n");
 			print_columns(usr, (StringList *)dl->list->tail, FORMAT_NUMBERED);
 			read_menu(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		default:

@@ -1811,6 +1811,10 @@ int l, color;
 			usr->runtime_flags |= RTF_BUSY;
 			break;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		case 'b':
 		case 'B':
 		case 'u':

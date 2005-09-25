@@ -2061,6 +2061,10 @@ int r;
 			read_menu(usr);
 			Return;
 
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
 		default:
 			r = edit_number(usr, c);
 			if (r == EDIT_RETURN) {
@@ -2161,6 +2165,10 @@ char zonename[MAX_PATHLEN], *p;
 			Print(usr, "\n<green>Cities, countries, regions, and zones in category <yellow>%s:\n\n", zonename);
 			print_columns(usr, (StringList *)dl->list->tail, FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES);
 			read_menu(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
 			Return;
 
 		default:
