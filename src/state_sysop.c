@@ -2103,18 +2103,7 @@ DirList *dl;
 		case 'O':
 			Put(usr, "Access old logs\n");
 
-			if ((dl = new_DirList()) == NULL) {
-				Perror(usr, "Out of memory");
-				CURRENT_STATE(usr);
-				Return;
-			}
-			if ((dl->name = cstrdup(PARAM_ARCHIVEDIR)) == NULL) {
-				Perror(usr, "Out of memory");
-				destroy_DirList(dl);
-				CURRENT_STATE(usr);
-				Return;
-			}
-			if ((dl->list = listdir(dl->name, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+			if ((dl = list_DirList(PARAM_ARCHIVEDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
 				Perror(usr, "failed to access the archive");
 				destroy_DirList(dl);
 				CURRENT_STATE(usr);
@@ -2243,36 +2232,20 @@ int r;
 					r = EDIT_BREAK;
 				else {
 					char dirname[MAX_PATHLEN];
-					StringQueue *sq;
 					DirList *dl2;
 
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
-					if ((sq = listdir(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						CURRENT_STATE(usr);
 						Return;
 					}
-					if (count_Queue(sq) <= 0) {
+					if (count_Queue(dl2->list) <= 0) {
 						Put(usr, "<red>That archive is empty\n");
-						destroy_StringQueue(sq);
-						CURRENT_STATE(usr);
-						Return;
-					}
-					if ((dl2 = new_DirList()) == NULL) {
-						Perror(usr, "Out of memory");
-						destroy_StringQueue(sq);
-						CURRENT_STATE(usr);
-						Return;
-					}
-					if ((dl2->name = cstrdup(dirname)) == NULL) {
-						Perror(usr, "Out of memory");
-						destroy_StringQueue(sq);
 						destroy_DirList(dl2);
 						CURRENT_STATE(usr);
 						Return;
 					}
-					dl2->list = sq;
-
 					PUSH_ARG(usr, &dl2, sizeof(DirList *));
 					CALL(usr, STATE_OLD_LOGS_MONTH);
 					Return;
@@ -2330,34 +2303,18 @@ int r;
 					r = EDIT_BREAK;
 				else {
 					char dirname[MAX_PATHLEN];
-					StringQueue *sq;
 					DirList *dl2;
 
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
-					if ((sq = listdir(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						break;
 					}
-					if (count_Queue(sq) <= 0) {
+					if (count_Queue(dl2->list) <= 0) {
 						Put(usr, "<red>That archive is empty\n");
-						destroy_StringQueue(sq);
+						destroy_DirList(dl2);
 						break;
 					}
-					if ((dl2 = new_DirList()) == NULL) {
-						Perror(usr, "Out of memory");
-						destroy_StringQueue(sq);
-						CURRENT_STATE(usr);
-						Return;
-					}
-					if ((dl2->name = cstrdup(dirname)) == NULL) {
-						Perror(usr, "Out of memory");
-						destroy_StringQueue(sq);
-						destroy_DirList(dl2);
-						CURRENT_STATE(usr);
-						Return;
-					}
-					dl2->list = sq;
-
 					PUSH_ARG(usr, &dl2, sizeof(DirList *));
 					CALL(usr, STATE_OLD_LOGS_FILES);
 					Return;

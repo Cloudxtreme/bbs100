@@ -59,21 +59,24 @@ void destroy_DirList(DirList *dl) {
 
 	flags can be IGNORE_SYMLINKS|IGNORE_HIDDEN
 */
-int list_DirList(DirList *dl, char *dirname, int flags) {
-	if (dl == NULL)
-		return -1;
+DirList *list_DirList(char *dirname, int flags) {
+DirList *dl;
 
-	if (dirname != NULL) {
-		Free(dl->name);
-		dl->name = cstrdup(dirname);
+	if (dirname == NULL || !*dirname)
+		return NULL;
+
+	if ((dl = new_DirList()) == NULL)
+		return NULL;
+
+	if ((dl->name = cstrdup(dirname)) == NULL) {
+		destroy_DirList(dl);
+		return NULL;
 	}
-	if (dl->name == NULL)
-		return -1;
-
-	if ((dl->list = listdir(dl->name, flags)) == NULL)
-		return -1;
-
-	return 0;
+	if ((dl->list = listdir(dl->name, flags)) == NULL) {
+		destroy_DirList(dl);
+		return NULL;
+	}
+	return dl;
 }
 
 /*

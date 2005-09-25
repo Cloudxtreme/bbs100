@@ -36,7 +36,7 @@ typedef struct {
 DirList *new_DirList(void);
 void destroy_DirList(DirList *);
 
-int list_DirList(DirList *, char *, int);
+DirList *list_DirList(char *, int);
 StringQueue *listdir(char *, int);
 
 #endif	/* DIRLIST_H_WJ105 */
