@@ -1,6 +1,7 @@
 Changes as of September 25th 2005
 - sysop has access to the log archive
 - rewrote crummy code; select time zone in Config menu now uses DirList
+- ping: you can't be busy and idle at the same time
 
 Changes as of September 22nd 2005
 - added listdir(), but not using it yet

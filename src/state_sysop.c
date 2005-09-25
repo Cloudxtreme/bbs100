@@ -2204,7 +2204,6 @@ int r;
 
 	Enter(state_old_logs_year);
 
-	debug_breakpoint();
 	PEEK_ARG(usr, &dl, sizeof(DirList *));
 	if (dl == NULL || dl->list == NULL) {
 		Perror(usr, "The directory listing has disappeared");
@@ -2279,7 +2278,6 @@ int r;
 
 	Enter(state_old_logs_month);
 
-	debug_breakpoint();
 	PEEK_ARG(usr, &dl, sizeof(DirList *));
 	if (dl == NULL || dl->list == NULL) {
 		Perror(usr, "The directory listing has disappeared");
@@ -2349,7 +2347,6 @@ int r;
 
 	Enter(state_old_logs_files);
 
-	debug_breakpoint();
 	PEEK_ARG(usr, &dl, sizeof(DirList *));
 	if (dl == NULL || dl->list == NULL) {
 		Perror(usr, "The directory listing has disappeared");
@@ -2414,7 +2411,6 @@ int r;
 					}
 					PUSH(usr, STATE_PRESS_ANY_KEY);
 					Put(usr, "<green>");
-					debug_breakpoint();
 					read_text(usr);
 					Return;
 				}

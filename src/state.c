@@ -556,56 +556,51 @@ void loop_ping(User *usr, char c) {
 				Print(usr, "<yellow>%s<green> is away from the terminal for a while; %s\n", u->name, u->away);
 			else
 				Print(usr, "<yellow>%s<green> is away from the terminal for a while\n", u->name);
-		} else {
-			if (u->runtime_flags & RTF_BUSY) {
-				if ((u->runtime_flags & RTF_BUSY_SENDING)
-					&& in_StringQueue(u->recipients, usr->name) != NULL)
-/*
-	the warn follow-up mode feature was donated by Richard of MatrixBBS
-*/
-					Print(usr, "<yellow>%s<green> is busy sending you a message%s\n",
-						u->name, (PARAM_HAVE_FOLLOWUP && (u->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
-				else {
-					if ((u->runtime_flags & RTF_BUSY_MAILING)
-						&& u->new_message != NULL
-						&& in_MailToQueue(u->new_message->to, usr->name) != NULL)
-						Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
-					else {
-						if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
-							if (u->away != NULL && u->away[0])
-								Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
-							else
-								Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
-						} else
-							Print(usr, "<yellow>%s<green> is busy\n", u->name);
-					}
-				}
-			} else
-				if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
-					if (u->away != NULL && u->away[0])
-						Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
-					else
-						Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
-				} else
-					Print(usr, "<yellow>%s<green> is not busy\n", u->name);
-
+			Return;
+		}
 /*
 	in case a user is idling, print it
 	(hardcoded) default is after 2 minutes
 */
-			tdiff = (unsigned long)rtc - (unsigned long)u->idle_time;
-			if (tdiff >= 2UL * SECS_IN_MIN) {
-				char total_buf[MAX_LINE];
+		tdiff = (unsigned long)rtc - (unsigned long)u->idle_time;
+		if (tdiff >= 2UL * SECS_IN_MIN) {
+			char total_buf[MAX_LINE];
 
-				Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf, MAX_LINE));
-			}
+			Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf, MAX_LINE));
+			Return;
 		}
+		if (u->runtime_flags & RTF_BUSY) {
+			if ((u->runtime_flags & RTF_BUSY_SENDING)
+				&& in_StringQueue(u->recipients, usr->name) != NULL) {
 /*
-		if (in_StringList(u->friends, usr->name) != NULL)
-			Print(usr, "You are on %s\n", possession(u->name, "friend list", name_buf));
-		if (in_StringList(u->enemies, usr->name) != NULL)
-			Print(usr, "<red>You are on %s\n", possession(u->name, "enemy list", name_buf));
+	the warn follow-up mode feature was donated by Richard of MatrixBBS
 */
+				Print(usr, "<yellow>%s<green> is busy sending you a message%s\n",
+					u->name, (PARAM_HAVE_FOLLOWUP && (u->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
+				Return;
+			}
+			if ((u->runtime_flags & RTF_BUSY_MAILING)
+				&& u->new_message != NULL
+				&& in_MailToQueue(u->new_message->to, usr->name) != NULL) {
+				Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
+				Return;
+			}
+			if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
+				if (u->away != NULL && u->away[0])
+					Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
+				else
+					Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
+			} else
+				Print(usr, "<yellow>%s<green> is busy\n", u->name);
+			Return;
+		}
+		if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
+			if (u->away != NULL && u->away[0])
+				Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
+			else
+				Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
+		} else
+			Print(usr, "<yellow>%s<green> is not busy\n", u->name);
 	}
 	Return;
 }
