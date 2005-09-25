@@ -60,8 +60,8 @@
 #define STATE_DEFAULT_ROOM				state_default_room
 #define STATE_CONFIG_WHO_SYSOP			state_config_who_sysop
 #define STATE_CONFIG_TIMEZONE			state_config_timezone
-#define STATE_SELECT_TZ_CONTINENT		state_select_tz_continent
-#define STATE_SELECT_TZ_CITY			state_select_tz_city
+#define STATE_TZ_CONTINENT				state_tz_continent
+#define STATE_TZ_CITY					state_tz_city
 
 void state_config_menu(User *, char);
 void state_config_address(User *, char);
@@ -101,11 +101,9 @@ void state_config_who_sysop(User *, char);
 void state_config_options(User *, char);
 void state_default_room(User *, char);
 void state_config_timezone(User *, char);
-void state_select_tz_continent(User *, char);
-void state_select_tz_city(User *, char);
-
-void select_tz_continent(User *);
-void select_tz_city(User *);
+void state_tz_continent(User *, char);
+void state_tz_city(User *, char);
+void state_tz_return(User *);
 
 void save_profile(User *, char);
 void abort_profile(User *, char);

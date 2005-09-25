@@ -125,9 +125,11 @@ int max, n;
 				break;
 
 			case S_IFDIR:				/* for directories, append a slash */
-				n = strlen(path);
-				path[n++] = '/';
-				path[n] = 0;
+				if (!(flags & NO_SLASHES)) {
+					n = strlen(path);
+					path[n++] = '/';
+					path[n] = 0;
+				}
 				break;
 
 			case S_IFLNK:

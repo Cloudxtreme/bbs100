@@ -49,8 +49,6 @@ int init_Timezone(void) {
 		return -1;
 
 	tz_hash->hashaddr = hashaddr_ascii;
-
-	generate_tz_index(PARAM_ZONEINFODIR, 1);
 	return 0;
 }
 
@@ -487,89 +485,5 @@ int i;
 }
 
 */
-
-static int tz_index_sort(void *v1, void *v2) {
-StringList *sl1, *sl2;
-
-	if (v1 == NULL || v2 == NULL)
-		return 0;
-
-	sl1 = *(StringList **)v1;
-	sl2 = *(StringList **)v2;
-
-	if (sl1->str == NULL || sl2->str == NULL)
-		return 0;
-
-	return strcmp(sl1->str, sl2->str);
-}
-
-/*
-	there are many many many zoneinfo files that the user can choose as timezone
-	in the Config menu
-	I don't want to rebuild/scan/sort the list of files every time, so we make
-	a .tz_index file that we can put in the cache
-
-	Note: call always with arguments PARAM_ZONEINFODIR, 1
-	This scans the zoneinfo dir for regions, and then the subdirectories for
-	the actual zoneinfo files
-*/
-int generate_tz_index(char *dirname, int subdir) {
-DIR *dirp;
-struct dirent *direntp;
-struct stat statbuf;
-File *f;
-char filename[MAX_PATHLEN];
-StringList *sl;
-
-	if ((dirp = opendir(dirname)) == NULL)
-		return -1;
-
-	sl = NULL;
-	while((direntp = readdir(dirp)) != NULL) {
-		if (direntp->d_name[0] == '.')
-			continue;
-
-		if (strlen(dirname) + strlen(direntp->d_name) + 2 >= MAX_PATHLEN) {
-			log_err("generate_tz_index(): path too long, file skipped");
-			continue;
-		}
-		bufprintf(filename, MAX_PATHLEN, "%s/%s", dirname, direntp->d_name);
-		path_strip(filename);
-
-		if (subdir) {
-			if (!stat(filename, &statbuf) && (statbuf.st_mode & S_IFMT) == S_IFDIR) {
-				prepend_StringList(&sl, new_StringList(direntp->d_name));
-				generate_tz_index(filename, 0);				/* recurse */
-			}
-		} else {
-			if (!stat(filename, &statbuf) && (statbuf.st_mode & S_IFMT) == S_IFREG)
-				prepend_StringList(&sl, new_StringList(direntp->d_name));
-		}
-	}
-	closedir(dirp);
-	sort_StringList(&sl, tz_index_sort);
-
-/*
-	now save the sorted list to a file
-*/
-	cstrcpy(filename, dirname, MAX_PATHLEN);
-	if (strlen(filename) + 11 >= MAX_PATHLEN) {
-		log_err("generate_tz_index(): tz_index path too long, directory skipped");
-		return -1;
-	}
-	cstrcat(filename, TZ_INDEX_FILE, MAX_PATHLEN);
-	path_strip(filename);
-
-	if ((f = Fcreate(filename)) == NULL) {
-		log_err("generate_tz_index(%s): failed to create file %s", dirname, filename);
-		closedir(dirp);
-		return -1;
-	}
-	Fputlist(f, sl);
-	Fclose(f);
-
-	listdestroy_StringList(sl);
-	return 0;
-}
 
 /* EOB */
