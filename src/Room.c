@@ -637,24 +637,19 @@ char buf[MAX_PATHLEN];
 void room_readroomdir(Room *r, char *dirname, int buflen) {
 DIR *dirp;
 struct dirent *direntp;
-char *bufp;
 long num;
-int len;
 
 	if (r == NULL || dirname == NULL || buflen <= 0)
 		return;
 
 	r->tail_msg = r->head_msg = 0L;
-	len = strlen(dirname);
-	bufp = dirname+len;
 
 	if ((dirp = opendir(dirname)) == NULL)
 		return;
 
 	while((direntp = readdir(dirp)) != NULL) {
-		if (direntp->d_name[0] >= '0' && direntp->d_name[0] <= '9') {
-			cstrcpy(bufp, direntp->d_name, buflen - len);
-			num = (long)cstrtoul(bufp, 10);
+		if (is_numeric(direntp->d_name)) {			/* messages have numeric filenames */
+			num = (long)cstrtoul(direntp->d_name, 10);
 
 			if (!r->tail_msg)
 				r->tail_msg = num;
