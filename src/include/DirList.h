@@ -28,6 +28,7 @@
 #define IGNORE_SYMLINKS			1	/* listdir() does not list symlinks */
 #define IGNORE_HIDDEN			2	/* listdir() does not list hidden files */
 #define NO_SLASHES				4	/* don't append slashes to directories */
+#define NO_DIRS					8	/* skip subdirectories */
 
 typedef struct {
 	char *name;

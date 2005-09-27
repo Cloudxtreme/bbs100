@@ -42,6 +42,7 @@
 #include "SU_Passwd.h"
 #include "bufprintf.h"
 #include "helper.h"
+#include "DirList.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -354,6 +355,8 @@ char num_buf[MAX_NUMBER];
 
 		case '*':
 			if (PARAM_HAVE_FEELINGS) {
+				DirList *feelings;
+
 				if (usr->flags & USR_XMSG_NUM)
 					bufprintf(num_buf, MAX_NUMBER, " (#%d)", usr->msg_seq_sent+1);
 				else
@@ -368,6 +371,17 @@ char num_buf[MAX_NUMBER];
 					Put(usr, "<magenta>You have put messages on hold\n");
 					break;
 				}
+				if ((feelings = list_DirList(PARAM_FEELINGSDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
+					log_err("Feelings: list_DirList(%s) failed", PARAM_FEELINGSDIR);
+					Put(usr, "<red>The Feelings are unavailable at the moment. Please try again later\n");
+					break;
+				}
+				if (count_Queue(feelings->list) <= 0) {
+					destroy_DirList(feelings);
+					Put(usr, "<red>The Feelings are missing. How cold-hearted this place is ...");
+					break;
+				}
+				PUSH_ARG(usr, &feelings, sizeof(DirList *));
 				Put(usr, "<green>");
 				enter_recipients(usr, STATE_FEELINGS_PROMPT);
 				Return;			

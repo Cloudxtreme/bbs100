@@ -81,7 +81,7 @@ DirList *dl;
 
 /*
 	create a directory listing in a StringQueue
-	flags can be IGNORE_SYMLINKS|IGNORE_HIDDEN
+	flags can be IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES|NO_DIRS
 */
 StringQueue *listdir(char *dirname, int flags) {
 StringQueue *l;
@@ -125,6 +125,10 @@ int max, n;
 				break;
 
 			case S_IFDIR:				/* for directories, append a slash */
+				if (flags & NO_DIRS) {
+					*path = 0;
+					break;
+				}
 				if (!(flags & NO_SLASHES)) {
 					n = strlen(path);
 					path[n++] = '/';
@@ -133,11 +137,11 @@ int max, n;
 				break;
 
 			case S_IFLNK:
-				if (!(flags & IGNORE_SYMLINKS))
-					break;
-/* fall through */
+				if (flags & IGNORE_SYMLINKS)
+					*path = 0;
+				break;
 
-			default:
+			default:					/* no fifo's, sockets, device files, etc. */
 				*path = 0;
 		}
 		if (!*path)

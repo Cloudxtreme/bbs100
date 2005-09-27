@@ -140,6 +140,8 @@ What's new internally?
   (this is not fast, but does save memory)
 - feelings are cached rather than always resident
   (this saves memory)
+- the feelings menu is no longer kept in memory
+- the timezone menu's are no longer pre-indexed
 - helping hands are selected in an efficient way
 - scalability: mail is sent, deleted, and undeleted in a loop
 - CRC-32 is used for computing hash keys

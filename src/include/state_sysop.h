@@ -186,13 +186,13 @@ void state_add_feeling(User *, char);
 void save_feeling(User *, char);
 void abort_feeling(User *, char);
 void state_remove_feeling(User *, char);
-void do_remove_feeling(User *, KVPair *);
+void do_remove_feeling(User *);
 void state_remove_feeling_yesno(User *, char);
 void state_view_feeling(User *, char);
-void do_view_feeling(User *, KVPair *);
+void do_view_feeling(User *);
 void state_download_feeling(User *, char);
-void do_download_feeling(User *, KVPair *);
-void feelings_menu(User *, char, void (*)(User *, KVPair *));
+void do_download_feeling(User *);
+void feelings_menu(User *, char, void (*)(User *));
 
 void state_parameters_menu(User *, char);
 void state_su_passwd(User *, char);

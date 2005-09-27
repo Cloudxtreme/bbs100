@@ -1,3 +1,8 @@
+Changes as of September 27th 2005
+- Feelings are now done with list_DirList() (and saving some memory)
+- use POKE_ARG to reset an argument (needed this for the Feelings menu)
+- RTF_UPLOAD would remain set after uploading sometimes
+
 Changes as of September 25th 2005
 - sysop has access to the log archive
 - rewrote crummy code; select time zone in Config menu now uses DirList

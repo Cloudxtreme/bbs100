@@ -175,4 +175,30 @@ CallStack *cs;
 	memcpy(arg, (char *)cs + sizeof(ListType), size);
 }
 
+/*
+	overwrite stack argument with a new one
+
+	assumes that there is also a return address on the stack
+	therefore it takes the next element from the stack
+*/
+void PokeArg(Conn *conn, void *arg, int size) {
+CallStack *cs_ret, *cs_arg;
+char *new_cs;
+
+	if (conn == NULL || arg == NULL || conn->callstack == NULL || conn->callstack->next == NULL)
+		return;
+
+	if ((new_cs = (char *)Malloc(sizeof(ListType)+size, TYPE_CHAR)) == NULL)
+		return;
+
+	memcpy(new_cs + sizeof(ListType), arg, size);
+
+/* use the conventional (but slow) way */
+	cs_ret = pop_CallStack(&conn->callstack);
+	cs_arg = pop_CallStack(&conn->callstack);
+	Free(cs_arg);
+	push_CallStack(&conn->callstack, (CallStack *)new_cs);
+	push_CallStack(&conn->callstack, cs_ret);
+}
+
 /* EOB */

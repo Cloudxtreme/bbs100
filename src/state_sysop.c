@@ -68,6 +68,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+
 void state_sysop_menu(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -224,7 +225,17 @@ void state_sysop_menu(User *usr, char c) {
 		case 'f':
 		case 'F':
 			if (PARAM_HAVE_FEELINGS) {
+				DirList *feelings;
+
 				Put(usr, "Feelings\n");
+
+				if ((feelings = list_DirList(PARAM_FEELINGSDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
+					log_err("state_sysop_menu(): list_DirList(%s) failed", PARAM_FEELINGSDIR);
+					Put(usr, "<red>Failed to read the Feelings directory\n");
+					CURRENT_STATE(usr);
+					Return;
+				}
+				PUSH_ARG(usr, &feelings, sizeof(DirList *));
 				CALL(usr, STATE_FEELINGS_MENU);
 				Return;
 			}
@@ -2262,7 +2273,7 @@ int r;
 			}
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter year: ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Archive# <green>Enter year: ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2312,7 +2323,7 @@ int r;
 					DirList *dl2;
 
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
-					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						break;
 					}
@@ -2334,7 +2345,7 @@ int r;
 			}
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter month: ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Archive# <green>Enter month: ", PARAM_NAME_SYSOP);
 	Return;
 }
 
@@ -2423,44 +2434,58 @@ int r;
 			}
 			Return;
 	}
-	Print(usr, "<yellow>\n[%s] Log Archive# <green>Enter number: ", PARAM_NAME_SYSOP);
+	Print(usr, "<yellow>\n[%s] Archive# <green>Enter number: ", PARAM_NAME_SYSOP);
 	Return;
 }
 
 
 void state_feelings_menu(User *usr, char c) {
-StringIO *s;
+DirList *feelings;
 
 	if (usr == NULL)
 		return;
 
 	Enter(state_feelings_menu);
 
+	PEEK_ARG(usr, &feelings, sizeof(DirList *));
+	if (feelings == NULL) {
+		Perror(usr, "Your feelings have ebbed away ...");
+		RET(usr);
+		Return;
+	}
 	switch(c) {
 		case INIT_PROMPT:
 			break;
 
 		case INIT_STATE:
-			if ((s = new_StringIO()) == NULL) {
-				Perror(usr, "Out of memory");
+			buffer_text(usr);
+
+/* always re-read the directory */
+			destroy_DirList(feelings);
+			if ((feelings = list_DirList(PARAM_FEELINGSDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
+				log_err("state_feelings_menu(): list_DirList(%s) failed", PARAM_FEELINGSDIR);
+				Put(usr, "<red>Failed to read the Feelings directory\n");
+				POP_ARG(usr, &feelings, sizeof(DirList *));
+/* don't destroy; it's already destroyed, but we still needed to get the container off the stack */
 				RET(usr);
 				Return;
 			}
-			make_feelings_screen(s, usr->display->term_width);
-			buffer_text(usr);
-			Put(usr, "\n");
-			display_text(usr, s);
-			destroy_StringIO(s);
+			POKE_ARG(usr, &feelings, sizeof(DirList *));
 
+			if (count_Queue(feelings->list) > 0) {
+				Put(usr, "\n");
+				print_columns(usr, (StringList *)feelings->list->tail, FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES);
+			}
 			Put(usr, "<magenta>\n"
 				"<hotkey>Add feeling"
 			);
-			if (feelings != NULL) {
+			if (count_Queue(feelings->list) > 0) {
 				Put(usr, "                       <hotkey>View feeling\n"
 					"<hotkey>Remove feeling                    <hotkey>Download\n"
 				);
 			} else
 				Put(usr, "\n");
+
 			read_menu(usr);
 			Return;
 
@@ -2468,6 +2493,9 @@ StringIO *s;
 		case KEY_BS:
 		case KEY_RETURN:
 			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+
+			POP_ARG(usr, &feelings, sizeof(DirList *));
+			destroy_DirList(feelings);
 			RET(usr);
 			Return;
 
@@ -2479,10 +2507,15 @@ StringIO *s;
 		case '`':
 			CALL(usr, STATE_BOSS);
 			Return;
-
+/*
+	Note: here we put another pointer to the feelings on the stack, but be sure
+	NOT to destroy them in the next state; the feelings are destroyed upon
+	return from _this_ (calling) state
+*/
 		case 'a':
 		case 'A':
 			Put(usr, "Add\n");
+			PUSH_ARG(usr, &feelings, sizeof(DirList *));
 			CALL(usr, STATE_ADD_FEELING);
 			Return;
 
@@ -2492,6 +2525,7 @@ StringIO *s;
 				break;
 
 			Put(usr, "Remove\n");
+			PUSH_ARG(usr, &feelings, sizeof(DirList *));
 			CALL(usr, STATE_REMOVE_FEELING);
 			Return;
 
@@ -2501,6 +2535,7 @@ StringIO *s;
 				break;
 
 			Put(usr, "View\n");
+			PUSH_ARG(usr, &feelings, sizeof(DirList *));
 			CALL(usr, STATE_VIEW_FEELING);
 			Return;
 
@@ -2510,6 +2545,7 @@ StringIO *s;
 				break;
 
 			Put(usr, "Download\n");
+			PUSH_ARG(usr, &feelings, sizeof(DirList *));
 			CALL(usr, STATE_DOWNLOAD_FEELING);
 			Return;
 	}
@@ -2520,10 +2556,17 @@ StringIO *s;
 void state_add_feeling(User *usr, char c) {
 int r;
 char *p;
-KVPair *f;
+DirList *feelings;
+StringList *sl;
 
 	Enter(state_add_feeling);
 
+	PEEK_ARG(usr, &feelings, sizeof(DirList *));
+	if (feelings == NULL || feelings->list == NULL) {
+		Perror(usr, "All feelings have gone!");
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE) {
 		Put(usr, "<green>Enter name: <yellow>");
 		edit_caps_line(usr, EDIT_INIT);
@@ -2532,10 +2575,21 @@ KVPair *f;
 	r = edit_caps_line(usr, c);
 	switch(r) {
 		case EDIT_BREAK:
+/*
+	pop, but do not destroy
+	(see also comment in state_feelings_menu())
+*/
+			POP_ARG(usr, &feelings, sizeof(DirList *));
 			RET(usr);
 			break;
 
 		case EDIT_RETURN:
+/*
+	pop, but do not destroy
+	(see also comment in state_feelings_menu())
+*/
+			POP_ARG(usr, &feelings, sizeof(DirList *));
+
 			cstrip_line(usr->edit_buf);
 			if (!usr->edit_buf[0]) {
 				RET(usr);
@@ -2546,12 +2600,12 @@ KVPair *f;
 				RET(usr);
 				Return;
 			}
-			while((p = cstrchr(usr->edit_buf, '_')) != NULL)
-				*p = ' ';
+			while((p = cstrchr(usr->edit_buf, ' ')) != NULL)
+				*p = '_';
 			cstrip_spaces(usr->edit_buf);
 
-			for(f = feelings; f != NULL; f = f->next) {
-				if (!cstricmp(usr->edit_buf, f->key)) {
+			for(sl = (StringList *)feelings->list->tail; sl != NULL; sl = sl->next) {
+				if (!cstricmp(usr->edit_buf, sl->str)) {
 					Put(usr, "<red>Feeling already exists\n");
 					RET(usr);
 					Return;
@@ -2563,6 +2617,7 @@ KVPair *f;
 				RET(usr);
 				Return;
 			}
+			usr->runtime_flags |= RTF_UPLOAD;
 			Print(usr, "<green>\n"
 				"Upload feeling, press <yellow><Ctrl-C><green> to end\n");
 			POP(usr);
@@ -2573,7 +2628,6 @@ KVPair *f;
 
 void save_feeling(User *usr, char c) {
 char filename[MAX_PATHLEN], *p;
-KVPair *f;
 
 	if (usr->tmpbuf[TMP_NAME] == NULL || !usr->tmpbuf[TMP_NAME][0]) {
 		Free(usr->tmpbuf[TMP_NAME]);
@@ -2582,17 +2636,8 @@ KVPair *f;
 		RET(usr);
 		Return;
 	}
-	if ((f = new_KVPair()) == NULL) {
-		Perror(usr, "Out of memory");
-		RET(usr);
-		Return;
-	}
 	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
-	p = filename + strlen(PARAM_FEELINGSDIR);
-	while((p = cstrchr(filename, ' ')) != NULL)
-		*p = '_';
 
-	KVPair_setstring(f, usr->tmpbuf[TMP_NAME], filename);
 	Free(usr->tmpbuf[TMP_NAME]);
 	usr->tmpbuf[TMP_NAME] = NULL;
 
@@ -2601,16 +2646,15 @@ KVPair *f;
 		log_err("failed to save feeling as %s", filename);
 
 		free_StringIO(usr->text);
-		destroy_KVPair(f);
 		RET(usr);
 		Return;
 	}
 	free_StringIO(usr->text);
 
-	prepend_KVPair(&feelings, f);
-	sort_KVPair(&feelings, feeling_sort_func);
 	feelings_generation++;
-	log_msg("SYSOP %s added Feeling %s", usr->name, f->key);
+
+	p = filename + strlen(PARAM_FEELINGSDIR);
+	log_msg("SYSOP %s added Feeling %s", usr->name, p);
 	RET(usr);
 }
 
@@ -2624,15 +2668,22 @@ void state_remove_feeling(User *usr, char c) {
 	feelings_menu(usr, c, do_remove_feeling);
 }
 
-void feelings_menu(User *usr, char c, void (*func)(User *, KVPair *)) {
+void feelings_menu(User *usr, char c, void (*func)(User *)) {
 int r;
-KVPair *f;
+DirList *feelings;
+StringList *sl;
 
 	if (usr == NULL || func == NULL)
 		return;
 
-	Enter(state_remove_feeling);
+	Enter(feelings_menu);
 
+	PEEK_ARG(usr, &feelings, sizeof(DirList *));
+	if (feelings == NULL || feelings->list == NULL) {
+		Perror(usr, "All feelings have gone!");
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE) {
 		Put(usr, "<green>Enter number: <yellow>");
 		edit_number(usr, EDIT_INIT);
@@ -2641,10 +2692,21 @@ KVPair *f;
 	r = edit_number(usr, c);
 	switch(r) {
 		case EDIT_BREAK:
+/*
+	pop, but do not destroy
+	(see also comment in state_feelings_menu())
+*/
+			POP_ARG(usr, &feelings, sizeof(DirList *));
 			RET(usr);
 			Return;
 
 		case EDIT_RETURN:
+/*
+	pop, but do not destroy
+	(see also comment in state_feelings_menu())
+*/
+			POP_ARG(usr, &feelings, sizeof(DirList *));
+
 			if (!usr->edit_buf[0]) {
 				RET(usr);
 				Return;
@@ -2656,72 +2718,75 @@ KVPair *f;
 				Return;
 			}
 			usr->read_lines = r;
-			f = feelings;
+
 			r--;
-			while(r > 0 && f != NULL) {
+			for(sl = (StringList *)feelings->list->tail; r > 0 && sl != NULL; sl = sl->next)
 				r--;
-				f = f->next;
-			}
-			if (f == NULL) {
+
+			if (sl == NULL) {
 				Put(usr, "<red>No such feeling\n");
+				RET(usr);
+				Return;
+			}
+			Free(usr->tmpbuf[TMP_NAME]);
+			if ((usr->tmpbuf[TMP_NAME] = cstrdup(sl->str)) == NULL) {
+				Perror(usr, "Bummer, out of memory");
 				RET(usr);
 				Return;
 			}
 /*
 	I use this construction with func because this all would be duplicate code
+	sl->str is the filename of the Feeling
 */
-			func(usr, f);
+			func(usr);
 			Return;
 	}
 	Return;
 }
 
 /*
-	usr->read_lines is the number of the feeling
+	usr->tmpbuf[TMP_NAME] is the filename of the feeling
 */
-void do_remove_feeling(User *usr, KVPair *f) {
+void do_remove_feeling(User *usr) {
 	JMP(usr, STATE_REMOVE_FEELING_YESNO);
 }
 
 /*
-	usr->read_lines is the number of the feeling
+	usr->tmpbuf[TMP_NAME] is the filename of the feeling
 */
 void state_remove_feeling_yesno(User *usr, char c) {
-KVPair *f;
-int r;
+char filename[MAX_PATHLEN], *p;
 
 	Enter(state_remove_feeling_yesno);
 
+	if (usr->tmpbuf[TMP_NAME] == NULL) {
+		Perror(usr, "Can't remember what Feeling you wanted to remove..!");
+		RET(usr);
+		Return;
+	}
 	if (c == INIT_STATE) {
 		Put(usr, "<cyan>Are you sure? (y/N): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			r = usr->read_lines;
-			f = feelings;
-			r--;
-			while(r > 0 && f != NULL) {
-				r--;
-				f = f->next;
-			}
-			if (f == NULL) {
-				Put(usr, "<red>No such feeling\n");
-				RET(usr);
-				Return;
-			}
-			if (unlink_file((char *)KVPair_getpointer(f)) < 0)
+			bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+			Free(usr->tmpbuf[TMP_NAME]);
+			usr->tmpbuf[TMP_NAME] = NULL;
+
+			if (unlink_file(filename) < 0)
 				Perror(usr, "Failed to delete feeling");
 			else {
-				log_msg("SYSOP %s deleted Feeling %s", usr->name, f->key);
-				remove_KVPair(&feelings, f);
-				destroy_KVPair(f);
+				p = filename + strlen(PARAM_FEELINGSDIR);
+				log_msg("SYSOP %s deleted Feeling %s", usr->name, p);
 				feelings_generation++;
 			}
 			RET(usr);
 			Return;
 
 		case YESNO_NO:
+			Free(usr->tmpbuf[TMP_NAME]);
+			usr->tmpbuf[TMP_NAME] = NULL;
 			RET(usr);
 			Return;
 
@@ -2735,9 +2800,22 @@ void state_view_feeling(User *usr, char c) {
 	feelings_menu(usr, c, do_view_feeling);
 }
 
-void do_view_feeling(User *usr, KVPair *f) {
+void do_view_feeling(User *usr) {
+char filename[MAX_PATHLEN];
+
+	Enter(do_view_feeling);
+
+	if (usr->tmpbuf[TMP_NAME] == NULL) {
+		Perror(usr, "Can't remember what Feeling you were talking about..!");
+		RET(usr);
+		Return;
+	}
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	Free(usr->tmpbuf[TMP_NAME]);
+	usr->tmpbuf[TMP_NAME] = NULL;
+
 	free_StringIO(usr->text);
-	if (load_StringIO(usr->text, (char *)KVPair_getpointer(f)) < 0) {
+	if (load_StringIO(usr->text, filename) < 0) {
 		Perror(usr, "Failed to load feeling");
 		RET(usr);
 		Return;
@@ -2745,20 +2823,35 @@ void do_view_feeling(User *usr, KVPair *f) {
 	POP(usr);
 	PUSH(usr, STATE_PRESS_ANY_KEY);
 	read_text(usr);
+	Return;
 }
 
 void state_download_feeling(User *usr, char c) {
 	feelings_menu(usr, c, do_download_feeling);
 }
 
-void do_download_feeling(User *usr, KVPair *f) {
+void do_download_feeling(User *usr) {
+char filename[MAX_PATHLEN];
+
+	Enter(do_download_feeling);
+
+	if (usr->tmpbuf[TMP_NAME] == NULL) {
+		Perror(usr, "Can't remember what Feeling you were talking about..!");
+		RET(usr);
+		Return;
+	}
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	Free(usr->tmpbuf[TMP_NAME]);
+	usr->tmpbuf[TMP_NAME] = NULL;
+
 	free_StringIO(usr->text);
-	if (load_StringIO(usr->text, (char *)KVPair_getpointer(f)) < 0) {
+	if (load_StringIO(usr->text, filename) < 0) {
 		Perror(usr, "Failed to load feeling");
 		RET(usr);
 		Return;
 	}
 	JMP(usr, STATE_DOWNLOAD_TEXT);
+	Return;
 }
 
 

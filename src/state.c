@@ -60,6 +60,7 @@
 #include "memset.h"
 #include "bufprintf.h"
 #include "helper.h"
+#include "DirList.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -470,6 +471,8 @@ void state_emote_prompt(User *usr, char c) {
 }
 
 void state_feelings_prompt(User *usr, char c) {
+DirList *feelings;
+
 	if (usr == NULL)
 		return;
 
@@ -477,12 +480,16 @@ void state_feelings_prompt(User *usr, char c) {
 
 	switch(edit_recipients(usr, c, multi_x_access)) {
 		case EDIT_BREAK:
+			POP_ARG(usr, &feelings, sizeof(DirList));
+			destroy_DirList(feelings);
 			RET(usr);
 			break;
 
 		case EDIT_RETURN:
 			check_recipients(usr);
 			if (count_Queue(usr->recipients) <= 0) {
+				POP_ARG(usr, &feelings, sizeof(DirList));
+				destroy_DirList(feelings);
 				RET(usr);
 				break;
 			}
@@ -1296,6 +1303,7 @@ int r;
 }
 
 void state_choose_feeling(User *usr, char c) {
+DirList *feelings;
 int r;
 
 	if (usr == NULL)
@@ -1303,146 +1311,170 @@ int r;
 
 	Enter(state_choose_feeling);
 
-	if (c == INIT_STATE) {
-		char numbuf[MAX_NUMBER];
-
-		usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
-
-		make_feelings_screen(usr->text, usr->display->term_width);
-		if (usr->text == NULL || usr->text->buf == NULL || !usr->text->len) {
-			Perror(usr, "The feelings are temporarily unavailable");
-			RET(usr);
+	PEEK_ARG(usr, &feelings, sizeof(DirList *));
+	if (feelings == NULL) {
+		Perror(usr, "All feelings have gone ...");
+		RET(usr);
+		Return;
+	}
+	switch(c) {
+		case INIT_PROMPT:
+			Put(usr, "\n<green>Feeling: <yellow>");
 			Return;
-		}
+
+		case INIT_STATE:
+			usr->runtime_flags |= (RTF_BUSY | RTF_BUSY_SENDING);
+			edit_number(usr, EDIT_INIT);
 /*
 	remember the current generation number; this will tell us later if
 	Sysop changed the feelings in the meantime
 */
-		bufprintf(numbuf, MAX_NUMBER, "%d", feelings_generation);
-		Free(usr->tmpbuf[TMP_FROM_IP]);
-		if ((usr->tmpbuf[TMP_FROM_IP] = cstrdup(numbuf)) == NULL) {
-			Perror(usr, "Out of memory");
-			free_StringIO(usr->text);
-			RET(usr);
-		}
-		display_text(usr, usr->text);
-		free_StringIO(usr->text);
-		Put(usr, "\n<green>Feeling: <yellow>");
-	}
-	r = edit_number(usr, c);
-
-	if (r == EDIT_BREAK) {
-		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING);
-
-		Free(usr->tmpbuf[TMP_FROM_IP]);
-		usr->tmpbuf[TMP_FROM_IP] = NULL;
-
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		BufferedMsg *msg;
-		KVPair *f;
-		File *file;
-		char *filename;
-		int num, gen;
-
-		usr->runtime_flags &= ~RTF_BUSY_SENDING;
-
-		if (!usr->edit_buf[0]) {
 			Free(usr->tmpbuf[TMP_FROM_IP]);
-			usr->tmpbuf[TMP_FROM_IP] = NULL;
-			RET(usr);
-			Return;
-		}
-		num = atoi(usr->edit_buf);
-		if (num <= 0) {
-			Put(usr, "<red>No such feeling\n");
-			Free(usr->tmpbuf[TMP_FROM_IP]);
-			usr->tmpbuf[TMP_FROM_IP] = NULL;
-			RET(usr);
-			Return;
-		}
-		gen = atoi(usr->tmpbuf[TMP_FROM_IP]);
-		Free(usr->tmpbuf[TMP_FROM_IP]);
-		usr->tmpbuf[TMP_FROM_IP] = NULL;
+			if ((usr->tmpbuf[TMP_FROM_IP] = (char *)Malloc(MAX_NUMBER, TYPE_CHAR)) == NULL) {
+				Perror(usr, "Out of memory");
+				POP_ARG(usr, &feelings, sizeof(DirList *));
+				destroy_DirList(feelings);
+				RET(usr);
+				Return;
+			}
+			bufprintf(usr->tmpbuf[TMP_FROM_IP], MAX_NUMBER, "%d", feelings_generation);
 
-		if (gen != feelings_generation) {
-			Print(usr, "<red>In the meantime, a %s changed something ...\n\n", PARAM_NAME_SYSOP);
-			CURRENT_STATE(usr);
+			buffer_text(usr);
+			print_columns(usr, (StringList *)feelings->list->tail, FORMAT_NUMBERED|FORMAT_NO_UNDERSCORES);
+			read_menu(usr);
 			Return;
-		}
-		f = feelings;
-		num--;
-		while(num > 0 && f != NULL) {
-			num--;
-			f = f->next;
-		}
-		if (f == NULL) {
-			Put(usr, "<red>No such feeling\n");
-			RET(usr);
-			Return;
-		}
+
+		default:
+			r = edit_number(usr, c);
+
+			if (r == EDIT_RETURN && !usr->edit_buf[0])
+				r = EDIT_BREAK;
+
+			if (r == EDIT_BREAK) {
+				usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING);
+				Free(usr->tmpbuf[TMP_FROM_IP]);
+				usr->tmpbuf[TMP_FROM_IP] = NULL;
+				POP_ARG(usr, &feelings, sizeof(DirList *));
+				destroy_DirList(feelings);
+				RET(usr);
+				Return;
+			}
+			if (r == EDIT_RETURN) {
+				BufferedMsg *msg;
+				StringList *sl;
+				File *file;
+				char filename[MAX_PATHLEN];
+				int num, gen;
+
+				usr->runtime_flags &= ~RTF_BUSY_SENDING;
+
+				num = atoi(usr->edit_buf);
+				if (num <= 0) {
+					Put(usr, "<red>No such feeling\n");
+					Free(usr->tmpbuf[TMP_FROM_IP]);
+					usr->tmpbuf[TMP_FROM_IP] = NULL;
+					POP_ARG(usr, &feelings, sizeof(DirList *));
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
+				gen = atoi(usr->tmpbuf[TMP_FROM_IP]);
+				Free(usr->tmpbuf[TMP_FROM_IP]);
+				usr->tmpbuf[TMP_FROM_IP] = NULL;
+
+				if (gen != feelings_generation) {
+					Print(usr, "<red>In the meantime, a %s changed something ...\n\n", PARAM_NAME_SYSOP);
+
+/* re-read the Feelings directory */
+					destroy_DirList(feelings);
+					if ((feelings = list_DirList(PARAM_FEELINGSDIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
+						log_err("state_choose_feeling(): list_DirList(%s) failed", PARAM_FEELINGSDIR);
+						Put(usr, "<red>The Feelings are offline for now, please try again later\n");
+
+						POP_ARG(usr, &feelings, sizeof(DirList *));
+/* don't destroy; it's already destroyed, but we still needed to get the container off the stack */
+						RET(usr);
+						Return;
+					}
+					POKE_ARG(usr, &feelings, sizeof(DirList *));
+
+					CURRENT_STATE(usr);
+					Return;
+				}
+				POP_ARG(usr, &feelings, sizeof(DirList *));
+
+				num--;
+				for(sl = (StringList *)feelings->list->tail; num > 0 && sl != NULL; sl = sl->next)
+					num--;
+
+				if (sl == NULL || sl->str == NULL) {
+					Put(usr, "<red>No such feeling\n");
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
 
 /* send feeling */
 
-		if ((msg = new_BufferedMsg()) == NULL) {
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
-		if ((msg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
-			destroy_BufferedMsg(msg);
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
-		if ((filename = (char *)KVPair_getpointer(f)) == NULL) {
-			destroy_BufferedMsg(msg);
-			Perror(usr, "This feeling has vanished");
-			RET(usr);
-			Return;
-		}
-		if ((file = Fopen(filename)) == NULL) {
-			destroy_BufferedMsg(msg);
-			Perror(usr, "The feeling has passed");
-			RET(usr);
-			Return;
-		}
-		if (Fget_StringIO(file, msg->msg) < 0) {
-			Fclose(file);
-			destroy_BufferedMsg(msg);
-			Perror(usr, "Out of memory");
-			RET(usr);
-			Return;
-		}
-		Fclose(file);
+				if ((msg = new_BufferedMsg()) == NULL) {
+					Perror(usr, "Out of memory");
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
+				if ((msg->to = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
+					destroy_BufferedMsg(msg);
+					Perror(usr, "Out of memory");
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
+				bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, sl->str);
+				if ((file = Fopen(filename)) == NULL) {
+					destroy_BufferedMsg(msg);
+					Perror(usr, "The feeling has passed");
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
+				if (Fget_StringIO(file, msg->msg) < 0) {
+					Fclose(file);
+					destroy_BufferedMsg(msg);
+					Perror(usr, "Out of memory");
+					destroy_DirList(feelings);
+					RET(usr);
+					Return;
+				}
+				Fclose(file);
 
-		cstrcpy(msg->from, usr->name, MAX_NAME);
-		msg->mtime = rtc;
+				cstrcpy(msg->from, usr->name, MAX_NAME);
+				msg->mtime = rtc;
 
-		msg->flags = BUFMSG_FEELING;
-		if (usr->runtime_flags & RTF_SYSOP)
-			msg->flags |= BUFMSG_SYSOP;
+				msg->flags = BUFMSG_FEELING;
+				if (usr->runtime_flags & RTF_SYSOP)
+					msg->flags |= BUFMSG_SYSOP;
 
-		add_BufferedMsg(&usr->history, msg);
-		expire_history(usr);
+				add_BufferedMsg(&usr->history, msg);
+				expire_history(usr);
 
-		destroy_BufferedMsg(usr->send_msg);
-		usr->send_msg = ref_BufferedMsg(msg);
-		usr->msg_seq_sent++;
+				destroy_BufferedMsg(usr->send_msg);
+				usr->send_msg = ref_BufferedMsg(msg);
+				usr->msg_seq_sent++;
 
 /* update stats */
-		if (count_Queue(usr->recipients) > 0
-			&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
-			usr->fsent++;
-			if (usr->fsent > stats.fsent) {
-				stats.fsent = usr->fsent;
-				cstrcpy(stats.most_fsent, usr->name, MAX_NAME);
+				if (count_Queue(usr->recipients) > 0
+					&& !(count_Queue(usr->recipients) == 1 && !strcmp(usr->name, ((StringList *)usr->recipients->head)->str))) {
+					usr->fsent++;
+					if (usr->fsent > stats.fsent) {
+						stats.fsent = usr->fsent;
+						cstrcpy(stats.most_fsent, usr->name, MAX_NAME);
+					}
+					stats.fsent_boot++;
+				}
+				destroy_DirList(feelings);
+				JMP(usr, LOOP_SEND_MSG);
+				Return;
 			}
-			stats.fsent_boot++;
-		}
-		JMP(usr, LOOP_SEND_MSG);
 	}
 	Return;
 }
@@ -2426,6 +2458,7 @@ char buf[MAX_LONGLINE], *p;
 			"StringIO.c",
 			"Display.c",
 			"patchlist.c",
+			"helper.c",
 			"BinAlloc.c",
 			"DirList.c",
 			"NewUserLog.c",

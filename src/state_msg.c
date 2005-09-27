@@ -525,7 +525,7 @@ void state_save_text(User *usr, char c) {
 		case 's':
 		case 'S':
 			Put(usr, "<white>Save\n");
-			usr->runtime_flags &= ~RTF_BUSY_MAILING;
+			usr->runtime_flags &= ~(RTF_BUSY_MAILING|RTF_UPLOAD);
 			POP(usr);				/* pop the abort_text() user exit */
 			RET(usr);
 			break;
@@ -553,7 +553,7 @@ void (*abort_func)(void *, char);
 		case YESNO_YES:
 			free_StringIO(usr->text);
 
-			usr->runtime_flags &= ~RTF_BUSY_MAILING;
+			usr->runtime_flags &= ~(RTF_BUSY_MAILING|RTF_UPLOAD);
 /*
 	fiddle with stack ; remove the abort() and save() handlers, and jump to
 	the abort() user exit function
