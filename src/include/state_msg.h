@@ -81,6 +81,7 @@ void spew_BufferedMsg(User *);
 void expire_msg(Room *);
 void expire_mail(User *);
 Room *next_unread_room(User *);
+Room *skip_room(User *);
 Room *unread_room(User *, Room *);
 Joined *joined_room(User *, Room *);
 void mail_msg(User *, BufferedMsg *);

@@ -561,8 +561,10 @@ int i, new_mail;
 		if (PARAM_HAVE_MAILROOM && new_mail)
 			r = usr->mail;
 		else {
-			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || joined_room(usr, r) == NULL)
+			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || joined_room(usr, r) == NULL) {
+				usr->default_room = LOBBY_ROOM;
 				r = Lobby_room;
+			}
 		}
 	}
 	goto_room(usr, r);

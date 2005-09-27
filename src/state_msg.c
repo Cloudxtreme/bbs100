@@ -1400,7 +1400,6 @@ void state_press_any_key(User *usr, char c) {
 	this is an unseemingly costly operation
 */
 Room *next_unread_room(User *usr) {
-Room *r, *next_joined = NULL;
 Joined *j;
 
 	if (usr == NULL)
@@ -1436,9 +1435,30 @@ Joined *j;
 		if (usr->mail->head_msg > j->last_read)
 			return usr->mail;
 	}
+	return skip_room(usr);
+}
+
+/*
+	skip to the next unread room
+	do not explicitly check for new posts in Lobby> or Mail>
+*/
+Room *skip_room(User *usr) {
+Room *r, *rm, *next_joined;
+
+	if (usr == NULL)
+		return Lobby_room;
+
+	if (usr->curr_room == NULL) {
+		Perror(usr, "Suddenly your environment goes up in flames. Please re-login (?)");
+		return Lobby_room;
+	}
+	if (PARAM_HAVE_MAILROOM && usr->mail == NULL) {
+		Perror(usr, "Your mailbox seems to have vaporized. Please re-login (?)");
+		return Lobby_room;
+	}
 /*
 	scan for next unread rooms
-	we search the current room, and we proceed our search from there
+	we seek the current room, and we proceed our search from there
 */
 	if (usr->curr_room->number < SPECIAL_ROOMS) {
 		for(r = AllRooms; r != NULL; r = r->next) {
@@ -1452,35 +1472,80 @@ Joined *j;
 		Perror(usr, "Your environment has vaporized!");
 		return Lobby_room;
 	}
-/* we've seen the current room, skip to the next and search for an unread room */
+/*
+	we've seen the current room, skip to the next and search for an unread room
 
+	skipping the Home room has a pleasant side-effect; we're not demand loading
+	and unloading it all the time, so we're not scratching the disk here
+	
+*/
+	next_joined = NULL;
 	for(r = r->next; r != NULL; r = r->next) {
-		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, r) != NULL)
-			next_joined = r;
+		rm = r;
+		if (rm->number == LOBBY_ROOM)
+			rm = Lobby_room;
+		else
+			if (rm->number == MAIL_ROOM) {
+				if (PARAM_HAVE_MAILROOM)
+					rm = usr->mail;
+				else
+					continue;
+			} else
+				if (rm->number == HOME_ROOM)
+					continue;
 
-		if (unread_room(usr, r) != NULL)
-			return r;
+/* you don't want to get stuck in a chatroom all of a sudden */
+		if (rm->flags & ROOM_CHATROOM)
+			continue;
+
+		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
+			next_joined = rm;
+
+		if (unread_room(usr, rm) != NULL)
+			return rm;
 	}
+
 /* couldn't find a room, now search from the beginning up to curr_room */
 
 	for(r = AllRooms; r != NULL && r->number != usr->curr_room->number; r = r->next) {
-		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, r) != NULL)
-			next_joined = r;
+		rm = r;
+		if (rm->number == LOBBY_ROOM)
+			rm = Lobby_room;
+		else
+			if (rm->number == MAIL_ROOM) {
+				if (PARAM_HAVE_MAILROOM)
+					rm = usr->mail;
+				else
+					continue;
+			} else
+				if (rm->number == HOME_ROOM)
+					continue;
 
-		if (unread_room(usr, r) != NULL)
-			return r;
+/* you don't want to get stuck in a chatroom all of a sudden */
+		if (rm->flags & ROOM_CHATROOM)
+			continue;
+
+		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
+			next_joined = rm;
+
+		if (unread_room(usr, rm) != NULL)
+			return rm;
 	}
+
 /* couldn't find an unread room; goto next joined room */
+
 	if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined != NULL)
 		return next_joined;
 
-/* couldn't find an unread room; goto the default room */
+/* couldn't find a room; goto the default room */
 
-	if ((r = find_Roombynumber(usr, usr->default_room)) != NULL && room_access(r, usr->name) >= 0)
-		return r;
+	if ((rm = find_Roombynumber(usr, usr->default_room)) != NULL) {
+		if (room_access(rm, usr->name) >= 0)
+			return rm;
 
-	unload_Room(r);
-
+		if (rm->number < SPECIAL_ROOMS)
+			unload_Room(rm);
+	}
 	usr->default_room = LOBBY_ROOM;
 	return Lobby_room;
 }
@@ -1514,14 +1579,6 @@ Joined *j;
 
 	Enter(joined_room);
 
-/*
-	NOTE: we skip room #1 and #2 (because they are 'dynamic' in the User
-	      and Mail> is checked seperately
-	      (remove this check and strange things happen... :P)
-*/
-	if (r->number == MAIL_ROOM || r->number == HOME_ROOM) {
-		Return NULL;
-	}
 	j = in_Joined(usr->rooms, r->number);
 
 /* if not welcome anymore, unjoin and proceed */

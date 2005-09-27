@@ -708,7 +708,11 @@ char num_buf[MAX_NUMBER];
 			do {
 				Room *r;
 
-				r = next_unread_room(usr);
+				if (c == 's')
+					r = skip_room(usr);
+				else
+					r = next_unread_room(usr);
+
 				if (r != usr->curr_room) {
 					Print(usr, "<white>Goto <yellow>%s\n", r->name);
 					goto_room(usr, r);
@@ -1344,7 +1348,7 @@ char *category = NULL;
 		r_next = r->next;
 
 /* first three rooms are special */
-		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
+		if (r->number < SPECIAL_ROOMS)
 			if ((r = find_Roombynumber(usr, r->number)) == NULL)
 				continue;
 
@@ -1370,7 +1374,7 @@ char *category = NULL;
 /*
 	throw away the demand loaded room because we're not using it anyway
 */
-	if ((r = find_Roombynumber(usr, 2)) != NULL)
+	if ((r = find_Roombynumber(usr, HOME_ROOM)) != NULL)
 		unload_Room(r);
 
 	read_text(usr);
