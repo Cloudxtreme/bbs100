@@ -1073,8 +1073,8 @@ int from_me = 0;
 		int msg_num, msg_sent_num;
 
 		p = NULL;
+		msg_num = usr->msg_seq_recv;
 		if (usr->held_msgs != NULL) {
-			msg_num = usr->msg_seq_recv;
 			p = usr->held_msgs;
 			while(p != NULL) {
 				msg_num++;

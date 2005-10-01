@@ -57,10 +57,10 @@ int (*load_func)(File *, NewUserQueue *);
 		return NULL;
 	}
 	version = fileformat_version(f);
+	load_func = NULL;
 	switch(version) {
 		case -1:
 			log_err("load_NewUserQueue(): error trying to determine file format version of %s", filename);
-			load_func = NULL;
 			break;
 
 		case 1:
