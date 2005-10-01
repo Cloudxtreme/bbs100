@@ -76,7 +76,7 @@ int i, j;
 
 	memset(bins, 0, NUM_TYPES * sizeof(MemBin *));
 	memset(&mem_info, 0, sizeof(MemInfo));
-	memset(&mem_stats, 0, NUM_TYPES * sizeof(MemStats));
+	memset(mem_stats, 0, NUM_TYPES * sizeof(MemStats));
 
 	for(i = 0; i < NUM_TYPES; i++)
 		bin_mapping[i] = i;				/* initially map one-on-one */
@@ -162,6 +162,8 @@ int n;
 
 	if (!size)
 		return NULL;
+
+	ROUND4(size);
 
 	if (type < 0 || type >= NUM_TYPES) {
 		log_err("BinMalloc(): unknown type %d", type);

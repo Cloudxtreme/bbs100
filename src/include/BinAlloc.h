@@ -34,6 +34,14 @@
 #define unwind_MemBin(x)		(MemBin *)unwind_List(x)
 #define sort_MemBin(x, y)		(MemBin *)sort_List((x), (y))
 
+#define ROUND4(x)				\
+	do {						\
+		if (((x) & 3) > 0) {	\
+			(x) &= ~3;			\
+			(x) += 4;			\
+		}						\
+	} while(0)
+
 #define BIN_SIZE		256
 #define MARKER_SIZE		2
 #define MAX_BIN_FREE	(BIN_SIZE - sizeof(MemBin) - MARKER_SIZE)
