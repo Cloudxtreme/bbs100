@@ -48,6 +48,9 @@
 
 	Note: all memory allocators in bbs100 MUST zero out the allocated block, or you will
 	      get segfaults all over
+
+	Note: Some architectures align memory, causing crashes for 2-byte markers
+	      Therefore the markers are really sizeof(void *) in size
 */
 
 #include "config.h"
@@ -162,8 +165,6 @@ int n;
 
 	if (!size)
 		return NULL;
-
-	ROUND4(size);
 
 	if (type < 0 || type >= NUM_TYPES) {
 		log_err("BinMalloc(): unknown type %d", type);
@@ -280,7 +281,6 @@ char *mem, *startp;
 	use standard malloc() to allocate memory
 */
 static void *use_malloc(unsigned long size, int type) {
-unsigned long *ulptr;
 char *mem;
 int num;
 
@@ -292,7 +292,7 @@ int num;
 		num = 0;
 
 	size += sizeof(unsigned long) + MARKER_SIZE;
-	if ((ulptr = (unsigned long *)malloc(size)) == NULL)
+	if ((mem = (char *)malloc(size)) == NULL)
 		return NULL;
 
 	mem_info.malloc += size;
@@ -300,10 +300,9 @@ int num;
 	mem_stats[type].num += num;
 	mem_stats[type].balance++;
 
-	*ulptr = size;
-	ulptr++;
-	mem = (char *)ulptr;
-	ST_MARK(mem, MARK_MALLOC);		/* malloc() was used */
+	memcpy(mem, &size, sizeof(unsigned long));	/* store size */
+	mem = mem + sizeof(unsigned long);
+	ST_MARK(mem, MARK_MALLOC);					/* malloc() was used */
 	ST_TYPE(mem, type);
 	mem = mem + MARKER_SIZE;
 	memset(mem, 0, size - sizeof(unsigned long) - MARKER_SIZE);
@@ -331,20 +330,20 @@ unsigned long bin_start, bin_end;
 		return;
 	}
 	if (in_use == MARK_MALLOC) {		/* allocated by use_malloc() */
-		unsigned long *ulptr;
+		unsigned long size;
 
-		ulptr = (unsigned long *)mem;
-		ulptr--;
-		mem_info.malloc -= *ulptr;
+		mem = mem - sizeof(unsigned long);
+		memcpy(&size, mem, sizeof(unsigned long));
+		mem_info.malloc -= size;
 		mem_info.balance--;
 
-		in_use = *ulptr / Types_table[type].size;
+		in_use = size / Types_table[type].size;
 		if (in_use < 0)
 			in_use = 0;
 
 		mem_stats[type].num -= in_use;
 		mem_stats[type].balance--;
-		free(ulptr);
+		free(mem);
 		return;
 	}
 	type_size = Types_table[type].size;
