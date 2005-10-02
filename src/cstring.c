@@ -379,17 +379,6 @@ int cstrmatch(char *buf, char *pattern) {
 			return 0;
 
 		switch(*pattern) {
-			case ' ':
-				if (*buf == ' ' || *buf == '\t') {
-					buf++;
-					while(*buf == ' ' || *buf == '\t')
-						buf++;
-					buf--;
-				} else
-					return 0;
-
-				break;
-
 			case '\n':
 				if (*buf == '\r' || *buf == '\n') {
 					buf++;

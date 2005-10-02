@@ -2160,6 +2160,7 @@ int color;
 					break;
 
 				case 'E':
+				case 'W':
 					put_StringIO(s, "<red>");
 					color = 1;
 					break;
