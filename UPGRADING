@@ -5,8 +5,10 @@ bbs100 is distributed under terms described in the GNU General Public License.
 
 UPGRADING FROM bbs100 2.x
 
-No major issues, but be sure to update the Help files. See the WHATSNEW
-file and ChangeLog for new features and inform your users of them.
+No major issues, but be sure to update the files under etc/, such as the
+online Help files. See the WHATSNEW file and ChangeLog for new features and
+inform your users of them.
+It is always wise to make a backup before upgrading.
 
 
 UPGRADING FROM bbs100 1.x

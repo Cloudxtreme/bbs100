@@ -133,7 +133,8 @@ Files under etc/ have special meaning:
     The -P option to nm is needed on most systems to produce a POSIX.2
     compliant symbol table.
     (The format should be: <symbol name><type><address in hex><[size in hex]>.
-    Note that IRIX nm does not produce a POSIX.2 complaint symbol table.)
+    Note that IRIX nm does not produce a POSIX.2 complaint symbol table, but
+    you can try setting _XPG=1; see the IRIX nm man page)
 
     etc/feelings/*
 
@@ -169,7 +170,7 @@ his or her timezone.
 The default timezone that new users get is configurable, but I strongly
 suggest it be set to 'other/GMT'.
 
-The log files display _local_ time in the format MM DD hh:mm:ss.
+The log files display the system's local time in the format MM DD hh:mm:ss.
 
 
 TRASH DIRECTORY
