@@ -31,15 +31,16 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     Solaris 2.6             Sun Sparc Ultra-1
     SunOS 5.6               Sun Sparc Ultra-1
     AIX 4.2.1 with DFS      IBM RS/6000
-    Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000/O3000
+    Irix 6.5.x              Silicon Graphics Indy/O2/O200/O2000/O3000 32-bit
+    Irix 6.5.x              SGI O3000 64-bit
     Unicos 10.0.0.x         Cray C90
-    Mac OS X                I think it was an Apple MacIntosh G5
+    OS X                    Apple MacIntosh G5
+    RedHat Enterprise       IA64
 
 All this with just configure and make setup.
-The portability list changes with each version, so your mileage
-may vary.
-If you got bbs100 running on a platform not listed here, please
-share your experiences.
+The portability list changes with each version, so your mileage may vary.
+If you got bbs100 running on a platform not listed here, please share your
+experiences.
 
 
 IS bbs100 IPv6 ENABLED?
