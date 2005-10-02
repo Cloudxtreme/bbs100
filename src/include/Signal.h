@@ -32,8 +32,8 @@
 #define MAX_SIGNAME		64			/* for sig_name() */
 
 /*
-	the following is for brain-dead OSes and broken development environments
-	e.g. Cygwin for Windows
+	the following is for weird development environments that usually don't
+	have signals
 	The code will compile, but you will miss some functionality, because
 	the OS doesn't really support the defined signals
 */
@@ -43,6 +43,10 @@
 
 #ifndef SIGKILL
 #define SIGKILL	9
+#endif
+
+#ifndef SIGPIPE
+#define SIGPIPE	13
 #endif
 
 #ifndef SIGTERM
