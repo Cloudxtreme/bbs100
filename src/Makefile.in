@@ -152,6 +152,7 @@ install: $(TARGETS) $(SCRIPTS)
 		echo '*** this looks like a first-time installation' ; \
 		echo '*** initializing bbs100 directory structure' ; \
 		echo ' ' ; \
+		umask 027 ; \
 		if $(TEST) -f ./state_msg.c ; \
 		then \
 			cd .. ; \
