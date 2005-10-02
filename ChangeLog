@@ -1,3 +1,6 @@
+Changes as of October 2nd 2005
+- time zones are offline when files are missing and a warning is logged
+
 Changes as of October 1st 2005
 - BinMalloc() wouldn't run on certain architectures; memory alignment fix
 

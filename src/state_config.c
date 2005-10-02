@@ -2023,7 +2023,14 @@ DirList *dl;
 
 			if ((dl = list_DirList(PARAM_ZONEINFODIR, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
 				log_err("state_config_timezone(): list_DirList(%s) failed", PARAM_ZONEINFODIR);
-				Put(usr, "<red>Sorry, the time zone system appears to be offline\n");
+				Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
+				CURRENT_STATE(usr);
+				Return;
+			}
+			if (count_Queue(dl->list) <= 0) {
+				log_warn("state_config_timezone(): zoneinfo files are missing from %s", PARAM_ZONEINFODIR);
+				Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
+				destroy_DirList(dl);
 				CURRENT_STATE(usr);
 				Return;
 			}
@@ -2094,7 +2101,15 @@ int r;
 					bufprintf(dirname, MAX_PATHLEN, "%s/%s", PARAM_ZONEINFODIR, sl->str);
 					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						log_err("state_tz_continent(): list_DirList(%s) failed", dirname);
-						Put(usr, "<red>Sorry, the time zone system appears to be offline\n");
+						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
+						destroy_DirList(dl);
+						RET(usr);
+						Return;
+					}
+					if (count_Queue(dl2->list) <= 0) {
+						log_warn("state_tz_continent(): zoneinfo files are missing from %s", dirname);
+						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
+						destroy_DirList(dl2);
 						destroy_DirList(dl);
 						RET(usr);
 						Return;
