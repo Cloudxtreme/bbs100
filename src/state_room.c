@@ -1353,17 +1353,16 @@ char *category = NULL;
 				continue;
 
 		if (in_StringList(r->room_aides, usr->name) == NULL) {
-			if ((j = in_Joined(usr->rooms, r->number)) != NULL && j->zapped)
-				continue;
-/*
-			if (r->flags & ROOM_HIDDEN)
-				continue;
-*/
-			if (in_StringList(r->kicked, usr->name) != NULL)
-				continue;
+			if ((j = in_Joined(usr->rooms, r->number)) != NULL) {
+				if (!joined_visible(usr, r, j))
+					continue;
 
-			if ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
-				continue;
+				if (j->zapped)
+					continue;
+			} else {
+				if (!room_visible(usr, r))
+					continue;
+			}
 		}
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
 			Print(usr, "<cyan>\n[%s]\n", r->category);
@@ -1396,10 +1395,7 @@ char *category = NULL;
 			if ((r = find_Roombynumber(usr, r->number)) == NULL)
 				continue;
 
-		if ((r->flags & ROOM_HIDDEN)
-			&& in_Joined(usr->rooms, r->number) == NULL
-			&& !(usr->runtime_flags & RTF_SYSOP)
-			&& in_StringList(r->room_aides, usr->name) == NULL)
+		if (!room_visible(usr, r))
 			continue;
 
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {

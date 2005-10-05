@@ -18,9 +18,6 @@
 */
 /*
 	access.h	WJ99
-
-
-	note: room_access() is in Room.c
 */
 
 #ifndef ACCESS_H_WJ99
@@ -38,6 +35,8 @@ int multi_x_access(User *);
 int multi_mail_access(User *);
 int multi_ping_access(User *);
 int room_access(Room *, char *);
+int room_visible(User *, Room *);
+int joined_visible(User *, Room *, Joined *);
 int mail_access(User *, char *);
 
 void check_recipients(User *);

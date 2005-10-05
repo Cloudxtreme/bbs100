@@ -668,6 +668,13 @@ long room_top(Room *r) {
 	return (r == NULL) ? 0L : r->head_msg;
 }
 
+/*
+	find a room by name
+
+	Note: The 'find_Room*' functions do not check for room visibility to make
+	      guess-name rooms possible; a user is allowed to jump to a hidden
+	      but public room if he/she knows the name (or number!) of the room
+*/
 Room *find_Room(User *usr, char *name) {
 Room *r;
 
@@ -749,7 +756,7 @@ Room *r;
 
 		l = strlen(name);
 		for(r = AllRooms; r != NULL; r = r->next) {
-			if (!(r->flags & ROOM_HIDDEN) && !strncmp(r->name, name, l)) {
+			if (!strncmp(r->name, name, l)) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
@@ -762,7 +769,7 @@ Room *r;
 	didn't find any room, try a substring
 */
 		for(r = AllRooms; r != NULL; r = r->next) {
-			if (!(r->flags & ROOM_HIDDEN) && cstrstr(r->name, name) != NULL) {
+			if (cstrstr(r->name, name) != NULL) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 

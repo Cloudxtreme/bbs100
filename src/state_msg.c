@@ -1581,13 +1581,13 @@ Joined *j;
 
 	j = in_Joined(usr->rooms, r->number);
 
+	if (!joined_visible(usr, r, j)) {
+		Return NULL;
+	}
+
 /* if not welcome anymore, unjoin and proceed */
 
-	if (in_StringList(r->kicked, usr->name) != NULL
-		|| ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
-		|| ((r->flags & ROOM_HIDDEN) && j == NULL)
-		|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation)
-		) {
+	if (room_access(r, usr->name) < 0) {
 		if (j != NULL) {
 			remove_Joined(&usr->rooms, j);
 			destroy_Joined(j);
@@ -1602,14 +1602,12 @@ Joined *j;
 			j->zapped = 0;				/* auto-unzap changed room */
 		}
 	} else {
-		if (!(r->flags & ROOM_HIDDEN)) {
-			if ((j = new_Joined()) == NULL) {			/* auto-join public room */
-				Perror(usr, "Out of memory, room not joined");
-				Return NULL;
-			}
-			j->number = r->number;
-			prepend_Joined(&usr->rooms, j);
+		if ((j = new_Joined()) == NULL) {			/* auto-join public room */
+			Perror(usr, "Out of memory, room not joined");
+			Return NULL;
 		}
+		j->number = r->number;
+		prepend_Joined(&usr->rooms, j);
 	}
 	if (j->generation != r->generation) {
 		j->generation = r->generation;

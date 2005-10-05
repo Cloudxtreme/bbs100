@@ -162,6 +162,45 @@ int room_access(Room *r, char *name) {
 	return ACCESS_OK;
 }
 
+/*
+	is a room visible to the user?
+*/
+int room_visible(User *usr, Room *r) {
+	if (usr == NULL || r == NULL)
+		return 0;
+
+	if (!(r->flags & ROOM_HIDDEN))
+		return 1;
+
+	return joined_visible(usr, r, in_Joined(usr->rooms, r->number));
+}
+
+/*
+	return if a joined room is visible to the user
+	(this func is convenient if you already have the joined structure anyway)
+*/
+int joined_visible(User *usr, Room *r, Joined *j) {
+	if (usr == NULL || r == NULL)
+		return 0;
+
+	if (!(r->flags & ROOM_HIDDEN))
+		return 1;
+
+	if (in_StringList(r->room_aides, usr->name) != NULL
+		|| ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) != NULL)) {
+		if (j != NULL)
+			j->generation = r->generation;
+		return 1;
+	}
+	if (in_StringList(r->kicked, usr->name) != NULL || j == NULL || j->generation != r->generation) {
+		if (j != NULL) {
+			remove_Joined(&usr->rooms, j);
+			destroy_Joined(j);
+		}
+		return 0;
+	}
+	return 1;
+}
 
 /*
 	mail_access: used by the Reply function

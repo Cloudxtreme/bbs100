@@ -1846,25 +1846,26 @@ StringList *zapped = NULL, *similar = NULL;
 			if ((r = find_Roombynumber(usr, r->number)) == NULL)
 				continue;
 
-		if ((r->flags & ROOM_CHATROOM) && !PARAM_HAVE_CHATROOMS)
+		if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 			continue;
 
-		j = in_Joined(usr->rooms, r->number);
+		if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos)) {
+			j = in_Joined(usr->rooms, r->number);
 
-/* if not welcome, continue */
-		if (!(in_StringList(r->kicked, usr->name) != NULL
-			|| ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, usr->name) == NULL)
-			|| ((r->flags & ROOM_HIDDEN) && j == NULL)
-			|| ((r->flags & ROOM_HIDDEN) && j != NULL && r->generation != j->generation))) {
+			if (!joined_visible(usr, r, j))
+				continue;
 
-			if (!usr->edit_pos || !strncmp(r->name, usr->edit_buf, usr->edit_pos)) {
-				if (j != NULL && j->zapped)
-					zapped = add_StringList(&zapped, new_StringList(r->name));
-				else
-					add_StringQueue(usr->tablist, new_StringList(r->name));
-			} else
-				if (cstristr(r->name, usr->edit_buf) != NULL)
-					similar = add_StringList(&similar, new_StringList(r->name));
+			if (j != NULL && j->zapped)
+				zapped = add_StringList(&zapped, new_StringList(r->name));
+			else
+				add_StringQueue(usr->tablist, new_StringList(r->name));
+		} else {
+			if (cstristr(r->name, usr->edit_buf) != NULL) {
+				if (!room_visible(usr, r))
+					continue;
+
+				similar = add_StringList(&similar, new_StringList(r->name));
+			}
 		}
 		if (r->number == HOME_ROOM)
 			unload_Room(r);
