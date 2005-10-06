@@ -1066,6 +1066,47 @@ void PrintPrompt(User *usr) {
 	Return;
 }
 
+Joined *join_room(User *usr, Room *r) {
+Joined *j;
+
+	if (usr == NULL || r == NULL)
+		return NULL;
+
+	if ((j = in_Joined(usr->rooms, r->number)) != NULL) {
+		j->zapped = 0;
+		if (j->generation != r->generation) {
+			j->generation = r->generation;
+			j->last_read = 0L;
+		}
+	} else {
+		if ((j = new_Joined()) == NULL) {
+			log_err("join_room(): Out of memory");
+			return NULL;
+		}
+		j->number = r->number;
+		j->generation = r->generation;
+		prepend_Joined(&usr->rooms, j);
+	}
+	return j;
+}
+
+void unjoin_room(User *usr, Room *r) {
+Joined *j;
+
+	if (usr == NULL || r == NULL)
+		return;
+
+	if ((j = in_Joined(usr->rooms, r->number)) == NULL)
+		return;
+
+	if (joined_visible(usr, r, j))
+		j->zapped = 1;
+	else {
+		remove_Joined(&usr->rooms, j);
+		destroy_Joined(j);
+	}
+}
+
 void state_jump_room(User *usr, char c) {
 int r;
 
@@ -1109,12 +1150,14 @@ int r;
 			switch(room_access(rm, usr->name)) {
 				case ACCESS_INVITE_ONLY:
 					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
+					unjoin_room(usr, rm);
 					unload_Room(rm);
 					RET(usr);
 					Return;
 
 				case ACCESS_KICKED:
 					Put(usr, "<red>You have been kicked from that room\n");
+					unjoin_room(usr, rm);
 					unload_Room(rm);
 					RET(usr);
 					Return;
@@ -1212,19 +1255,8 @@ int r;
 		for(room = AllRooms; room != NULL; room = room->next) {
 			if (room->number >= SPECIAL_ROOMS
 				&& !(room->flags & ROOM_NOZAP)
-				&& in_StringList(room->room_aides, usr->name) == NULL) {
-
-				if ((j = in_Joined(usr->rooms, room->number)) != NULL)
-					j->zapped = 1;
-				else {
-					if ((j = new_Joined()) != NULL) {
-						j->number = room->number;
-						j->generation = room->generation;
-						j->zapped = 1;
-						prepend_Joined(&usr->rooms, j);
-					}
-				}
-			}
+				&& in_StringList(room->room_aides, usr->name) == NULL)
+				unjoin_room(usr, room);
 		}
 		j = in_Joined(usr->rooms, usr->curr_room->number);
 		if (j == NULL || j->zapped) {
@@ -1648,25 +1680,11 @@ Joined *j;
 
 	enter_room(usr, r);
 
-	if ((j = in_Joined(usr->rooms, r->number)) != NULL) {
-		j->zapped = 0;
-		if (r->generation != j->generation) {	/* room was modified? */
-			j->generation = r->generation;
-			j->last_read = 0UL;
-		}
-	} else {
-		if ((j = new_Joined()) == NULL) {		/* join room when jumped to */
-			Perror(usr, "Out of memory");
-		} else {
-			j->number = r->number;
-			j->generation = r->generation;
-			prepend_Joined(&usr->rooms, j);
-		}
-	}
+	j = join_room(usr, r);
 /*
 	read the room info
-	this doesn't work well for the Home> room (because you can invite others to your Home>)
-	so this is simply hacked out
+	this doesn't work well for the Home> room (because Home> is always #2 and you
+	can be in either your own Home>, or someone elses) so this is simply hacked out
 */
 	if (j != NULL && usr->curr_room->number != HOME_ROOM) {
 		if (j->roominfo_read == -1) {

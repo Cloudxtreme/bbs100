@@ -1,5 +1,7 @@
 Changes as of October 6th 2005
 - guess-name rooms are configurable by Sysop
+- room visibility when loading users
+- rewrote joining/unjoining rooms when being invited/kicked
 
 Changes as of October 5th 2005
 - bugfix for visibility of hidden rooms

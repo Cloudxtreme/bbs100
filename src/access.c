@@ -203,6 +203,27 @@ int joined_visible(User *usr, Room *r, Joined *j) {
 }
 
 /*
+	room visibility with more primitive arguments
+	(used when loading users)
+*/
+int room_visible_username(Room *r, char *username, unsigned long generation) {
+	if (r == NULL || username == NULL || !*username)
+		return 0;
+
+	if (!(r->flags & ROOM_HIDDEN))
+		return 1;
+
+	if (in_StringList(r->room_aides, username) != NULL
+		|| ((r->flags & ROOM_INVITE_ONLY) && in_StringList(r->invited, username) != NULL))
+		return 1;
+
+	if (in_StringList(r->kicked, username) != NULL || generation != r->generation)
+		return 0;
+
+	return 1;
+}
+
+/*
 	mail_access: used by the Reply function
 */
 int mail_access(User *usr, char *name) {

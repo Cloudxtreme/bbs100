@@ -672,7 +672,6 @@ int r;
 	if (r == EDIT_RETURN) {
 		StringList *sl;
 		User *u;
-		Joined *j;
 		char roomname_buf[MAX_LINE];
 
 		if (!usr->edit_buf[0]) {
@@ -699,14 +698,7 @@ int r;
 					Tell(u, "\n<magenta>You have been invited into %s<magenta> by <yellow>%s\n",
 						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
-				if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
-					if ((j = new_Joined()) != NULL)
-						prepend_Joined(&u->rooms, j);
-				if (j != NULL) {
-					j->zapped = 0;
-					j->number = usr->curr_room->number;
-					j->generation = usr->curr_room->generation;
-				}
+				join_room(u, usr->curr_room);
 			}
 		} else {
 			if ((sl = in_StringList(usr->curr_room->invited, usr->edit_buf)) != NULL) {
@@ -721,9 +713,7 @@ int r;
 						Tell(u, "\n<magenta>You have been uninvited from %s<magenta> by <yellow>%s\n",
 							room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
-					if ((usr->curr_room->flags & ROOM_HIDDEN)
-						&& (j = in_Joined(u->rooms, usr->curr_room->number)) != NULL)
-						j->zapped = 1;
+					unjoin_room(u, usr->curr_room);
 				}
 			} else {
 				prepend_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
@@ -737,14 +727,7 @@ int r;
 						Tell(u, "\n<magenta>You have been invited in %s<magenta> by <yellow>%s\n",
 							room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
 
-					if ((j = in_Joined(u->rooms, usr->curr_room->number)) == NULL)
-						if ((j = new_Joined()) != NULL)
-							prepend_Joined(&u->rooms, j);
-					if (j != NULL) {
-						j->zapped = 0;
-						j->number = usr->curr_room->number;
-						j->generation = usr->curr_room->generation;
-					}
+					join_room(u, usr->curr_room);
 				}
 			}
 		}
@@ -782,7 +765,6 @@ int r;
 	if (r == EDIT_RETURN) {
 		StringList *sl;
 		User *u;
-		Joined *j;
 		char roomname_buf[MAX_LINE];
 
 		if (!usr->edit_buf[0]) {
@@ -832,11 +814,7 @@ int r;
 						u->runtime_flags &= ~RTF_ROOMAIDE;
 					goto_room(u, Lobby_room);
 				}
-				if ((usr->curr_room->flags & ROOM_HIDDEN)
-					&& (j = in_Joined(u->rooms, usr->curr_room->number)) != NULL) {
-					j->zapped = 1;
-					j->generation = usr->curr_room->generation;
-				}
+				unjoin_room(u, usr->curr_room);
 			}
 		} else {
 			if ((sl = in_StringList(usr->curr_room->kicked, usr->edit_buf)) != NULL) {
@@ -849,6 +827,8 @@ int r;
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n",
 						room_name(u, usr->curr_room, roomname_buf, MAX_LINE), usr->name);
+
+					join_room(u, usr->curr_room);
 				}
 			} else {
 				prepend_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
@@ -870,11 +850,7 @@ int r;
 
 						goto_room(u, Lobby_room);
 					}
-					if ((usr->curr_room->flags & ROOM_HIDDEN)
-						&& (j = in_Joined(u->rooms, usr->curr_room->number)) != NULL) {
-						j->zapped = 1;
-						j->generation = usr->curr_room->generation;
-					}
+					unjoin_room(u, usr->curr_room);
 				}
 			}
 		}
@@ -946,8 +922,10 @@ int r;
 
 			Print(usr, "<yellow>%s<green> assigned as %s\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 
-			if ((u = is_online(usr->edit_buf)) != NULL && u != usr)
+			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 				Tell(u, "\n<magenta>You have been assigned as %s of <yellow>%s>\n", PARAM_NAME_ROOMAIDE, usr->curr_room->name);
+				join_room(u, usr->curr_room);
+			}
 		}
 		usr->runtime_flags |= RTF_ROOM_EDITED;
 		RET(usr);
@@ -1020,6 +998,12 @@ void state_max_messages(User *usr, char c) {
 	Return;
 }
 
+/*
+	resetting the creation date changes the room generation number
+	if the room generation number doesn't match the joined->generation number,
+	then the user has unjoined the room
+	For public rooms, this means they will re-read the room
+*/
 void state_reset_creation_date(User *usr, char c) {
 	if (usr == NULL)
 		return;

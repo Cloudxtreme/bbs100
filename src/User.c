@@ -566,7 +566,7 @@ int term_width, term_height, ff1_continue;
 				&last_read, &roominfo_read) != 5)
 				FF1_ERROR;
 
-/* already joined? */
+/* already joined? (double entry) */
 			if ((j = in_Joined(usr->rooms, number)) != NULL)
 				continue;
 
@@ -580,20 +580,21 @@ int term_width, term_height, ff1_continue;
 			if (last_read > r->head_msg)
 				last_read = r->head_msg;
 
+			if (!room_visible_username(r, username, generation)) {		/* room went hidden */
+				unload_Room(r);
+				continue;
+			}
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
-				last_read = 0UL;						/* begin reading */
-
-				if ((r->flags & ROOM_HIDDEN)			/* if hidden or not welcome... */
-					|| in_StringList(r->kicked, usr->name) != NULL
-					|| ((r->flags & ROOM_INVITE_ONLY)
-					&& in_StringList(r->invited, usr->name) == NULL)) {
-					unload_Room(r);
-					continue;
-				}
-				if (zapped == 'Z')
-					zapped = 'J';						/* auto-unzap it */
+				last_read = 0L;							/* begin reading */
 			}
+/*
+	when not welcome any more, zap the room
+	the user may be invited again, and won't have to re-read the entire room
+*/
+			if (room_access(r, username) < 0)			/* not welcome anymore */
+				zapped = 'Z';
+
 			if ((j = new_Joined()) == NULL) {
 				unload_Room(r);
 				FF1_ERROR;
@@ -876,20 +877,17 @@ int i;
 			if (last_read > r->head_msg)
 				last_read = r->head_msg;
 
+			if (!room_visible_username(r, username, generation)) {		/* room went hidden */
+				unload_Room(r);
+				continue;
+			}
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
-				last_read = 0UL;						/* begin reading */
-
-				if ((r->flags & ROOM_HIDDEN)			/* if hidden or not welcome... */
-					|| in_StringList(r->kicked, usr->name) != NULL
-					|| ((r->flags & ROOM_INVITE_ONLY)
-					&& in_StringList(r->invited, usr->name) == NULL)) {
-					unload_Room(r);
-					continue;
-				}
-				if (zapped == 'Z')
-					zapped = 'J';						/* auto-unzap it */
+				last_read = 0L;							/* begin reading */
 			}
+			if (room_access(r, username) < 0)			/* not welcome anymore */
+				zapped = 'Z';
+
 			if ((j = new_Joined()) == NULL) {
 				unload_Room(r);
 				goto err_load_User;

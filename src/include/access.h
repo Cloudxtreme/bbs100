@@ -37,6 +37,7 @@ int multi_ping_access(User *);
 int room_access(Room *, char *);
 int room_visible(User *, Room *);
 int joined_visible(User *, Room *, Joined *);
+int room_visible_username(Room *, char *, unsigned long);
 int mail_access(User *, char *);
 
 void check_recipients(User *);

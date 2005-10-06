@@ -35,6 +35,8 @@
 
 void state_room_prompt(User *, char);
 void PrintPrompt(User *);
+Joined *join_room(User *, Room *);
+void unjoin_room(User *, Room *);
 void state_jump_room(User *, char);
 void state_zap_prompt(User *, char);
 void state_zapall_prompt(User *, char);
