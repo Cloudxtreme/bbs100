@@ -119,6 +119,10 @@ What's new to the admins?
 - sysop can add/remove feelings from the sysop menu
 - sysop can view the logfiles from within the BBS, including the new log
   that logs all new users
+- guess-name rooms can be toggled on or off; a guess-name room is a hidden
+  but public room, that the user can join if he/she knows the room name
+  (or the number!) Turning this feature off makes hidden rooms appear as
+  non-existent to users who are not invited or room aide there.
 
 
 What's new internally?

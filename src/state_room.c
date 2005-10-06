@@ -1452,9 +1452,12 @@ StringList *sl;
 	if (usr->curr_room->flags & ROOM_NOZAP)
 		cstrcat(buf, ", not zappable", MAX_LONGLINE);
 
-	if ((usr->curr_room->flags & ROOM_HIDDEN) && (usr->runtime_flags & RTF_SYSOP))
+	if (usr->curr_room->flags & ROOM_HIDDEN) {
 		cstrcat(buf, ", hidden", MAX_LONGLINE);
 
+		if ((usr->curr_room->flags & (ROOM_HIDDEN|ROOM_INVITE_ONLY)) == ROOM_HIDDEN && PARAM_HAVE_GUESSNAME)
+			cstrcat(buf, " and guess-name", MAX_LONGLINE);
+	}
 	if (*buf)
 		Print(usr, "\n<green>This room is %s\n", buf+2);
 

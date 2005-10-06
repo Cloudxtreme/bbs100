@@ -164,6 +164,7 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_CALENDAR,		"have_calendar",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_WORLDCLOCK,		"have_worldclock",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_CHATROOMS,		"have_chatrooms",	PARAM_TRUE);
+	KVPair_setbool(KVPARAM_HAVE_GUESSNAME,		"have_guessname_rooms", PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_HOMEROOM,		"have_homeroom",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_MAILROOM,		"have_mailroom",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_CATEGORY,		"have_category",	PARAM_TRUE);
@@ -172,7 +173,6 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_FILECACHE,		"have_filecache",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_RESIDENT_INFO,	"have_resident_info",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_DISABLED_MSG,	"have_disabled_msg",PARAM_TRUE);
-
 	return 0;
 }
 

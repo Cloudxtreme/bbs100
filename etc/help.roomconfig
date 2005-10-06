@@ -20,7 +20,8 @@
 
      Mind that a hidden room can be public; this is also known as a
      <yellow>guess name<green> room. It is often desired to make a hidden room invite-only
-     as well.
+     as well. <yellow>Guess name<green> rooms can be configured off by a Sysop, so that
+     these rooms will appear as non-existent to users who have no business there.
 
      The option<yellow> 'Change room name'<green> is not available in the <yellow>Home><green> room.
 

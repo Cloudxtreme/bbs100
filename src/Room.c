@@ -35,6 +35,7 @@
 #include "FileFormat.h"
 #include "log.h"
 #include "bufprintf.h"
+#include "access.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -670,10 +671,6 @@ long room_top(Room *r) {
 
 /*
 	find a room by name
-
-	Note: The 'find_Room*' functions do not check for room visibility to make
-	      guess-name rooms possible; a user is allowed to jump to a hidden
-	      but public room if he/she knows the name (or number!) of the room
 */
 Room *find_Room(User *usr, char *name) {
 Room *r;
@@ -733,6 +730,9 @@ Room *r;
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
+				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+					return NULL;
+
 				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 					return NULL;
 				return r;
@@ -760,6 +760,9 @@ Room *r;
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
+				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+					continue;
+
 				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 					continue;
 				return r;
@@ -772,6 +775,9 @@ Room *r;
 			if (cstrstr(r->name, name) != NULL) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
+
+				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+					continue;
 
 				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 					continue;
@@ -805,8 +811,12 @@ Room *r;
 		default:
 			for(r = AllRooms; r != NULL; r = r->next)
 				if (r->number == u) {
+					if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+						break;
+
 					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 						break;
+
 					return r;
 				}
 	}
@@ -839,8 +849,13 @@ Room *r;
 		default:
 			for(r = AllRooms; r != NULL; r = r->next)
 				if (r->number == u) {
+/*
+					if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+						break;
+*/
 					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
 						break;
+
 					return r;
 				}
 	}

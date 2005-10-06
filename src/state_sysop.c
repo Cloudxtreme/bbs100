@@ -4172,7 +4172,8 @@ void state_features_menu(User *usr, char c) {
 			Print(usr,
 				"X <hotkey>Reply               <white>%-3s<magenta>      eXpres<hotkey>s message header  <white>%s<magenta>\n"
 				"<hotkey>Vanity flag           <white>%-3s<magenta>      Resident <hotkey>info           <white>%s<magenta>\n"
-				"Ch<hotkey>at rooms            <white>%-3s<magenta>      Cate<hotkey>gories              <white>%s<magenta>\n"
+				"Cate<hotkey>gories            <white>%-3s<magenta>\n"
+				"Ch<hotkey>at rooms            <white>%-3s<magenta>      Guess <hotkey>name rooms        <white>%s<magenta>\n"
 				"<hotkey>Home> room            <white>%-3s<magenta>      <hotkey>Mail> room              <white>%s<magenta>\n",
 
 				(PARAM_HAVE_X_REPLY == PARAM_FALSE) ? "off" : "on",
@@ -4181,8 +4182,10 @@ void state_features_menu(User *usr, char c) {
 				(PARAM_HAVE_VANITY == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_RESIDENT_INFO == PARAM_FALSE) ? "off" : "on",
 
-				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_CATEGORY == PARAM_FALSE) ? "off" : "on",
+
+				(PARAM_HAVE_CHATROOMS == PARAM_FALSE) ? "off" : "on",
+				(PARAM_HAVE_GUESSNAME == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_HOMEROOM == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_MAILROOM == PARAM_FALSE) ? "off" : "on"
@@ -4273,7 +4276,12 @@ void state_features_menu(User *usr, char c) {
 			TOGGLE_FEATURE(PARAM_HAVE_WORLDCLOCK, "World clock");
 
 		case 'a':
+		case 'A':
 			TOGGLE_FEATURE(PARAM_HAVE_CHATROOMS, "Chat rooms");
+
+		case 'n':
+		case 'N':
+			TOGGLE_FEATURE(PARAM_HAVE_GUESSNAME, "Guess name rooms");
 
 		case 'm':
 		case 'M':

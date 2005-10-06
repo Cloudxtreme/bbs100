@@ -127,10 +127,11 @@ void state_room_config_menu(User *usr, char c) {
 					);
 					Print(usr,
 						"<hotkey>5 Room is not zappable         <white>%s<magenta>\n"
-						"<hotkey>6 Room is hidden               <white>%s<magenta>\n",
+						"<hotkey>6 Room is hidden               <white>%s<magenta> %s\n",
 
 						(usr->curr_room->flags & ROOM_NOZAP)    ? "Yes" : "No",
-						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No"
+						(usr->curr_room->flags & ROOM_HIDDEN)   ? "Yes" : "No",
+						((usr->curr_room->flags & (ROOM_HIDDEN|ROOM_INVITE_ONLY)) == ROOM_HIDDEN && PARAM_HAVE_GUESSNAME) ? "<white> (guess name)<magenta>" : ""
 					);
 					if (PARAM_HAVE_CHATROOMS)
 						Print(usr,

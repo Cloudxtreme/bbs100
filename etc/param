@@ -100,6 +100,7 @@ have_x_reply			yes
 have_calendar           yes
 have_worldclock			yes
 have_chatrooms          yes
+have_guessname_rooms    yes
 have_homeroom           yes
 have_mailroom           yes
 have_category           yes
