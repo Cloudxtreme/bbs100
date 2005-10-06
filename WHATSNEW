@@ -181,6 +181,7 @@ What's new internally?
   and pros; the biggest pro is that a Tree doesn't have a costly resize
   like a Hash does
 - usr->flags2 adds some more config bits
+- new zoneinfo files so the time keeps being displayed correctly
 - some bugs fixed ...
 
 
