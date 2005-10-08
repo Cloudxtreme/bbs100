@@ -31,7 +31,7 @@
 #define add_Conn(x,y)		(Conn *)add_List((x), (y))
 #define concat_Conn(x,y)	(Conn *)concat_List((x), (y))
 #define remove_Conn(x,y)	(Conn *)remove_List((x), (y))
-#define listdestroy_Conn(x)	listdestroy_List((x), destroy_List)
+#define listdestroy_Conn(x)	listdestroy_List((x), destroy_Conn)
 #define rewind_Conn(x)		(Conn *)rewind_List(x)
 #define unwind_Conn(x)		(Conn *)unwind_List(x)
 #define sort_Conn(x, y)		(Conn *)sort_List((x), (y))

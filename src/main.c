@@ -49,6 +49,7 @@
 #include "Timezone.h"
 #include "Worldclock.h"
 #include "Category.h"
+#include "Conn.h"
 #include "ConnUser.h"
 #include "ConnResolv.h"
 #include "bufprintf.h"
@@ -159,6 +160,11 @@ int code = 0;
 		log_msg("exit_program(): rebooting");
 	else
 		log_msg("exit_program(): shutting down");
+
+/*
+	destroying all connections also closes the main listening socket
+*/
+	listdestroy_Conn(AllConns);
 
 	if (save_Stats(&stats, PARAM_STAT_FILE))
 		log_err("failed to save stats");
