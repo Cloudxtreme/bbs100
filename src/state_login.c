@@ -776,8 +776,8 @@ int r;
 		if (usr->tz == NULL)
 			usr->tz = load_Timezone(usr->timezone);
 
-/* save user here, or we're not able to X/profile him yet! */
-		if (usr->logins <= 1 && save_User(usr))
+/* save user here, or we're not able to profile him yet! */
+		if (save_User(usr))
 			Perror(usr, "Failed to save userfile");
 
 		JMP(usr, STATE_ANSI_PROMPT);

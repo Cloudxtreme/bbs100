@@ -1064,7 +1064,8 @@ File *f;
 	if (is_guest(usr->name))		/* don't save Guest user */
 		return 0;
 
-	load_profile_info(usr);
+	if (usr->logins > 0)			/* new users don't have this yet */
+		load_profile_info(usr);
 
 	usr->last_online_time = (unsigned long)rtc - (unsigned long)usr->login_time;
 
