@@ -60,10 +60,9 @@
 #define TYPE_DISPLAY		27
 #define TYPE_QUEUE			28
 #define TYPE_MAILTO			29
-#define TYPE_ONLINEUSER		30
-#define TYPE_NEWUSERLOG		31
-#define TYPE_DIRLIST		32
-#define NUM_TYPES			33
+#define TYPE_NEWUSERLOG		30
+#define TYPE_DIRLIST		31
+#define NUM_TYPES			32
 
 typedef struct Typedef_tag Typedef;
 

@@ -46,7 +46,6 @@
 #include "StringIO.h"
 #include "Display.h"
 #include "Queue.h"
-#include "OnlineUser.h"
 #include "NewUserLog.h"
 #include "DirList.h"
 #include "Types.h"
@@ -82,7 +81,6 @@ Typedef Types_table[NUM_TYPES] = {
 	{ "Display",			sizeof(Display),			},
 	{ "Queue",				sizeof(QueueType),			},
 	{ "MailTo",				sizeof(MailTo),				},
-	{ "OnlineUser",			sizeof(OnlineUser),			},
 	{ "DirList",			sizeof(DirList),			},
 	{ "NewUserLog",			sizeof(NewUserLog),			},
 };

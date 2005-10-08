@@ -23,16 +23,7 @@
 #ifndef ONLINEUSER_H_WJ100
 #define ONLINEUSER_H_WJ100	1
 
-#include "Tree.h"
 #include "User.h"
-
-typedef struct OnlineUser_tag OnlineUser;
-
-struct OnlineUser_tag {
-	Tree(OnlineUser);
-
-	User *usr;
-};
 
 int init_OnlineUser(void);
 

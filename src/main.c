@@ -54,6 +54,7 @@
 #include "bufprintf.h"
 #include "BinAlloc.h"
 #include "helper.h"
+#include "OnlineUser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -326,6 +327,10 @@ char buf[MAX_LONGLINE];
 
 	if (init_Room()) {
 		printf("fatal: failed to initialize the rooms message system\n");
+		exit_program(SHUTDOWN);
+	}
+	if (init_OnlineUser()) {
+		printf("fatal: Failed to initialize the online users hash\n");
 		exit_program(SHUTDOWN);
 	}
 	init_crypt();					/* init salt table for passwd encryption */
