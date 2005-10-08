@@ -39,6 +39,8 @@ There are a lot of new options in the Config menu:
     lock the terminal or go into Hold message mode
   - users may choose whether a room generates a beep when someone makes
     a new post in that room
+  - if you like, you won't be stuck in the Lobby> when there are no new
+    messages, but be cycled around to urge you to post somewhere
   - choose whether downloaded text shows color codes in long or short format
   - choose whether downloads pause every screen or not
   - 'verbose friend notification' shows even more friend notifications
@@ -64,9 +66,6 @@ There are a lot of new options in the Config menu:
 - Held messages prompt has a new look and most functions work on that
   prompt as well
 - the known rooms list may show room categories
-- if configured by the sysop, you won't be stuck in the Lobby> when
-  there are no new messages, but be cycled around to urge you to post
-  somewhere
 - it prints the online status after unlocking
 - chat rooms scroll messages in a better way
 - when undeleting a deleted message, you first get to read the message
@@ -177,9 +176,6 @@ What's new internally?
   (this saves memory and is much, much faster)
 - patches may be listed in patchlist.c so that everyone can see which
   patches have been applied
-- OnlineUser list is a Tree rather than a Hash ... this has both cons
-  and pros; the biggest pro is that a Tree doesn't have a costly resize
-  like a Hash does
 - usr->flags2 adds some more config bits
 - new zoneinfo files so the time keeps being displayed correctly
 - some bugs fixed ...
