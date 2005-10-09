@@ -592,22 +592,14 @@ void loop_ping(User *usr, char c) {
 				Print(usr, "<yellow>%s<green> is busy mailing you a message\n", u->name);
 				Return;
 			}
-			if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
-				if (u->away != NULL && u->away[0])
-					Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
-				else
-					Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
-			} else
-				Print(usr, "<yellow>%s<green> is busy\n", u->name);
-			Return;
 		}
 		if (PARAM_HAVE_HOLD && (u->runtime_flags & RTF_HOLD)) {
 			if (u->away != NULL && u->away[0])
-				Print(usr, "<yellow>%s<green> has put messages on hold; %s\n", u->name, u->away);
+				Print(usr, "<yellow>%s<green> has put messages on hold;<yellow> %s\n", u->name, u->away);
 			else
 				Print(usr, "<yellow>%s<green> has put messages on hold\n", u->name);
 		} else
-			Print(usr, "<yellow>%s<green> is not busy\n", u->name);
+			Print(usr, "<yellow>%s<green> is %sbusy\n", u->name, (u->runtime_flags & RTF_BUSY) ? "" : "not ");
 	}
 	Return;
 }

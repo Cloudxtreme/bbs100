@@ -938,7 +938,7 @@ int remove;
 				else {
 					if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
 						if (usr->away != NULL && usr->away[0])
-							Print(from, "<yellow>%s<green> has put messages on hold; %s\n", usr->name, usr->away);
+							Print(from, "<yellow>%s<green> has put messages on hold;<yellow> %s\n", usr->name, usr->away);
 						else
 							Print(from, "<yellow>%s<green> has put messages on hold for a while\n", usr->name);
 					} else
