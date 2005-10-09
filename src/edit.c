@@ -39,6 +39,9 @@
 char *Wrap_Charset1 = WRAP_CHARSET1;
 char *Wrap_Charset2 = WRAP_CHARSET2;
 
+static void edit_putchar(User *, char);
+
+
 /*
 	Returns:
 		-1 on Ctrl-C or Ctrl-D
@@ -722,9 +725,7 @@ int edit_caps_line(User *usr, char c) {
 					&& c >= 'a' && c <= 'z')
 					c -= ' ';						/* auto uppercase */
 
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-				Put(usr, usr->edit_buf + usr->edit_pos - 1);
+				edit_putchar(usr, c);
 			}
 	}
 	Return 0;
@@ -872,11 +873,8 @@ int edit_line(User *usr, char c) {
 			if (c < ' ' || c > '~')
 				break;
 
-			if (usr->edit_pos < MAX_LINE-1) {
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-				Put(usr, usr->edit_buf + usr->edit_pos - 1);
-			}
+			if (usr->edit_pos < MAX_LINE-1)
+				edit_putchar(usr, c);
 	}
 	return 0;
 }
@@ -968,9 +966,7 @@ int edit_chatline(User *usr, char c) {
 				break;
 
 			if (usr->edit_pos < MAX_LINE-1) {
-				usr->edit_buf[usr->edit_pos++] = c;
-				usr->edit_buf[usr->edit_pos] = 0;
-				Put(usr, usr->edit_buf + usr->edit_pos - 1);
+				edit_putchar(usr, c);
 /*
 	wrap; return the line
 	this is not elegant when being in the middle of a long color code,
@@ -987,6 +983,41 @@ int edit_chatline(User *usr, char c) {
 }
 
 /*
+	put a character into edit_buf and display it
+*/
+static void edit_putchar(User *usr, char c) {
+char *p;
+
+	Enter(edit_putchar);
+/*
+	this strange construction is faster than using Print()
+	(not that anyone cares, but hey...)
+*/
+	p = usr->edit_buf + usr->edit_pos;
+	*p = c;
+	p[1] = 0;
+
+	if (!(usr->flags & USR_DONT_AUTO_COLOR)) {
+/*
+	this fixes (most) auto-coloring problems when editing
+*/
+		if (usr->edit_pos > 0 && (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
+			p = usr->edit_buf + usr->edit_pos - 1;
+/*
+	hack for annoying wrong auto-coloring of dots
+*/
+		if (c == '.' && usr->edit_pos > 1 && usr->edit_buf[usr->edit_pos-1] == '.') {
+			usr->edit_pos++;
+			Put(usr, "\b..");
+			Return;
+		}
+	}
+	usr->edit_pos++;
+	Put(usr, p);
+	Return;
+}
+
+/*
 	word wrapping for edit_x() and edit_msg()
 
 	The word wrap wraps on terminal width, but is also delimited by
@@ -1000,22 +1031,7 @@ int i, wrap_len;
 	Enter(edit_wrap);
 
 	if (usr->edit_pos < MAX_LINE-2 && usr->edit_pos < usr->display->term_width-2) {
-		char *p;
-/*
-	this strange construction is faster than using Print()
-	(not that anyone cares, but hey...)
-*/
-		p = usr->edit_buf + usr->edit_pos;
-		*p = c;
-		p[1] = 0;
-/*
-	this fixes (most) auto-coloring problems when editing
-*/
-		if (usr->edit_pos > 0 && (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
-			p = usr->edit_buf + usr->edit_pos - 1;
-
-		usr->edit_pos++;
-		Put(usr, p);
+		edit_putchar(usr, c);
 		Return;
 	}
 /* word wrap */

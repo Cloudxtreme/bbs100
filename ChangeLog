@@ -8,6 +8,7 @@ Changes as of October 9th 2005
 - posting in an empty room caused you to be able to read back to message #0
   (which does not exist) so the tail pointer has to be reset when posting
 - room cycling is off by default
+- auto-coloring of dots when editing
 
 Changes as of October 8th 2005
 - removed the OnlineUser Tree code; it doesn't work, and the Hash was more
