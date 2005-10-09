@@ -1598,6 +1598,13 @@ int r;
 				RET(usr);
 				Return;
 			}
+/*
+	when on the room prompt, there's an odd off-by-one issue
+	this is really because when on the read prompt, you are expecting it to
+	go back one when you type -1, while a 'real' -1 would simply redisplay
+	the current message
+*/
+			num--;
 		}
 		usr->curr_msg -= num;
 

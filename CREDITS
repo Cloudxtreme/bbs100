@@ -255,3 +255,7 @@ Version 3.0:
   window immediately when disconnecting
 
 - Jeremy Stock noticed a problem with the visibility of hidden rooms
+
+- English Buchanan suggested color yellow for the away reason
+
+- English Buchanan found bug in the read minus functionality
