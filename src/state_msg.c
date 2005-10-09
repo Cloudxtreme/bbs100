@@ -611,6 +611,7 @@ Joined *j;
 /* load the message */
 	destroy_Message(usr->message);
 	if ((usr->message = load_Message(filename, usr->curr_msg)) == NULL) {
+		debug_breakpoint();
 		Perror(usr, "The message vaporizes as you attempt to read it");
 		RET(usr);
 		Return;

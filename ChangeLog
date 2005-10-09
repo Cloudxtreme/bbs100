@@ -5,6 +5,8 @@ Changes as of October 9th 2005
 - bugfix; BinMalloc() would fail for certain sizes because it always counts
   to have a second marker in the bin
 - 's' Stops reading (without forgetfulness), but Skips on the room prompt
+- posting in an empty room caused you to be able to read back to message #0
+  (which does not exist) so the tail pointer has to be reset when posting
 
 Changes as of October 8th 2005
 - removed the OnlineUser Tree code; it doesn't work, and the Hash was more

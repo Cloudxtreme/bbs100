@@ -578,6 +578,9 @@ void newMsg(Room *r, User *usr) {
 	expire_msg(r, usr);
 	r->head_msg++;
 	r->flags |= ROOM_DIRTY;
+
+	if (r->tail_msg <= 0L)				/* room was empty? */
+		r->tail_msg = r->head_msg;
 }
 
 /*
