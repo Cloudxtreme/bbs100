@@ -204,7 +204,6 @@ int version;
 			r->flags &= ~ROOM_CHATROOM;
 			r->flags |= ROOM_DIRTY;
 		}
-		debug_breakpoint();
 		sort_StringList(&r->room_aides, alphasort_StringList);
 		sort_StringList(&r->invited, alphasort_StringList);
 		sort_StringList(&r->kicked, alphasort_StringList);
