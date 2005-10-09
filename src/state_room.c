@@ -701,6 +701,11 @@ char num_buf[MAX_NUMBER];
 			break;
 
 		case 's':
+			if (usr->curr_msg > 0L) {
+				Put(usr, "<white>Stop\n");
+				usr->curr_msg = -1L;
+				break;
+			}
 			Put(usr, "<white>Skip\n");
 
 		case 'g':
