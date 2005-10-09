@@ -1538,11 +1538,8 @@ char colorbuf[MAX_COLORBUF];
 /* no match, it wasn't a color code after all */
 
 	usr->edit_buf[usr->edit_pos++] = '>';
-
-	colorbuf[0] = KEY_CTRL('Q');
-	colorbuf[1] = '>';
-	colorbuf[2] = 0;
-	Put(usr, colorbuf);
+	usr->edit_buf[usr->edit_pos] = 0;
+	Put(usr, usr->edit_buf + usr->edit_pos - 1);
 }
 
 /*
