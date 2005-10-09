@@ -2200,9 +2200,8 @@ char date_buf[MAX_LINE];
 	buffer_text(usr);
 
 	for(l = (NewUserLog *)q->tail; l != NULL; l = l->next)
-		Print(usr, "<cyan>%s  <yellow>%s\n", print_date(usr, l->timestamp, date_buf, MAX_LINE), l->name);
+		Print(usr, "<cyan>%-40s  <yellow>%s\n", print_date(usr, l->timestamp, date_buf, MAX_LINE), l->name);
 	Put(usr, "\n");
-
 	destroy_NewUserQueue(q);
 	return 0;
 }
