@@ -286,7 +286,7 @@ History_Reply_Code:
 	if (remaining > 0)
 		remaining--;
 
-	Print(usr, "<yellow>\n[History]<magenta> msg #%s (%s remaining) %c<white> ",
+	Print(usr, "<yellow>\n[X History]<magenta> msg #%s (%s remaining) %c<white> ",
 		print_number(n, num_buf1, MAX_NUMBER),
 		print_number(remaining, num_buf2, MAX_NUMBER),
 		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
