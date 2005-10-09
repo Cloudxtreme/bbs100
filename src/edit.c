@@ -1004,9 +1004,11 @@ char *p;
 		if (usr->edit_pos > 0 && (usr->edit_buf[usr->edit_pos-1] < ' ' || usr->edit_buf[usr->edit_pos-1] > '~'))
 			p = usr->edit_buf + usr->edit_pos - 1;
 /*
-	hack for annoying wrong auto-coloring of dots
+	hack for annoying wrong auto-coloring of dots; do a color correction
+	and do it only the second time a dot is entered
 */
-		if (c == '.' && usr->edit_pos > 1 && usr->edit_buf[usr->edit_pos-1] == '.') {
+		if (c == '.' && usr->edit_pos > 0 && usr->edit_buf[usr->edit_pos-1] == '.'
+			&& !(usr->edit_pos > 1 && usr->edit_buf[usr->edit_pos-2] == '.')) {
 			usr->edit_pos++;
 			Put(usr, "\b..");
 			Return;
