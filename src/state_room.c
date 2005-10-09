@@ -1169,7 +1169,7 @@ int r;
 
 				case ACCESS_INVITED:
 					if (rm != usr->mail)
-						Put(usr, "<yellow>You are invited in this room\n");
+						Put(usr, "<magenta>You are invited in this room\n");
 			}
 		}
 		POP(usr);

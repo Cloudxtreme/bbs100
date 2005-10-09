@@ -1932,10 +1932,6 @@ Room *rm;
 					Return;
 
 				case ACCESS_INVITED:
-					if (rm != usr->mail && rm->number != HOME_ROOM)
-						Put(usr, "<yellow>You are invited in this room\n");
-					break;
-
 				case ACCESS_OK:
 					break;
 
