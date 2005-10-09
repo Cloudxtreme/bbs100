@@ -1712,7 +1712,7 @@ char buf[MAX_LINE];
 
 				(usr->flags & USR_ROOMBEEP) ? "Yes" : "No",
 				(usr->flags2 & USR2_ENTER_UPLOAD) ? "Yes" : "No",
-				(usr->flags & USR_DONT_CYCLE_ROOMS) ? "No" : "Yes",
+				(usr->flags & USR_CYCLE_ROOMS) ? "Yes" : "No",
 				(usr->flags & USR_ROOMNUMBERS) ? "Yes" : "No"
 			);
 			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || room_access(r, usr->name) < ACCESS_OK) {
@@ -1851,7 +1851,7 @@ char buf[MAX_LINE];
 
 		case 'y':
 		case 'Y':
-			CONFIG_OPTION(USR_DONT_CYCLE_ROOMS, "Cycle rooms");
+			CONFIG_OPTION(USR_CYCLE_ROOMS, "Cycle rooms");
 
 		case 'n':
 		case 'N':

@@ -87,7 +87,7 @@
 #define USR_SHORT_DL_COLORS		0x10000000	/* show short color codes in downloaded text */
 #define USR_NOPAGE_DOWNLOADS	0x20000000	/* don't show pager for downloaded text */
 #define USR_BLOCK_FRIENDS		0x40000000	/* when X disabled, also block friends */
-#define USR_DONT_CYCLE_ROOMS	0x80000000	/* don't cycle through rooms when there are no new messages */
+#define USR_CYCLE_ROOMS			0x80000000	/* cycle through rooms when there are no new messages */
 #define USR_ALL					0xffffffff	/* USR_ANSI | USR_BOLD | ... | USR_xxx */
 
 /* usr->flags2 */

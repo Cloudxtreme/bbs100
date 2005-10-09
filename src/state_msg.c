@@ -1499,7 +1499,7 @@ Room *r, *rm, *next_joined;
 		if (rm->flags & ROOM_CHATROOM)
 			continue;
 
-		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
+		if ((usr->flags & USR_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
 			next_joined = rm;
 
 		if (unread_room(usr, rm) != NULL)
@@ -1526,7 +1526,7 @@ Room *r, *rm, *next_joined;
 		if (rm->flags & ROOM_CHATROOM)
 			continue;
 
-		if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
+		if ((usr->flags & USR_CYCLE_ROOMS) && next_joined == NULL && joined_room(usr, rm) != NULL)
 			next_joined = rm;
 
 		if (unread_room(usr, rm) != NULL)
@@ -1535,7 +1535,7 @@ Room *r, *rm, *next_joined;
 
 /* couldn't find an unread room; goto next joined room */
 
-	if (!(usr->flags & USR_DONT_CYCLE_ROOMS) && next_joined != NULL)
+	if ((usr->flags & USR_CYCLE_ROOMS) && next_joined != NULL)
 		return next_joined;
 
 /* couldn't find a room; goto the default room */
