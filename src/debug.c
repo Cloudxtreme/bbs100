@@ -65,6 +65,10 @@ void debug_breakpoint(void) {
 	;
 }
 
+void debug_breakpoint2(void) {
+	;
+}
+
 #endif	/* DEBUG */
 
 /* EOB */

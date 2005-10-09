@@ -39,7 +39,7 @@
 */
 #define MARKER_SIZE		sizeof(void *)
 #define BIN_SIZE		256
-#define MAX_BIN_FREE	(BIN_SIZE - sizeof(MemBin) - MARKER_SIZE)
+#define MAX_BIN_FREE	(BIN_SIZE - sizeof(MemBin) - 2*MARKER_SIZE)
 #define BIN_MEM_START	sizeof(MemBin)
 #define BIN_MEM_END		(BIN_SIZE - MARKER_SIZE)
 

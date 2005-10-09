@@ -64,6 +64,7 @@ extern int debug_stackp;
 
 void dump_debug_stack(void);
 void debug_breakpoint(void);
+void debug_breakpoint2(void);
 
 #else	/* NO DEBUG */
 
