@@ -12,6 +12,7 @@ Changes as of October 9th 2005
 - changed 'History' to 'X History', because it may be confused with the
   History room, if present
 - colorbug in editing with > sign (due to edit_long_code())
+- word wrapping bug for words like "doesn't"
 
 Changes as of October 8th 2005
 - removed the OnlineUser Tree code; it doesn't work, and the Hash was more
