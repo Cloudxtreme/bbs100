@@ -1,6 +1,7 @@
 Changes as of October 10th 2005
 - notification messages should not be received out of order
 - bugfix for line wrapping with spaces and tabs
+- bugfix for reply in X History
 
 Changes as of October 9th 2005
 - bugfix in enter_minus_msg() with going back from the room prompt

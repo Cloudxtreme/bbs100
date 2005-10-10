@@ -208,7 +208,7 @@ History_Reply_Code:
 				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
-					add_StringList(usr->recipients, sl);
+					add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
 			if (count_Queue(usr->recipients) <= 0)
