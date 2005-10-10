@@ -264,3 +264,7 @@ Version 3.0:
 
 - English Buchanan noted that line wrapping with a space at the end of line
   while editing was not pretty
+
+- Vonda noticed that multi's that could not be received were mailed to all
+  recipients of the multi message, rather than to the single person who did
+  not receive the message

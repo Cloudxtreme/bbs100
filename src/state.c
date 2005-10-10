@@ -963,6 +963,7 @@ void loop_send_msg(User *usr, char c) {
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
 			else {
 				if (PARAM_HAVE_MAILROOM) {
+					debug_breakpoint();		/* check what happens to the loop counter */
 					CALL(usr, STATE_MAIL_SEND_MSG);
 					Return;
 				}
@@ -1014,6 +1015,7 @@ void state_mail_send_msg(User *usr, char c) {
 */
 void mail_msg(User *usr, BufferedMsg *msg) {
 StringList *sl;
+unsigned long i;
 char buf[PRINT_BUF], c;
 
 	if (usr == NULL)
@@ -1042,13 +1044,27 @@ char buf[PRINT_BUF], c;
 		usr->new_message = NULL;
 		Return;
 	}
-	for(sl = msg->to; sl != NULL; sl = sl->next) {
-		if (add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
-			Perror(usr, "Out of memory");
-			destroy_Message(usr->new_message);
-			usr->new_message = NULL;
+	debug_breakpoint();		/* check the loop counter */
+	sl = msg->to;
+	if (sl == NULL) {
+		Perror(usr, "Looks like I forgot who you were talking to");
+		Return;
+	}
+	for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* get the recipient */
+		sl = sl->next;
+		if (sl == NULL) {
+			Perror(usr, "I have forgotten who to mail");
 			Return;
 		}
+	}
+/*
+	send mail to the recipient who failed
+*/
+	if (add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
+		Perror(usr, "Out of memory");
+		destroy_Message(usr->new_message);
+		usr->new_message = NULL;
+		Return;
 	}
 	usr->new_message->subject = cstrdup("<lost message>");
 
