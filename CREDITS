@@ -259,3 +259,5 @@ Version 3.0:
 - English Buchanan suggested color yellow for the away reason
 
 - English Buchanan found bug in the read minus functionality
+
+- Vonda noted that notification messages should not be received out of order

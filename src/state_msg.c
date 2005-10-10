@@ -985,31 +985,24 @@ int printed;
 		return;
 
 	Enter(spew_BufferedMsg);
-/*
-	one-shot messages are received 'out of order'
-	This is because they are system messages that you do not want to wait
-	for until after you've gone through all the auto-reply Xs
-*/
+
 	printed = 0;
+
 	for(pl = usr->held_msgs; pl != NULL; pl = pl_next) {
 		pl_next = pl->next;
 
-		m = (BufferedMsg *)pl->p;
+		m = (BufferedMsg *)usr->held_msgs->p;
 
-		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {		/* one shot message */
+		if ((m->flags & BUFMSG_TYPE) == BUFMSG_ONESHOT) {	/* one shot message */
 			display_text(usr, m->msg);
 			printed++;
 			remove_BufferedMsg(&usr->held_msgs, m);
 			destroy_BufferedMsg(m);					/* one-shots are not remembered */
+			continue;
 		}
-	}
-	if (printed)
-		Put(usr, "<white>");						/* do color correction */
-
-	while(usr->held_msgs != NULL) {
-		m = (BufferedMsg *)usr->held_msgs->p;
 		Put(usr, "<beep>");
 		print_buffered_msg(usr, m);
+		printed++;
 		Put(usr, "\n");
 
 		remove_BufferedMsg(&usr->held_msgs, m);
@@ -1030,10 +1023,15 @@ int printed;
 				}
 				do_reply_x(usr, m->flags);
 				Return;
-			} else
+			} else {
 				Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could reply!\n", m->from);
+				printed++;
+			}
 		}
 	}
+	if (printed)
+		Put(usr, "<white>");						/* do color correction */
+
 	Return;
 }
 
