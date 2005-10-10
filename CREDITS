@@ -261,3 +261,6 @@ Version 3.0:
 - English Buchanan found bug in the read minus functionality
 
 - Vonda noted that notification messages should not be received out of order
+
+- English Buchanan noted that line wrapping with a space at the end of line
+  while editing was not pretty

@@ -1036,6 +1036,7 @@ int i, wrap_len;
 		edit_putchar(usr, c);
 		Return;
 	}
+
 /* word wrap */
 
 	erase[0] = wrap[0] = 0;
@@ -1068,7 +1069,10 @@ int i, wrap_len;
 /* wrap word to next line */
 	cstrcpy(usr->edit_buf, wrap, MAX_LINE);
 	usr->edit_pos = strlen(usr->edit_buf);
-	usr->edit_buf[usr->edit_pos++] = c;
+
+	if (c != ' ')				/* don't wrap a space at the beginning of the line */
+		usr->edit_buf[usr->edit_pos++] = c;
+
 	usr->edit_buf[usr->edit_pos] = 0;
 
 	Print(usr, "\n%s%s", prompt, usr->edit_buf);
@@ -1678,11 +1682,14 @@ int n, i;
 
 	Enter(edit_tab_spaces);
 
-	n = color_strlen(usr->edit_buf) + 1;
-
-	for(i = 0; i < TABSIZE; i++) {
+/*
+	this loops goes to TABSIZE*2, but breaks earlier than that
+	the 'times 2' is only to be sure that we have a full tab even if the line wraps
+*/
+	for(i = 0; i < TABSIZE*2; i++) {
 		edit_func(usr, ' ');
 
+		n = color_strlen(usr->edit_buf) + 1;
 		if (!(n & (TABSIZE-1)))
 			break;
 
