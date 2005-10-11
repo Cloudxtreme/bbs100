@@ -723,7 +723,7 @@ void state_held_plus(User *usr, char c) {
 	call directly after adding a BufferedMsg to the history
 
 	it is inefficient because it has to count the list every time
-	maybe it should keep a seperate count in the List object ...
+	maybe it should be a Queue instead
 */
 void expire_history(User *usr) {
 	if (usr == NULL)
