@@ -83,8 +83,8 @@ void state_ask_away_reason(User *, char);
 
 void loop_ping(User *, char);
 void loop_send_msg(User *, char);
+void mail_msg(User *, BufferedMsg *, char *);
 void state_return_mail_msg(User *, char);
-void mail_msg_remove(User *);
 
 void print_version_info(User *);
 void enter_recipients(User *, void (*)(User *, char));

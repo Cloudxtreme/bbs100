@@ -84,7 +84,6 @@ Room *next_unread_room(User *);
 Room *skip_room(User *);
 Room *unread_room(User *, Room *);
 Joined *joined_room(User *, Room *);
-void mail_msg(User *, BufferedMsg *);
 void room_beep(User *, Room *);
 void msg_header(User *, Message *);
 void print_subject(User *, Message *);

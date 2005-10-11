@@ -901,120 +901,155 @@ int r;
 
 /*
 	send X messages in a loop
+	expects stack arguments: copy of the recipient list as StringList
+
+	every time it loops, it takes one recipient from the list on the stack
+	it loops by setting the loop counter to just 1, but does so multiple times
 */
 void loop_send_msg(User *usr, char c) {
+StringList *recipients, *sl;
+User *u;
+int recv_it;
+
 	if (usr == NULL)
 		return;
 
 	Enter(loop_send_msg);
 
-	if (c == INIT_STATE) {
+	if (c != INIT_STATE && c != LOOP_STATE) {
+		Perror(usr, "This is unexpected ...");
+		Return;
+	}
+	loop_Conn(usr->conn, 0UL);
 /*
 	EDIT_INIT resets the edit line, which is important when sending yourself messages
 	from within a chat room ... (otherwise the line annoyingly gets reprinted)
 */
-		edit_line(usr, EDIT_INIT);
-		LOOP(usr, count_Queue(usr->recipients));
-	} else {
-		StringList *sl;
-		User *u;
-		unsigned long i;
-		int recv_it;
+	edit_line(usr, EDIT_INIT);
 
-		if (usr->send_msg == NULL) {
-			Perror(usr, "The message has disappeared!");
-			LOOP(usr, 0UL);
-			RET(usr);
-			Return;
-		}
-		sl = (StringList *)usr->recipients->tail;
-		if (sl != NULL) {
-			for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* do the next recipient */
-				sl = sl->next;
-				if (sl == NULL)
-					break;
-			}
-		}
-		if (sl != NULL) {
-			recv_it = 1;
-			if (!strcmp(sl->str, usr->name)) {
-				Put(usr, "<green>Talking to yourself, are you?\n");
-				u = usr;
+	PEEK_ARG(usr, &recipients, sizeof(StringList *));
+
+	if (recipients == NULL) {
+		POP_ARG(usr, &recipients, sizeof(StringList *));
+
+		destroy_BufferedMsg(usr->send_msg);
+		usr->send_msg = NULL;
+
+		RET(usr);
+		Return;
+	}
+	if (usr->send_msg == NULL) {
+		Perror(usr, "The message has disappeared!");
+		POP_ARG(usr, &recipients, sizeof(StringList *));
+		RET(usr);
+		Return;
+	}
+	sl = pop_StringList(&recipients);
+	if (sl == NULL) {
+		POP_ARG(usr, &recipients, sizeof(StringList *));
+
+		destroy_BufferedMsg(usr->send_msg);
+		usr->send_msg = NULL;
+
+		RET(usr);
+		Return;
+	}
+	POKE_ARG(usr, &recipients, sizeof(StringList *));
+
+	if (sl->str == NULL || !sl->str[0]) {
+		destroy_StringList(sl);
+		loop_Conn(usr->conn, 1UL);			/* return here once more */
+		Return;
+	}
+	recv_it = 1;
+	if (!strcmp(sl->str, usr->name)) {
+		Put(usr, "<green>Talking to yourself, are you?\n");
+		u = usr;
+	} else {
+		if ((u = is_online(sl->str)) == NULL) {
+			Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
+			recv_it = 0;
+		} else {
+			if (u->runtime_flags & RTF_LOCKED) {
+				Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
+				recv_it = 0;
 			} else {
-				if ((u = is_online(sl->str)) == NULL) {
-					Print(usr, "<red>Sorry, but <yellow>%s<red> left before you could finish typing!\n", sl->str);
+				if (!(usr->runtime_flags & RTF_SYSOP)
+					&& (u->flags & USR_X_DISABLED)
+					&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
+					&& in_StringList(u->override, usr->name) == NULL) {
+					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
 					recv_it = 0;
-				} else {
-					if (u->runtime_flags & RTF_LOCKED) {
-						Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
-						recv_it = 0;
-					} else {
-						if (!(usr->runtime_flags & RTF_SYSOP)
-							&& (u->flags & USR_X_DISABLED)
-							&& ((u->flags & USR_BLOCK_FRIENDS) || in_StringList(u->friends, usr->name) == NULL)
-							&& in_StringList(u->override, usr->name) == NULL) {
-							Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly disabled message reception\n", sl->str);
-							recv_it = 0;
-						}
-					}
-				}
-			}
-			if (recv_it)
-				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
-			else {
-				if (PARAM_HAVE_MAILROOM) {
-					CALL(usr, STATE_MAIL_SEND_MSG);
-					Return;
 				}
 			}
 		}
-		if (!usr->conn->loop_counter) {
-			destroy_BufferedMsg(usr->send_msg);
-			usr->send_msg = NULL;
-			Return;
+	}
+	if (recv_it) {
+		recvMsg(u, usr, usr->send_msg);			/* deliver the message */
+		destroy_StringList(sl);
+		loop_Conn(usr->conn, 1UL);
+	} else {
+		if (PARAM_HAVE_MAILROOM) {
+			char *name;
+
+			name = sl->str;
+			sl->str = NULL;
+			destroy_StringList(sl);
+
+			PUSH_ARG(usr, &name, sizeof(char *));
+
+/* user is already gone, so remove from recipient list */
+			if ((sl = in_StringQueue(usr->recipients, name)) != NULL) {
+				remove_StringQueue(usr->recipients, sl);
+				destroy_StringList(sl);
+			}
+			CALL(usr, STATE_MAIL_SEND_MSG);
 		}
 	}
 	Return;
 }
 
 /*
-	Note: this state is called from within a loop
+	Note: this state expects the recipients name on the stack as char*
 */
 void state_mail_send_msg(User *usr, char c) {
+char *name;
+
 	if (usr == NULL)
 		return;
 
 	Enter(state_mail_send_msg);
 
 	if (c == INIT_STATE) {
-		usr->conn->state = CONN_ESTABLISHED;
 		usr->runtime_flags |= RTF_BUSY;
 		Put(usr, "<cyan>Do you wish to <yellow>Mail><cyan> the message? (Y/n): <white>");
 		Return;
 	}
 	switch(yesno(usr, c, 'Y')) {
 		case YESNO_YES:
-			POP(usr);			/* don't return here */
-			mail_msg(usr, usr->send_msg);
+			POP_ARG(usr, &name, sizeof(char *));
+			POP(usr);						/* don't return here */
+			mail_msg(usr, usr->send_msg, name);
 			Return;
 
 		case YESNO_NO:
-			mail_msg_remove(usr);
-			break;
+			POP_ARG(usr, &name, sizeof(char *));
+			Free(name);
+			POP(usr);						/* don't return here */
+			loop_Conn(usr->conn, 1UL);
+			Return;
 
 		case YESNO_UNDEF:
 			Put(usr, "<cyan>Send the message as <yellow>Mail>, <hotkey>yes or <hotkey>no? (Y/n): <white>");
-			Return;
 	}
 	Return;
 }
 
 /*
-	Send an eXpress message as Mail>
+	Send an eXpress message as Mail> to user 'name'
 */
-void mail_msg(User *usr, BufferedMsg *msg) {
-StringList *sl;
-unsigned long i;
+void mail_msg(User *usr, BufferedMsg *msg, char *name) {
+MailTo *mailto;
 char buf[PRINT_BUF], c;
 
 	if (usr == NULL)
@@ -1024,10 +1059,6 @@ char buf[PRINT_BUF], c;
 
 	if (msg == NULL) {
 		Perror(usr, "The message is gone all of a sudden!");
-		Return;
-	}
-	if (msg->to == NULL) {
-		Perror(usr, "The recipient list is gone all of a sudden!");
 		Return;
 	}
 	destroy_Message(usr->new_message);
@@ -1043,27 +1074,18 @@ char buf[PRINT_BUF], c;
 		usr->new_message = NULL;
 		Return;
 	}
-	sl = msg->to;
-	if (sl == NULL) {
-		Perror(usr, "Looks like I forgot who you were talking to");
-		Return;
-	}
-	for(i = 0UL; i < usr->conn->loop_counter; i++) {		/* get the recipient */
-		sl = sl->next;
-		if (sl == NULL) {
-			Perror(usr, "I have forgotten who to mail");
-			Return;
-		}
-	}
 /*
 	send mail to the recipient who failed
 */
-	if (add_MailToQueue(usr->new_message->to, new_MailTo_from_str(sl->str)) == NULL) {
+	if ((mailto = new_MailTo()) == NULL) {
 		Perror(usr, "Out of memory");
 		destroy_Message(usr->new_message);
 		usr->new_message = NULL;
 		Return;
 	}
+	mailto->name = name;
+	add_MailToQueue(usr->new_message->to, mailto);
+
 	usr->new_message->subject = cstrdup("<lost message>");
 
 	free_StringIO(usr->text);
@@ -1083,16 +1105,12 @@ char buf[PRINT_BUF], c;
 
 /* save the Mail> message */
 
-	PUSH_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));
 	PUSH(usr, STATE_RETURN_MAIL_MSG);
 	PUSH(usr, STATE_DUMMY);					/* it will JMP, overwriting this state */
 	save_message_room(usr, usr->mail);
 	Return;
 }
 
-/*
-	restore the loop counter that was previously saved on the stack
-*/
 void state_return_mail_msg(User *usr, char c) {
 	if (usr == NULL)
 		return;
@@ -1102,43 +1120,8 @@ void state_return_mail_msg(User *usr, char c) {
 	if (c == INIT_STATE) {
 		destroy_Message(usr->new_message);
 		usr->new_message = NULL;
-
-		POP_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));	/* get (previously stored) loop_counter from stack */
-		mail_msg_remove(usr);
+		loop_Conn(usr->conn, 1UL);
 	}
-	Return;
-}
-
-/*
-	The user was already gone, so remove it from the recipient list
-*/
-void mail_msg_remove(User *usr) {
-StringList *sl;
-
-	if (usr == NULL)
-		return;
-
-	Enter(mail_msg_remove);
-
-	if (usr->recipients == NULL) {
-		Return;
-	}
-	sl = (StringList *)usr->recipients->tail;
-	if (sl != NULL) {
-		unsigned long i;
-
-		for(i = 0UL; i < usr->conn->loop_counter; i++) {
-			sl = sl->next;
-			if (sl == NULL)
-				break;
-		}
-		if (sl != NULL) {
-			remove_StringQueue(usr->recipients, sl);
-			destroy_StringList(sl);
-		}
-	}
-	POP(usr);
-	usr->conn->state = CONN_LOOPING;
 	Return;
 }
 
@@ -1170,6 +1153,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		BufferedMsg *msg;
+		StringList *recipients;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 		if (!usr->edit_buf[0]) {
@@ -1215,7 +1199,14 @@ int r;
 			}
 			stats.esent_boot++;
 		}
-		JMP(usr, LOOP_SEND_MSG);
+		if ((recipients = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		POP(usr);
+		PUSH_ARG(usr, &recipients, sizeof(StringList *));
+		CALL(usr, LOOP_SEND_MSG);
 	}
 	Return;
 }
@@ -1251,6 +1242,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		BufferedMsg *xmsg;
+		StringList *recipients;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
@@ -1302,7 +1294,14 @@ int r;
 			}
 			stats.xsent_boot++;
 		}
-		JMP(usr, LOOP_SEND_MSG);
+		if ((recipients = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		POP(usr);
+		PUSH_ARG(usr, &recipients, sizeof(StringList *));
+		CALL(usr, LOOP_SEND_MSG);
 	}
 	Return;
 }
@@ -1366,7 +1365,7 @@ int r;
 			}
 			if (r == EDIT_RETURN) {
 				BufferedMsg *msg;
-				StringList *sl;
+				StringList *sl, *recipients;
 				File *file;
 				char filename[MAX_PATHLEN];
 				int num, gen;
@@ -1477,7 +1476,15 @@ int r;
 					stats.fsent_boot++;
 				}
 				destroy_DirList(feelings);
-				JMP(usr, LOOP_SEND_MSG);
+
+				if ((recipients = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
+					Perror(usr, "Out of memory");
+					RET(usr);
+					Return;
+				}
+				POP(usr);
+				PUSH_ARG(usr, &recipients, sizeof(StringList *));
+				CALL(usr, LOOP_SEND_MSG);
 				Return;
 			}
 	}
@@ -1609,6 +1616,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		BufferedMsg *xmsg;
+		StringList *recipients;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
@@ -1659,7 +1667,14 @@ int r;
 			}
 			stats.qansw_boot++;
 		}
-		JMP(usr, LOOP_SEND_MSG);
+		if ((recipients = copy_StringList((StringList *)usr->recipients->tail)) == NULL) {
+			Perror(usr, "Out of memory");
+			RET(usr);
+			Return;
+		}
+		POP(usr);
+		PUSH_ARG(usr, &recipients, sizeof(StringList *));
+		CALL(usr, LOOP_SEND_MSG);
 	}
 	Return;
 }
