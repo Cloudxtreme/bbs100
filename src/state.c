@@ -963,7 +963,6 @@ void loop_send_msg(User *usr, char c) {
 				recvMsg(u, usr, usr->send_msg);			/* deliver the message */
 			else {
 				if (PARAM_HAVE_MAILROOM) {
-					debug_breakpoint();		/* check what happens to the loop counter */
 					CALL(usr, STATE_MAIL_SEND_MSG);
 					Return;
 				}
@@ -1044,7 +1043,6 @@ char buf[PRINT_BUF], c;
 		usr->new_message = NULL;
 		Return;
 	}
-	debug_breakpoint();		/* check the loop counter */
 	sl = msg->to;
 	if (sl == NULL) {
 		Perror(usr, "Looks like I forgot who you were talking to");
@@ -1106,7 +1104,6 @@ void state_return_mail_msg(User *usr, char c) {
 		usr->new_message = NULL;
 
 		POP_ARG(usr, &usr->conn->loop_counter, sizeof(unsigned long));	/* get (previously stored) loop_counter from stack */
-
 		mail_msg_remove(usr);
 	}
 	Return;
