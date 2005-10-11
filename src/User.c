@@ -575,8 +575,8 @@ int term_width, term_height, ff1_continue;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			if (last_read < r->tail_msg)
-				last_read = r->tail_msg;
+			if (last_read < 0L)
+				last_read = 0L;
 			if (last_read > r->head_msg)
 				last_read = r->head_msg;
 
@@ -586,7 +586,8 @@ int term_width, term_height, ff1_continue;
 			}
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
-				last_read = 0L;							/* begin reading */
+				if (r->number != MAIL_ROOM)
+					last_read = 0L;						/* begin reading */
 			}
 /*
 	when not welcome any more, zap the room
@@ -872,8 +873,8 @@ int i;
 /*
 	fix last_read field if too large (room was cleaned out)
 */
-			if (last_read < r->tail_msg)
-				last_read = r->tail_msg;
+			if (last_read < 0L)
+				last_read = 0L;
 			if (last_read > r->head_msg)
 				last_read = r->head_msg;
 
@@ -883,7 +884,8 @@ int i;
 			}
 			if (generation != r->generation) {			/* room has changed */
 				generation = r->generation;
-				last_read = 0L;							/* begin reading */
+				if (r->number != MAIL_ROOM)
+					last_read = 0L;						/* begin reading */
 			}
 			if (room_access(r, username) < 0)			/* not welcome anymore */
 				zapped = 'Z';

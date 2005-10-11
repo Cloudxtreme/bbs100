@@ -478,14 +478,13 @@ int i, new_mail;
 	fix last_read field if too large (fix screwed up mail rooms)
 */
 	if ((j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL) {
-		if (usr->mail->head_msg <= 0)
+		if (usr->mail->head_msg <= 0L)
 			j->last_read = 0UL;
 		else {
-			if (j->last_read > usr->mail->head_msg) {
+			if (j->last_read > usr->mail->head_msg)
 				j->last_read = usr->mail->head_msg;
-				if (j->last_read < usr->mail->tail_msg)
-					j->last_read = usr->mail->tail_msg;
-			}
+			if (j->last_read < 0L)
+				j->last_read = 0L;
 		}
 	}
 	usr->runtime_flags &= ~RTF_BUSY;
@@ -561,7 +560,9 @@ int i, new_mail;
 		if (PARAM_HAVE_MAILROOM && new_mail)
 			r = usr->mail;
 		else {
-			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL || joined_room(usr, r) == NULL) {
+			if ((r = find_Roombynumber(usr, usr->default_room)) == NULL
+				|| joined_room(usr, r) == NULL
+				|| room_access(r, usr->name) < 0) {
 				usr->default_room = LOBBY_ROOM;
 				r = Lobby_room;
 			}
@@ -887,6 +888,7 @@ User *u;
 		Put(usr, "\n<white>NOTE: <red>nologin is active\n");
 
 	new_mail = 0;
+	debug_breakpoint();
 	if (PARAM_HAVE_MAILROOM && usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
 		&& newMsgs(usr->mail, j->last_read) > j->last_read) {
 		new_mail = 1;

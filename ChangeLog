@@ -1,6 +1,7 @@
 Changes as October 11th 2005
 - redesigned loop_send_msg(); it now works by popping off the stack
   although more allocating/deallocating, the code is much more comprehensible
+- fixed bug in validating the last_read field of Joined struct in load_User()
 
 Changes as of October 10th 2005
 - notification messages should not be received out of order
