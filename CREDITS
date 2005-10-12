@@ -268,3 +268,5 @@ Version 3.0:
 - Vonda noticed that multi's that could not be received were mailed to all
   recipients of the multi message, rather than to the single person who did
   not receive the message
+
+- English Buchanan found a problem with Zap All

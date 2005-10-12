@@ -1085,7 +1085,7 @@ Joined *j;
 		}
 	} else {
 		if ((j = new_Joined()) == NULL) {
-			log_err("join_room(): Out of memory");
+			Perror(usr, "Out of memory, cannot join room");
 			return NULL;
 		}
 		j->number = r->number;
@@ -1101,12 +1101,20 @@ Joined *j;
 	if (usr == NULL || r == NULL)
 		return;
 
-	if ((j = in_Joined(usr->rooms, r->number)) == NULL)
-		return;
+	j = in_Joined(usr->rooms, r->number);
 
-	if (joined_visible(usr, r, j))
+	if (joined_visible(usr, r, j)) {
+		if (j == NULL) {
+			if ((j = new_Joined()) == NULL) {
+				Perror(usr, "Out of memory, cannot unjoin room");
+				return;
+			}
+			j->number = r->number;
+			j->generation = r->generation;
+			prepend_Joined(&usr->rooms, j);
+		}
 		j->zapped = 1;
-	else {
+	} else {
 		remove_Joined(&usr->rooms, j);
 		destroy_Joined(j);
 	}
