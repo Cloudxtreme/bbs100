@@ -1051,6 +1051,7 @@ char *name;
 void mail_msg(User *usr, BufferedMsg *msg, char *name) {
 MailTo *mailto;
 char buf[PRINT_BUF], c;
+unsigned int flags;
 
 	if (usr == NULL)
 		return;
@@ -1093,12 +1094,15 @@ char buf[PRINT_BUF], c;
 /*
 	This is the most ugly hack ever; temporarily reset name to get a correct
 	msg header out of buffered_msg_header();
-	I really must rewrite this some day
+	Temporarily turn off X message numbering too
 */
 	c = usr->name[0];
 	usr->name[0] = 0;
+	flags = usr->flags;
+	usr->flags &= ~USR_XMSG_NUM;
 	buffered_msg_header(usr, msg, buf, PRINT_BUF);
 	usr->name[0] = c;
+	usr->flags = flags;
 
 	put_StringIO(usr->text, buf);
 	concat_StringIO(usr->text, msg->msg);

@@ -1,3 +1,6 @@
+Changes as of October 12th 2005
+- do not number X messages that were sent as Mail>
+
 Changes as October 11th 2005
 - redesigned loop_send_msg(); it now works by popping off the stack
   although more allocating/deallocating, the code is much more comprehensible
