@@ -1160,7 +1160,7 @@ int r;
 		StringList *recipients;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
-		if (!usr->edit_buf[0]) {
+		if (empty_emote(usr->edit_buf)) {
 			Put(usr, "<red>Nothing entered, so no message was sent\n");
 			RET(usr);
 			Return;
@@ -1250,7 +1250,7 @@ int r;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
-		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
+		if (empty_xmsg(usr->text)) {
 			Put(usr, "<red>Nothing entered, so no message was sent\n");
 			RET(usr);
 			Return;
@@ -1532,7 +1532,7 @@ int r;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
-		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
+		if (empty_xmsg(usr->text)) {
 			Put(usr, "<red>Nothing entered, so no question was asked\n");
 			RET(usr);
 			Return;
@@ -1624,7 +1624,7 @@ int r;
 
 		usr->runtime_flags &= ~RTF_BUSY_SENDING;
 
-		if (!usr->edit_buf[0] && usr->text->buf == NULL) {
+		if (empty_xmsg(usr->text)) {
 			Put(usr, "<red>Nothing entered, so no answer given\n");
 			RET(usr);
 			Return;

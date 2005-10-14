@@ -76,6 +76,10 @@ void tab_list(User *, void (*)(User *));
 void backtab_list(User *, void (*)(User *));
 void reset_tablist(User *, char);
 
+int empty_emote(char *);
+int empty_xmsg(StringIO *);
+int empty_message(Message *);
+
 extern char *Wrap_Charset1;
 extern char *Wrap_Charset2;
 

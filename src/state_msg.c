@@ -332,7 +332,7 @@ void save_message(User *usr, char c) {
 	Mail> is sent in a loop
 */
 void save_message_room(User *usr, Room *room) {
-char filename[MAX_PATHLEN], *p;
+char filename[MAX_PATHLEN];
 int err = 0;
 Joined *j;
 StringIO *tmp;
@@ -359,15 +359,7 @@ StringIO *tmp;
 	usr->text = tmp;
 	free_StringIO(usr->text);
 
-/*
-	crude check for empty messages (completely empty or only containing spaces)
-	The check is crude because a single color code already counts as 'not empty'
-*/
-	for(p = usr->new_message->msg->buf; p != NULL && *p; p++) {
-		if (*p != ' ' && *p != '\n')
-			break;
-	}
-	if (p == NULL || !*p) {
+	if (empty_message(usr->new_message)) {
 		Print(usr, "<red>Message is empty, message not saved\n");
 
 		destroy_Message(usr->new_message);

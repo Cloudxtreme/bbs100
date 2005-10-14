@@ -1967,4 +1967,46 @@ void reset_tablist(User *usr, char c) {
 	}
 }
 
+int empty_emote(char *buf) {
+char *p;
+
+	for(p = buf; p != NULL && *p; p++) {
+		if (*p <= ' ' || *p == '\n')
+			continue;
+
+		return 0;
+	}
+	return 1;
+}
+
+int empty_xmsg(StringIO *s) {
+char *p;
+
+	if (s == NULL || s->buf == NULL)
+		return 1;
+
+	for(p = s->buf; p != NULL && *p; p++) {
+		if (*p <= ' ' || *p == '\n')
+			continue;
+
+		return 0;
+	}
+	return 1;
+}
+
+int empty_message(Message *msg) {
+char *p;
+
+	if (msg == NULL || msg->msg == NULL)
+		return 1;
+
+	for(p = msg->msg->buf; p != NULL && *p; p++) {
+		if (*p <= ' ' || *p == '\n')
+			continue;
+
+		return 0;
+	}
+	return 1;
+}
+
 /* EOB */
