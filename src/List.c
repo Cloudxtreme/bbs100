@@ -225,7 +225,7 @@ int count, i;
 		return NULL;
 
 	root = (ListType **)v;
-	if (sort_func == NULL)
+	if (*root == NULL || sort_func == NULL)
 		return *root;
 
 	count = 0;

@@ -98,7 +98,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
-	if ((r = load_RoomData(filename, 1, flags)) == NULL) {
+	if ((r = load_RoomData(filename, MAIL_ROOM, flags)) == NULL) {
 		if ((r = new_Room()) == NULL) {
 			Return NULL;
 		}
