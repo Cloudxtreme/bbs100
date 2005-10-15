@@ -1689,7 +1689,7 @@ Joined *j;
 	if (r == NULL) {						/* possible if connection is being closed */
 		Return;
 	}
-	usr->curr_msg = -1;
+	usr->curr_msg = -1L;
 
 	free_StringIO(usr->text);
 
@@ -1707,7 +1707,7 @@ Joined *j;
 	can be in either your own Home>, or someone elses) so this is simply hacked out
 */
 	if (j != NULL && usr->curr_room->number != HOME_ROOM) {
-		if (j->roominfo_read == -1) {
+		if (j->roominfo_read == (unsigned int)-1) {
 			room_info(usr);			/* first time here ; read room info */
 			Return;
 		}
