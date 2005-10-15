@@ -460,9 +460,9 @@ int i, new_mail;
 	add_Timer(&usr->timerq, new_Timer(PARAM_SAVE_TIMEOUT * SECS_IN_MIN, save_timeout, TIMER_RESTART));
 /*
 	give the user a Mail> room
-	this is already done by load_User(), but Guests and New users
+	this is already done by load_User(), but Guests and New users don't have one yet
 */
-	if (usr->mail == NULL) {					/* happens to Guest and New users */
+	if (usr->mail == NULL) {
 		int load_room_flags = LOAD_ROOM_ALL;
 
 		if (!PARAM_HAVE_RESIDENT_INFO)
@@ -485,6 +485,12 @@ int i, new_mail;
 				j->last_read = usr->mail->head_msg;
 			if (j->last_read < 0L)
 				j->last_read = 0L;
+		}
+	} else {
+		if ((j = new_Joined()) != NULL) {
+			j->number = MAIL_ROOM;
+			j->generation = usr->mail->generation;
+			prepend_Joined(&usr->rooms, j);
 		}
 	}
 	usr->runtime_flags &= ~RTF_BUSY;
