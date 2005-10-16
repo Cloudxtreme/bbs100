@@ -2654,6 +2654,8 @@ char filename[MAX_PATHLEN], *p;
 	feelings_generation++;
 
 	p = filename + strlen(PARAM_FEELINGSDIR);
+	if (*p == '/')
+		p++;
 	log_msg("SYSOP %s added Feeling %s", usr->name, p);
 	RET(usr);
 }
@@ -2778,6 +2780,8 @@ char filename[MAX_PATHLEN], *p;
 				Perror(usr, "Failed to delete feeling");
 			else {
 				p = filename + strlen(PARAM_FEELINGSDIR);
+				if (*p == '/')
+					p++;
 				log_msg("SYSOP %s deleted Feeling %s", usr->name, p);
 				feelings_generation++;
 			}
