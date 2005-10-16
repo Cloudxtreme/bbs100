@@ -1040,22 +1040,25 @@ int i, wrap_len;
 /* word wrap */
 
 	erase[0] = wrap[0] = 0;
-	wrap_len = usr->display->term_width / 3;
-	for(i = usr->edit_pos - 1; i > wrap_len; i--) {
-		if (cstrchr(Wrap_Charset1, usr->edit_buf[i]) != NULL) {
-			i++;
-			break;
-		}
-		if (cstrchr(Wrap_Charset2, usr->edit_buf[i]) != NULL) {
+
+	if (c != ' ' && cstrchr(Wrap_Charset2, c) == NULL) {
+		wrap_len = usr->display->term_width / 3;
+		for(i = usr->edit_pos - 1; i > wrap_len; i--) {
+			if (cstrchr(Wrap_Charset1, usr->edit_buf[i]) != NULL) {
+				i++;
+				break;
+			}
+			if (cstrchr(Wrap_Charset2, usr->edit_buf[i]) != NULL) {
+				cstrcat(erase, "\b \b", MAX_LONGLINE);
+				break;
+			}
 			cstrcat(erase, "\b \b", MAX_LONGLINE);
-			break;
 		}
-		cstrcat(erase, "\b \b", MAX_LONGLINE);
-	}
-	if (i > wrap_len) {
-		cstrcpy(wrap, usr->edit_buf+i, MAX_LINE);
-		usr->edit_buf[i] = 0;
-		Put(usr, erase);
+		if (i > wrap_len) {
+			cstrcpy(wrap, usr->edit_buf+i, MAX_LINE);
+			usr->edit_buf[i] = 0;
+			Put(usr, erase);
+		}
 	}
 /*
 	it is a nice experiment to leave out the newline, but it gives problems
@@ -1070,12 +1073,14 @@ int i, wrap_len;
 	cstrcpy(usr->edit_buf, wrap, MAX_LINE);
 	usr->edit_pos = strlen(usr->edit_buf);
 
-	if (c != ' ')				/* don't wrap a space at the beginning of the line */
+/* don't wrap a space at the beginning of the line */
+	if (c != ' ' || usr->edit_pos > 0)
 		usr->edit_buf[usr->edit_pos++] = c;
 
 	usr->edit_buf[usr->edit_pos] = 0;
 
-	Print(usr, "\n%s%s", prompt, usr->edit_buf);
+	Print(usr, "\n%s", prompt);
+	Put(usr, usr->edit_buf);			/* in 2 separate prints; no lame color bug(!) */
 	Return;
 }
 

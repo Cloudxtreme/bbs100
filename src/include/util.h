@@ -74,7 +74,7 @@
 */
 #define DEFAULT_SYMBOLS			"!@$%^&*-+=()[]{}<>.,:;/'\"`\\|~"
 
-#define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color */
+#define AUTO_COLOR_FORCED		1	/* there's a color code in front of the symbol, forcing the color; so don't auto-color */
 
 #define FORMAT_NUMBERED			1	/* number the entries in print_columns() */
 #define FORMAT_NO_UNDERSCORES	2	/* convert underscores to spaces */
