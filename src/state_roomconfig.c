@@ -73,7 +73,7 @@ void state_room_config_menu(User *usr, char c) {
 
 			Put(usr, "<hotkey>Kickout/unkick                 Show <hotkey>kicked\n");
 
-			if (!(usr->curr_room->number == HOME_ROOM)) {
+			if (usr->curr_room->number != HOME_ROOM) {
 				Put(usr, "\n");
 
 				if (usr->runtime_flags & RTF_SYSOP) {
@@ -691,7 +691,11 @@ int r;
 			sort_StringList(&usr->curr_room->invited, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was kicked, but is now invited\n", sl->str);
-			log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+/*
+	don't log it for the Home> room (respect privacy)
+*/
+			if (usr->curr_room->number != HOME_ROOM)
+				log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(sl->str)) != NULL) {
 				if (u != usr)
@@ -706,7 +710,9 @@ int r;
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> is uninvited\n", usr->edit_buf);
-				log_msg("%s uninvited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+
+				if (usr->curr_room->number != HOME_ROOM)
+					log_msg("%s uninvited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
@@ -720,7 +726,9 @@ int r;
 				sort_StringList(&usr->curr_room->invited, alphasort_StringList);
 
 				Print(usr, "<yellow>%s<green> is invited\n", usr->edit_buf);
-				log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+
+				if (usr->curr_room->number != HOME_ROOM)
+					log_msg("%s invited %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL) {
 					if (u != usr)
@@ -800,7 +808,9 @@ int r;
 			sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was invited, but is now kicked\n", sl->str);
-			log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+
+			if (usr->curr_room->number != HOME_ROOM)
+				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 			if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 				Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n",
@@ -822,7 +832,9 @@ int r;
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> was kicked, but not anymore\n", usr->edit_buf);
-				log_msg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+
+				if (usr->curr_room->number != HOME_ROOM)
+					log_msg("%s unkicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 					Tell(u, "\n<magenta>You have been allowed access to %s<magenta> again by <yellow>%s\n",
@@ -835,7 +847,9 @@ int r;
 				sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 				Print(usr, "<yellow>%s<green> has been kicked out\n", usr->edit_buf);
-				log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
+
+				if (usr->curr_room->number != HOME_ROOM)
+					log_msg("%s kicked %s (room %d %s>)", usr->name, usr->edit_buf, usr->curr_room->number, usr->curr_room->name);
 
 				if ((u = is_online(usr->edit_buf)) != NULL && u != usr) {
 					Tell(u, "\n<magenta>You have been kicked out of %s<magenta> by <yellow>%s\n",
