@@ -1,5 +1,6 @@
 Changes as of October 16th 2005
 - invites to Home> are no longer logged (respect privacy)
+- fixes in edit wrapping
 
 Changes as of October 15th 2005
 - bugfix in sort_List() for root pointers that are NULL
