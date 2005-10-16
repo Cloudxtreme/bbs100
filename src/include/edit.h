@@ -45,7 +45,7 @@
 	charset1 breaks the line, charset2 wraps along
 */
 #define WRAP_CHARSET1	" .:;,-+=*&^%!?>}])/"
-#define WRAP_CHARSET2	"<{[($\"`#~"
+#define WRAP_CHARSET2	"<{[($`#~"
 
 int edit_recipients(User *, char, int (*)(User *));
 int edit_name(User *, char);
