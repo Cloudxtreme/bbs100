@@ -64,6 +64,16 @@ error codes as well.
 You can safely ignore the message and run on IPv4.
 
 
+I'M SEEING MESSAGES IN THE BBSLOG LIKE:
+Oct 16 00:10:56 W unknown keyword 'from_ip', ignored
+Oct 16 00:10:56 W unknown keyword 'from_ipnum', ignored
+These keywords in the UserData file changed. So whenever a user that was
+saved under version 2.x logs in to bbs100 3.x+, you will get to see these
+messages. When the user has been saved in 3.x, the message will no longer
+re-occur for that user.
+This is a warning that can safely be ignored.
+
+
 YAWC
 Why isn't YAWC mentioned anywhere in the README or CREDITS?
 Well, YAWC is yet another clone of DOC by Kenneth Haglund (also known as
