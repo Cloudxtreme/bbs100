@@ -848,7 +848,6 @@ int edit_line(User *usr, char c) {
 			break;
 
 		case '^':
-		case '~':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			break;
@@ -940,7 +939,6 @@ int edit_chatline(User *usr, char c) {
 			break;
 
 		case '^':
-		case '~':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			break;
@@ -1179,7 +1177,6 @@ char prompt[4];
 			break;
 
 		case '^':
-		case '~':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */
@@ -1298,7 +1295,6 @@ int color;
 			break;
 
 		case '^':
-		case '~':
 		case KEY_CTRL('V'):
 			usr->runtime_flags |= RTF_COLOR_EDITING;
 			if (usr->edit_pos >= MAX_LINE-2) {		/* wrap color to next line */

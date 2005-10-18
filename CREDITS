@@ -270,3 +270,8 @@ Version 3.0:
   not receive the message
 
 - English Buchanan found a problem with Zap All
+
+- Snow Queen hit a problem with Mail>
+
+- Jeremy Stock suggested not to use tilde for color editing, as the character
+  may appear in URLs
