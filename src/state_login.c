@@ -894,7 +894,6 @@ User *u;
 		Put(usr, "\n<white>NOTE: <red>nologin is active\n");
 
 	new_mail = 0;
-	debug_breakpoint();
 	if (PARAM_HAVE_MAILROOM && usr->mail != NULL && (j = in_Joined(usr->rooms, MAIL_ROOM)) != NULL
 		&& newMsgs(usr->mail, j->last_read) > j->last_read) {
 		new_mail = 1;
