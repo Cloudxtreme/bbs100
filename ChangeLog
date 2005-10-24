@@ -1,3 +1,6 @@
+Changes as of October 24th 2005
+- wrapping for asterisk
+
 Changes as of October 18th 2005
 - don't use tilde for color editing; it may appear in URLs
 
