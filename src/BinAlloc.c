@@ -322,11 +322,13 @@ unsigned long bin_start, bin_end;
 	LD_MARK(mem, in_use);
 	if (in_use == MARK_FREE) {
 		log_err("BinFree(): memory was not marked as in use");
+		abort();
 		return;
 	}
 	LD_TYPE(mem, type);
 	if (type < 0 || type >= NUM_TYPES) {
 		log_err("BinFree(): invalid type; the mark has been overwritten");
+		abort();
 		return;
 	}
 	if (in_use == MARK_MALLOC) {		/* allocated by use_malloc() */
@@ -356,6 +358,7 @@ unsigned long bin_start, bin_end;
 		if ((unsigned long)mem >= bin_start && (unsigned long)mem < bin_end) {
 			if (bin->free < 0) {
 				log_err("BinFree(): corrupted number of free bytes in %s bin", Types_table[type].type);
+				abort();
 				bin->free = 0;
 				return;
 			}
@@ -366,6 +369,7 @@ unsigned long bin_start, bin_end;
 
 			if (bin->free <= 0 || bin->free > MAX_BIN_FREE) {
 				log_err("BinFree(): corrupted number of free bytes in %s bin", Types_table[type].type);
+				abort();
 				bin->free = 0;
 				return;
 			}
@@ -391,6 +395,7 @@ unsigned long bin_start, bin_end;
 		}
 	}
 	log_err("BinFree(): originating bin does not exist");
+	abort();
 }
 
 int get_MemBinInfo(MemBinInfo *info, int type) {
