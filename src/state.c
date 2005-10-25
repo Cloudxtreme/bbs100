@@ -2873,30 +2873,42 @@ int cpos, lines;
 			while(read_StringIO(usr->text, buf, MAX_LONGLINE) > 0) {
 				p = buf;
 				while(*p) {
-					if (*p == '\n') {
-						cpos = 0;
-						lines++;
-						write_StringIO(usr->conn->output, "\r\n", 2);
-					} else {
-						if (*p < ' ') {
-							char colorbuf[MAX_COLORBUF];
+					switch(*p) {
+						case '\n':
+							cpos = 0;
+							lines++;
+							write_StringIO(usr->conn->output, "\r\n", 2);
+							break;
 
-							short_color_to_long(*p, colorbuf, MAX_COLORBUF, usr->flags & USR_SHORT_DL_COLORS);
-							put_StringIO(usr->conn->output, colorbuf);
-
-							cpos += strlen(colorbuf);
+						case '^':
+							write_StringIO(usr->conn->output, "^^", 2);
+							cpos += 2;
 							if (cpos >= usr->display->term_width) {
 								cpos -= usr->display->term_width;
 								lines++;
 							}
-						} else {
-							write_StringIO(usr->conn->output, p, 1);
-							cpos++;
-							if (cpos >= usr->display->term_width) {
-								cpos = 0;
-								lines++;
+							break;
+
+						default:
+							if (*p < ' ') {
+								char colorbuf[MAX_COLORBUF];
+
+								short_color_to_long(*p, colorbuf, MAX_COLORBUF, usr->flags & USR_SHORT_DL_COLORS);
+								put_StringIO(usr->conn->output, colorbuf);
+
+								cpos += strlen(colorbuf);
+								if (cpos >= usr->display->term_width) {
+									cpos -= usr->display->term_width;
+									lines++;
+								}
+							} else {
+								write_StringIO(usr->conn->output, p, 1);
+								cpos++;
+								if (cpos >= usr->display->term_width) {
+									cpos = 0;
+									lines++;
+								}
 							}
-						}
 					}
 					p++;
 					if (!(usr->flags & USR_NOPAGE_DOWNLOADS) && lines >= usr->display->term_height-1) {
