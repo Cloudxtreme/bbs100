@@ -2883,10 +2883,11 @@ int cpos, lines;
 						case '^':
 							write_StringIO(usr->conn->output, "^^", 2);
 							cpos += 2;
-							if (cpos >= usr->display->term_width) {
-								cpos -= usr->display->term_width;
-								lines++;
-							}
+							break;
+
+						case '<':
+							write_StringIO(usr->conn->output, "<lt>", 4);
+							cpos += 4;
 							break;
 
 						default:
@@ -2895,20 +2896,15 @@ int cpos, lines;
 
 								short_color_to_long(*p, colorbuf, MAX_COLORBUF, usr->flags & USR_SHORT_DL_COLORS);
 								put_StringIO(usr->conn->output, colorbuf);
-
 								cpos += strlen(colorbuf);
-								if (cpos >= usr->display->term_width) {
-									cpos -= usr->display->term_width;
-									lines++;
-								}
 							} else {
 								write_StringIO(usr->conn->output, p, 1);
 								cpos++;
-								if (cpos >= usr->display->term_width) {
-									cpos = 0;
-									lines++;
-								}
 							}
+					}
+					if (cpos >= usr->display->term_width) {
+						cpos -= usr->display->term_width;
+						lines++;
 					}
 					p++;
 					if (!(usr->flags & USR_NOPAGE_DOWNLOADS) && lines >= usr->display->term_height-1) {
