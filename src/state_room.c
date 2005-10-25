@@ -1201,7 +1201,7 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (!(usr->runtime_flags & RTF_SYSOP)) {
+		if (rm->number == HOME_ROOM || rm->number == MAIL_ROOM || !(usr->runtime_flags & RTF_SYSOP)) {
 			switch(room_access(rm, usr->name)) {
 				case ACCESS_INVITE_ONLY:
 					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
