@@ -860,15 +860,18 @@ char num_buf[MAX_NUMBER];
 				cstrcpy(m->from, usr->name, MAX_NAME);
 
 				if (usr->curr_room == usr->mail) {
-					if (mail_access(usr, usr->message->from))
+					if (mail_access(usr, usr->message->from)) {
+						destroy_Message(m);
 						break;
-
+					}
 					if ((m->to = new_MailToQueue()) == NULL) {
 						Perror(usr, "Out of memory");
+						destroy_Message(m);
 						break;
 					}
 					if (add_MailToQueue(m->to, new_MailTo_from_str(usr->message->from)) == NULL) {
 						Perror(usr, "Out of memory");
+						destroy_Message(m);
 						break;
 					}
 /* reply to all */
@@ -889,6 +892,45 @@ char num_buf[MAX_NUMBER];
 					if (usr->runtime_flags & RTF_ROOMAIDE)
 						m->flags |= MSG_FROM_ROOMAIDE;
 
+				if (usr->message->anon != NULL && usr->message->anon[0]) {
+					m->reply_name = cstrdup(usr->message->anon);
+					m->flags |= REPLY_TO_ANON;
+				} else {
+					int set_reply_name = 1;
+
+/*
+	set the reply name, but not if the person is replying to himself,
+	unless he is in a different mode (Sysop/Room Aide) than when the original
+	post was made
+	(this bit of logic is hard to get right without writing it all out)
+*/
+					if (!strcmp(usr->name, usr->message->from)) {
+						set_reply_name = 0;
+						if (usr->runtime_flags & RTF_SYSOP) {
+							if (!(usr->message->flags & MSG_FROM_SYSOP))
+								set_reply_name = 1;
+						} else {
+							if (usr->message->flags & MSG_FROM_SYSOP)
+								set_reply_name = 1;
+							else {
+								if (usr->runtime_flags & RTF_ROOMAIDE) {
+									if (!(usr->message->flags & MSG_FROM_ROOMAIDE))
+										set_reply_name = 1;
+								} else
+									if (usr->message->flags & MSG_FROM_ROOMAIDE)
+										set_reply_name = 1;
+							}
+						}
+					}
+					if (set_reply_name) {
+						m->reply_name = cstrdup(usr->message->from);
+						if (usr->message->flags & MSG_FROM_SYSOP)
+							m->flags |= REPLY_TO_SYSOP;
+						else
+							if (usr->message->flags & MSG_FROM_ROOMAIDE)
+								m->flags |= REPLY_TO_ROOMAIDE;
+					}
+				}
 				if (usr->message->subject && usr->message->subject[0])
 					m->subject = cstrdup(usr->message->subject);
 

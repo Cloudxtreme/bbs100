@@ -275,3 +275,6 @@ Version 3.0:
 
 - Jeremy Stock suggested not to use tilde for color editing, as the character
   may appear in URLs
+
+- Berlin suggested that reply posts should have a "in reply to" header
+  like in DOC

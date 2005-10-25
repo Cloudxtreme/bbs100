@@ -57,6 +57,7 @@ void destroy_Message(Message *m) {
 	Free(m->subject);
 	Free(m->anon);
 	Free(m->deleted_by);
+	Free(m->reply_name);
 	destroy_MailToQueue(m->to);
 	destroy_StringIO(m->msg);
 	Free(m);
@@ -139,6 +140,7 @@ int ff1_continue;
 		FF1_LOAD_DUP("anon", m->anon);
 		FF1_LOAD_DUP("subject", m->subject);
 		FF1_LOAD_DUP("deleted_by", m->deleted_by);
+		FF1_LOAD_DUP("reply_name", m->reply_name);
 
 		FF1_LOAD_ULONG("reply_number", m->reply_number);
 		FF1_LOAD_ULONG("mtime", m->mtime);
@@ -282,6 +284,7 @@ char buf[PRINT_BUF];
 	FF1_SAVE_STR("anon", m->anon);
 	FF1_SAVE_STR("subject", m->subject);
 	FF1_SAVE_STR("deleted_by", m->deleted_by);
+	FF1_SAVE_STR("reply_name", m->reply_name);
 
 	Fprintf(f, "reply_number=%lu", m->reply_number);
 	Fprintf(f, "mtime=%lu", m->mtime);

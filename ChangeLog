@@ -1,3 +1,7 @@
+Changes as of October 25th 2005
+- "in reply to <user>" header for reply posts
+- fixed small memory leak in aborting replies
+
 Changes as of October 24th 2005
 - wrapping for asterisk
 

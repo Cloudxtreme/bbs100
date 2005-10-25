@@ -1637,6 +1637,9 @@ Joined *j;
 	Return;
 }
 
+/*
+	print a message header
+*/
 void msg_header(User *usr, Message *msg) {
 char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 
@@ -1712,8 +1715,25 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 				Print(usr, "%s<yellow>%s<green>\n", buf, to->name);
 			}
 		}
-	} else
-		Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
+	} else {
+		if (msg->reply_name != NULL && msg->reply_name[0]) {
+			char reply[MAX_LINE];
+
+			if (msg->flags & REPLY_TO_ANON)
+				bufprintf(reply, MAX_LINE, "<cyan>- %s <cyan>-", msg->reply_name);
+			else
+				if (msg->flags & REPLY_TO_SYSOP)
+					bufprintf(reply, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->reply_name);
+				else
+					if (msg->flags & REPLY_TO_ROOMAIDE)
+						bufprintf(reply, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->reply_name);
+					else
+						bufprintf(reply, MAX_LINE, "<yellow>%s", msg->reply_name);
+
+			Print(usr, "<cyan>%s<green> from %s<green> in reply to %s\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from, reply);
+		} else
+			Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
+	}
 	Return;
 }
 

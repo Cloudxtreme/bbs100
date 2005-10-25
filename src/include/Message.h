@@ -49,7 +49,10 @@
 #define MSG_DELETED_BY_SYSOP		0x10
 #define MSG_DELETED_BY_ROOMAIDE		0x20
 #define MSG_DELETED_BY_ANON			0x40
-#define MSG_ALL						0x7f	/* MSG_FROM_SYSOP | ... | MSG_.._RA */
+#define REPLY_TO_SYSOP				0x80
+#define REPLY_TO_ROOMAIDE			0x100
+#define REPLY_TO_ANON				0x200
+#define MSG_ALL						0x3ff	/* MSG_FROM_SYSOP | ... | MSG_.._RA */
 
 #define SAVE_MAILTO		1	/* flag for save_Message() */
 
@@ -69,7 +72,7 @@ typedef struct {
 	time_t mtime, deleted;
 	unsigned int flags;
 
-	char from[MAX_NAME], *subject, *anon, *deleted_by;
+	char from[MAX_NAME], *subject, *anon, *deleted_by, *reply_name;
 
 	MailToQueue *to;
 	StringIO *msg;
