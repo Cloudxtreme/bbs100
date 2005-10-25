@@ -2885,11 +2885,6 @@ int cpos, lines;
 							cpos += 2;
 							break;
 
-						case '<':
-							write_StringIO(usr->conn->output, "<lt>", 4);
-							cpos += 4;
-							break;
-
 						default:
 							if (*p < ' ') {
 								char colorbuf[MAX_COLORBUF];
