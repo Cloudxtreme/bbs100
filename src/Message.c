@@ -349,6 +349,10 @@ char *p;
 	} else
 		to->name = cstrdup(str);
 
+	if (to->name == NULL) {
+		destroy_MailTo(to);
+		return NULL;
+	}
 	return to;
 }
 

@@ -37,6 +37,7 @@
 #include "CachedFile.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "SU_Passwd.h"
 #include "Memory.h"
 #include "bufprintf.h"
 
@@ -236,17 +237,28 @@ StringList *sl;
 		return -1;
 
 	while((sl = pop_StringQueue(sq)) != NULL) {
-		if ((m = new_MailTo()) == NULL) {
-			deinit_StringQueue(sq);
-			return -1;
-		}
-		if ((m->name = cstrdup(sl->str)) == NULL) {
-			destroy_MailTo(m);
-			deinit_StringQueue(sq);
-			return -1;
+		if (!strcmp(sl->str, "Sysop")) {
+			KVPair *su;
+
+			for(su = su_passwd; su != NULL; su = su->next) {
+				if (in_MailToQueue(msg->to, su->key) == NULL) {
+					if ((m = new_MailTo_from_str(su->key)) == NULL) {
+						deinit_StringQueue(sq);
+						return -1;
+					}
+					add_MailToQueue(msg->to, m);
+				}
+			}
+		} else {
+			if (in_MailToQueue(msg->to, sl->str) == NULL) {
+				if ((m = new_MailTo_from_str(sl->str)) == NULL) {
+					deinit_StringQueue(sq);
+					return -1;
+				}
+				add_MailToQueue(msg->to, m);
+			}
 		}
 		destroy_StringList(sl);
-		add_MailToQueue(msg->to, m);
 	}
 	deinit_StringQueue(sq);
 	return 0;

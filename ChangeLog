@@ -6,6 +6,7 @@ Changes as of October 25th 2005
 - original room name is saved in the message, so it displays this when
   the room name is changed (like DOC does)
 - forwarded messages display 'forwarded from <room name>'
+- mail to 'Sysop' mails to all sysops
 
 Changes as of October 24th 2005
 - wrapping for asterisk

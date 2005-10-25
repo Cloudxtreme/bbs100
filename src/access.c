@@ -79,6 +79,9 @@ User *u = NULL;
 int allocated = 0;
 char err_msg[MAX_LINE] = "";
 
+	if (!strcmp(usr->edit_buf, "Sysop"))
+		return 1;
+
 	if (is_guest(usr->edit_buf)) {
 		bufprintf(err_msg, MAX_LINE, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
 		goto No_multi_mail;
