@@ -1492,6 +1492,15 @@ char color = 0;
 
 		default:
 			color = (c >= ' ' && c <= '~') ? c : 0;
+/*
+	user entered a different character, put "^char"
+	this is rather funny when you used Ctrl-V rather than caret, or not ...
+*/
+			if (usr->edit_pos < MAX_LINE-1 && c != '^') {
+				usr->edit_buf[usr->edit_pos++] = '^';
+				usr->edit_buf[usr->edit_pos] = 0;
+				Put(usr, usr->edit_buf + usr->edit_pos - 1);
+			}
 	}
 	if (color && usr->edit_pos < MAX_LINE-1) {
 /* overwrite multiple colors */

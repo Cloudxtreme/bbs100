@@ -8,6 +8,7 @@ Changes as of October 25th 2005
 - forwarded messages display 'forwarded from <room name>'
 - mail to 'Sysop' mails to all sysops
 - download expands carets to double carets
+- caret + non-color character produces exactly that
 
 Changes as of October 24th 2005
 - wrapping for asterisk
