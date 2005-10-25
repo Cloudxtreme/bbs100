@@ -72,7 +72,8 @@ typedef struct {
 	time_t mtime, deleted;
 	unsigned int flags;
 
-	char from[MAX_NAME], *subject, *anon, *deleted_by, *reply_name;
+	char from[MAX_NAME];
+	char *subject, *anon, *deleted_by, *reply_name, *room_name;
 
 	MailToQueue *to;
 	StringIO *msg;

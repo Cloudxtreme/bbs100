@@ -934,6 +934,8 @@ char num_buf[MAX_NUMBER];
 				if (usr->message->subject && usr->message->subject[0])
 					m->subject = cstrdup(usr->message->subject);
 
+				m->room_name = cstrdup(usr->curr_room->name);
+
 				if (usr->curr_room == usr->mail)
 					m->reply_number = 0UL;
 				else
@@ -955,7 +957,13 @@ char num_buf[MAX_NUMBER];
 			}
 			destroy_Message(usr->new_message);
 			usr->new_message = copy_Message(usr->message);
-
+/*
+	forwarding a forwarded message to a different room; set the current room name
+*/
+			if (usr->message->flags & MSG_FORWARDED) {
+				Free(usr->new_message->room_name);
+				usr->new_message->room_name = cstrdup(usr->curr_room->name);
+			}
 			if (usr->curr_room == usr->mail) {
 				if (usr->new_message != NULL) {
 					if (usr->new_message->subject == NULL || !usr->new_message->subject[0]) {

@@ -3,6 +3,9 @@ Changes as of October 25th 2005
 - fixed small memory leak in aborting replies
 - Sysop can no longer jump into people's Home> nor Mail>
   (reading others Mail already was impossible, but Sysop could still go there)
+- original room name is saved in the message, so it displays this when
+  the room name is changed (like DOC does)
+- forwarded messages display 'forwarded from <room name>'
 
 Changes as of October 24th 2005
 - wrapping for asterisk

@@ -89,6 +89,8 @@ void enter_message(User *usr) {
 	if (usr->curr_room == usr->mail)
 		enter_recipients(usr, STATE_ENTER_MAIL_RECIPIENTS);
 	else {
+		usr->new_message->room_name = cstrdup(usr->curr_room->name);
+
 		if (usr->curr_room->flags & ROOM_ANONYMOUS)
 			CALL(usr, STATE_POST_AS_ANON);
 		else
@@ -653,6 +655,12 @@ char date_buf[MAX_LINE];
 		}
 	}
 	if (!msg->deleted || read_deleted) {
+		if (msg->room_name != NULL && msg->room_name[0] && strcmp(usr->curr_room->name, msg->room_name)) {
+			if (msg->flags & MSG_FORWARDED)
+				Print(usr, "<cyan>Forwarded from<yellow> %s>\n", msg->room_name);
+			else
+				Print(usr, "<cyan>Originally posted in<yellow> %s>\n", msg->room_name);
+		}
 		print_subject(usr, msg);
 		Put(usr, "<green>\n");
 		concat_StringIO(usr->text, msg->msg);
@@ -1292,16 +1300,6 @@ int r;
 				RET(usr);
 				Return;
 			}
-		}
-		if (usr->new_message->subject == NULL || !usr->new_message->subject[0]) {
-			char buf[MAX_LONGLINE];
-
-			bufprintf(buf, MAX_LONGLINE, "<yellow> \b<forwarded from %s>", usr->curr_room->name);
-			if (strlen(buf) >= MAX_LINE)
-				cstrcpy(buf + MAX_LINE - 5, "...>", 5);
-
-			Free(usr->new_message->subject);
-			usr->new_message->subject = cstrdup(buf);
 		}
 		usr->new_message->flags |= MSG_FORWARDED;
 		usr->new_message->mtime = rtc;
