@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "Param.h"
 #include "OnlineUser.h"
+#include "SU_Passwd.h"
 #include "bufprintf.h"
 
 #include <stdio.h>
@@ -79,9 +80,13 @@ User *u = NULL;
 int allocated = 0;
 char err_msg[MAX_LINE] = "";
 
-	if (!strcmp(usr->edit_buf, "Sysop"))
+	if (!strcmp(usr->edit_buf, "Sysop")) {
+		if (su_passwd == NULL) {
+			bufprintf(err_msg, MAX_LINE, " <white>--> <red>This BBS has no Sysops");
+			goto No_multi_mail;
+		}
 		return 1;
-
+	}
 	if (is_guest(usr->edit_buf)) {
 		bufprintf(err_msg, MAX_LINE, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
 		goto No_multi_mail;
