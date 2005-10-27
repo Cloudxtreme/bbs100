@@ -68,6 +68,9 @@ Timer *q, *q_prev;
 	if (queue == NULL || t == NULL)
 		return NULL;
 
+	if (t->sleeptime < 0)
+		t->sleeptime = 0;
+
 	t->prev = t->next = NULL;
 
 	if (*queue == NULL) {
@@ -75,9 +78,8 @@ Timer *q, *q_prev;
 		return t;
 	}
 	for(q = *queue; q != NULL; q = q->next) {
-		if (q->sleeptime > t->sleeptime || t->sleeptime <= 0) {
-			if (q->sleeptime > t->sleeptime)
-				q->sleeptime -= t->sleeptime;
+		if (q->sleeptime >= t->sleeptime) {
+			q->sleeptime -= t->sleeptime;
 
 			t->next = q;					/* insert before q */
 			t->prev = q->prev;
