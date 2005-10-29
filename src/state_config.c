@@ -742,6 +742,8 @@ int r;
 }
 
 void state_quicklist_prompt(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -791,8 +793,8 @@ void state_quicklist_prompt(User *usr, char c) {
 			Print(usr, "%c\n", c);
 			if (c == '0')
 				c = '9'+1;
-			usr->read_lines = c - '1';		/* a bit of a hack */
-
+			r = c - '1';
+			PUSH_ARG(usr, &r, sizeof(int));
 			enter_name(usr, STATE_EDIT_QUICKLIST);
 			Return;
 	}
@@ -801,7 +803,7 @@ void state_quicklist_prompt(User *usr, char c) {
 }
 
 /*
-	Note: As a hack, usr->read_lines is the index to the quicklist entry
+	Note: the index to the quicklist entry is on the stack
 */
 void state_edit_quicklist(User *usr, char c) {
 int r;
@@ -815,20 +817,27 @@ int r;
 
 	if (r == EDIT_BREAK) {
 		deinit_StringQueue(usr->recipients);
+		POP_ARG(usr, &r, sizeof(int));
 		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
+		POP_ARG(usr, &r, sizeof(int));
+		if (r < 0 || r >= NUM_QUICK) {
+			Perror(usr, "Invalid quicklist entry");
+			RET(usr);
+			Return;
+		}
 		if (!usr->edit_buf[0]) {
-			Free(usr->quick[usr->read_lines]);
-			usr->quick[usr->read_lines] = NULL;
+			Free(usr->quick[r]);
+			usr->quick[r] = NULL;
 
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 		} else {
 			if (!user_exists(usr->edit_buf))
 				Put(usr, "<red>No such user\n");
 			else {
-				if ((usr->quick[usr->read_lines] = cstrdup(usr->edit_buf)) == NULL) {
+				if ((usr->quick[r] = cstrdup(usr->edit_buf)) == NULL) {
 					Perror(usr, "Out of memory");
 				}
 				usr->runtime_flags |= RTF_CONFIG_EDITED;
@@ -1104,15 +1113,18 @@ int r;
 }
 
 
-#define CUSTOM_COLOR(x)														\
-	do {																	\
-		usr->read_lines = (x);												\
-		Print(usr, "Customize %s\n", color_table[usr->read_lines].name);	\
-		CALL(usr, STATE_CUSTOM_COLORS);										\
-		Return;																\
+#define CUSTOM_COLOR(x)										\
+	do {													\
+		r = (x);											\
+		Print(usr, "Customize %s\n", color_table[r].name);	\
+		PUSH_ARG(usr, &r, sizeof(int));						\
+		CALL(usr, STATE_CUSTOM_COLORS);						\
+		Return;												\
 	} while(0)
 
 void state_config_colors(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -1220,9 +1232,11 @@ void state_config_colors(User *usr, char c) {
 
 /*
 	Customize colors
-	Note: usr->read_lines = index of color to change
+	Note: index of color to change is on the stack
 */
 void state_custom_colors(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -1239,12 +1253,14 @@ void state_custom_colors(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 			Put(usr, "\n");
+			POP_ARG(usr, &r, sizeof(int));
 			RET(usr);
 			Return;
 
 		case 'r':
 		case 'R':
-			usr->colors[usr->read_lines] = RED;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = RED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<red>Red\n");
 			RET(usr);
@@ -1252,7 +1268,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'g':
 		case 'G':
-			usr->colors[usr->read_lines] = GREEN;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = GREEN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<green>Green\n");
 			RET(usr);
@@ -1260,7 +1277,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'y':
 		case 'Y':
-			usr->colors[usr->read_lines] = YELLOW;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = YELLOW;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<yellow>Yellow\n");
 			RET(usr);
@@ -1268,7 +1286,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			usr->colors[usr->read_lines] = BLUE;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = BLUE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<blue>Blue\n");
 			RET(usr);
@@ -1276,7 +1295,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'm':
 		case 'M':
-			usr->colors[usr->read_lines] = MAGENTA;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = MAGENTA;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<magenta>Magenta\n");
 			RET(usr);
@@ -1284,7 +1304,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'c':
 		case 'C':
-			usr->colors[usr->read_lines] = CYAN;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = CYAN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<cyan>Cyan\n");
 			RET(usr);
@@ -1292,7 +1313,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'w':
 		case 'W':
-			usr->colors[usr->read_lines] = WHITE;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = WHITE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<white>White\n");
 			RET(usr);
@@ -1300,7 +1322,8 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'k':
 		case 'K':
-			usr->colors[usr->read_lines] = BLACK;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->colors[r] = BLACK;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<white>Black\n");
 			RET(usr);
@@ -1308,34 +1331,39 @@ void state_custom_colors(User *usr, char c) {
 
 		case 'd':
 		case 'D':
-			if (usr->read_lines == HOTKEY)
-				usr->colors[usr->read_lines] = YELLOW;
+			POP_ARG(usr, &r, sizeof(int));
+			if (r == HOTKEY)
+				usr->colors[r] = YELLOW;
 			else
-				usr->colors[usr->read_lines] = usr->read_lines;
+				usr->colors[r] = r;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<white>Default\n");
 			RET(usr);
 			Return;
 	}
-	if (usr->read_lines == BACKGROUND)
+	PEEK_ARG(usr, &r, sizeof(int));
+	if (r == BACKGROUND)
 		Put(usr, "\n<cyan>Change the background color to: ");
 	else
 		Print(usr, "\n<cyan>Change the color for %c%s<cyan> to: ", 
-			color_table[usr->read_lines].key,
-			color_table[usr->read_lines].name);
+			color_table[r].key,
+			color_table[r].name);
 	Return;
 }
 
 
 #define CUSTOM_SYMBOL_COLOR(x)						\
 	do {											\
-		usr->read_lines = (x);						\
+		r = (x);									\
 		Put(usr, "Symbol color\n");					\
+		PUSH_ARG(usr, &r, sizeof(int));				\
 		CALL(usr, STATE_CUSTOM_SYMBOL_COLORS);		\
 		Return;										\
 	} while(0)
 
 void state_config_symbols(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -1468,9 +1496,11 @@ void state_config_symbols(User *usr, char c) {
 	Customize symbol colors
 	almost the same as state_custom_colors(), but with small changes ...
 
-	Note: usr->read_lines = index of color to change
+	Note: index of color to change is on the stack
 */
 void state_custom_symbol_colors(User *usr, char c) {
+int r;
+
 	if (usr == NULL)
 		return;
 
@@ -1487,12 +1517,14 @@ void state_custom_symbol_colors(User *usr, char c) {
 		case KEY_CTRL('C'):
 		case KEY_CTRL('D'):
 			Put(usr, "\n");
+			POP_ARG(usr, &r, sizeof(int));
 			RET(usr);
 			Return;
 
 		case 'r':
 		case 'R':
-			usr->symbol_colors[usr->read_lines] = RED;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = RED;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<red>Red\n");
 			RET(usr);
@@ -1500,7 +1532,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'g':
 		case 'G':
-			usr->symbol_colors[usr->read_lines] = GREEN;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = GREEN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<green>Green\n");
 			RET(usr);
@@ -1508,7 +1541,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'y':
 		case 'Y':
-			usr->symbol_colors[usr->read_lines] = YELLOW;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = YELLOW;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<yellow>Yellow\n");
 			RET(usr);
@@ -1516,7 +1550,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'b':
 		case 'B':
-			usr->symbol_colors[usr->read_lines] = BLUE;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = BLUE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<blue>Blue\n");
 			RET(usr);
@@ -1524,7 +1559,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'm':
 		case 'M':
-			usr->symbol_colors[usr->read_lines] = MAGENTA;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = MAGENTA;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<magenta>Magenta\n");
 			RET(usr);
@@ -1532,7 +1568,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'c':
 		case 'C':
-			usr->symbol_colors[usr->read_lines] = CYAN;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = CYAN;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<cyan>Cyan\n");
 			RET(usr);
@@ -1540,7 +1577,8 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'w':
 		case 'W':
-			usr->symbol_colors[usr->read_lines] = WHITE;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = WHITE;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<white>White\n");
 			RET(usr);
@@ -1548,15 +1586,17 @@ void state_custom_symbol_colors(User *usr, char c) {
 
 		case 'k':
 		case 'K':
-			usr->symbol_colors[usr->read_lines] = BLACK;
+			POP_ARG(usr, &r, sizeof(int));
+			usr->symbol_colors[r] = BLACK;
 			usr->runtime_flags |= RTF_CONFIG_EDITED;
 			Put(usr, "<white>Black\n");
 			RET(usr);
 			Return;
 	}
+	PEEK_ARG(usr, &r, sizeof(int));
 	Print(usr, "\n<cyan>Have symbols on %c%s<cyan> text appear in: ",
-		color_table[usr->read_lines].key,
-		color_table[usr->read_lines].name);
+		color_table[r].key,
+		color_table[r].name);
 	Return;
 }
 
