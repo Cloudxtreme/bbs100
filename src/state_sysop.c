@@ -897,7 +897,7 @@ int i;
 
 			set_Wrapper(w, 0, addr, mask, NULL);
 			add_Wrapper(&AllWrappers, w);
-			usr->read_lines = count_List(AllWrappers) - 1;
+			i = count_List(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		} else {
 			j = 2;
@@ -909,19 +909,20 @@ int i;
 				CURRENT_STATE(usr);
 				Return;
 			}
-			usr->read_lines = i-2;
+			i -= 2;
 		}
+		PUSH_ARG(usr, &i, sizeof(int));
 		CALL(usr, STATE_EDIT_WRAPPER);
 	}
 	Return;
 }
 
 /*
-	Note: usr->read_lines is wrapper to edit
+	index to the wrapper to edit is on the stack
 */
 void state_edit_wrapper(User *usr, char c) {
 Wrapper *w;
-int i;
+int i, idx;
 char buf[MAX_LINE];
 
 	if (usr == NULL)
@@ -929,14 +930,16 @@ char buf[MAX_LINE];
 
 	Enter(state_edit_wrapper);
 
+	PEEK_ARG(usr, &idx, sizeof(int));
 	i = 0;
 	for(w = AllWrappers; w != NULL; w = w->next) {
-		if (i == usr->read_lines)
+		if (i == idx)
 			break;
 		i++;
 	}
 	if (w == NULL) {
 		Perror(usr, "The wrapper to edit has gone up in smoke");
+		POP_ARG(usr, &idx, sizeof(int));
 		RET(usr);
 		Return;
 	}
@@ -986,6 +989,7 @@ char buf[MAX_LINE];
 				log_msg("SYSOP %s edited wrappers", usr->name);
 				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
 			}
+			POP_ARG(usr, &idx, sizeof(int));
 			RET(usr);
 			Return;
 
@@ -1020,18 +1024,21 @@ char buf[MAX_LINE];
 		case 'i':
 		case 'I':
 			Put(usr, "IP address\n");
+			PUSH_ARG(usr, &idx, sizeof(int));
 			CALL(usr, STATE_IPADDR_WRAPPER);
 			Return;
 
 		case 'm':
 		case 'M':
 			Put(usr, "IP mask\n");
+			PUSH_ARG(usr, &idx, sizeof(int));
 			CALL(usr, STATE_IPMASK_WRAPPER);
 			Return;
 
 		case 'c':
 		case 'C':
 			Put(usr, "Comment\n");
+			PUSH_ARG(usr, &idx, sizeof(int));
 			CALL(usr, STATE_COMMENT_WRAPPER);
 			Return;
 
@@ -1041,6 +1048,7 @@ char buf[MAX_LINE];
 			remove_Wrapper(&AllWrappers, w);
 			destroy_Wrapper(w);
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
+			POP_ARG(usr, &idx, sizeof(int));
 			RET(usr);
 			Return;
 	}
@@ -1048,8 +1056,11 @@ char buf[MAX_LINE];
 	Return;
 }
 
+/*
+	index to wrapper to edit is on the stack
+*/
 void state_ipaddr_wrapper(User *usr, char c) {
-int r;
+int r, idx;
 
 	if (usr == NULL)
 		return;
@@ -1061,6 +1072,7 @@ int r;
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
+		POP_ARG(usr, &idx, sizeof(int));
 		RET(usr);
 		Return;
 	}
@@ -1068,13 +1080,14 @@ int r;
 		Wrapper *w;
 		int i;
 
+		POP_ARG(usr, &idx, sizeof(int));
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
 		i = 0;
 		for(w = AllWrappers; w != NULL; w = w->next) {
-			if (i == usr->read_lines)
+			if (i == idx)
 				break;
 			i++;
 		}
@@ -1094,8 +1107,11 @@ int r;
 	Return;
 }
 
+/*
+	index to wrapper to edit is on the stack
+*/
 void state_ipmask_wrapper(User *usr, char c) {
-int r;
+int r, idx;
 
 	if (usr == NULL)
 		return;
@@ -1107,6 +1123,7 @@ int r;
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
+		POP_ARG(usr, &idx, sizeof(int));
 		RET(usr);
 		Return;
 	}
@@ -1114,13 +1131,14 @@ int r;
 		Wrapper *w;
 		int i;
 
+		POP_ARG(usr, &idx, sizeof(int));
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
 		i = 0;
 		for(w = AllWrappers; w != NULL; w = w->next) {
-			if (i == usr->read_lines)
+			if (i == idx)
 				break;
 			i++;
 		}
@@ -1140,8 +1158,11 @@ int r;
 	Return;
 }
 
+/*
+	the index to the wrapper to edit is on the stack
+*/
 void state_comment_wrapper(User *usr, char c) {
-int r;
+int r, idx;
 
 	if (usr == NULL)
 		return;
@@ -1153,6 +1174,7 @@ int r;
 
 	r = edit_line(usr, c);
 	if (r == EDIT_BREAK) {
+		POP_ARG(usr, &idx, sizeof(int));
 		RET(usr);
 		Return;
 	}
@@ -1160,12 +1182,13 @@ int r;
 		Wrapper *w;
 		int i = 0;
 
+		POP_ARG(usr, &idx, sizeof(int));
 		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
 		for(w = AllWrappers; w != NULL; w = w->next) {
-			if (i == usr->read_lines)
+			if (i == idx)
 				break;
 			i++;
 		}
