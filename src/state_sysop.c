@@ -1259,17 +1259,19 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (!usr->edit_buf[0])
-			usr->read_lines = 4 * SECS_IN_MIN;
+			r = 4 * SECS_IN_MIN;
 		else
-			usr->read_lines = atoi(usr->edit_buf);
+			r = atoi(usr->edit_buf);
 
-		JMP(usr, STATE_REBOOT_PASSWORD);
+		POP(usr);
+		PUSH_ARG(usr, &r, sizeof(int));
+		CALL(usr, STATE_REBOOT_PASSWORD);
 	}
 	Return;
 }
 
 /*
-	Note: usr->read_lines is amount of seconds till reboot
+	Note: amount of seconds till reboot is on the stack
 */
 void state_reboot_password(User *usr, char c) {
 int r;
@@ -1280,21 +1282,25 @@ char total_buf[MAX_LINE];
 
 	Enter(state_reboot_password);
 
-	if (c == INIT_STATE)
+	if (c == INIT_STATE) {
+		PEEK_ARG(usr, &r, sizeof(int));
+
 		Print(usr, "\n"
 			"<yellow>*** <white>WARNING <yellow>***\n"
 			"\n"
 			"<red>This is serious. Enter the reboot password and the system will reboot\n"
 			"in %s (including one minute grace period)\n"
 			"\n"
-			"Enter reboot password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
-
+			"Enter reboot password: ", print_total_time((unsigned long)r + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+	}
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
 		if (reboot_timer != NULL)
 			Put(usr, "<red>Aborted, but note that another reboot procedure is already running\n\n");
 		else
 			Put(usr, "<red>Reboot cancelled\n\n");
+
+		POP_ARG(usr, &r, sizeof(int));
 		RET(usr);
 		Return;
 	}
@@ -1305,32 +1311,35 @@ char total_buf[MAX_LINE];
 		if (pwd == NULL) {
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
-			POP(usr);
+			POP_ARG(usr, &r, sizeof(int));
+			POP(usr);				/* get out of sysop menu */
 			RET(usr);
 			Return;
 		}
 		if (verify_phrase(usr->edit_buf, pwd)) {
 			Put(usr, "<red>Wrong password\n");
+			POP_ARG(usr, &r, sizeof(int));
 			RET(usr);
 			Return;
 		}
+		POP_ARG(usr, &r, sizeof(int));
 		if (reboot_timer != NULL) {
 /* this code is never reached any more */
 			remove_Timer(&timerq, reboot_timer);
-			reboot_timer->sleeptime = reboot_timer->maxtime = usr->read_lines;
+			reboot_timer->sleeptime = reboot_timer->maxtime = r;
 			reboot_timer->restart = TIMEOUT_REBOOT;
 			add_Timer(&timerq, reboot_timer);
 
 			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n",
-				print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 
 			bufprintf(buf, PRINT_BUF, "The system is now rebooting in %s",
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
 		}
-		if ((reboot_timer = new_Timer(usr->read_lines, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
+		if ((reboot_timer = new_Timer(r, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
 			Perror(usr, "Out of memory, reboot cancelled");
 			RET(usr);
 			Return;
@@ -1343,7 +1352,7 @@ char total_buf[MAX_LINE];
 
 		if (reboot_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is rebooting in %s",
-				print_total_time((unsigned long)(usr->read_lines + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1369,17 +1378,19 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		if (!usr->edit_buf[0])
-			usr->read_lines = 4 * SECS_IN_MIN;
+			r = 4 * SECS_IN_MIN;
 		else
-			usr->read_lines = atoi(usr->edit_buf);
+			r = atoi(usr->edit_buf);
 
-		JMP(usr, STATE_SHUTDOWN_PASSWORD);
+		POP(usr);
+		PUSH_ARG(usr, &r, sizeof(int));
+		CALL(usr, STATE_SHUTDOWN_PASSWORD);
 	}
 	Return;
 }
 
 /*
-	Note: usr->read_lines is amount of seconds till shutdown
+	Note: amount of seconds till shutdown is on the stack
 */
 void state_shutdown_password(User *usr, char c) {
 int r;
@@ -1390,32 +1401,38 @@ char total_buf[MAX_LINE];
 
 	Enter(state_shutdown_password);
 
-	if (c == INIT_STATE)
+	if (c == INIT_STATE) {
+		PEEK_ARG(usr, &r, sizeof(int));
+
 		Print(usr, "\n"
 			"<yellow>*** <white>WARNING <yellow>***\n"
 			"\n"
 			"<red>This is serious. Enter the shutdown password and the system will shut\n"
 			"down in %s (including one minute grace period)\n"
 			"\n"
-			"Enter shutdown password: ", print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
-
+			"Enter shutdown password: ", print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
+	}
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
 		if (shutdown_timer != NULL)
 			Put(usr, "<red>Aborted, but note that another shutdown procedure is already running\n\n");
 		else
 			Put(usr, "<red>Shutdown cancelled\n\n");
+
+		POP_ARG(usr, &r, sizeof(int));
 		RET(usr);
 		Return;
 	}
 	if (r == EDIT_RETURN) {
 		char *pwd, buf[PRINT_BUF];
 
+		POP_ARG(usr, &r, sizeof(int));
+
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
-			POP(usr);
+			POP(usr);					/* drop out of sysop menu */
 			RET(usr);
 			Return;
 		}
@@ -1427,19 +1444,19 @@ char total_buf[MAX_LINE];
 		if (shutdown_timer != NULL) {
 /* this code is never reached any more */
 			remove_Timer(&timerq, shutdown_timer);
-			shutdown_timer->sleeptime = shutdown_timer->maxtime = usr->read_lines;
+			shutdown_timer->sleeptime = shutdown_timer->maxtime = r;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
 			add_Timer(&timerq, shutdown_timer);
 			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n",
-				print_total_time((unsigned long)usr->read_lines + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 
 			bufprintf(buf, PRINT_BUF, "The system is now shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
 		}
-		if ((shutdown_timer = new_Timer(usr->read_lines, shutdown_timeout, TIMEOUT_SHUTDOWN)) == NULL) {
+		if ((shutdown_timer = new_Timer(r, shutdown_timeout, TIMEOUT_SHUTDOWN)) == NULL) {
 			Perror(usr, "Out of memory, shutdown cancelled");
 			RET(usr);
 			Return;
@@ -1452,7 +1469,7 @@ char total_buf[MAX_LINE];
 
 		if (shutdown_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is shutting down in %s",
-				print_total_time((unsigned long)(usr->read_lines + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -2742,8 +2759,6 @@ StringList *sl;
 				RET(usr);
 				Return;
 			}
-			usr->read_lines = r;
-
 			r--;
 			for(sl = (StringList *)feelings->list->tail; r > 0 && sl != NULL; sl = sl->next)
 				r--;
