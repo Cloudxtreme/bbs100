@@ -35,6 +35,7 @@
 #include "Wrapper.h"
 #include "bufprintf.h"
 #include "cstring.h"
+#include "cstrerror.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -138,7 +139,12 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	new_conn->state = CONN_ESTABLISHED;
 
 	optval = 1;
-	ioctl(new_conn->sock, FIONBIO, &optval);		/* set non-blocking */
+	if (ioctl(new_conn->sock, FIONBIO, &optval) == -1)		/* set non-blocking */
+		log_warn("ConnUser_accept(): failed to set socket nonblocking");
+
+	optval = 0;
+	if (setsockopt(new_conn->sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
+		log_warn("ConnUser_accept(): setsockopt(SO_OOBINLINE) failed: %s", cstrerror(errno));
 
 	if ((err = getnameinfo((struct sockaddr *)&client, client_len, buf, MAX_LONGLINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
 		log_warn("ConnUser_accept(): getnameinfo(): %s", inet_error(err));

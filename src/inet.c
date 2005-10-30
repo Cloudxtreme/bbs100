@@ -148,13 +148,17 @@ Conn *conn;
 
 #ifdef IPV6_V6ONLY
 		optval = 1;
-		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(optval))) == -1)
+		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(int))) == -1)
 			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, cstrerror(errno));
 #endif
 */
 		optval = 1;
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
-			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", cstrerror(errno));
+		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
+			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", service, cstrerror(errno));
+
+		optval = 0;
+		if (setsockopt(sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
+			log_warn("inet_listen(%s): setsockopt(SO_OOBINLINE) failed: %s", service, cstrerror(errno));
 
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
@@ -258,7 +262,7 @@ int sock, optval;
 */
 void mainloop(void) {
 struct timeval timeout;
-fd_set rfds, wfds;
+fd_set rfds, wfds, efds;
 Conn *c, *c_next;
 int err, highest_fd = -1, wait_for_input, nap, isset;
 char input_char[2];
@@ -329,11 +333,14 @@ char input_char[2];
 
 		FD_ZERO(&rfds);
 		FD_ZERO(&wfds);
+		FD_ZERO(&efds);
 
 		for(c = AllConns; c != NULL; c = c_next) {
 			c_next = c->next;
 
 			if (c->sock > 0) {
+				FD_SET(c->sock, &efds);
+
 				switch(c->state) {
 					case CONN_LOOPING:
 						wait_for_input = 0;
@@ -409,7 +416,7 @@ char input_char[2];
 		timeout.tv_sec = (wait_for_input == 0) ? 0 : nap;
 		timeout.tv_usec = 0;
 		errno = 0;
-		err = select(highest_fd, &rfds, &wfds, NULL, &timeout);
+		err = select(highest_fd, &rfds, &wfds, &efds, &timeout);
 /*
 	first update timers ... if we do it later, new connections can immediately
 	time out
@@ -422,6 +429,20 @@ char input_char[2];
 				c_next = c->next;
 
 				isset = 0;
+				if (c->sock > 0 && FD_ISSET(c->sock, &efds)) {
+					log_debug("mainloop(): exception on socket");
+					if (recv(c->sock, input_char, 1, MSG_OOB) < 0) {
+						if (errno != EAGAIN && errno != EINTR) {
+							log_debug("mainloop(): error reading OOB byte");
+							shutdown(c->sock, SHUT_RDWR);
+							close(c->sock);
+							c->sock = -1;
+							c->conn_type->linkdead(c);
+						}
+					}
+/* ... now that we have the OOB data, what do we do with it?? */
+					isset++;
+				}
 				if (c->sock > 0 && FD_ISSET(c->sock, &rfds)) {
 					if (c->state == CONN_LISTEN)
 						c->conn_type->accept(c);

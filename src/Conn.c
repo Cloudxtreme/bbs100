@@ -80,7 +80,7 @@ void destroy_Conn(Conn *c) {
 
 	if (c->sock > 0) {
 		flush_Conn(c);
-		shutdown(c->sock, 2);
+		shutdown(c->sock, SHUT_RDWR);
 		close(c->sock);
 		c->sock = -1;
 		c->state = 0;
@@ -153,6 +153,7 @@ char buf[MAX_PATHLEN];
 			if (errno == EAGAIN)
 				return 0;
 #endif
+			shutdown(conn->sock, SHUT_RDWR);
 			close(conn->sock);
 			conn->sock = -1;
 			conn->conn_type->linkdead(conn);	/* some other error */
@@ -181,6 +182,7 @@ char buf[MAX_PATHLEN];
 
 	err = read(conn->sock, buf, MAX_PATHLEN);
 	if (!err) {							/* EOF, connection closed */
+		shutdown(conn->sock, SHUT_RDWR);
 		close(conn->sock);
 		conn->sock = -1;
 		conn->conn_type->linkdead(conn);
@@ -209,6 +211,7 @@ char buf[MAX_PATHLEN];
 			log_warn("input_Conn(): got EBADF, closing connection");
 
 		if (conn->sock >= 0) {
+			shutdown(conn->sock, SHUT_RDWR);
 			close(conn->sock);
 			conn->sock = -1;
 			conn->conn_type->linkdead(conn);
