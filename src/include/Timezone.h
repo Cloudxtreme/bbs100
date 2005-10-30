@@ -47,7 +47,7 @@ typedef struct {
 
 typedef struct {
 	int refcount;
-	int curr_idx, next_idx;
+	int curr_idx;			/* currently at this transition */
 
 	int num_trans, num_types;
 

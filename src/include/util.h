@@ -111,6 +111,7 @@ int yesno(User *, char, char);
 int user_exists(char *);
 void system_broadcast(int, char *);
 struct tm *tz_time(Timezone *, time_t);
+time_t tz_time_t(Timezone *, time_t);
 struct tm *user_time(User *, time_t);
 char *print_date(User *, time_t, char *, int);
 char *print_total_time(unsigned long, char *, int);

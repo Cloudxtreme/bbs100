@@ -366,23 +366,17 @@ int i;
 	closefile(f);
 
 /*
-	determine pointer to 'current' transition and when the next should occur
+	determine pointer to 'current' transition
 */
-	tz->curr_idx = tz->next_idx = 0;
-	if (tzh_timecnt > 1) {
+	tz->curr_idx = 0;
+	if (tz->num_trans > 1) {
 		int n;
 		unsigned long in_two_years;
 		DST_Transition *trans;
 
-		tz->next_idx = 1;
-
-/* rtc is 'now' */
-		while(tz->next_idx < tzh_timecnt && tz->transitions[tz->next_idx].when <= rtc) {
+		while((tz->curr_idx+1) < tz->num_trans && tz->transitions[tz->curr_idx+1].when <= rtc)
 			tz->curr_idx++;
-			tz->next_idx++;
-		}
-		if (tz->next_idx >= tzh_timecnt)		/* the last entry has been reached */
-			tz->next_idx = tz->curr_idx;
+
 /*
 	at this moment, all DST transitions are resident in memory
 	the zoneinfo files have a habit of storing every single transition
@@ -395,8 +389,8 @@ int i;
 	are so few that it is not really a problem)
 */
 		n = tz->curr_idx;
-		in_two_years = rtc + 2 * 52 * SECS_IN_WEEK;
-		while(n < tzh_timecnt && tz->transitions[n].when <= in_two_years)
+		in_two_years = rtc + 2 * 365 * SECS_IN_DAY;
+		while(n < tz->num_trans && tz->transitions[n].when <= in_two_years)
 			n++;
 
 		n = n - tz->curr_idx + 1;
@@ -406,8 +400,6 @@ int i;
 			tz->transitions = trans;
 			tz->num_trans = n;
 			tz->curr_idx = 0;
-			n--;
-			tz->next_idx -= n;
 		}
 	}											/* else we have only 1 entry */
 	if (add_Hash(tz_hash, name, tz, (void (*)(void *))destroy_Timezone) == -1) {
@@ -464,7 +456,6 @@ int i;
 	log_debug("dump_Timezone(): tz == {");
 	log_debug("  refcount = %d", tz->refcount);
 	log_debug("  curr_idx = %d", tz->curr_idx);
-	log_debug("  next_idx = %d", tz->next_idx);
 	log_debug("  num_trans = %d", tz->num_trans);
 	log_debug("  num_types = %d", tz->num_types);
 

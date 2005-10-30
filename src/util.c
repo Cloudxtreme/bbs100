@@ -1298,21 +1298,7 @@ struct tm *tz_time(Timezone *tz, time_t tt) {
 struct tm *tm;
 time_t the_time;
 
-	if (tt == (time_t)0UL)
-		the_time = rtc;
-	else
-		the_time = tt;
-
-	if (tz != NULL) {
-		int tz_type;
-
-		if (tz->transitions != NULL)
-			tz_type = tz->transitions[tz->curr_idx].type_idx;
-		else
-			tz_type = 0;
-
-		the_time += tz->types[tz_type].gmtoff;
-	}
+	the_time = tz_time_t(tz, tt);
 	tm = gmtime(&the_time);
 	return tm;
 }
@@ -1328,9 +1314,13 @@ time_t the_time;
 	if (tz != NULL) {
 		int tz_type;
 
-		if (tz->transitions != NULL)
+		if (tz->transitions != NULL && tz->num_trans > 0) {
+/* shift into the next transition if needed; daylight savings or not */
+			while((tz->curr_idx+1) < tz->num_trans && tz->transitions[tz->curr_idx+1].when <= rtc)
+				tz->curr_idx++;
+
 			tz_type = tz->transitions[tz->curr_idx].type_idx;
-		else
+		} else
 			tz_type = 0;
 
 		the_time += tz->types[tz_type].gmtoff;
