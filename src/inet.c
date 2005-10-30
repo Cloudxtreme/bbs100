@@ -431,7 +431,7 @@ char input_char[2];
 				isset = 0;
 				if (c->sock > 0 && FD_ISSET(c->sock, &efds)) {
 					log_debug("mainloop(): exception on socket");
-					if (recv(c->sock, input_char, 1, MSG_OOB) < 0) {
+					if (recv(c->sock, input_char, 1, MSG_OOB) <= 0) {
 						if (errno != EAGAIN && errno != EINTR) {
 							log_debug("mainloop(): error reading OOB byte");
 							shutdown(c->sock, SHUT_RDWR);
@@ -439,8 +439,10 @@ char input_char[2];
 							c->sock = -1;
 							c->conn_type->linkdead(c);
 						}
-					}
+					} else {
 /* ... now that we have the OOB data, what do we do with it?? */
+						log_debug("mainloop(): got OOB byte 0x%02f", input_char[0]);
+					}
 					isset++;
 				}
 				if (c->sock > 0 && FD_ISSET(c->sock, &rfds)) {
