@@ -187,18 +187,26 @@ char buf[MAX_PATHLEN];
 		return -1;
 	}
 	if (err < 0) {
-		if (errno == EINTR)				/* better luck next time */
+		if (errno == EINTR) {			/* better luck next time */
+			log_debug("input_Conn(): got EINTR");
 			return 0;
+		}
 
 #ifdef EWOULDBLOCK
-		if (errno == EWOULDBLOCK)
+		if (errno == EWOULDBLOCK) {
+			log_debug("input_Conn(): got EWOULDBLOCK");
 			return 0;
+		}
 #else
-		if (errno == EAGAIN)
+		if (errno == EAGAIN) {
+			log_debug("input_Conn(): got EAGAIN");
 			return 0;
+		}
 #endif
 		if (errno != EBADF)
 			log_warn("input_Conn(): read(): %s, closing connection", cstrerror(errno));
+		else
+			log_warn("input_Conn(): got EBADF, closing connection");
 
 		if (conn->sock >= 0) {
 			close(conn->sock);

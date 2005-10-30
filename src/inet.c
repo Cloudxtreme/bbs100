@@ -450,15 +450,16 @@ char input_char[2];
 /*
 	handle select() errors
 */
-		if (errno == EINTR)			/* interrupted, better luck next time */
+		if (errno == EINTR) {		/* interrupted, better luck next time */
+			log_debug("mainloop(): select() got EINTR, continuing");
 			continue;
-
+		}
 		if (errno == EBADF) {
-/*			log_warn("mainloop(): select() got EBADF, continuing");	*/
+			log_debug("mainloop(): select() got EBADF, continuing");
 			continue;
 		}
 		if (errno == EINVAL) {
-			log_warn("mainloop(): select() got EINVAL, continuing");
+			log_debug("mainloop(): select() got EINVAL, continuing");
 			continue;
 		}
 /*
