@@ -282,10 +282,10 @@ int i;
 			}
 			if (sig_table[i].default_handler != NULL
 				&& sig_table[i].default_handler != SIG_IGN
-				&& sig_table[i].default_handler != SIG_DFL) {
+				&& sig_table[i].default_handler != SIG_DFL)
 				sig_table[i].default_handler(sig_table[i].sig);
-				sigdelset(&sig_pending, sig_table[i].sig);
-			}
+
+			sigdelset(&sig_pending, sig_table[i].sig);
 		}
 	}
 }

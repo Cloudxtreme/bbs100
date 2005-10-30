@@ -1,6 +1,7 @@
 Changes as of October 30th 2005
 - live daylight saving time changes when a transition occurs
 - check out of band data in mainloop
+- bugfix in handle_pending_signals()
 
 Changes as of October 29th 2005
 - bugfix in editing wrappers
