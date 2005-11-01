@@ -3,6 +3,7 @@ Changes as of November 1st 2005
 - guess-name rooms can only be found by typing the exact name for the 1st time
 - hidden rooms that are invite-only give ACCESS_HIDDEN
 - invitations are no longer checked for rooms that are not invite-only
+- set core limit in bbs startup script
 
 Changes as of October 30th 2005
 - live daylight saving time changes when a transition occurs

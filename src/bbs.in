@@ -22,6 +22,8 @@
 #	bbs100 rc.bbs script	WJ99
 #
 
+ulimit -c 100000
+
 TEST=@TEST@
 AWK=@AWK@
 
