@@ -162,11 +162,18 @@ int room_access(Room *r, char *name) {
 	if (in_StringList(r->room_aides, name) != NULL)
 		return ACCESS_OK;
 
-	if (in_StringList(r->invited, name) != NULL)
-		return ACCESS_INVITED;
+	if (r->flags & ROOM_INVITE_ONLY) {
+		if (in_StringList(r->invited, name) != NULL)
+			return ACCESS_INVITED;
 
-	if (r->flags & ROOM_INVITE_ONLY)
+		if (r->flags & ROOM_HIDDEN)
+			return ACCESS_HIDDEN;
+
 		return ACCESS_INVITE_ONLY;
+	}
+	if (!PARAM_HAVE_GUESSNAME && (r->flags & ROOM_HIDDEN))
+		return ACCESS_HIDDEN;
+
 	return ACCESS_OK;
 }
 

@@ -733,6 +733,7 @@ Room *r;
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
+/* guess-name rooms can be found by typing the correct name */
 				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
 					return NULL;
 
@@ -763,7 +764,7 @@ Room *r;
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
-				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+				if (!room_visible(usr, r))
 					continue;
 
 				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
@@ -779,7 +780,7 @@ Room *r;
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
 
-				if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+				if (!room_visible(usr, r))
 					continue;
 
 				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
@@ -814,7 +815,7 @@ Room *r;
 		default:
 			for(r = AllRooms; r != NULL; r = r->next)
 				if (r->number == u) {
-					if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+					if (!room_visible(usr, r))		/* can't find hidden rooms by number */
 						break;
 
 					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
@@ -826,6 +827,10 @@ Room *r;
 	return NULL;
 }
 
+/*
+	... only used by load_User() to see if the room still exists and still
+	is accessible
+*/
 Room *find_Roombynumber_username(User *usr, char *username, unsigned int u) {
 Room *r;
 
@@ -853,7 +858,7 @@ Room *r;
 			for(r = AllRooms; r != NULL; r = r->next)
 				if (r->number == u) {
 /*
-					if (!PARAM_HAVE_GUESSNAME && !room_visible(usr, r))
+					if (!room_visible(usr, r))
 						break;
 */
 					if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))

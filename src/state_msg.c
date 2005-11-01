@@ -1287,6 +1287,12 @@ int r;
 			}
 			if (!(usr->runtime_flags & RTF_SYSOP)) {
 				switch(room_access(r, usr->name)) {
+					case ACCESS_HIDDEN:
+						Put(usr, "<red>No such room\n");
+						unload_Room(r);
+						RET(usr);
+						Return;
+
 					case ACCESS_INVITE_ONLY:
 						Put(usr, "<red>That room is invite-only, and you have not been invited\n");
 						unload_Room(r);

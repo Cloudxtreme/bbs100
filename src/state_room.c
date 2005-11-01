@@ -1211,6 +1211,13 @@ int r;
 		}
 		if (rm->number == HOME_ROOM || rm->number == MAIL_ROOM || !(usr->runtime_flags & RTF_SYSOP)) {
 			switch(room_access(rm, usr->name)) {
+				case ACCESS_HIDDEN:
+					Put(usr, "<red>No such room\n");
+					unjoin_room(usr, rm);
+					unload_Room(rm);
+					RET(usr);
+					Return;
+
 				case ACCESS_INVITE_ONLY:
 					Put(usr, "<red>That room is invite-only, and you have not been invited\n");
 					unjoin_room(usr, rm);
@@ -1443,9 +1450,8 @@ char *category = NULL;
 		r_next = r->next;
 
 /* first three rooms are special */
-		if (r->number < SPECIAL_ROOMS)
-			if ((r = find_Roombynumber(usr, r->number)) == NULL)
-				continue;
+		if (r->number < SPECIAL_ROOMS && (r = find_Roombynumber(usr, r->number)) == NULL)
+			continue;
 
 		if (in_StringList(r->room_aides, usr->name) == NULL) {
 			if ((j = in_Joined(usr->rooms, r->number)) != NULL) {
@@ -1486,9 +1492,8 @@ char *category = NULL;
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
 
-		if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
-			if ((r = find_Roombynumber(usr, r->number)) == NULL)
-				continue;
+		if (r->number < SPECIAL_ROOMS && (r = find_Roombynumber(usr, r->number)) == NULL)
+			continue;
 
 		if (!room_visible(usr, r))
 			continue;
@@ -1499,7 +1504,10 @@ char *category = NULL;
 		}
 		print_known_room(usr, r);
 	}
-	if ((r = find_Roombynumber(usr, 2)) != NULL)
+/*
+	throw away the demand loaded room because we're not using it anyway
+*/
+	if ((r = find_Roombynumber(usr, HOME_ROOM)) != NULL)
 		unload_Room(r);
 
 	read_text(usr);

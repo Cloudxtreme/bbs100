@@ -26,6 +26,7 @@
 #include "User.h"
 #include "Room.h"
 
+#define ACCESS_HIDDEN		-3
 #define ACCESS_INVITE_ONLY	-2
 #define ACCESS_KICKED		-1
 #define ACCESS_OK			0
