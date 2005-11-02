@@ -2282,7 +2282,7 @@ int r;
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
 
-			if (usr->runtime_flags & RTF_WAS_HH) {
+			if ((usr->runtime_flags & (RTF_WAS_HH|RTF_HOLD)) == RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
 				add_helper(usr);
@@ -2377,14 +2377,14 @@ int r;
 			Return;
 		}
 		if (!strcmp(usr->edit_buf, "exit") || !strcmp(usr->edit_buf, "logout")) {
+			POP_ARG(usr, &usr->flags, sizeof(unsigned int));	/* restore flags */
+
 			usr->runtime_flags &= ~RTF_BUSY;
-			if (usr->runtime_flags & RTF_WAS_HH) {
+			if ((usr->runtime_flags & (RTF_WAS_HH|RTF_HOLD)) == RTF_WAS_HH) {
 				usr->runtime_flags &= ~RTF_WAS_HH;
 				usr->flags |= USR_HELPING_HAND;
 				add_helper(usr);
 			}
-			POP_ARG(usr, &usr->flags, sizeof(unsigned int));	/* restore flags */
-
 			Put(usr, "\n");
 			print_user_status(usr);
 
