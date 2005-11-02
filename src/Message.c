@@ -228,8 +228,6 @@ StringList *sl, *mailto;
 	destroy_MailToQueue(m->to);
 	m->to = NULL;
 
-if (m->number == 1822) debug_breakpoint();
-
 	if ((mailto = Fgetlist(f)) != NULL) {
 		if ((m->to = new_MailToQueue()) == NULL)
 			goto err_load_message;
