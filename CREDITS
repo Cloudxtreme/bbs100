@@ -282,3 +282,6 @@ Version 3.0:
 - English Buchanan suggested that hidden rooms work in a better way
 
 - English Buchanan pointed out problems with automatic HH status toggling
+
+- English Buchanan found a corrupted old message that also triggered a bug
+  in loading old messages

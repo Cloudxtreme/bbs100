@@ -227,16 +227,18 @@ StringList *sl, *mailto;
 /* to */
 	destroy_MailToQueue(m->to);
 	m->to = NULL;
-	sl = mailto = Fgetlist(f);
-	if (sl != NULL) {
+
+if (m->number == 1822) debug_breakpoint();
+
+	if ((mailto = Fgetlist(f)) != NULL) {
 		if ((m->to = new_MailToQueue()) == NULL)
 			goto err_load_message;
 
-		while(sl != NULL) {
+		for(sl = pop_StringList(&mailto); sl != NULL; sl = pop_StringList(&mailto)) {
 			add_MailToQueue(m->to, new_MailTo_from_str(sl->str));
 			destroy_StringList(sl);
-			sl = pop_StringList(&mailto);
 		}
+		mailto = sl = NULL;
 	}
 /* the message */
 	free_StringIO(m->msg);

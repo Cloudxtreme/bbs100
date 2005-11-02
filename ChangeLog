@@ -1,5 +1,6 @@
 Changes as of November 2nd 2005
 - automatic toggling of the HELPING_HAND flag fixed for ppl that are on hold
+- fixed crasher in loading old Mail
 
 Changes as of November 1st 2005
 - hidden rooms can no longer be found by trying all numbers
