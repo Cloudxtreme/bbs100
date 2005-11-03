@@ -1,4 +1,3 @@
-aapje
 /*
     bbs100 3.0 WJ105
     Copyright (C) 2005  Walter de Jong <walter@heiho.net>
