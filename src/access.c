@@ -368,4 +368,11 @@ int j;
 	return 0;
 }
 
+int is_sysop(char *name) {
+	if (name == NULL || !*name || get_su_passwd(name) == NULL)
+		return 0;
+
+	return 1;
+}
+
 /* EOB */

@@ -43,6 +43,7 @@ int mail_access(User *, char *);
 
 void check_recipients(User *);
 int is_guest(char *);
+int is_sysop(char *);
 
 #endif	/* ACCESS_H_WJ99 */
 

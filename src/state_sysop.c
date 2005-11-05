@@ -48,6 +48,7 @@
 #include "CachedFile.h"
 #include "copyright.h"
 #include "cstring.h"
+#include "access.h"
 #include "Feeling.h"
 #include "Memory.h"
 #include "HostMap.h"
@@ -629,8 +630,6 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		User *u;
-
 		if (!usr->edit_buf) {
 			RET(usr);
 			Return;
@@ -640,23 +639,63 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((u = is_online(usr->edit_buf)) != NULL) {
-			Put(u, "<red>\n"
-				"\n"
-				"<yellow>*** <red>Sorry, but you are being disconnected <white>NOW <yellow>***\n"
-				"\n"
-				"<normal>\n"
-			);
-			close_connection(u, "user is disconnected by %s", usr->name);
-			u = NULL;
-			Print(usr, "<yellow>%s<green> was disconnected\n", usr->edit_buf);
-		} else {
+		if (is_online(usr->edit_buf) == NULL) {
 			if (!user_exists(usr->edit_buf))
 				Put(usr, "<red>No such user\n");
 			else
-				Print(usr, "<yellow>%s<white> is not online\n", usr->edit_buf);
+				Print(usr, "<yellow>%s<red> is not online\n", usr->edit_buf);
+			RET(usr);
+			Return;
 		}
-		RET(usr);
+		POP(usr);
+		CALL(usr, STATE_DISCONNECT_YESNO);
+		Return;
+	}
+	Return;
+}
+
+void state_disconnect_yesno(User *usr, char c) {
+User *u;
+
+	Enter(state_disconnect_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			if ((u = is_online(usr->edit_buf)) != NULL) {
+				if (is_sysop(u->name)) {
+					Print(usr, "<red>You are not allowed to disconnect a fellow %s\n", PARAM_NAME_SYSOP);
+					RET(usr);
+					Return;
+				}
+				Put(u, "<red>\n"
+					"\n"
+					"<yellow>*** <red>Sorry, but you are being disconnected <white>NOW <yellow>***\n"
+					"\n"
+					"<normal>\n"
+				);
+				log_msg("SYSOP %s disconnected user %s", usr->name, usr->edit_buf);
+				close_connection(u, "user was disconnected by %s", usr->name);
+				u = NULL;
+				Print(usr, "<yellow>%s<green> was disconnected\n", usr->edit_buf);
+			} else {
+				if (!user_exists(usr->edit_buf))
+					Print(usr, "<yellow>%s<red> was already nuked by another %s\n", usr->edit_buf, PARAM_NAME_SYSOP);
+				else
+					Print(usr, "<yellow>%s<red> is not online anymore\n", usr->edit_buf);
+			}
+			RET(usr);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		default:
+			Print(usr, "<cyan>Disconnect user <white>%s<cyan>? (y/N): <white>", usr->edit_buf);
 	}
 	Return;
 }
@@ -675,19 +714,20 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		KVPair *su;
-
 		if (!user_exists(usr->edit_buf)) {
 			Put(usr, "<red>No such user\n");
 			RET(usr);
 			Return;
 		}
-		for(su = su_passwd; su != NULL; su = su->next) {
-			if (!strcmp(su->key, usr->edit_buf)) {
-				Print(usr, "<red>You can't nuke someone who has <yellow>%s<red> access!\n", PARAM_NAME_SYSOP);
-				RET(usr);
-				Return;
-			}
+		if (!strcmp(usr->name, usr->edit_buf)) {
+			Put(usr, "<red>Suicide is not painless...\n");
+			RET(usr);
+			Return;
+		}
+		if (is_sysop(usr->edit_buf)) {
+			Print(usr, "<red>You can't nuke someone who has <yellow>%s<red> access!\n", PARAM_NAME_SYSOP);
+			RET(usr);
+			Return;
 		}
 		POP(usr);
 		CALL(usr, STATE_NUKE_YESNO);
@@ -797,6 +837,11 @@ int r;
 				Print(usr, "<green>Unbanished <yellow>%s\n", usr->edit_buf);
 				log_msg("SYSOP %s unbanished user %s", usr->name, usr->edit_buf);
 			} else {
+				if (is_sysop(usr->edit_buf)) {
+					Print(usr, "<red>You are not allowed to banish a fellow %s\n", PARAM_NAME_SYSOP);
+					RET(usr);
+					Return;
+				}
 				if ((sl = new_StringList(usr->edit_buf)) == NULL) {
 					Perror(usr, "Out of memory");
 					RET(usr);

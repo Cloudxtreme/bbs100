@@ -4,6 +4,8 @@ Changes as of November 5th 2005
 - better name matching in find_abbrevRoom()
 - sysop menu delete room asks for Yes/No
 - sysop menu nologin asks for Yes/No
+- sysop menu disconnect asks for Yes/No
+- sysops not allowed to disconnect/nuke/banish each other
 - nologin persists after reboot via file etc/nologin.is.active
 - connections hang around for 2 seconds after any kind of disconnect
 

@@ -131,7 +131,7 @@ int r;
 /*
 	nologin is active and user is not a sysop
 */
-		if (nologin_active && get_su_passwd(usr->tmpbuf[TMP_NAME]) == NULL) {
+		if (nologin_active && !is_sysop(usr->tmpbuf[TMP_NAME])) {
 			Put(usr, "\n");
 			display_screen(usr, PARAM_NOLOGIN_SCREEN);
 			close_connection(usr, "connection closed by nologin");
@@ -824,7 +824,7 @@ User *u;
 		usr->flags &= ~USR_HELPING_HAND;
 
 	if (usr->flags & USR_HELPING_HAND) {
-		if (get_su_passwd(usr->name) == NULL && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
+		if (!is_sysop(usr->name) && usr->total_time / SECS_IN_DAY < PARAM_HELPER_AGE)
 			usr->flags &= ~USR_HELPING_HAND;
 		else {
 			if (usr->flags & USR_X_DISABLED)

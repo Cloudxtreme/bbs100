@@ -30,6 +30,7 @@
 #define STATE_ADD_CATEGORY				state_add_category
 #define STATE_REMOVE_CATEGORY			state_remove_category
 #define STATE_DISCONNECT_USER			state_disconnect_user
+#define STATE_DISCONNECT_YESNO			state_disconnect_yesno
 #define STATE_NUKE_USER					state_nuke_user
 #define STATE_NUKE_YESNO				state_nuke_yesno
 #define STATE_BANISH_USER				state_banish_user
@@ -156,6 +157,7 @@ void state_categories_menu(User *, char);
 void state_add_category(User *, char);
 void state_remove_category(User *, char);
 void state_disconnect_user(User *, char);
+void state_disconnect_yesno(User *, char);
 void state_nuke_user(User *, char);
 void state_nuke_yesno(User *, char);
 void state_banish_user(User *, char);

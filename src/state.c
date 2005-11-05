@@ -233,7 +233,7 @@ int fun_common(User *usr, char c) {
 				Put(usr, "\n");
 				break;
 			}
-			if (get_su_passwd(usr->name) != NULL) {
+			if (is_sysop(usr->name)) {
 				Print(usr, "<white>%s mode\n", PARAM_NAME_SYSOP);
 				if (is_guest(usr->name)) {
 					Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot play %s\n", PARAM_NAME_GUEST, PARAM_NAME_SYSOP);
