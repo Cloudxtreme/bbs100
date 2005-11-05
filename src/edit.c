@@ -1916,7 +1916,8 @@ User *u;
 void make_rooms_tablist(User *usr) {
 Room *r, *r_next;
 Joined *j;
-StringList *zapped = NULL, *similar = NULL;
+StringList *zapped = NULL, *very_similar = NULL, *similar = NULL;
+char room_name[MAX_LINE+2], match[MAX_LINE+2];
 
 	if (usr == NULL)
 		return;
@@ -1924,6 +1925,8 @@ StringList *zapped = NULL, *similar = NULL;
 	Enter(make_rooms_tablist);
 
 	deinit_StringQueue(usr->tablist);
+
+	bufprintf(match, MAX_LINE+2, " %s ", usr->edit_buf);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -1946,6 +1949,14 @@ StringList *zapped = NULL, *similar = NULL;
 			else
 				add_StringQueue(usr->tablist, new_StringList(r->name));
 		} else {
+			bufprintf(room_name, MAX_LINE+2, " %s ", r->name);
+			if (cstristr(room_name, match) != NULL) {
+				if (!room_visible(usr, r))
+					continue;
+
+				very_similar = add_StringList(&very_similar, new_StringList(r->name));
+				continue;
+			}
 			if (cstristr(r->name, usr->edit_buf) != NULL) {
 				if (!room_visible(usr, r))
 					continue;
@@ -1958,6 +1969,8 @@ StringList *zapped = NULL, *similar = NULL;
 	}
 	zapped = rewind_StringList(zapped);
 	concat_StringQueue(usr->tablist, zapped);
+	very_similar = rewind_StringList(very_similar);
+	concat_StringQueue(usr->tablist, very_similar);
 	similar = rewind_StringList(similar);
 	concat_StringQueue(usr->tablist, similar);
 
