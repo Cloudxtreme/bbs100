@@ -108,6 +108,7 @@ void default_colors(User *);
 void default_symbol_colors(User *);
 void wipe_line(User *);
 int yesno(User *, char, char);
+int file_exists(char *);
 int user_exists(char *);
 void system_broadcast(int, char *);
 struct tm *tz_time(Timezone *, time_t);

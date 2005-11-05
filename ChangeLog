@@ -4,6 +4,7 @@ Changes as of November 5th 2005
 - better name matching in find_abbrevRoom()
 - sysop menu delete room asks for Yes/No
 - sysop menu nologin asks for Yes/No
+- nologin persists after reboot via file etc/nologin.is.active
 
 Changes as of November 2nd 2005
 - automatic toggling of the HELPING_HAND flag fixed for ppl that are on hold

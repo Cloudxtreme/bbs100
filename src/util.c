@@ -1247,19 +1247,27 @@ int yesno(User *usr, char c, char def) {
 	return YESNO_UNDEF;
 }
 
-int user_exists(char *name) {
-char buf[MAX_LINE];
+int file_exists(char *filename) {
 struct stat statbuf;
+
+	if (filename == NULL || !*filename)
+		return 0;
+
+	if (!stat(filename, &statbuf))
+		return 1;
+
+	return 0;
+}
+
+int user_exists(char *name) {
+char filename[MAX_PATHLEN];
 
 	if (is_guest(name))
 		return 1;
 
-	bufprintf(buf, MAX_LINE, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
-	path_strip(buf);
-	if (!stat(buf, &statbuf))
-		return 1;
-
-	return 0;
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
+	path_strip(filename);
+	return file_exists(filename);
 }
 
 void system_broadcast(int overrule, char *msg) {

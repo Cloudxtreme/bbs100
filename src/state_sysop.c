@@ -300,7 +300,11 @@ void state_sysop_menu(User *usr, char c) {
 		case 'n':
 		case 'N':
 			if (nologin_active) {
+				char filename[MAX_PATHLEN];
+
 				Put(usr, "Deactivate nologin\n");
+				bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+				unlink(filename);
 				nologin_active = 0;
 				log_msg("SYSOP %s deactivated nologin", usr->name);
 				CURRENT_STATE(usr);
@@ -1639,6 +1643,8 @@ int r;
 }
 
 void state_nologin_yesno(User *usr, char c) {
+char filename[MAX_PATHLEN];
+
 	Enter(state_nologin_yesno);
 
 	if (c == INIT_STATE) {
@@ -1648,6 +1654,8 @@ void state_nologin_yesno(User *usr, char c) {
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
+			bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+			close(open(filename, O_CREAT|O_WRONLY|O_TRUNC, (mode_t)0660));
 			nologin_active = 1;
 			log_msg("SYSOP %s activated nologin", usr->name);
 			RET(usr);

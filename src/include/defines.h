@@ -29,6 +29,11 @@
 #error C header file unistd.h is missing -- are you on a Unix platform?
 #endif
 
+/*
+	the only hardcoded filename
+*/
+#define NOLOGIN_FILE		"nologin.is.active"
+
 #define MAX_NAME            18
 #define MAX_TITLE			(MAX_NAME+10)
 #define MAX_LINE            80

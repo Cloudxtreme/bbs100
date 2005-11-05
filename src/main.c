@@ -111,6 +111,16 @@ struct stat statbuf;
 	return 0;
 }
 
+static void check_nologin(void) {
+char filename[MAX_PATHLEN];
+
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+	if (file_exists(filename))
+		nologin_active = 1;
+	else
+		nologin_active = 0;				/* users can login */
+}
+
 static void goto_background(void) {
 pid_t pid;
 
@@ -365,7 +375,8 @@ char buf[MAX_LONGLINE];
 
 	stats.uptime = rtc = time(NULL);
 
-	nologin_active = 0;				/* users can login */
+	check_nologin();
+
 	mainloop();
 	exit_program(SHUTDOWN);			/* clean shutdown */
 	Return 0;
