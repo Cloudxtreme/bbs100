@@ -1,3 +1,6 @@
+Changes as of November 5th 2005
+- fix for held busy (display after room prompt)
+
 Changes as of November 2nd 2005
 - automatic toggling of the HELPING_HAND flag fixed for ppl that are on hold
 - fixed crasher in loading old Mail

@@ -987,6 +987,9 @@ int remove;
 	Return;
 }
 
+/*
+	spool out messages that were held while being busy
+*/
 void spew_BufferedMsg(User *usr) {
 BufferedMsg *m;
 PList *pl, *pl_next;

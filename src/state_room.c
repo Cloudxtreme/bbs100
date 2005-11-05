@@ -1021,12 +1021,9 @@ char num_buf[MAX_NUMBER];
 		Put(usr, "\n");
 		edit_line(usr, EDIT_INIT);
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING | RTF_BUSY_MAILING | RTF_CHAT_ESCAPE);
-	} else {
+	} else
 		usr->runtime_flags &= ~(RTF_BUSY | RTF_BUSY_SENDING | RTF_BUSY_MAILING);
 
-		if (!(usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL)
-			Put(usr, "\n<green>The following messages were held while you were busy:\n");
-	}
 	PrintPrompt(usr);
 	Return;
 }
@@ -1047,22 +1044,22 @@ void PrintPrompt(User *usr) {
 	deinit_PQueue(usr->scroll);
 	usr->scrollp = NULL;
 
-/*
-	these messages were held while you were busy ...
-*/
-	if (!(usr->runtime_flags & (RTF_BUSY|RTF_HOLD)) && usr->held_msgs != NULL) {
-		if (usr->flags & USR_HOLD_BUSY) {
-			held_history_prompt(usr);
-			Return;
-		} else
-			spew_BufferedMsg(usr);
-	}
 	if (!(usr->runtime_flags & RTF_BUSY)) {
 
 /* print a short prompt for chatrooms */
 
 		if (usr->curr_room->flags & ROOM_CHATROOM) {
-
+/*
+	these messages were held while you were busy ...
+*/
+			if (!(usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL) {
+				Put(usr, "\n<green>The following messages were held while you were busy:\n");
+				if (usr->flags & USR_HOLD_BUSY) {
+					held_history_prompt(usr);
+					Return;
+				} else
+					spew_BufferedMsg(usr);
+			}
 /* spool the chat messages we didn't get while we were busy */
 
 			if (count_Queue(usr->chat_history) > 0) {
@@ -1115,6 +1112,17 @@ void PrintPrompt(User *usr) {
 					Print(usr, "<yellow>\n%u %s%c ", usr->curr_room->number, roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 				else
 					Print(usr, "<yellow>\n%s%c ", roomname, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
+			}
+/*
+	these messages were held while you were busy ...
+*/
+			if (!(usr->runtime_flags & RTF_HOLD) && usr->held_msgs != NULL) {
+				Put(usr, "\n<green>The following messages were held while you were busy:\n");
+				if (usr->flags & USR_HOLD_BUSY) {
+					held_history_prompt(usr);
+					Return;
+				} else
+					spew_BufferedMsg(usr);
 			}
 		}
 	}
