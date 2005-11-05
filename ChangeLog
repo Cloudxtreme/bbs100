@@ -2,6 +2,7 @@ Changes as of November 5th 2005
 - fix for held busy (display after room prompt)
 - fixes for word-wrapping in chat rooms
 - better name matching in find_abbrevRoom()
+- sysop menu delete room asks for Yes/No
 
 Changes as of November 2nd 2005
 - automatic toggling of the HELPING_HAND flag fixed for ppl that are on hold

@@ -1147,6 +1147,10 @@ void (*func)(User *, char *, ...);
 
 	Enter(delete_room);
 
+	if (!(usr->runtime_flags & RTF_SYSOP)) {
+		Perror(usr, "You are no Sysop, go away!");
+		Return;
+	}
 	if (room->number == LOBBY_ROOM || room->number == MAIL_ROOM || room->number == HOME_ROOM) {
 		Print(usr, "<red>The<yellow> %s><red> room is special and cannot be deleted\n", room->name);
 		Return;
@@ -1181,7 +1185,7 @@ void (*func)(User *, char *, ...);
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */
 	rename_dir(path, newpath);
 
-	log_msg("SYSOP %s deleted room %d %s removed", usr->name, room->number, room->name);
+	log_msg("SYSOP %s deleted room %d %s", usr->name, room->number, room->name);
 	Print(usr, "<yellow>%s><red> deleted\n", room->name);
 
 	destroy_Room(room);

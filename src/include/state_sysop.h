@@ -40,6 +40,7 @@
 #define STATE_COMMENT_WRAPPER			state_comment_wrapper
 #define STATE_CREATE_ROOM				state_create_room
 #define STATE_DELETE_ROOM_NAME			state_delete_room_name
+#define STATE_DELETE_ROOM_YESNO			state_delete_room_yesno
 #define STATE_UNCACHE_FILE				state_uncache_file
 #define STATE_MALLOC_STATUS				state_malloc_status
 #define STATE_SCREENS_MENU				state_screens_menu
@@ -164,6 +165,7 @@ void state_ipmask_wrapper(User *, char);
 void state_comment_wrapper(User *, char);
 void state_create_room(User *, char);
 void state_delete_room_name(User *, char);
+void state_delete_room_yesno(User *, char);
 void state_uncache_file(User *, char);
 void state_malloc_status(User *, char);
 void state_screens_menu(User *usr, char);

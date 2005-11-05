@@ -694,6 +694,9 @@ int r;
 	Return;
 }
 
+/*
+	usr->edit_buf is user to nuke
+*/
 void state_nuke_yesno(User *usr, char c) {
 User *u;
 char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
@@ -1217,7 +1220,7 @@ int r;
 	Enter(state_delete_room_name);
 
 	if (c == INIT_STATE)
-		Put(usr, "<green>Enter room name: <yellow>");
+		Put(usr, "<green>Enter full room name: <yellow>");
 
 	r = edit_roomname(usr, c);
 	if (r == EDIT_BREAK) {
@@ -1231,11 +1234,43 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if ((room = find_Room(usr, usr->edit_buf)) == NULL)
+		if ((room = find_Room(usr, usr->edit_buf)) == NULL) {
 			Put(usr, "<red>No such room\n");
-		else
-			delete_room(usr, room);
-		RET(usr);
+			RET(usr);
+			Return;
+		}
+		POP(usr);
+		CALL(usr, STATE_DELETE_ROOM_YESNO);
+	}
+	Return;
+}
+
+void state_delete_room_yesno(User *usr, char c) {
+Room *r;
+
+	Enter(state_delete_room_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			if ((r = find_Room(usr, usr->edit_buf)) == NULL) {
+				Print(usr, "<red>No such room, already deleted by another %s!\n", PARAM_NAME_SYSOP);
+				RET(usr);
+				Return;
+			}
+			delete_room(usr, r);
+			RET(usr);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		default:
+			Print(usr, "<cyan>Delete room <white>%s<cyan>? (y/N): <white>", usr->edit_buf);
 	}
 	Return;
 }
