@@ -58,6 +58,9 @@
 #define LOOP_SEND_MSG					loop_send_msg
 #define STATE_RETURN_MAIL_MSG			state_return_mail_msg
 
+#define STATE_LOGGED_OUT				state_logged_out
+
+
 int fun_common(User *, char);
 void state_dummy(User *, char);
 void state_x_prompt(User *, char);
@@ -109,6 +112,7 @@ void print_calendar(User *);
 void drop_sysop_privs(User *);
 
 void state_download_text(User *, char);
+void state_logged_out(User *, char);
 
 #endif	/* STATE_H_WJ99 */
 

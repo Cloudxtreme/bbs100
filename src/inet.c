@@ -277,6 +277,8 @@ char input_char[2];
 
 	nap = 1;
 	while(1) {
+		rtc = time(NULL);
+
 		for(c = AllConns; c != NULL; c = c_next) {
 			c_next = c->next;
 
@@ -328,6 +330,8 @@ char input_char[2];
 	Everything is very dynamic and things like process() and Ret()
 	actually may change a lot...
 */
+		nap = update_timers();
+
 		wait_for_input = 1;
 		highest_fd = 0;
 
@@ -417,12 +421,7 @@ char input_char[2];
 		timeout.tv_usec = 0;
 		errno = 0;
 		err = select(highest_fd, &rfds, &wfds, &efds, &timeout);
-/*
-	first update timers ... if we do it later, new connections can immediately
-	time out
-*/
 		handle_pending_signals();
-		nap = update_timers();
 
 		if (err > 0) {			/* number of ready fds */
 			for(c = AllConns; c != NULL; c = c_next) {

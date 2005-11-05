@@ -1204,10 +1204,17 @@ void logout_user(User *usr) {
 	}
 	leave_room(usr);
 	usr->name[0] = 0;
+
+	if (usr->conn->sock > 0) {
+		Put(usr, "<default>\n");
+		Flush(usr);
+	}
 	Return;
 }
 
 void close_connection(User *usr, char *reason, ...) {
+Timer *t;
+
 	if (usr == NULL)
 		return;
 
@@ -1230,7 +1237,18 @@ void close_connection(User *usr, char *reason, ...) {
 		log_auth(buf);
 	}
 	logout_user(usr);
-	close_logout(usr);
+/*
+	keep the logout screen visible for a couple of seconds
+	(X-)Windows programs have a habit of closing the window when the connection
+	is terminated
+*/
+	if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
+		listdestroy_Timer(usr->timerq);
+		usr->timerq = usr->idle_timer = NULL;
+		add_Timer(&usr->timerq, t);
+		JMP(usr, STATE_LOGGED_OUT);
+	} else
+		close_logout(usr);
 	Return;
 }
 
@@ -1241,12 +1259,7 @@ User *usr;
 		return;
 
 	usr = (User *)v;
-
-	if (usr->conn->sock > 0) {
-		Put(usr, "<default>\n");
-		Flush(usr);
-		close_Conn(usr->conn);
-	}
+	close_Conn(usr->conn);
 }
 
 /* EOB */

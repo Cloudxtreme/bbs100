@@ -300,7 +300,6 @@ int r;
 
 void state_logout_prompt(User *usr, char c) {
 char buf[MAX_LINE];
-Timer *t;
 
 	if (usr == NULL)
 		return;
@@ -345,22 +344,8 @@ Timer *t;
 
 			Put(usr, "\n");
 			display_screen(usr, PARAM_LOGOUT_SCREEN);
-
-			log_auth("LOGOUT %s (%s)", usr->name, usr->conn->hostname);
-			logout_user(usr);
-/*
-	keep the logout screen visible for a couple of seconds
-	(X-)Windows programs have a habit of closing the window when the connection
-	is terminated
-*/
-			if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
-				listdestroy_Timer(usr->timerq);
-				usr->timerq = usr->idle_timer = NULL;
-				add_Timer(&usr->timerq, t);
-				JMP(usr, STATE_LOGGED_OUT);
-			} else
-				close_logout(usr);
-			break;
+			close_connection(usr, "LOGOUT %s (%s)", usr->name, usr->conn->hostname);
+			Return;
 
 		case YESNO_NO:
 			RET(usr);
@@ -790,14 +775,6 @@ int r;
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;
-}
-
-/*
-	the user has logged out and really can't do anything but wait for
-	the connection to close
-*/
-void state_logged_out(User *usr, char c) {
-	;
 }
 
 int print_user_status(User *usr) {

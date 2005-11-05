@@ -2915,4 +2915,12 @@ int cpos, lines;
 	Return;
 }
 
+/*
+	the user has logged out and really can't do anything but wait for
+	the connection to close
+*/
+void state_logged_out(User *usr, char c) {
+	;
+}
+
 /* EOB */
