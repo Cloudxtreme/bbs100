@@ -40,7 +40,7 @@ char *Wrap_Charset1 = WRAP_CHARSET1;
 char *Wrap_Charset2 = WRAP_CHARSET2;
 
 static void edit_putchar(User *, char);
-
+static int wrap_chatline(User *, char, char *);
 
 /*
 	Returns:
@@ -881,16 +881,24 @@ int edit_line(User *usr, char c) {
 /*
 	same as edit_line(), but it handles KEY_RETURN and word-wrapping
 	in a different way
+	the third argument to this function is a buffer to store word-wrapped text in
 */
-int edit_chatline(User *usr, char c) {
+int edit_chatline(User *usr, char c, char *wrapped) {
 	if (usr == NULL)
 		return 0;
 
 	if (c == EDIT_INIT) {
 		usr->runtime_flags |= RTF_BUSY;
 		usr->runtime_flags &= ~RTF_COLOR_EDITING;
-		usr->edit_pos = 0;
-		usr->edit_buf[0] = 0;
+
+		if (wrapped == NULL) {
+			usr->edit_pos = 0;
+			usr->edit_buf[0] = 0;
+		} else {
+			cstrcpy(usr->edit_buf, wrapped, MAX_LINE);
+			usr->edit_pos = strlen(usr->edit_buf);
+			*wrapped = 0;
+		}
 		return 0;
 	}
 	if (usr->runtime_flags & RTF_COLOR_EDITING) {
@@ -963,18 +971,9 @@ int edit_chatline(User *usr, char c) {
 			if (c < ' ' || c > '~')
 				break;
 
-			if (usr->edit_pos < MAX_LINE-1) {
-				edit_putchar(usr, c);
-/*
-	wrap; return the line
-	this is not elegant when being in the middle of a long color code,
-	but it's hardly ever a real problem because strlen(usr->name)+5
-	usually is longer than the long color code
-*/
-				if (usr->edit_pos + strlen(usr->name) + 5 >= usr->display->term_width) {
-					ctrim_line(usr->edit_buf);
-					return EDIT_RETURN;
-				}
+			if (wrap_chatline(usr, c, wrapped)) {
+				ctrim_line(usr->edit_buf);
+				return EDIT_RETURN;
 			}
 	}
 	return 0;
@@ -1028,11 +1027,9 @@ static void edit_wrap(User *usr, char c, char *prompt) {
 char erase[MAX_LONGLINE], wrap[MAX_LINE];
 int i, wrap_len;
 
-	Enter(edit_wrap);
-
 	if (usr->edit_pos < MAX_LINE-2 && usr->edit_pos < usr->display->term_width-2) {
 		edit_putchar(usr, c);
-		Return;
+		return;
 	}
 
 /* word wrap */
@@ -1041,6 +1038,9 @@ int i, wrap_len;
 
 	if (c != ' ' && cstrchr(Wrap_Charset2, c) == NULL) {
 		wrap_len = usr->display->term_width / 3;
+		if (wrap_len >= MAX_LINE-1)
+			wrap_len = MAX_LINE-1;
+
 		for(i = usr->edit_pos - 1; i > wrap_len; i--) {
 			if (cstrchr(Wrap_Charset1, usr->edit_buf[i]) != NULL) {
 				i++;
@@ -1079,8 +1079,62 @@ int i, wrap_len;
 
 	Print(usr, "\n%s", prompt);
 	Put(usr, usr->edit_buf);			/* in 2 separate prints; no lame color bug(!) */
-	Return;
 }
+
+/*
+	do word-wrapping on chat lines
+	the wrapped text is put into char *wrap
+	wrap should be at least MAX_LINE long
+*/
+static int wrap_chatline(User *usr, char c, char *wrap) {
+int i, wrap_len;
+
+	if (usr == NULL)
+		return 0;
+
+	i = usr->edit_pos + strlen(usr->name) + 2;
+	if (i < MAX_LINE && i < usr->display->term_width) {
+		edit_putchar(usr, c);
+		return 0;
+	}
+	if (wrap == NULL)
+		return 0;
+
+/* word wrap */
+
+	*wrap = 0;
+	if (c != ' ' && cstrchr(Wrap_Charset2, c) == NULL) {
+		wrap_len = usr->display->term_width / 3;
+		if (wrap_len >= MAX_LINE)
+			wrap_len = MAX_LINE-1;
+
+		for(i = usr->edit_pos - 1; i > wrap_len; i--) {
+			if (cstrchr(Wrap_Charset1, usr->edit_buf[i]) != NULL) {
+				i++;
+				break;
+			}
+			if (cstrchr(Wrap_Charset2, usr->edit_buf[i]) != NULL)
+				break;
+		}
+		if (i > wrap_len) {
+			if (*usr->edit_buf == ' ') {
+				*wrap = ' ';
+				cstrcpy(wrap+1, usr->edit_buf+i, MAX_LINE-1);
+			} else
+				cstrcpy(wrap, usr->edit_buf+i, MAX_LINE);
+
+			usr->edit_buf[i] = 0;
+			ctrim_line(usr->edit_buf);
+		}
+	}
+	usr->edit_pos = strlen(wrap);
+	if (c != ' ') {
+		wrap[usr->edit_pos++] = c;
+		wrap[usr->edit_pos] = 0;
+	}
+	return 1;							/* we wrapped */
+}
+
 
 int edit_x(User *usr, char c) {
 int color;

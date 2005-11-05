@@ -101,13 +101,14 @@ char num_buf[MAX_NUMBER];
 	First check for chat rooms (they're a rather special case)
 */
 	if ((usr->curr_room->flags & ROOM_CHATROOM) && !(usr->runtime_flags & RTF_CHAT_ESCAPE)) {
-		char buf[MAX_LINE];
-
 		switch(c) {
 			case INIT_STATE:
 				Put(usr, "\n");
 			case INIT_PROMPT:
-				edit_chatline(usr, EDIT_INIT);
+				if (usr->tmpbuf[TMP_NAME] != NULL)
+					usr->tmpbuf[TMP_NAME][0] = 0;
+
+				edit_chatline(usr, EDIT_INIT, NULL);
 /* note how you are not busy when editing a chat line */
 				usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
 				PrintPrompt(usr);
@@ -121,20 +122,29 @@ char num_buf[MAX_NUMBER];
 				}
 
 			default:
-				i = edit_chatline(usr, c);
+				i = edit_chatline(usr, c, usr->tmpbuf[TMP_NAME]);
 
 				if (i == EDIT_BREAK) {
 					CURRENT_STATE_X(usr, INIT_PROMPT);
 					Return;
 				}
 				if (i == EDIT_RETURN) {
+					char buf[MAX_LINE];
+
+					wipe_line(usr);
 					if (!usr->edit_buf[0]) {
-						CURRENT_STATE(usr);
+						Put(usr, "\n");
+						edit_chatline(usr, EDIT_INIT, usr->tmpbuf[TMP_NAME]);
+						usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
+						PrintPrompt(usr);
+						if (usr->runtime_flags & RTF_CHAT_ESCAPE)
+							Put(usr, "<white>/");
+						else
+							Put(usr, usr->edit_buf);
 						Return;
 					}
-					wipe_line(usr);
 					cstrcpy(buf, usr->edit_buf, MAX_LINE);
-					edit_chatline(usr, EDIT_INIT);
+					edit_chatline(usr, EDIT_INIT, usr->tmpbuf[TMP_NAME]);
 					usr->runtime_flags &= ~(RTF_BUSY | RTF_CHAT_ESCAPE);
 /* Note: chatroom_say() will reprint the prompt for us */
 					chatroom_say(usr, buf);
@@ -1844,8 +1854,13 @@ int num_users;
 
 	Enter(enter_chatroom);
 
-/* +1, the current user will be added right after entering ... */
-	num_users = count_Queue(usr->curr_room->inside) + 1;
+/* everyone in a chat room gets some temp space that is used for line wrapping */
+	Free(usr->tmpbuf[TMP_NAME]);
+	if ((usr->tmpbuf[TMP_NAME] = (char *)Malloc(MAX_LINE, TYPE_CHAR)) != NULL)
+		usr->tmpbuf[TMP_NAME][0] = 0;
+
+/* the current user will be added right after entering ... */
+	num_users = count_Queue(usr->curr_room->inside);
 
 	if (usr->curr_room->number == HOME_ROOM) {
 		possession(usr->name, "Home", buf, MAX_LONGLINE);
@@ -1855,13 +1870,17 @@ int num_users;
 		else
 			Print(usr, "\n<magenta>Welcome to <yellow>%s>\n", usr->curr_room->name);
 
-		if (num_users > 1)
-			Print(usr, "<magenta>There are <yellow>%d<magenta> users here\n", num_users);
-	} else {
-		if (num_users <= 1)
-			Print(usr, "\n<magenta>You are the only one in <yellow>%s>\n", usr->curr_room->name);
+		cstrcpy(buf, "here", MAX_LONGLINE);
+	} else
+		bufprintf(buf, MAX_LONGLINE, "in <yellow>%s>", usr->curr_room->name);
+
+	if (num_users <= 0)
+		Print(usr, "<magenta>You are the only one %s\n", buf);
+	else {
+		if (num_users == 1)
+			Print(usr, "<magenta>There is <yellow>1<magenta> other user %s\n", buf);
 		else
-			Print(usr, "\n<magenta>There are <yellow>%d<magenta> users in <yellow>%s>\n", num_users, usr->curr_room->name);
+			Print(usr, "<magenta>There are <yellow>%d<magenta> other users %s\n", num_users, buf);
 	}
 	if (STRING_CHANCE)
 		str = PARAM_NOTIFY_ENTER_CHAT;
@@ -1893,6 +1912,9 @@ char buf[MAX_LONGLINE], *str;
 		return;
 
 	Enter(leave_chatroom);
+
+	Free(usr->tmpbuf[TMP_NAME]);			/* line wrapping temp buf */
+	usr->tmpbuf[TMP_NAME] = NULL;
 
 	if (STRING_CHANCE)
 		str = PARAM_NOTIFY_LEAVE_CHAT;
