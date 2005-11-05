@@ -306,10 +306,7 @@ void state_sysop_menu(User *usr, char c) {
 				CURRENT_STATE(usr);
 				Return;
 			} else {
-				Put(usr, "Activate nologin\n");
-				nologin_active = 1;
-				log_msg("SYSOP %s activated nologin", usr->name);
-				CURRENT_STATE(usr);
+				CALL(usr, STATE_NOLOGIN_YESNO);
 				Return;
 			}
 			break;
@@ -1274,7 +1271,7 @@ Room *r;
 	}
 	Return;
 }
-	
+
 
 void state_reboot_time(User *usr, char c) {
 int r;
@@ -1637,6 +1634,31 @@ int r;
 
 			RET(usr);
 		}
+	}
+	Return;
+}
+
+void state_nologin_yesno(User *usr, char c) {
+	Enter(state_nologin_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "Activate nologin\n"
+			"<cyan>Are you sure? (y/N): <white>");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			nologin_active = 1;
+			log_msg("SYSOP %s activated nologin", usr->name);
+			RET(usr);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		default:
+			Put(usr, "<cyan>Activate nologin, <hotkey>yes or <hotkey>no? (y/N): <white>");
 	}
 	Return;
 }

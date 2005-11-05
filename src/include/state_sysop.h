@@ -62,6 +62,7 @@
 #define STATE_REBOOT_PASSWORD			state_reboot_password
 #define STATE_SHUTDOWN_TIME				state_shutdown_time
 #define STATE_SHUTDOWN_PASSWORD			state_shutdown_password
+#define STATE_NOLOGIN_YESNO				state_nologin_yesno
 
 #define STATE_SYSTEM_CONFIG_MENU		state_system_config_menu
 #define STATE_PARAM_BBS_NAME			state_param_bbs_name
@@ -203,6 +204,7 @@ void state_reboot_time(User *, char);
 void state_reboot_password(User *, char);
 void state_shutdown_time(User *, char);
 void state_shutdown_password(User *, char);
+void state_nologin_yesno(User *, char);
 
 void state_system_config_menu(User *, char);
 void state_param_bbs_name(User *, char);
