@@ -285,3 +285,5 @@ Version 3.0:
 
 - English Buchanan found a corrupted old message that also triggered a bug
   in loading old messages
+
+- Vondaa suggested better name matching for finding rooms

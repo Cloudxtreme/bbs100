@@ -751,9 +751,12 @@ Room *r;
 */
 Room *find_abbrevRoom(User *usr, char *name) {
 Room *r;
+char room_name[MAX_LINE+2], match[MAX_LINE+2];
 
 	if (name == NULL || !*name || usr == NULL)
 		return NULL;
+
+	debug_breakpoint();
 
 	if ((r = find_Room(usr, name)) == NULL) {
 		int l;
@@ -773,7 +776,25 @@ Room *r;
 			}
 		}
 /*
-	didn't find any room, try a substring
+	didn't find any room, try a substring that matches whole words
+*/
+		bufprintf(match, MAX_LINE+2, " %s ", name);
+		for(r = AllRooms; r != NULL; r = r->next) {
+			bufprintf(room_name, MAX_LINE+2, " %s ", r->name);
+			if (cstrstr(room_name, match) != NULL) {
+				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
+					return find_Roombynumber(usr, r->number);
+
+				if (!room_visible(usr, r))
+					continue;
+
+				if (!PARAM_HAVE_CHATROOMS && (r->flags & ROOM_CHATROOM))
+					continue;
+				return r;
+			}
+		}
+/*
+	didn't find any room, try a substring that matches half words
 */
 		for(r = AllRooms; r != NULL; r = r->next) {
 			if (cstrstr(r->name, name) != NULL) {
@@ -788,6 +809,7 @@ Room *r;
 				return r;
 			}
 		}
+		return NULL;
 	}
 	return r;
 }
