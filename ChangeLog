@@ -1,6 +1,7 @@
 Changes as of November 6th 2005
 - fix for crasher when logins time out; cannot modify timerqueue from within
   a timer function. This introduces the close_wait state and handler
+- disconnect user produces a notify_linkdead() message
 
 Changes as of November 5th 2005
 - fix for held busy (display after room prompt)

@@ -678,6 +678,7 @@ User *u;
 					"<normal>\n"
 				);
 				log_msg("SYSOP %s disconnected user %s", usr->name, usr->edit_buf);
+				notify_linkdead(u);
 				close_connection(u, "user was disconnected by %s", usr->name);
 				u = NULL;
 				Print(usr, "<yellow>%s<green> was disconnected\n", usr->edit_buf);
