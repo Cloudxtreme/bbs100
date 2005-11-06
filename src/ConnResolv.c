@@ -51,6 +51,7 @@ ConnType ConnResolv = {
 	ConnResolv_accept,
 	dummy_Conn_handler,
 	close_Conn,
+	close_Conn,
 	ConnResolv_linkdead,
 	ConnResolv_destroy,
 };

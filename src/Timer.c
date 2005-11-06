@@ -101,11 +101,11 @@ Timer *q, *q_prev;
 	return t;
 }
 
-static int update_timerqueue(Timer **queue, void *arg, int tdiff) {
+static void update_timerqueue(Timer **queue, void *arg, int tdiff) {
 Timer *t, *t_next;
 
 	if (queue == NULL || *queue == NULL)
-		return SOME_TIME;
+		return;
 
 	for(t = *queue; t != NULL; t = t_next) {
 		t_next = t->next;
@@ -133,7 +133,6 @@ Timer *t, *t_next;
 				add_Timer(queue, t);
 		}
 	}
-	return (*queue == NULL) ? SOME_TIME : (*queue)->sleeptime;
 }
 
 /*
@@ -143,8 +142,7 @@ Timer *t, *t_next;
 	If select() does not time out, rtc will be updated too much,
 	so I had to put an old_rtc in and compare the two clocks :P
 */
-int update_timers(void) {
-int n, nap;
+void update_timers(void) {
 static time_t old_rtc = (time_t)0UL;
 int tdiff;
 User *usr, *usr_next;
@@ -152,12 +150,10 @@ User *usr, *usr_next;
 	rtc = time(NULL);
 	if (!old_rtc) {
 		old_rtc = rtc;
-		return 1;
+		return;
 	}
 	tdiff = (int)((unsigned long)rtc - (unsigned long)old_rtc);
 	old_rtc = rtc;
-
-	nap = SOME_TIME;
 
 /* update the user timers */
 	for(usr = AllUsers; usr != NULL; usr = usr_next) {
@@ -166,15 +162,32 @@ User *usr, *usr_next;
 		if (usr->timerq == NULL)
 			continue;
 
-		n = update_timerqueue(&usr->timerq, usr, tdiff);
-		if (n < nap)
-			nap = n;
+		update_timerqueue(&usr->timerq, usr, tdiff);
 	}
 /* now process timers that are not bound to a user */
 
-	n = update_timerqueue(&timerq, NULL, tdiff);
-	if (n < nap)
-		nap = n;
+	update_timerqueue(&timerq, NULL, tdiff);
+}
+
+/*
+	return the shortest next timer event
+	this is fed to select() as timeout
+*/
+int shortest_timer(void) {
+User *usr;
+int nap;
+
+	nap = SOME_TIME;
+
+	for(usr = AllUsers; usr != NULL; usr = usr->next) {
+		if (usr->timerq == NULL)
+			continue;
+
+		if (usr->timerq->sleeptime < nap)
+			nap = usr->timerq->sleeptime;
+	}
+	if (timerq != NULL && timerq->sleeptime < nap)
+		nap = timerq->sleeptime;
 
 	return nap;
 }

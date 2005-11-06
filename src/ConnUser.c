@@ -83,6 +83,7 @@ ConnType ConnUser = {
 	ConnUser_process,
 	ConnUser_accept,
 	dummy_Conn_handler,
+	ConnUser_wait_close,
 	close_Conn,
 	ConnUser_linkdead,
 	ConnUser_destroy,
@@ -117,19 +118,19 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		Return;
 	}
 	if ((new_user = new_User()) == NULL) {
-		shutdown(s, 2);
+		shutdown(s, SHUT_RDWR);
 		close(s);
 		Return;
 	}
 	if ((new_user->telnet = new_Telnet()) == NULL) {
 		destroy_User(new_user);
-		shutdown(s, 2);
+		shutdown(s, SHUT_RDWR);
 		close(s);
 		Return;
 	}
 	if ((new_conn = new_ConnUser()) == NULL) {
 		destroy_User(new_user);
-		shutdown(s, 2);
+		shutdown(s, SHUT_RDWR);
 		close(s);
 		Return;
 	}
@@ -183,11 +184,37 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	Return;
 }
 
+/*
+	keep the logout screen visible for a couple of seconds
+	(X-)Windows programs have a habit of closing the window when the connection
+	is terminated
+*/
+void ConnUser_wait_close(Conn *conn) {
+User *usr;
+Timer *t;
+
+	if (conn == NULL || conn->sock < 0)
+		return;
+
+	usr = (User *)conn->data;
+	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL)
+		return;
+
+	if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
+		listdestroy_Timer(usr->timerq);
+		usr->timerq = usr->idle_timer = NULL;
+		add_Timer(&usr->timerq, t);
+/*		JMP(usr, STATE_LOGGED_OUT);	*/
+	}
+}
+
 void ConnUser_process(Conn *conn, char c) {
 User *usr;
 
-	usr = (User *)conn->data;
+	if (conn == NULL)
+		return;
 
+	usr = (User *)conn->data;
 	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL)
 		return;
 

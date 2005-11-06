@@ -287,7 +287,7 @@ void mainloop(void) {
 struct timeval timeout;
 fd_set rfds, wfds, efds;
 Conn *c, *c_next;
-int err, highest_fd = -1, wait_for_input, nap, isset;
+int err, highest_fd = -1, wait_for_input, isset;
 char input_char[2];
 
 	Enter(mainloop);
@@ -298,7 +298,6 @@ char input_char[2];
 	jump_set = 1;
 	crash_recovery();		/* recover crashed connections */
 
-	nap = 1;
 	while(1) {
 		rtc = time(NULL);
 
@@ -339,7 +338,8 @@ char input_char[2];
 					}
 					break;
 
-				case CONN_CLOSED:		/* handled below */
+				case CONN_CLOSED:
+					free_StringIO(c->input);		/* discard any input */
 					break;
 			}
 		}
@@ -353,7 +353,7 @@ char input_char[2];
 	Everything is very dynamic and things like process() and Ret()
 	actually may change a lot...
 */
-		nap = update_timers();
+		update_timers();
 
 		wait_for_input = 1;
 		highest_fd = 0;
@@ -405,24 +405,30 @@ char input_char[2];
 								highest_fd = c->sock + 1;
 							break;
 						}
+						break;
+
+					case CONN_WAIT_CLOSE:
+						c->conn_type->wait_close(c);
+						if (c->state != CONN_CLOSED)
+							break;
 /*
 	a connection may be closed, but still have data to flush
 */
-						case CONN_CLOSED:
-							if (c->output->len > 0) {				/* got data to write */
-								FD_SET(c->sock, &wfds);
-								if (highest_fd <= c->sock)
-									highest_fd = c->sock + 1;
-								wait_for_input = 0;
-							} else {
-								shutdown(c->sock, 2);
-								close(c->sock);
-								c->sock = -1;
-							}
-							break;
+					case CONN_CLOSED:
+						if (c->output->len > 0) {				/* got data to write */
+							FD_SET(c->sock, &wfds);
+							if (highest_fd <= c->sock)
+								highest_fd = c->sock + 1;
+							wait_for_input = 0;
+						} else {
+							shutdown(c->sock, SHUT_RDWR);
+							close(c->sock);
+							c->sock = -1;
+						}
+						break;
 
-						default:
-							log_err("mainloop(): BUG ! got invalid connection state %d", c->state);
+					default:
+						log_err("mainloop(): BUG ! got invalid connection state %d", c->state);
 				}
 			}
 			if (c->sock <= 0) {					/* remove dead connections */
@@ -433,13 +439,9 @@ char input_char[2];
 			FD_SET(c->sock, &efds);
 		}
 /*
-	call select() to see if any more data is ready to arrive
-
-	select() is only called to see if input is ready
-	To make things perfect, we should check if write() causes EWOULDBLOCK,
-	setup an output buffer, and call select() with a write-set as well
+	call select() to see if any more data is ready to arrive or to flush output
 */
-		timeout.tv_sec = (wait_for_input == 0) ? 0 : nap;
+		timeout.tv_sec = (wait_for_input == 0) ? 0 : shortest_timer();
 		timeout.tv_usec = 0;
 		errno = 0;
 		err = select(highest_fd, &rfds, &wfds, &efds, &timeout);
@@ -461,7 +463,7 @@ char input_char[2];
 							c->conn_type->linkdead(c);
 						}
 					} else {
-/* ... now that we have the OOB data, what do we do with it?? */
+/* ... now that we have the OOB data, what do we do with it??? */
 						log_debug("mainloop(): got OOB byte 0x%02f", input_char[0]);
 					}
 					isset++;

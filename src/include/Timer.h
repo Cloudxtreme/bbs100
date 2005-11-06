@@ -51,7 +51,8 @@ Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
 Timer *add_Timer(Timer **, Timer *);
 int init_rtc(void);
-int update_timers(void);
+void update_timers(void);
+int shortest_timer(void);
 
 #endif	/* TIMER_H_WJ99 */
 

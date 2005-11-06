@@ -40,7 +40,8 @@
 #define CONN_CONNECTING		2
 #define CONN_ESTABLISHED	3
 #define CONN_LOOPING		4
-#define CONN_CLOSED			5
+#define CONN_WAIT_CLOSE		5
+#define CONN_CLOSED			6
 
 #define MIN_INPUTBUF		16
 #define MIN_OUTPUTBUF		STRINGIO_MINSIZE
@@ -59,6 +60,7 @@ typedef struct {
 	void (*process)(Conn *, char);
 	void (*accept)(Conn *);
 	void (*complete_connect)(Conn *);
+	void (*wait_close)(Conn *);
 	void (*close)(Conn *);
 	void (*linkdead)(Conn *);
 	void (*destroy)(Conn *);

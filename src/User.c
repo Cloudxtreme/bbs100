@@ -159,7 +159,7 @@ int i;
 	listdestroy_BufferedMsg(usr->held_msgs);
 	destroy_BufferedMsg(usr->send_msg);
 
-	usr->idle_timer = NULL;
+	usr->idle_timer = NULL;				/* usr->idle_timer is just a reference */
 	listdestroy_Timer(usr->timerq);
 	destroy_Telnet(usr->telnet);
 
@@ -1213,8 +1213,6 @@ void logout_user(User *usr) {
 }
 
 void close_connection(User *usr, char *reason, ...) {
-Timer *t;
-
 	if (usr == NULL)
 		return;
 
@@ -1237,18 +1235,9 @@ Timer *t;
 		log_auth(buf);
 	}
 	logout_user(usr);
-/*
-	keep the logout screen visible for a couple of seconds
-	(X-)Windows programs have a habit of closing the window when the connection
-	is terminated
-*/
-	if (usr->conn->sock > 0 && (t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
-		listdestroy_Timer(usr->timerq);
-		usr->timerq = usr->idle_timer = NULL;
-		add_Timer(&usr->timerq, t);
-		JMP(usr, STATE_LOGGED_OUT);
-	} else
-		close_logout(usr);
+
+	if (usr->conn != NULL)
+		usr->conn->state = CONN_WAIT_CLOSE;
 	Return;
 }
 
@@ -1259,6 +1248,9 @@ User *usr;
 		return;
 
 	usr = (User *)v;
+	if (usr == NULL)
+		return;
+
 	close_Conn(usr->conn);
 }
 

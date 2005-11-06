@@ -42,6 +42,7 @@ ConnType ConnType_default = {
 	dummy_Conn_process,
 	dummy_Conn_handler,
 	dummy_Conn_handler,
+	close_Conn,						/* default wait_close switches to CLOSED state */
 	close_Conn,
 	dummy_Conn_handler,
 	dummy_Conn_handler,

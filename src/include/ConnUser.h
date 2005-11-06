@@ -31,6 +31,7 @@ Conn *new_ConnUser(void);
 
 void ConnUser_accept(Conn *);
 void ConnUser_readable(Conn *);
+void ConnUser_wait_close(Conn *);
 void ConnUser_process(Conn *, char);
 void ConnUser_linkdead(Conn *);
 void ConnUser_destroy(Conn *);
