@@ -173,7 +173,7 @@ char optval;
 		return;
 
 	un_len = sizeof(struct sockaddr_un);
-	if ((sock = accept(conn->sock, (struct sockaddr *)&un, (int *)&un_len)) < 0) {
+	if ((sock = accept(conn->sock, (struct sockaddr *)&un, &un_len)) < 0) {
 		log_err("ConnResolv_accept(): failed to accept()");
 		return;
 	}
