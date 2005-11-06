@@ -163,8 +163,9 @@ char *p;
 }
 
 void ConnResolv_accept(Conn *conn) {
-int un_len, sock;
+int sock;
 struct sockaddr_un un;
+socklen_t un_len;
 char optval;
 
 	if (conn == NULL)
