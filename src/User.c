@@ -1242,7 +1242,7 @@ Timer *t;
 	(X-)Windows programs have a habit of closing the window when the connection
 	is terminated
 */
-	if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
+	if (usr->conn->sock > 0 && (t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
 		listdestroy_Timer(usr->timerq);
 		usr->timerq = usr->idle_timer = NULL;
 		add_Timer(&usr->timerq, t);

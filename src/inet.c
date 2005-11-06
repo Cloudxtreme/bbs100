@@ -257,6 +257,29 @@ int sock, optval;
 }
 
 /*
+	test for valid/invalid file descriptors
+*/
+int test_fd(int fd) {
+fd_set fds;
+struct timeval timeout;
+int err;
+
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+	timeout.tv_sec = timeout.tv_usec = 0L;
+
+retry_test_fd:
+	err = select(fd+1, &fds, NULL, NULL, &timeout);
+	if (err < 0) {
+		if (errno == EINTR)			/* signal received */
+			goto retry_test_fd;
+
+		return -1;					/* got some error, most likely EBADF */
+	}
+	return 0;						/* no error */
+}
+
+/*
 	The Main Loop
 	this is the connection engine
 */
@@ -343,8 +366,6 @@ char input_char[2];
 			c_next = c->next;
 
 			if (c->sock > 0) {
-				FD_SET(c->sock, &efds);
-
 				switch(c->state) {
 					case CONN_LOOPING:
 						wait_for_input = 0;
@@ -409,6 +430,7 @@ char input_char[2];
 				destroy_Conn(c);
 				continue;
 			}
+			FD_SET(c->sock, &efds);
 		}
 /*
 	call select() to see if any more data is ready to arrive
@@ -477,7 +499,14 @@ char input_char[2];
 			continue;
 		}
 		if (errno == EBADF) {
-			log_debug("mainloop(): select() got EBADF, continuing");
+			log_debug("mainloop(): select() got EBADF, finding bad connection");
+
+			for(c = AllConns; c != NULL; c = c->next) {
+				if (c->sock > 0 && test_fd(c->sock)) {
+					c->sock = -1;					/* mark as invalid */
+					c->conn_type->linkdead(c);
+				}
+			}
 			continue;
 		}
 		if (errno == EINVAL) {

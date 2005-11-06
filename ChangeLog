@@ -8,6 +8,7 @@ Changes as of November 5th 2005
 - sysops not allowed to disconnect/nuke/banish each other
 - nologin persists after reboot via file etc/nologin.is.active
 - connections hang around for 2 seconds after any kind of disconnect
+- fix for disappearing connections on Connection reset by peer
 
 Changes as of November 2nd 2005
 - automatic toggling of the HELPING_HAND flag fixed for ppl that are on hold

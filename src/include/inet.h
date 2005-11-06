@@ -31,7 +31,7 @@ char *inet_printaddr(char *, char *, char *, int);
 
 int inet_listen(char *, char *, ConnType *);
 int unix_sock(char *);
-
+int test_fd(int);
 void mainloop(void);
 
 #endif	/* _INET_H_WJ97 */
