@@ -106,6 +106,7 @@ void handle_pending_signals(void);
 
 void block_all_signals(void);
 void unblock_all_signals(void);
+void block_timer_signals(int);
 
 void sig_fatal(int);
 void sig_reboot(int);

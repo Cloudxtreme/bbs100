@@ -301,15 +301,31 @@ void unblock_all_signals(void) {
 sigset_t all_signals, pending;
 int i;
 
+	sigfillset(&all_signals);
+	sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
+
 	sigpending(&pending);			/* these were received while blocked */
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sigismember(&pending, sig_table[i].sig))
 			sigaddset(&sig_pending, sig_table[i].sig);
 	}
-	sigfillset(&all_signals);
-	sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
 }
 
+/*
+	block all signals that can modify the global timer queue, while running the global timer queue
+*/
+void block_timer_signals(int how) {
+	if (how == SIG_BLOCK) {
+		sigset_t signals;
+
+		sigemptyset(&signals);
+		sigaddset(&signals, SIGQUIT);
+		sigaddset(&signals, SIGABRT);
+		sigaddset(&signals, SIGTERM);
+		sigprocmask(SIG_BLOCK, &signals, NULL);
+	} else
+		unblock_all_signals();
+}
 
 /*
 	below are the 'signal handlers'
@@ -434,7 +450,7 @@ unsigned long old_mail;
 	Enter(sig_mail);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
-		if (u->mail == NULL)
+		if (u->mail == NULL || !u->name[0] || u->conn == NULL || u->conn->state != CONN_ESTABLISHED)
 			continue;
 
 		old_mail = u->mail->head_msg;	

@@ -181,9 +181,14 @@ User *usr, *usr_next;
 
 		update_timerqueue(&usr->timerq, usr, tdiff);
 	}
-/* now process timers that are not bound to a user */
-
+/*
+	now process timers that are not bound to a user
+	temporarily block signals, as there are signals that modify the global timerq
+*/
+	block_timer_signals(SIG_BLOCK);
 	update_timerqueue(&timerq, NULL, tdiff);
+	block_timer_signals(SIG_UNBLOCK);
+	handle_pending_signals();
 }
 
 /*
