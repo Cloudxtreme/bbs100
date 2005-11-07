@@ -197,14 +197,13 @@ Timer *t;
 		return;
 
 	usr = (User *)conn->data;
-	if (usr == NULL || usr->conn == NULL || usr->conn->callstack == NULL || usr->conn->callstack->ip == NULL)
+	if (usr == NULL)
 		return;
 
 	if ((t = new_Timer(LOGOUT_TIMEOUT, close_logout, TIMER_ONESHOT)) != NULL) {
 		listdestroy_Timer(usr->timerq);
 		usr->timerq = usr->idle_timer = NULL;
 		add_Timer(&usr->timerq, t);
-/*		JMP(usr, STATE_LOGGED_OUT);	*/
 	}
 }
 
@@ -227,10 +226,12 @@ User *usr;
 /* user is doing something, reset idle timer */
 	usr->idle_time = rtc;
 
-/* reset timeout timer, unless locked */
+/*
+	reset timeout timer, unless locked
+*/
 	if (!(usr->runtime_flags & RTF_LOCKED) && usr->idle_timer != NULL) {
-		usr->idle_timer->sleeptime = usr->idle_timer->maxtime;
 		usr->idle_timer->restart = TIMEOUT_USER;
+		set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
 	}
 /* call routine on top of the callstack */
 	this_user = usr;

@@ -339,12 +339,15 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 	log_msg("SIGQUIT received, rebooting in 5 minutes");
 
 	if (reboot_timer != NULL) {
-		reboot_timer->sleeptime = reboot_timer->maxtime = 4 * SECS_IN_MIN;	/* reboot in 5 mins */
-		reboot_timer->restart = TIMEOUT_REBOOT;
+		if (reboot_timer->sleeptime > 4 * SECS_IN_MIN) {
+			reboot_timer->maxtime = 4 * SECS_IN_MIN;	/* reboot in 5 mins */
+			reboot_timer->restart = TIMEOUT_REBOOT;
+			set_Timer(&timerq, reboot_timer, reboot_timer->maxtime);
 
-		bufprintf(buf, MAX_LONGLINE, "The system is now rebooting in %s", 
-			print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
-		system_broadcast(0, buf);
+			bufprintf(buf, MAX_LONGLINE, "The system is now rebooting in %s", 
+				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+			system_broadcast(0, buf);
+		}
 		Return;
 	}
 	if ((reboot_timer = new_Timer(4 * SECS_IN_MIN, reboot_timeout, TIMEOUT_REBOOT)) == NULL) {
@@ -370,12 +373,15 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 	log_msg("SIGTERM received, shutting down in 5 minutes");
 
 	if (shutdown_timer != NULL) {
-		shutdown_timer->sleeptime = shutdown_timer->maxtime = 4 * SECS_IN_MIN;	/* shutdown in 5 mins */
-		shutdown_timer->restart = TIMEOUT_REBOOT;
+		if (shutdown_timer->sleeptime > 4 * SECS_IN_MIN) {
+			shutdown_timer->maxtime = 4 * SECS_IN_MIN;	/* shutdown in 5 mins */
+			shutdown_timer->restart = TIMEOUT_REBOOT;
+			set_Timer(&timerq, shutdown_timer, shutdown_timer->maxtime);
 
-		bufprintf(buf, MAX_LONGLINE, "The system is now shutting down in %s",
-			print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
-		system_broadcast(0, buf);
+			bufprintf(buf, MAX_LONGLINE, "The system is now shutting down in %s",
+				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+			system_broadcast(0, buf);
+		}
 		Return;
 	}
 	if ((shutdown_timer = new_Timer(4 * SECS_IN_MIN, shutdown_timeout, TIMEOUT_REBOOT)) == NULL) {

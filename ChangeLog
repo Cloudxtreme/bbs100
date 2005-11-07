@@ -1,3 +1,6 @@
+Changes as of November 7th 2005
+- keep the timer queues sorted at all times
+
 Changes as of November 6th 2005
 - fix for crasher when logins time out; cannot modify timerqueue from within
   a timer function. This introduces the close_wait state and handler

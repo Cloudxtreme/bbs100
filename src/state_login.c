@@ -388,11 +388,13 @@ void state_ansi_prompt(User *usr, char c) {
 /*
 	for the new users, we reset the timeout timer here so they have some
 	time to read the displayed text
+	and re-insert it into the sorted timerq
 */
 		if (usr->idle_timer != NULL) {
-			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
+			usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 			usr->idle_timer->restart = TIMEOUT_USER;
 			usr->idle_timer->action = user_timeout;
+			set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
 		}
 		MOV(usr, STATE_DISPLAY_MOTD);
 		PUSH(usr, STATE_PRESS_ANY_KEY);
@@ -409,9 +411,10 @@ File *f;
 	Enter(state_display_motd);
 
 	if (usr->idle_timer != NULL) {			/* reset the 'timeout timer' */
-		usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
+		usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
 		usr->idle_timer->restart = TIMEOUT_USER;
 		usr->idle_timer->action = user_timeout;
+		set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
 	}
 	if ((f = Fopen(PARAM_MOTD_SCREEN)) != NULL) {
 		Fget_StringIO(f, usr->text);

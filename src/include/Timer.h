@@ -50,6 +50,7 @@ extern Timer *timerq;
 Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
 Timer *add_Timer(Timer **, Timer *);
+void set_Timer(Timer **, Timer *, int);
 int init_rtc(void);
 void update_timers(void);
 int shortest_timer(void);

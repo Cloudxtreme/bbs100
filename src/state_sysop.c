@@ -1407,10 +1407,9 @@ char total_buf[MAX_LINE];
 		POP_ARG(usr, &r, sizeof(int));
 		if (reboot_timer != NULL) {
 /* this code is never reached any more */
-			remove_Timer(&timerq, reboot_timer);
-			reboot_timer->sleeptime = reboot_timer->maxtime = r;
+			reboot_timer->maxtime = r;
 			reboot_timer->restart = TIMEOUT_REBOOT;
-			add_Timer(&timerq, reboot_timer);
+			set_Timer(&timerq, reboot_timer, reboot_timer->maxtime);
 
 			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n",
 				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
@@ -1525,10 +1524,9 @@ char total_buf[MAX_LINE];
 		}
 		if (shutdown_timer != NULL) {
 /* this code is never reached any more */
-			remove_Timer(&timerq, shutdown_timer);
-			shutdown_timer->sleeptime = shutdown_timer->maxtime = r;
+			shutdown_timer->maxtime = r;
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
-			add_Timer(&timerq, shutdown_timer);
+			set_Timer(&timerq, shutdown_timer, shutdown_timer->maxtime);
 			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n",
 				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
 
@@ -3812,14 +3810,14 @@ void state_maximums_menu(User *usr, char c) {
 				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
 
 				if (expire_timer != NULL) {
-					remove_Timer(&timerq, expire_timer);
-					destroy_Timer(expire_timer);
-					expire_timer = NULL;
+					expire_timer->maxtime = PARAM_CACHE_TIMEOUT * SECS_IN_MIN;
+					set_Timer(&timerq, expire_timer, expire_timer->maxtime);
+				} else {
+					if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * SECS_IN_MIN, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
+						log_err("state_maximums_menu(): failed to allocate a new cache_expire Timer");
+					else
+						add_Timer(&timerq, expire_timer);
 				}
-				if ((expire_timer = new_Timer(PARAM_CACHE_TIMEOUT * SECS_IN_MIN, cache_expire_timerfunc, TIMER_RESTART)) == NULL)
-					log_err("state_maximums_menu(): failed to allocate a new cache_expire Timer");
-				else
-					add_Timer(&timerq, expire_timer);
 			}
 			RET(usr);
 			Return;

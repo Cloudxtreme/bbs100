@@ -2247,9 +2247,10 @@ int r;
 		usr->edit_buf[0] = 0;
 		usr->runtime_flags |= (RTF_BUSY | RTF_LOCKED);
 
-		if (usr->idle_timer != NULL)
-			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
-
+		if (usr->idle_timer != NULL) {
+			usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
+			set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
+		}
 		notify_locked(usr);
 		Return;
 	}
@@ -2261,8 +2262,10 @@ int r;
 
 		Put(usr, "\n<red>Enter password to unlock: ");
 
-		if (usr->idle_timer != NULL)
-			usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
+		if (usr->idle_timer != NULL) {
+			usr->idle_timer->maxtime = PARAM_LOCK_TIMEOUT * SECS_IN_MIN;
+			set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
+		}
 		Return;
 	}
 	if (r == EDIT_RETURN) {
@@ -2287,9 +2290,10 @@ int r;
 				usr->flags |= USR_HELPING_HAND;
 				add_helper(usr);
 			}
-			if (usr->idle_timer != NULL)
-				usr->idle_timer->sleeptime = usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
-
+			if (usr->idle_timer != NULL) {
+				usr->idle_timer->maxtime = PARAM_IDLE_TIMEOUT * SECS_IN_MIN;
+				set_Timer(&usr->timerq, usr->idle_timer, usr->idle_timer->maxtime);
+			}
 			print_user_status(usr);
 
 			notify_unlocked(usr);

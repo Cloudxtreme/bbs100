@@ -101,6 +101,20 @@ Timer *q, *q_prev;
 	return t;
 }
 
+/*
+	timer queues are sorted, and should remain sorted at all times
+*/
+void set_Timer(Timer **queue, Timer *t, int sleeptime) {
+	if (t == NULL)
+		return;
+
+	t->sleeptime = sleeptime;
+	if (queue != NULL) {
+		remove_Timer(queue, t);
+		add_Timer(queue, t);
+	}
+}
+
 static void update_timerqueue(Timer **queue, void *arg, int tdiff) {
 Timer *t, *t_next;
 
