@@ -54,6 +54,12 @@ User *usr;
 	close_connection(usr, "%s got timed out", (usr->name[0] == 0) ? "connection" : usr->name);
 }
 
+/*
+	timer action handlers are allowed to modify the sleeptime values without problems ...
+
+	(confusing, but this is because these timers are re-inserted into the sorted timer queue
+	after having been run)
+*/
 void user_timeout(void *v) {
 void (*say)(User *, char *);
 User *usr;
@@ -71,12 +77,12 @@ User *usr;
 		case TIMEOUT_USER:
 			say(usr, "\n<beep><red>Hello? Is anybody out there?? You will be logged off in one minute unless\n"
 				"you start looking more alive!\n");
-			set_Timer(&usr->timerq, usr->idle_timer, SECS_IN_MIN);
+			usr->idle_timer->sleeptime = SECS_IN_MIN;
 			break;
 
 		case (TIMEOUT_USER-1):
 			say(usr, "\n<beep><red>WAKE UP! You will be logged off NOW unless you show you're alive!\n");
-			set_Timer(&usr->timerq, usr->idle_timer->sleeptime, IDLING_TIMEOUT);
+			usr->idle_timer->sleeptime = IDLING_TIMEOUT;
 			break;
 
 		case (TIMEOUT_USER-2):
@@ -103,20 +109,17 @@ StringIO *screen;
 	t = (Timer *)v;
 	switch(t->restart) {
 		case TIMEOUT_REBOOT:
-			t->maxtime = 30;		/* one minute to go! */
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 30;		/* one minute to go! */
 			system_broadcast(0, "The system will reboot in one minute!");
 			break;
 
 		case (TIMEOUT_REBOOT-1):
-			t->maxtime = 25;
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 25;
 			system_broadcast(OVERRULE, "The system will reboot in 30 seconds!");
 			break;
 
 		case (TIMEOUT_REBOOT-2):
-			t->maxtime = 5;
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 5;
 			system_broadcast(OVERRULE, "The system will reboot in 5 seconds!");
 			break;
 
@@ -144,20 +147,17 @@ StringIO *screen;
 	t = (Timer *)v;
 	switch(t->restart) {
 		case TIMEOUT_SHUTDOWN:
-			t->maxtime = 30;		/* one minute to go! */
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 30;		/* one minute to go! */
 			system_broadcast(0, "The system will shutdown in one minute!");
 			break;
 
 		case (TIMEOUT_SHUTDOWN-1):
-			t->maxtime = 25;
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 25;
 			system_broadcast(OVERRULE, "The system will shutdown in 30 seconds!");
 			break;
 
 		case (TIMEOUT_SHUTDOWN-2):
-			t->maxtime = 5;
-			set_Timer(&timerq, t, t->maxtime);
+			t->sleeptime = t->maxtime = 5;
 			system_broadcast(OVERRULE, "The system will shutdown in 5 seconds!");
 			break;
 

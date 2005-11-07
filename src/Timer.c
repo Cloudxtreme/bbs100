@@ -103,6 +103,9 @@ Timer *q, *q_prev;
 
 /*
 	timer queues are sorted, and should remain sorted at all times
+	
+	Note: do NOT run this function from within a timer action ... it'll SEGV because
+	you cannot manipulate the timer queue from within a timer action handler
 */
 void set_Timer(Timer **queue, Timer *t, int sleeptime) {
 	if (t == NULL)
@@ -132,6 +135,7 @@ Timer *t, *t_next;
 			break;
 
 		if (t->sleeptime <= 0) {
+			remove_Timer(queue, t);
 			t->sleeptime = t->maxtime;
 
 			if (t->action != NULL)
@@ -140,7 +144,6 @@ Timer *t, *t_next;
 			if (t->restart > 0)		/* restart -1 always restarts */
 				t->restart--;
 
-			remove_Timer(queue, t);
 			if (!t->restart)
 				destroy_Timer(t);
 			else
