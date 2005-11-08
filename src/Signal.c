@@ -269,11 +269,19 @@ RETSIGTYPE catch_sigfatal(int sig) {
 	not in the order they were received
 */
 void handle_pending_signals(void) {
+sigset_t block;
 int i;
 
 	for(i = 0; sig_table[i].sig > 0; i++) {
 		if (sigismember(&sig_pending, sig_table[i].sig)) {
 			SignalVector *h, *h_next;
+
+/*
+	temporarily disable this signal while running its handler(s)
+*/
+			sigemptyset(&block);
+			sigaddset(&block, sig_table[i].sig);
+			sigprocmask(SIG_BLOCK, &block, NULL);
 
 			for(h = sig_table[i].handlers; h != NULL; h = h_next) {
 				h_next = h->next;
@@ -286,6 +294,13 @@ int i;
 				sig_table[i].default_handler(sig_table[i].sig);
 
 			sigdelset(&sig_pending, sig_table[i].sig);
+
+			sigfillset(&block);
+			sigprocmask(SIG_UNBLOCK, &block, NULL);
+/*
+	if this signal is now pending because it was raised while being blocked,
+	it will be seen by sigpending(), but not until the next loop in mainloop()
+*/
 		}
 	}
 }

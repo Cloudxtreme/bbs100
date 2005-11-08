@@ -264,14 +264,14 @@ fd_set fds;
 struct timeval timeout;
 int err;
 
+retry_test_fd:
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 	timeout.tv_sec = timeout.tv_usec = 0L;
 
-retry_test_fd:
 	err = select(fd+1, &fds, NULL, NULL, &timeout);
 	if (err < 0) {
-		if (errno == EINTR)			/* signal received */
+		if (errno == EINTR)			/* signal received (handle it later) */
 			goto retry_test_fd;
 
 		return -1;					/* got some error, most likely EBADF */
@@ -298,6 +298,7 @@ char input_char[2];
 	jump_set = 1;
 	crash_recovery();		/* recover crashed connections */
 
+	update_timers();
 	while(1) {
 		rtc = time(NULL);
 
@@ -353,8 +354,6 @@ char input_char[2];
 	Everything is very dynamic and things like process() and Ret()
 	actually may change a lot...
 */
-		update_timers();
-
 		wait_for_input = 1;
 		highest_fd = 0;
 
@@ -445,13 +444,20 @@ char input_char[2];
 		timeout.tv_usec = 0;
 		errno = 0;
 		err = select(highest_fd, &rfds, &wfds, &efds, &timeout);
-		handle_pending_signals();
 
-		if (err > 0) {			/* number of ready fds */
+		if (err < 0 && errno == EINTR)				/* signal received within select() */
+			handle_pending_signals();
+
+		update_timers();							/* run timers and any other signals */
+
+		if (err > 0) {								/* number of ready fds */
 			for(c = AllConns; c != NULL; c = c_next) {
 				c_next = c->next;
 
 				isset = 0;
+/*
+	check for exceptions: out-of-band data bytes
+*/
 				if (c->sock > 0 && FD_ISSET(c->sock, &efds)) {
 					log_debug("mainloop(): exception on socket");
 					if (recv(c->sock, input_char, 1, MSG_OOB) <= 0) {
@@ -468,6 +474,9 @@ char input_char[2];
 					}
 					isset++;
 				}
+/*
+	readable: new connection or just input data
+*/
 				if (c->sock > 0 && FD_ISSET(c->sock, &rfds)) {
 					if (c->state == CONN_LISTEN)
 						c->conn_type->accept(c);
@@ -475,6 +484,9 @@ char input_char[2];
 						input_Conn(c);
 					isset++;
 				}
+/*
+	writeable: complete non-blocking connect or ready to flush output
+*/
 				if (c->sock > 0 && FD_ISSET(c->sock, &wfds)) {
 					if (c->state == CONN_CONNECTING)
 						c->conn_type->complete_connect(c);

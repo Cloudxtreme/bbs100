@@ -1,3 +1,6 @@
+Changes as of November 8th 2005
+- more fixes for timers and signals
+
 Changes as of November 7th 2005
 - keep the timer queues sorted at all times
 - certain signals modify the global timerq, so they must be blocked when the timerq runs
