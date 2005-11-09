@@ -93,7 +93,7 @@ extern int jump_set;
 extern jmp_buf jumper;
 extern SigTable sig_table[];
 
-void init_Signal(void);
+void init_Signal(int);
 void deinit_Signal(void);
 char *sig_name(int, char *, int);
 

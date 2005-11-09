@@ -4618,7 +4618,6 @@ char *new_val;
 			PARAM_ONCRASH = cstrdup(new_val);
 			usr->runtime_flags |= RTF_PARAM_EDITED;
 
-			init_Signal();				/* reset sig_fatal handler */
 			CURRENT_STATE(usr);
 			Return;
 

@@ -298,12 +298,9 @@ char buf[MAX_LONGLINE];
 		exit(-1);
 	}
 	write_pidfile();
-
 	savecore();
 
-	if (!debugger)
-		init_Signal();
-
+	init_Signal(debugger);
 	bbs_init_process();
 
 	if (init_FileCache()) {

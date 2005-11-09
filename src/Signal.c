@@ -50,9 +50,10 @@
 #endif
 
 static sigset_t sig_pending;	/* pending signals */
-
+static int crashing = 0;		/* we're crashing */
 int jump_set = 0;
-jmp_buf jumper;			/* crash recovery trampoline */
+jmp_buf jumper;					/* crash recovery trampoline */
+
 
 SigTable sig_table[] = {
 	{ SIGHUP,		sig_nologin,"SIGHUP",			NULL },
@@ -116,11 +117,14 @@ SigTable sig_table[] = {
 };
 
 
-void init_Signal(void) {
+void init_Signal(int debugger) {
 struct sigaction sa, old_sa;
 int i, dumpcore;
 
 	sigemptyset(&sig_pending);
+
+	if (debugger)
+		return;
 
 	dumpcore = 0;
 	if (!cstricmp(PARAM_ONCRASH, "dumpcore"))
@@ -252,6 +256,10 @@ RETSIGTYPE catch_signal(int sig) {
 	either, just abort!
 */
 RETSIGTYPE catch_sigfatal(int sig) {
+	if (crashing)								/* do not attempt recovery of crashes within crashes */
+		abort();
+
+	crashing = 1;
 	if (jump_set) {
 		sigaddset(&sig_pending, SIGSEGV);		/* this really is a flag for crash_recovery() */
 		longjmp(jumper, 1);
@@ -344,20 +352,20 @@ void block_timer_signals(int how) {
 
 /*
 	below are the 'signal handlers'
-	They are not really signal handlers, because in bbs100 they are
-	socalled SignalVectors which are the synchronous equivalents of
-	signal handlers
+	They are not really signal handlers, because in bbs100 they are socalled SignalVectors
+	which are the synchronous equivalents of signal handlers
 	They are being run from the mainloop by handle_pending_signals()
 */
 
 /*
-	sig_fatal is an empty dummy function so that init_Signal()
-	knows it should install catch_sigfatal()
-	It's not very elegant, I know ...
-	You will want to check out crash_recovery() below
+	just call catch_sigfatal() ...
+	(this thing is mostly used to avoid compile problems when RETSIGTYPE is an int)
+
+	sig_fatal() can still be called directly, this happens when SEGV is received
+	while we were blocking signals
 */
 void sig_fatal(int sig) {
-	;
+	catch_sigfatal(sig);
 }
 
 /*
@@ -509,9 +517,10 @@ void sig_nologin(int sig) {
 void crash_recovery(void) {
 User *usr;
 
-	if (!sigismember(&sig_pending, SIGSEGV))		/* did it really crash? */
+	if (!sigismember(&sig_pending, SIGSEGV)) {		/* did it really crash? */
+		crashing = 0;
 		return;
-
+	}
 	usr = this_user;
 	this_user = NULL;
 
@@ -549,6 +558,7 @@ User *usr;
 				usr->name[0] = 0;
 			}
 			close_connection(usr, "user crashed too many times");
+			crashing = 0;
 			return;
 		}
 		Print(usr, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***\n"
@@ -576,6 +586,7 @@ User *usr;
 			exit_program(REBOOT);
 		abort();
 	}
+	crashing = 0;
 }
 
 /* EOB */
