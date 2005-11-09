@@ -2,6 +2,7 @@ Changes as of November 9th 2005
 - log rotation timer cannot modify the global timerq (SEGV)
 - when log rotation is set to 'never', keep the timer running anyway or you won't be able to
   change log rotation from 'never' back to 'daily' or whatever
+- sigfatal() used to be a dummy, but can be called when SEGVing while blocking signals
 
 Changes as of November 8th 2005
 - more fixes for timers and signals
