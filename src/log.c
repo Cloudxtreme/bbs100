@@ -53,7 +53,7 @@ int internal_log_len = 0;
 Timer *logrotate_timer = NULL;
 
 
-static int logrotate_reset_timer(void);
+static void logrotate_reset_timer(void);
 
 static void logrotate_timerfunc(void *dummy) {
 time_t t;
@@ -64,67 +64,68 @@ struct tm *tm;
 	t = rtc;
 	tm = gmtime(&t);
 
-	if (!cstricmp(PARAM_LOGROTATE, "never"))
+	if (!cstricmp(PARAM_LOGROTATE, "never")) {
+		logrotate_reset_timer();			/* keep timer running correctly anyway */
 		return;
-
+	}
 	if (!cstricmp(PARAM_LOGROTATE, "daily")
 		|| (!cstricmp(PARAM_LOGROTATE, "weekly") && tm->tm_wday == 1)
 		|| (!cstricmp(PARAM_LOGROTATE, "monthly") && tm->tm_mday == 1)
 		|| (!cstricmp(PARAM_LOGROTATE, "yearly") && tm->tm_yday == 1))
-		log_rotate();
-	else
+		log_rotate();						/* will do an implicit logrotate_reset_timer() */
+	else {
 		log_err("unknown value '%s' for param logrotate", PARAM_LOGROTATE);
-
-	logrotate_reset_timer();
+		logrotate_reset_timer();
+	}
 }
 
 /*
-	initialize rotation timer
+	reset the rotation timer, so that it will rotate again the next day
 */
-static int logrotate_reset_timer(void) {
+static void logrotate_reset_timer(void) {
 time_t t;
 struct tm *tm;
 
-	if (logrotate_timer == NULL) {
-		if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
-			log_err("logrotate_reset_timer(): failed to allocate a new Timer");
-			return -1;
-		}
-	} else
-		remove_Timer(&timerq, logrotate_timer);
+	if (logrotate_timer == NULL)
+		return;
 
 	t = rtc;
 	tm = localtime(&t);
 /*
 	sleep exactly till midnight
-	the timer must be re-inserted into the timerq because the queue is sorted
+	only modifying the sleeptime is enough; the timer will be re-inserted (in sorted order)
+	into the timer queue by update_timerqueue()
 */
 	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * SECS_IN_HOUR - tm->tm_min * SECS_IN_MIN - tm->tm_sec;
-	add_Timer(&timerq, logrotate_timer);
-	return 0;
 }
 
 int init_log(void) {
 int fd;
 
-	if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1)
+	if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
+		log_err("init_log(): failed to allocate a new Timer");
+		return -1;
+	}
+	if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
 		log_err("failed to open logfile %s", PARAM_SYSLOG);
-	else {
+		return -1;
+	}
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
-		dup2(fd, fileno(stdout));
-		close(fd);
-	}
-	if ((fd = open(PARAM_AUTHLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1)
+	dup2(fd, fileno(stdout));
+	close(fd);
+
+	if ((fd = open(PARAM_AUTHLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
 		log_err("failed to open logfile %s\n", PARAM_AUTHLOG);
-	else {
+		return -1;
+	}
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
-		dup2(fd, fileno(stderr));
-		close(fd);
-	}
+	dup2(fd, fileno(stderr));
+	close(fd);
+
 	if (!cstricmp(PARAM_LOGROTATE, "none")) {		/* old; backwards compatibility */
 		Free(PARAM_LOGROTATE);
 		PARAM_LOGROTATE = cstrdup("never");
@@ -132,7 +133,9 @@ int fd;
 	if (!cstricmp(PARAM_LOGROTATE, "never"))
 		return 0;
 
-	return logrotate_reset_timer();
+	logrotate_reset_timer();
+	add_Timer(&timerq, logrotate_timer);
+	return 0;
 }
 
 

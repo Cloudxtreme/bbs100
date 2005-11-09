@@ -361,7 +361,8 @@ char buf[MAX_LONGLINE];
 			"\n"
 		);
 
-	init_log();						/* start logging to files */
+	if (init_log())					/* start logging to files */
+		exit_program(SHUTDOWN);
 
  	log_info("bbs restart");
 	log_entry(stderr, "bbs restart", 'I', NULL);
