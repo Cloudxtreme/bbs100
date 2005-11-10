@@ -204,7 +204,9 @@ Timer *t;
 		listdestroy_Timer(usr->timerq);
 		usr->timerq = usr->idle_timer = NULL;
 		add_Timer(&usr->timerq, t);
-	}
+		conn->state = CONN_WAIT_CLOSE2;
+	} else
+		conn->state = CONN_CLOSED;
 }
 
 void ConnUser_process(Conn *conn, char c) {

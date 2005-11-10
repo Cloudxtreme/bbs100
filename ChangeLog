@@ -1,3 +1,6 @@
+Changes as of November 10th 2005
+- CONN_WAIT_CLOSE installs close-timer for ConnUser; CONN_WAIT_CLOSE2 sits idle until CLOSE
+
 Changes as of November 9th 2005
 - log rotation timer cannot modify the global timerq (SEGV)
 - when log rotation is set to 'never', keep the timer running anyway or you won't be able to

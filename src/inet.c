@@ -339,6 +339,8 @@ char input_char[2];
 					}
 					break;
 
+				case CONN_WAIT_CLOSE:
+				case CONN_WAIT_CLOSE2:
 				case CONN_CLOSED:
 					free_StringIO(c->input);		/* discard any input */
 					break;
@@ -406,8 +408,21 @@ char input_char[2];
 						}
 						break;
 
+					case CONN_WAIT_CLOSE2:						/* really wait for close */
+						if (c->output->len > 0) {				/* flush any pending output */
+							FD_SET(c->sock, &wfds);
+							if (highest_fd <= c->sock)
+								highest_fd = c->sock + 1;
+							wait_for_input = 0;
+						}
+						break;
+
 					case CONN_WAIT_CLOSE:
 						c->conn_type->wait_close(c);
+						if (c->state == CONN_WAIT_CLOSE) {		/* can't stay in this state */
+							c->state = CONN_WAIT_CLOSE2;
+							break;
+						}
 						if (c->state != CONN_CLOSED)
 							break;
 /*
@@ -419,7 +434,7 @@ char input_char[2];
 							if (highest_fd <= c->sock)
 								highest_fd = c->sock + 1;
 							wait_for_input = 0;
-						} else {
+						} else {								/* no more data, close */
 							shutdown(c->sock, SHUT_RDWR);
 							close(c->sock);
 							c->sock = -1;
