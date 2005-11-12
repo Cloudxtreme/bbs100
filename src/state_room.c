@@ -965,8 +965,15 @@ char num_buf[MAX_NUMBER];
 				Print(usr, "<red>Sorry, but the <yellow>%s<red> user cannot forward messages\n", PARAM_NAME_GUEST);
 				break;
 			}
+			if (usr->message == NULL) {
+				Put(usr, "<red>No message to forward\n");
+				break;
+			}
 			destroy_Message(usr->new_message);
-			usr->new_message = copy_Message(usr->message);
+			if ((usr->new_message = copy_Message(usr->message)) == NULL) {
+				Perror(usr, "Out of memory");
+				break;
+			}
 /*
 	forwarding a forwarded message to a different room; set the current room name
 */

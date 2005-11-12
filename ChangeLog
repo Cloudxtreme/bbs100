@@ -1,3 +1,6 @@
+Changes as of November 12th 2005
+- forwarding would crash when there was no message to forward
+
 Changes as of November 10th 2005
 - CONN_WAIT_CLOSE installs close-timer for ConnUser; CONN_WAIT_CLOSE2 sits idle until CLOSE
 
