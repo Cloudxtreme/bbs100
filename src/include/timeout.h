@@ -36,7 +36,7 @@
 */
 #define TIMEOUT_USER		10		/* restart value for 'timer states' */
 #define TIMEOUT_REBOOT		10
-#define TIMEOUT_SHUTDOWN	10
+#define TIMEOUT_SHUTDOWN	TIMEOUT_REBOOT		/* must be the same, for time_to_dd() to work correctly */
 
 extern Timer *shutdown_timer;
 extern Timer *reboot_timer;
@@ -46,6 +46,8 @@ void user_timeout(void *);
 void save_timeout(void *);
 void reboot_timeout(void *);
 void shutdown_timeout(void *);
+
+int time_to_dd(Timer *);
 
 #endif	/* TIMEOUT_H_WJ99 */
 

@@ -1389,22 +1389,23 @@ char total_buf[MAX_LINE];
 	if (r == EDIT_RETURN) {
 		char *pwd, buf[PRINT_BUF];
 
+		POP_ARG(usr, &r, sizeof(int));
+
+		debug_breakpoint();
+
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
-			POP_ARG(usr, &r, sizeof(int));
 			POP(usr);				/* get out of sysop menu */
 			RET(usr);
 			Return;
 		}
 		if (verify_phrase(usr->edit_buf, pwd)) {
 			Put(usr, "<red>Wrong password\n");
-			POP_ARG(usr, &r, sizeof(int));
 			RET(usr);
 			Return;
 		}
-		POP_ARG(usr, &r, sizeof(int));
 		if (reboot_timer != NULL) {
 /* this code is never reached any more */
 			reboot_timer->maxtime = r;
@@ -1412,10 +1413,10 @@ char total_buf[MAX_LINE];
 			set_Timer(&timerq, reboot_timer, reboot_timer->maxtime);
 
 			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n",
-				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 
 			bufprintf(buf, PRINT_BUF, "The system is now rebooting in %s",
-				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1426,14 +1427,18 @@ char total_buf[MAX_LINE];
 			Return;
 		}
 		add_Timer(&timerq, reboot_timer);
-
+/*
+	Note: at this point, reboot_timer->sleeptime can be a smaller value, because
+	      this timerqueue is sorted by relative time
+	use time_to_dd() to get the correct value
+*/
 		log_msg("SYSOP %s initiated reboot", usr->name);
 
 		Put(usr, "\n<red>Reboot procedure started\n");
 
 		if (reboot_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is rebooting in %s",
-				print_total_time((unsigned long)(reboot_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);
@@ -1509,8 +1514,10 @@ char total_buf[MAX_LINE];
 
 		POP_ARG(usr, &r, sizeof(int));
 
+		debug_breakpoint();
+
 		pwd = get_su_passwd(usr->name);
-		if (pwd == NULL) {
+		if (pwd == NULL) {				/* not allowed to enter sysop commands! (how did we get here?) */
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
 			POP(usr);					/* drop out of sysop menu */
@@ -1528,10 +1535,10 @@ char total_buf[MAX_LINE];
 			shutdown_timer->restart = TIMEOUT_SHUTDOWN;
 			set_Timer(&timerq, shutdown_timer, shutdown_timer->maxtime);
 			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n",
-				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 
 			bufprintf(buf, PRINT_BUF, "The system is now shutting down in %s",
-				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
 			Return;
@@ -1549,7 +1556,7 @@ char total_buf[MAX_LINE];
 
 		if (shutdown_timer->sleeptime > 0) {
 			bufprintf(buf, PRINT_BUF, "The system is shutting down in %s",
-				print_total_time((unsigned long)(shutdown_timer->sleeptime + SECS_IN_MIN), total_buf, MAX_LINE));
+				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
 		RET(usr);

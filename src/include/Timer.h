@@ -27,7 +27,6 @@
 #include "List.h"
 #include "sys_time.h"
 
-#define remove_Timer(x,y)		remove_List((x), (y))
 #define rewind_Timer(x)			(Timer *)rewind_List((x))
 #define unwind_Timer(x)			(Timer *)unwind_List((x))
 #define listdestroy_Timer(x)	listdestroy_List((x), destroy_Timer)
@@ -50,7 +49,9 @@ extern Timer *timerq;
 Timer *new_Timer(int, void (*)(void *), int);
 void destroy_Timer(Timer *);
 Timer *add_Timer(Timer **, Timer *);
+Timer *remove_Timer(Timer **, Timer *);
 void set_Timer(Timer **, Timer *, int);
+
 int init_rtc(void);
 void update_timers(void);
 int shortest_timer(void);

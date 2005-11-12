@@ -2919,12 +2919,58 @@ int cpos, lines;
 	Return;
 }
 
-/*
-	the user has logged out and really can't do anything but wait for
-	the connection to close
-*/
-void state_logged_out(User *usr, char c) {
-	;
+void print_reboot_status(User *usr) {
+char timebuf[MAX_LINE];
+int secs, secs2;
+Timer *t;
+
+	if (usr == NULL)
+		return;
+
+	Enter(print_reboot_status);
+
+	secs = -1;
+	if (shutdown_timer != NULL) {
+		t = shutdown_timer;
+		secs = time_to_dd(shutdown_timer);
+
+		if (reboot_timer != NULL) {
+			secs2 = time_to_dd(reboot_timer);
+			if (secs2 < secs) {
+				t = reboot_timer;
+				secs = secs2;
+			}
+		}
+	} else {
+		if (reboot_timer != NULL) {
+			t = reboot_timer;
+			secs = time_to_dd(reboot_timer);
+
+			if (shutdown_timer != NULL) {
+				secs2 = time_to_dd(shutdown_timer);
+				if (secs2 < secs) {
+					t = shutdown_timer;
+					secs = secs2;
+				}
+			}
+		} else {
+			Return;
+		}
+	}
+	if (secs < 0)
+		timebuf[0] = 0;
+	else {
+		cstrcpy(timebuf, "in ", MAX_LINE);
+		print_total_time((unsigned long)secs, timebuf+3, MAX_LINE-3);
+		if (!timebuf[3])
+			timebuf[0] = 0;
+	}
+	if (t == shutdown_timer)
+		Print(usr, "\n<white>NOTE: <red>The system is shutting down %s\n", timebuf);
+	else
+		Print(usr, "\n<white>NOTE: <red>The system is rebooting %s\n", timebuf);
+
+	Return;
 }
 
 /* EOB */

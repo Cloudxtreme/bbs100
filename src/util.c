@@ -1749,4 +1749,5 @@ BufferedMsg *m;
 	return talked_to;
 }
 
+
 /* EOB */

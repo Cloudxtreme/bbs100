@@ -862,13 +862,7 @@ User *u;
 			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n",
 				print_numberth(tm->tm_year - bday_year, num_buf, MAX_NUMBER));
 	}
-
-/* if booting/shutting down, inform the user */
-	if (shutdown_timer != NULL && shutdown_timer->maxtime <= 10*SECS_IN_MIN)
-		Put(usr, "\n<white>NOTE: <red>The system is shutting down\n");
-	else
-		if (reboot_timer != NULL && reboot_timer->maxtime <= 10*SECS_IN_MIN)
-			Put(usr, "\n<white>NOTE: <red>The system is rebooting\n");
+	print_reboot_status(usr);
 
 	if (nologin_active)
 		Put(usr, "\n<white>NOTE: <red>nologin is active\n");

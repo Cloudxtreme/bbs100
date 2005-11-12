@@ -23,6 +23,7 @@
 #include "config.h"
 #include "debug.h"
 #include "Stats.h"
+#include "state.h"
 #include "state_msg.h"
 #include "copyright.h"
 #include "User.h"
@@ -452,10 +453,7 @@ unsigned long num;
 	Print(usr, "<yellow>%s<green> successful login%s made since boot time\n",
 		print_number(stats.num_logins, date_buf, MAX_LINE), (stats.num_logins == 1UL) ? "" : "s");
 
-	if (reboot_timer != NULL)
-		Put(usr, "<red>The system is rebooting\n");
-	if (shutdown_timer != NULL)
-		Put(usr, "<red>The system is shutting down\n");
+	print_reboot_status(usr);
 
 	if (usr->runtime_flags & RTF_SYSOP) {
 		MemInfo mem_info;

@@ -177,4 +177,43 @@ StringIO *screen;
 	}
 }
 
+/*
+	time to dee-dee: give time when reboot/shutdown occurs
+
+	This is a special purpose routine that needs to be 'in sync' with what happens
+	above in reboot_timeout() and shutdown_timeout()
+	It counts all timers preceding this one on the timer queue because the queue is
+	sorted and works with 'relative' time (events happen in n secs from now)
+
+	(Making this generic for every single timer requires a change in design for Timers)
+*/
+int time_to_dd(Timer *t) {
+int secs;
+Timer *q;
+
+	if (t == NULL || timerq == NULL)
+		return -1;
+
+	secs = 0;
+	for(q = timerq; q != NULL; q = q->next) {
+		if (q == t)
+			break;
+
+		secs += q->sleeptime;
+	}
+	switch(t->restart) {
+		case TIMEOUT_REBOOT:
+			return secs + t->sleeptime + 60;
+
+		case (TIMEOUT_REBOOT-1):
+			return secs + t->sleeptime + 30;
+
+		case (TIMEOUT_REBOOT-2):
+			return secs = t->sleeptime + 5;
+
+/*		case (TIMEOUT_REBOOT-3):	*/
+	}
+	return secs + t->sleeptime;
+}
+
 /* EOB */

@@ -101,6 +101,19 @@ Timer *q, *q_prev;
 	return t;
 }
 
+Timer *remove_Timer(Timer **queue, Timer *t) {
+	if (queue == NULL || t == NULL)
+		return NULL;
+
+	if (*queue == NULL)
+		return t;
+
+	if (t->sleeptime > 0 && t->next != NULL)
+		t->next->sleeptime += t->sleeptime;
+
+	return (Timer *)remove_List(queue, t);
+}
+
 /*
 	timer queues are sorted, and should remain sorted at all times
 	
