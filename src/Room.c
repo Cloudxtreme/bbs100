@@ -190,7 +190,19 @@ int version;
 	if (load_func != NULL && !load_func(f, r, flags)) {
 		Fclose(f);
 		r->flags &= ROOM_ALL;
-
+/*
+	force the room name for Mail> and Home>
+	so that find_abbrevRoom() won't act strangely when these names are different in the files
+	for some strange reason
+*/
+		if (r->number == MAIL_ROOM) {
+			Free(r->name);
+			r->name = cstrdup("Mail");
+		}
+		if (r->number == HOME_ROOM) {
+			Free(r->name);
+			r->name = cstrdup("Home");
+		}
 		if (r->number == MAIL_ROOM)
 			r->max_msgs = PARAM_MAX_MAIL_MSGS;
 		else
