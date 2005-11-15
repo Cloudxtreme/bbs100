@@ -1,6 +1,7 @@
 Changes as of November 15th 2005
 - fix for when Mail> and Home> have a different room name in the files
   they must be named Mail> and Home> in bbs100
+- fix word-wrapping for dots '...' ; don't wrap on a dot
 
 Changes as of November 12th 2005
 - forwarding would crash when there was no message to forward
