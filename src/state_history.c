@@ -657,6 +657,13 @@ Exit_Held_History:
 			concat_BufferedMsg(&usr->history, usr->held_msgs);
 			usr->held_msgs = usr->held_msgp = NULL;
 
+/*
+	hold when busy doesn't set RTF_HOLD
+	explicit hold with Ctrl-B does set RTF_HOLD
+*/
+			if (usr->runtime_flags & RTF_HOLD)
+				notify_unhold(usr);				/* wake up friends */
+
 			usr->runtime_flags &= ~(RTF_BUSY|RTF_HOLD);
 			Free(usr->away);
 			usr->away = NULL;
@@ -666,7 +673,6 @@ Exit_Held_History:
 				usr->flags |= USR_HELPING_HAND;
 				add_helper(usr);
 			}
-			notify_unhold(usr);				/* wake up friends */
 
 			RET(usr);
 			Return;

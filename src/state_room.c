@@ -562,12 +562,12 @@ char num_buf[MAX_NUMBER];
 					Put(usr, "<magenta>Messages will <yellow>no longer<magenta> be held\n");
 
 					if (usr->held_msgs != NULL) {
+						usr->runtime_flags |= RTF_HOLD;		/* keep it on hold a little longer */
 						held_history_prompt(usr);
 						Return;
 					} else {
 						Free(usr->away);
 						usr->away = NULL;
-
 						notify_unhold(usr);
 					}
 					if (usr->runtime_flags & RTF_WAS_HH) {
