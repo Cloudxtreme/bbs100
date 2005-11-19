@@ -472,6 +472,7 @@ char input_char[2];
 				isset = 0;
 /*
 	check for exceptions: out-of-band data bytes
+	This is mainly in here for debugging purposes, I don't think telnet ever uses OOB data
 */
 				if (c->sock > 0 && FD_ISSET(c->sock, &efds)) {
 					log_debug("mainloop(): exception on socket");
