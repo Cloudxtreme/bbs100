@@ -196,6 +196,12 @@ int i;
 	}
 	tz->num_types = tzh_typecnt;
 
+	for(i = 0; i < tz->num_trans; i++) {
+		if (tz->transitions[i].type_idx < 0 || tz->transitions[i].type_idx >= tz->num_types) {
+			log_warn("load_Timezone(%s): error in type_idx, doing fix-up", name);
+			tz->transitions[i].type_idx = 0;
+		}
+	}
 	for(i = 0; i < tzh_typecnt; i++) {
 		tz->types[i].gmtoff = (int)fread_int32(f->f);
 		tz->types[i].isdst = fgetc(f->f);
@@ -428,7 +434,7 @@ Timezone *tz;
 	return the name of the timezone
 */
 char *name_Timezone(Timezone *tz) {
-char *gmt = "GMT", *name;
+char *gmt = "GMT";
 int tz_type;
 
 	if (tz == NULL)
@@ -439,8 +445,13 @@ int tz_type;
 	else
 		tz_type = 0;
 
-	name = tz->tznames + tz->types[tz_type].tzname_idx;
-	return name;
+	if (tz_type < 0 || tz_type > tz->num_types)
+		tz_type = 0;
+
+	if (tz->types != NULL && tz->num_types > 0)
+		return tz->tznames + tz->types[tz_type].tzname_idx;
+	
+	return gmt;		/* all wrong, but we have nothing better ... */
 }
 
 

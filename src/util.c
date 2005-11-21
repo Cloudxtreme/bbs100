@@ -1328,10 +1328,13 @@ time_t the_time;
 				tz->curr_idx++;
 
 			tz_type = tz->transitions[tz->curr_idx].type_idx;
+			if (tz_type < 0 || tz_type >= tz->num_types)
+				tz_type = 0;
 		} else
 			tz_type = 0;
 
-		the_time += tz->types[tz_type].gmtoff;
+		if (tz->types != NULL && tz->num_types > 0)
+			the_time += tz->types[tz_type].gmtoff;
 	}
 	return the_time;
 }
