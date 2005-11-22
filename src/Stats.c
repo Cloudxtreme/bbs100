@@ -456,7 +456,9 @@ unsigned long num;
 	print_reboot_status(usr);
 
 	if (usr->runtime_flags & RTF_SYSOP) {
+#ifdef USE_BINALLOC
 		MemInfo mem_info;
+#endif
 
 		Print(usr, "\n<green>Cache size: <yellow>%s", print_number(cache_size, date_buf, MAX_LINE));
 		Print(usr, "/%s<green>   ", print_number(num_cached, date_buf, MAX_LINE));
@@ -464,12 +466,14 @@ unsigned long num;
 		Print(usr, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf, MAX_LINE));
 		Print(usr, "rate: <yellow>%lu%%\n", ((stats.cache_hit + stats.cache_miss) > 0) ? 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss) : 0UL);
 
+#ifdef USE_BINALLOC
 		get_MemInfo(&mem_info);
 		Print(usr, "<green>\n"
 			"Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, date_buf, MAX_LINE));
 		Print(usr, "Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
 		Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
 		Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
+#endif
 	}
 	Print(usr, "\n<yellow>User statistics\n");
 

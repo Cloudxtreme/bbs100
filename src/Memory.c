@@ -26,20 +26,33 @@
 #include "config.h"
 #include "Memory.h"
 #include "BinAlloc.h"
-#include "Param.h"
-#include "memset.h"
-#include "log.h"
+
+#ifndef USE_BINALLOC
+#include "calloc.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int init_Memory(void) {
+#ifdef USE_BINALLOC
 	return init_BinAlloc();
+#else
+	return 0;
+#endif
 }
 
 void deinit_Memory(void) {
+#ifdef USE_BINALLOC
 	deinit_BinAlloc();
+#endif
 }
+
+#ifndef USE_BINALLOC
+void *memalloc(size_t size) {
+	return calloc(size, 1);
+}
+#endif
 
 /* EOB */

@@ -36,6 +36,10 @@ void *memset(void *s, int c, size_t n) {
 	return s;
 }
 
+#else	/* HAVE_MEMSET */
+
+#include <string.h>
+
 #endif	/* HAVE_MEMSET */
 
 #endif	/* MEMSET_H_WJ100 */

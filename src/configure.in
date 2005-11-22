@@ -139,7 +139,7 @@ dnl Checks for library functions.
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([dup2 memmove memset mkdir rmdir select socket strerror strrchr uname vsnprintf])
+AC_CHECK_FUNCS([dup2 memmove memset mkdir rmdir select socket strerror strrchr uname vsnprintf calloc])
 
 dnl special compiler options for gcc
 if test "$GCC" = "yes" ;

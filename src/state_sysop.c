@@ -104,7 +104,12 @@ void state_sysop_menu(User *usr, char c) {
 
 			if (PARAM_HAVE_FILECACHE)
 				Put(usr, "<hotkey>Uncache file                      ");
+
+#ifdef USE_BINALLOC
 			Print(usr, "<hotkey>Memory allocation status\n");
+#else
+			Put(usr, "\n");
+#endif
 
 			Print(usr, "\n"
 				"<white>Ctrl-<hotkey>P<magenta>arameters                   %s <hotkey>password\n"
@@ -205,11 +210,13 @@ void state_sysop_menu(User *usr, char c) {
 			CALL(usr, STATE_UNCACHE_FILE);
 			Return;
 
+#ifdef USE_BINALLOC
 		case 'm':
 		case 'M':
 			Put(usr, "Memory allocation status\n");
 			CALL(usr, STATE_MALLOC_STATUS);
 			Return;
+#endif
 
 		case 's':
 		case 'S':
@@ -1754,6 +1761,9 @@ int r;
 	Return;
 }
 
+
+#ifdef USE_BINALLOC
+
 /*
 	print only a dash if the number is zero
 	this makes things much more readable
@@ -1854,6 +1864,8 @@ MemStats mem_stats;
 		"[Press a key]");
 	Return;
 }
+
+#endif	/* USE_BINALLOC */
 
 
 void state_screens_menu(User *usr, char c) {

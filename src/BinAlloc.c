@@ -58,6 +58,7 @@
 #include "debug.h"
 #include "Memory.h"
 #include "Types.h"
+#include "calloc.h"
 #include "memset.h"
 
 #include <stdio.h>
@@ -292,7 +293,7 @@ int num;
 		num = 0;
 
 	size += sizeof(unsigned long) + MARKER_SIZE;
-	if ((mem = (char *)malloc(size)) == NULL)
+	if ((mem = (char *)calloc(size, 1)) == NULL)
 		return NULL;
 
 	mem_info.malloc += size;
@@ -305,7 +306,7 @@ int num;
 	ST_MARK(mem, MARK_MALLOC);					/* malloc() was used */
 	ST_TYPE(mem, type);
 	mem = mem + MARKER_SIZE;
-	memset(mem, 0, size - sizeof(unsigned long) - MARKER_SIZE);
+/*	memset(mem, 0, size - sizeof(unsigned long) - MARKER_SIZE);		calloc already did this */
 	return (void *)mem;
 }
 

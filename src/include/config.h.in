@@ -32,6 +32,9 @@
 /* Define if your <sys/time.h> declares struct tm.  */
 #undef TM_IN_SYS_TIME
 
+/* Define if you have the calloc function.  */
+#undef HAVE_CALLOC
+
 /* Define if you have the dup2 function.  */
 #undef HAVE_DUP2
 

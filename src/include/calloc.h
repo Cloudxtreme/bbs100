@@ -17,45 +17,31 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Memory.h	WJ100
+	calloc.h	WJ105
 */
 
-#ifndef MEMORY_H_WJ100
-#define MEMORY_H_WJ100
+#ifndef CALLOC_H_WJ105
+#define CALLOC_H_WJ105	1
 
-#include "Types.h"
+#include <config.h>
 
-/*
-	all routines use Malloc() and Free()
-*/
+#ifndef HAVE_CALLOC
 
-/*
-	commented out by default
-
-#define USE_BINALLOC	1
-*/
-
-#ifdef USE_BINALLOC
-
-#include "BinAlloc.h"
-
-#define Malloc(x,y)		BinMalloc((x),(y))
-#define Free(x)			BinFree(x)
-
-#else	/* USE_BINALLOC */
+#include "memset.h"
 
 #include <stdlib.h>
 
-#define Malloc(x,y)		memalloc(x)
-#define Free(x)			free(x)
+void *calloc(size_t nmemb, size_t size) {
+void *ptr;
 
-void *memalloc(size_t);
+	size *= nmemb;
+	if ((ptr = malloc(size)) != NULL)
+		memset(ptr, 0, size);
+	return ptr;
+}
 
-#endif	/* USE_BINALLOC */
+#endif	/* HAVE_CALLOC */
 
-int init_Memory(void);
-void deinit_Memory(void);
-
-#endif	/* MEMORY_H_WJ100 */
+#endif	/* CALLOC_H_WJ105 */
 
 /* EOB */
