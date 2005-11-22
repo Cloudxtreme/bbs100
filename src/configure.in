@@ -35,14 +35,46 @@ AC_CONFIG_HEADER(include/config.h)
 
 dnl set some default output vars
 exec_prefix=${prefix}
+
+if test "x$exec_prefix" = "xNONE"
+then
+	AC_ERROR(You must specify --prefix=[install directory])
+fi
+
 bindir=${prefix}/bin
 sysconfdir=${prefix}/etc
 
-CFLAGS=-O2
+CFLAGS="${CFLAGS=}"
 
 if test ! -r ${srcdir}/include/version.h ;
 then
 	AC_ERROR(file ${srcdir}/include/version.h is missing)
+fi
+
+AC_MSG_CHECKING(whether to enable debugging)
+AC_ARG_ENABLE(debug, [  --enable-debug=[no/yes]      turn on debugging     [default=yes]],, enable_debug=yes)
+dnl
+dnl set compiler flag -DEBUG
+dnl using -DEBUG instead of -DDEBUG is actually OK ... see include/debug.h
+dnl 
+if test "x$enable_debug" = "xyes"
+then
+	CFLAGS="$CFLAGS -g -DEBUG"
+	AC_MSG_RESULT(yes)
+else
+	CFLAGS="$CFLAGS -O2"
+	AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(whether to enable the bin allocator)
+AC_ARG_ENABLE(binalloc, [  --enable-binalloc=[no/yes]   turn on bin allocator [default=no]],, enable_binalloc=no)
+
+if test "x$enable_binalloc" = "xyes"
+then
+	CFLAGS="$CFLAGS -DUSE_BINALLOC"
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
 fi
 
 AC_PATH_PROG(GREP, grep, grep)
@@ -61,7 +93,6 @@ AC_CANONICAL_SYSTEM
 dnl create file version.h
 echo "#define VERSION \"${VERSION}\"" > ${srcdir}/include/version.h
 echo "#define SYSTEM \"${target}\"" >> ${srcdir}/include/version.h
-
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -144,11 +175,8 @@ AC_CHECK_FUNCS([dup2 memmove memset mkdir rmdir select socket strerror strrchr u
 dnl special compiler options for gcc
 if test "$GCC" = "yes" ;
 then
-	CCOPTS='-O2 -Wall -Wstrict-prototypes -fomit-frame-pointer -fno-strength-reduce'
-else
-	CCOPTS='-O2'
+	CFLAGS="$CFLAGS -Wall -Wstrict-prototypes -fomit-frame-pointer -fno-strength-reduce"
 fi
-CFLAGS="$CCOPTS"
 
 AC_OUTPUT([Makefile bbs expire_accounts.sh])
 

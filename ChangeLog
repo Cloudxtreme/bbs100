@@ -1,5 +1,7 @@
 Changes as of November 22nd 2005
 - added define USE_BINALLOC for if you want the special purpose mem allocator
+- configure option --enable-debug (default yes)
+- configure option --enable-binalloc (default no)
 
 Changes as of November 21st 2005
 - better bounds checking in timezone code
