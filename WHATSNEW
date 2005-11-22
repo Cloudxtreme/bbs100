@@ -110,7 +110,6 @@ What's new to the admins?
 - configurable minimum age for users that want to be a Helping Hand
 - option of keeping room info and profile info resident in memory or not
 - when locked, Sysops must use their Sysop password to unlock
-- sysop menu shows extensive information on the BinAlloc memory allocator
 - Lobby> can be a chat room without problems
 - who-list for a room has been removed to respect the privacy of the users
 - long profile shows user's BBS birth date
@@ -123,9 +122,13 @@ What's new to the admins?
   but public room, that the user can join if he/she knows the room name.
   Turning this feature off makes hidden rooms appear as non-existent to users
   who are not invited or room aide there.
+- sysop menu shows extensive information on the BinAlloc memory allocator
+  if it is enabled
 
 
 What's new internally?
+- configure with --enable-debug=no to leave out extra debug code
+- configure with --enable-binalloc to build with BinAlloc support
 - IPv6 capable networking code
 - object oriented Conn (connection) class, implemented in standard C
 - new mainloop handles connections flawlessly; it does correct input
@@ -170,7 +173,7 @@ What's new internally?
   if HAVE_SNPRINTF and HAVE_VSNPRINTF are defined in config.h
 - bounds checking against buffer overruns with cstrcpy() and cstrcat()
 - hostmap is no longer permanently loaded, but works through the file cache
-- BinAlloc memory allocator minimizes fragmentation
+- BinAlloc memory allocator minimizes fragmentation if it is enabled
   (bins of a different type but the same size are linked together)
 - rooms no longer keep an index of messages, but only a head and tail
   pointer
