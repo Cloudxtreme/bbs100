@@ -54,6 +54,9 @@
 */
 
 #include "config.h"
+
+#ifdef USE_BINALLOC
+
 #include "BinAlloc.h"
 #include "debug.h"
 #include "Memory.h"
@@ -430,5 +433,7 @@ int get_MemInfo(MemInfo *info) {
 	info->malloc = mem_info.malloc - mem_info.total;
 	return 0;
 }
+
+#endif	/* USE_BINALLOC */
 
 /* EOB */

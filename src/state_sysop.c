@@ -4361,7 +4361,13 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
-				"<hotkey>File cache            <white>%-3s<magenta>      <hotkey>Bin allocator           <white>%s<magenta>\n"
+				"<hotkey>File cache            <white>%-3s<magenta>"
+
+#ifdef USE_BINALLOC
+				"      <hotkey>Bin allocator           <white>%s<magenta>\n"
+#else
+				"\n"
+#endif
 				"Wrapper a<hotkey>pply to all  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
@@ -4491,6 +4497,7 @@ void state_features_menu(User *usr, char c) {
 				init_FileCache();
 			Return;
 
+#ifdef USE_BINALLOC
 		case 'b':
 		case 'B':
 			TOGGLE_FEAT(PARAM_HAVE_BINALLOC, "Bin allocator");
@@ -4499,6 +4506,7 @@ void state_features_menu(User *usr, char c) {
 			else
 				enable_BinAlloc();
 			Return;
+#endif
 
 		case 'p':
 		case 'P':
