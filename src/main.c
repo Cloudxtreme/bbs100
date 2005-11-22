@@ -330,8 +330,10 @@ char buf[MAX_LONGLINE];
 	printf("loading su_passwd_file %s ... ", PARAM_SU_PASSWD_FILE);
 	printf("%s\n", (load_SU_Passwd(PARAM_SU_PASSWD_FILE) == 0) ? "ok" : "failed");
 
+#ifdef DEBUG
 	printf("loading symbol table %s ... ", PARAM_SYMTAB_FILE);
 	printf("%s\n", (load_SymbolTable(PARAM_SYMTAB_FILE) != 0) ? "failed" : "ok");
+#endif
 
 	printf("loading feelings from %s ... ", PARAM_FEELINGSDIR);
 	printf("%s\n", (init_Feelings() != 0) ? "failed" : "ok");

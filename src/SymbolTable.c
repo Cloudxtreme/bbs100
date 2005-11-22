@@ -21,6 +21,7 @@
 */
 
 #include "config.h"
+#include "debug.h"
 #include "SymbolTable.h"
 #include "cstring.h"
 #include "Memory.h"
@@ -28,6 +29,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef DEBUG
 
 SymbolTable *symbol_table = NULL;
 
@@ -123,5 +126,7 @@ SymbolTable *st;
 			return st;
 	return NULL;
 }
+
+#endif	/* DEBUG */
 
 /* EOB */

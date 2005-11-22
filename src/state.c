@@ -357,8 +357,20 @@ char version_buf[MAX_LONGLINE];
 	Print(usr, "<yellow>This is <white>%s<yellow>, %s", PARAM_BBS_NAME,
 		print_copyright((usr->runtime_flags & RTF_SYSOP) ? FULL : SHORT, NULL, version_buf, MAX_LONGLINE));
 
-	if (*patchlist)
-		Print(usr, "<green>Patches: <white>%s\n", patchlist);
+	if (usr->runtime_flags & RTF_SYSOP) {
+		version_buf[0] = 0;
+#ifdef DEBUG
+		cstrcat(version_buf, "[DEBUG] ", MAX_LONGLINE);
+#endif
+#ifdef USE_BINALLOC
+		cstrcat(version_buf, "[BINALLOC] ", MAX_LONGLINE);
+#endif
+		if (*version_buf)
+			Print(usr, "<green>Compile flags:<yellow> %s\n", version_buf);
+
+		if (*patchlist)
+			Print(usr, "<green>Patches: <white>%s\n", patchlist);
+	}
 }
 
 void enter_recipients(User *usr, void (*state_func)(User *, char)) {

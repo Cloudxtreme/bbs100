@@ -42,6 +42,8 @@ struct SymbolTable_tag {
 	unsigned long addr;
 };
 
+#ifdef DEBUG
+
 extern SymbolTable *symbol_table;
 
 SymbolTable *new_SymbolTable(void);
@@ -50,6 +52,8 @@ void destroy_SymbolTable(SymbolTable *);
 int load_SymbolTable(char *);
 SymbolTable *in_SymbolTable(unsigned long, char);
 SymbolTable *in_SymbolTable_name(char *);
+
+#endif	/* DEBUG */
 
 #endif	/* SYMBOLTABLE_H_WJ99 */
 
