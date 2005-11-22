@@ -52,7 +52,7 @@ then
 fi
 
 AC_MSG_CHECKING(whether to enable debugging)
-AC_ARG_ENABLE(debug, [  --enable-debug=[no/yes]      turn on debugging     [default=yes]],, enable_debug=yes)
+AC_ARG_ENABLE(debug, [  --enable-debug=[yes/no]      turn on debugging     [default=yes]],, enable_debug=yes)
 dnl
 dnl set compiler flag -DEBUG
 dnl using -DEBUG instead of -DDEBUG is actually OK ... see include/debug.h
@@ -67,7 +67,7 @@ else
 fi
 
 AC_MSG_CHECKING(whether to enable the bin allocator)
-AC_ARG_ENABLE(binalloc, [  --enable-binalloc=[no/yes]   turn on bin allocator [default=no]],, enable_binalloc=no)
+AC_ARG_ENABLE(binalloc, [  --enable-binalloc=[yes/no]   turn on bin allocator [default=no]],, enable_binalloc=no)
 
 if test "x$enable_binalloc" = "xyes"
 then

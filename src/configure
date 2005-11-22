@@ -12,9 +12,9 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
-  --enable-debug=[no/yes]      turn on debugging     [default=yes]"
+  --enable-debug=[yes/no]      turn on debugging     [default=yes]"
 ac_help="$ac_help
-  --enable-binalloc=[no/yes]   turn on bin allocator [default=no]"
+  --enable-binalloc=[yes/no]   turn on bin allocator [default=no]"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
