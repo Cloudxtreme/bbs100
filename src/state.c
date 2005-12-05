@@ -585,7 +585,7 @@ void loop_ping(User *usr, char c) {
 		if (tdiff >= 2UL * SECS_IN_MIN) {
 			char total_buf[MAX_LINE];
 
-			Print(usr, "<yellow>%s<green> is idle for %s\n", u->name, print_total_time(tdiff, total_buf, MAX_LINE));
+			Print(usr, "<yellow>%s<green> has been idle for %s\n", u->name, print_total_time(tdiff, total_buf, MAX_LINE));
 			Return;
 		}
 		if (u->runtime_flags & RTF_BUSY) {

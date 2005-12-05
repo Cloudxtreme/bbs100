@@ -26,11 +26,14 @@
 
 #ifndef HAVE_STRERROR
 
+#include <errno.h>
+
+
 /*
 	Note: returns a static buffer
 */
 char *c_strerror(int err) {
-char buf[64];
+static char buf[64];
 
 	bufprintf(buf, 64, "errno == %d\n", errno);
 	return buf;
