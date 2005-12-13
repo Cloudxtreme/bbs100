@@ -291,3 +291,5 @@ Version 3.0:
 - English Buchanan asked for nologin confirmation
 
 - Mickey hit a crasher when forwarding messages
+
+- English Buchanan found a problem with removing all messages in a room

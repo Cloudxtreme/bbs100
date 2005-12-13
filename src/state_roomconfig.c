@@ -1103,6 +1103,7 @@ User *u;
 		path_strip(buf);
 		unlink_file(buf);
 	}
+	room->tail_msg = room->head_msg = -1L;
 	deinit_StringQueue(room->chat_history);
 
 	for(u = AllUsers; u != NULL; u = u->next) {

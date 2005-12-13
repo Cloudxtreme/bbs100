@@ -1,5 +1,6 @@
 Changes as of December 13 2005
 - hidden room visibility for sysops
+- bugfix for removing all messages in a room
 
 Changes as of November 22nd 2005
 - added define USE_BINALLOC for if you want the special purpose mem allocator
