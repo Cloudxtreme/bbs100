@@ -983,7 +983,10 @@ int recv_it;
 			recv_it = 0;
 		} else {
 			if (u->runtime_flags & RTF_LOCKED) {
-				Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
+				if (u->away != NULL && u->away[0])
+					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal;<yellow> %s\n", sl->str, u->away);
+				else
+					Print(usr, "<red>Sorry, but <yellow>%s<red> suddenly locked the terminal\n", sl->str);
 				recv_it = 0;
 			} else {
 				if (!(usr->runtime_flags & RTF_SYSOP)
