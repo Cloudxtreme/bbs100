@@ -1520,7 +1520,7 @@ char *category = NULL;
 		if (r->number < SPECIAL_ROOMS && (r = find_Roombynumber(usr, r->number)) == NULL)
 			continue;
 
-		if (!room_visible(usr, r))
+		if (!(usr->runtime_flags & RTF_SYSOP) && !room_visible(usr, r))
 			continue;
 
 		if (PARAM_HAVE_CATEGORY && ((category == NULL && r->category != NULL) || (category != NULL && r->category != NULL && strcmp(category, r->category)))) {
