@@ -572,7 +572,7 @@ void loop_ping(User *usr, char c) {
 		}
 		if (u->runtime_flags & RTF_LOCKED) {
 			if (u->away != NULL && u->away[0])
-				Print(usr, "<yellow>%s<green> is away from the terminal for a while; %s\n", u->name, u->away);
+				Print(usr, "<yellow>%s<green> is away from the terminal for a while;<yellow> %s\n", u->name, u->away);
 			else
 				Print(usr, "<yellow>%s<green> is away from the terminal for a while\n", u->name);
 			Return;
