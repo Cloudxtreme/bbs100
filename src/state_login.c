@@ -772,9 +772,9 @@ int r;
 			usr->tz = load_Timezone(usr->timezone);
 
 /* save user here, or we're not able to profile him yet! */
-		if (save_User(usr))
-			Perror(usr, "Failed to save userfile");
-
+		if (save_User(usr)) {
+			Perror(usr, "failed to save userfile");
+		}
 		JMP(usr, STATE_ANSI_PROMPT);
 	}
 	Return;

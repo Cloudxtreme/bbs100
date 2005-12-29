@@ -204,8 +204,7 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 
 		w = w->next;
 	}
-	closefile(f);
-	return 0;
+	return closefile(f);
 }
 
 

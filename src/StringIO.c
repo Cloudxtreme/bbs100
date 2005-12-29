@@ -344,8 +344,7 @@ int err, err2;
 			return -1;
 		}
 	}
-	closefile(f);
-	return 0;
+	return closefile(f);
 }
 
 char *gets_StringIO(StringIO *s, char *buf, int size) {

@@ -113,7 +113,9 @@ void state_config_menu(User *usr, char c) {
 		case KEY_BS:
 			Put(usr, "\n");
 			if (usr->runtime_flags & RTF_CONFIG_EDITED) {
-				save_User(usr);
+				if (save_User(usr)) {
+					Perror(usr, "failed to save user file");
+				}
 				usr->runtime_flags &= ~RTF_CONFIG_EDITED;
 			}
 			RET(usr);
@@ -537,7 +539,9 @@ StringIO *tmp;
 /*
 	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
 */
-	save_User(usr);
+	if (save_User(usr)) {
+		Perror(usr, "failed to save user file");
+	}
 	usr->runtime_flags &= ~RTF_CONFIG_EDITED;
 
 	RET(usr);

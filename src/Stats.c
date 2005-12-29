@@ -304,15 +304,16 @@ err_load_Stats:
 
 
 int save_Stats(Stats *st, char *filename) {
-int ret;
 File *f;
 
 	if (st == NULL || filename == NULL || (f = Fcreate(filename)) == NULL)
 		return -1;
 
-	ret = save_Stats_version1(f, st);
-	Fclose(f);
-	return ret;
+	if (save_Stats_version1(f, st)) {
+		Fcancel(f);
+		return -1;
+	}
+	return Fclose(f);
 }
 
 int save_Stats_version1(File *f, Stats *st) {

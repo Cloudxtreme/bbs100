@@ -73,7 +73,8 @@ File *new_File(void);
 void destroy_File(File *);
 
 File *Fopen(char *);
-void Fclose(File *);
+int Fclose(File *);
+void Fcancel(File *);
 File *Fcreate(char *);
 void Frewind(File *);
 char *Fgets(File *, char *, int);

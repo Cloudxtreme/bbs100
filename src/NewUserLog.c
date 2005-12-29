@@ -125,8 +125,7 @@ NewUserLog *l;
 	for(l = (NewUserLog *)q->tail; l != NULL; l = l->next)
 		Fprintf(f, "newuser=%lu %s", l->timestamp, l->name);
 
-	Fclose(f);
-	return 0;
+	return Fclose(f);
 }
 
 void add_newuserlog(NewUserQueue *newusers, NewUserLog *l) {
@@ -155,7 +154,9 @@ NewUserLog *l;
 		return;
 	}
 	add_newuserlog(newusers, l);
-	save_NewUserQueue(newusers, PARAM_NEWUSERLOG);
+	if (save_NewUserQueue(newusers, PARAM_NEWUSERLOG))
+		log_err("log_newuser(): failed to save new user queue");
+
 	destroy_NewUserQueue(newusers);
 }
 

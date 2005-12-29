@@ -460,7 +460,6 @@ Room *tmp;
 /* save the RoomData file */
 
 int save_Room(Room *r) {
-int ret;
 char filename[MAX_PATHLEN];
 File *f;
 
@@ -505,14 +504,18 @@ File *f;
 	if ((f = Fcreate(filename)) == NULL)
 		return -1;
 
-	ret = save_Room_version1(f, r);
-	Fclose(f);
+	if (save_Room_version1(f, r)) {
+		Fcancel(f);
+		return -1;
+	}
+	if (Fclose(f))
+		return -1;
 
 	if (!PARAM_HAVE_RESIDENT_INFO) {
 		destroy_StringIO(r->info);
 		r->info = NULL;
 	}
-	return ret;
+	return 0;
 }
 
 int save_Room_version1(File *f, Room *r) {
@@ -1007,7 +1010,9 @@ void unload_Room(Room *r) {
 
 	if (r->number == HOME_ROOM && count_Queue(r->inside) <= 0) {	/* demand loaded Home room */
 		remove_Room(&HomeRooms, r);
-		save_Room(r);
+		if (save_Room(r))
+			log_err("unload_Room(): failed to save room #%u %s", r->number, r->name);
+
 		destroy_Room(r);
 		return;
 	}
@@ -1025,7 +1030,8 @@ void unload_Room(Room *r) {
 		for(h = HomeRooms; h != NULL; h = h->next) {
 			if (h == r) {
 				remove_Room(&HomeRooms, r);
-				save_Room(r);
+				if (save_Room(r))
+					log_err("unload_Room(): failed to save HomeRoom #%u %s", r->number, r->name);
 				destroy_Room(r);
 				return;
 			}
@@ -1036,7 +1042,9 @@ void unload_Room(Room *r) {
 */
 			if (count_Queue(h->inside) <= 0) {
 				remove_Room(&HomeRooms, r);
-				save_Room(r);
+				if (save_Room(r))
+					log_err("unload_Room(): failed to save room #%u %s", r->number, r->name);
+
 				destroy_Room(r);
 			}
 		}

@@ -1845,7 +1845,9 @@ PList *p;
 
 	if (usr->curr_room->number == HOME_ROOM && count_Queue(usr->curr_room->inside) <= 0) {
 		remove_Room(&HomeRooms, usr->curr_room);
-		save_Room(usr->curr_room);
+		if (save_Room(usr->curr_room)) {
+			Perror(usr, "failed to save room");
+		}
 		destroy_Room(usr->curr_room);
 	}
 	usr->curr_room = NULL;

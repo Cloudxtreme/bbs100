@@ -197,12 +197,14 @@ CachedFile *cf;
 	return f;
 }
 
-void Fclose(File *f) {
+int Fclose(File *f) {
 	if (f == NULL)
-		return;
+		return -1;
 
 	if ((f->flags & FILE_DIRTY) && f->filename != NULL && f->filename[0]) {
-		save_StringIO(f->data, f->filename);		/* sync to disk */
+		if (save_StringIO(f->data, f->filename))		/* sync to disk */
+			return -1;
+
 		f->flags &= ~FILE_DIRTY;
 	}
 	f->flags &= ~FILE_OPEN;
@@ -213,8 +215,23 @@ void Fclose(File *f) {
 	else
 		already in cache ...
 */
+	return 0;
 }
 
+/*
+	cancel a file; don't save it and don't cache it
+	this is used when write errors occur
+*/
+void Fcancel(File *f) {
+	if (f == NULL)
+		return;
+
+	if (f->filename == NULL || !f->filename[0]) {
+		destroy_File(f);
+		return;
+	}
+	remove_Cache_filename(f->filename);
+}
 
 /*
 	special case of Fopen(): do not load any data

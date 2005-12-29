@@ -265,16 +265,17 @@ err_load_message:
 	all copies of the mail
 */
 int save_Message(Message *m, char *filename, int flags) {
-int ret;
 File *f;
 
 	if (m == NULL || filename == NULL || !*filename || (f = Fcreate(filename)) == NULL)
 		return -1;
 
 	m->flags &= MSG_ALL;
-	ret = save_Message_version1(f, m, flags);
-	Fclose(f);
-	return ret;
+	if (save_Message_version1(f, m, flags)) {
+		Fcancel(f);
+		return -1;
+	}
+	return Fclose(f);
 }
 
 int save_Message_version1(File *f, Message *m, int flags) {

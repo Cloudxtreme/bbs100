@@ -91,8 +91,7 @@ AtomicFile *f;
 	for(su = su_passwd; su != NULL; su = su->next)
 		fprintf(f->f, "%s:%s\n", su->key, su->value.s);
 
-	closefile(f);
-	return 0;
+	return closefile(f);
 }
 
 char *get_su_passwd(char *name) {

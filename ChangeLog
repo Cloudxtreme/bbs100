@@ -1,3 +1,6 @@
+Changes as of December 29th 2005
+- closefile() checks for 0 byte files
+
 Changes as of December 13 2005
 - hidden room visibility for sysops
 - bugfix for removing all messages in a room

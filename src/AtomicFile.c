@@ -36,6 +36,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 AtomicFile *new_AtomicFile(void) {
@@ -87,22 +89,38 @@ char tmpfile[MAX_PATHLEN];
 	if the file was open for writing (f->filename is set), move the temp file
 	over the original file
 */
-void closefile(AtomicFile *f) {
-char tmpfile[MAX_PATHLEN];
-
+int closefile(AtomicFile *f) {
 	if (f == NULL)
-		return;
+		return -1;
 
 	fclose(f->f);
 	f->f = NULL;
 
 	if (f->filename != NULL) {
+		char tmpfile[MAX_PATHLEN];
+		struct stat statbuf;
+
 		cstrcpy(tmpfile, f->filename, MAX_PATHLEN);
 		cstrcat(tmpfile, ".tmp", MAX_PATHLEN);
-		if (rename(tmpfile, f->filename) == -1)
-			log_err("failed to rename %s to %s", tmpfile, f->filename);
+
+		if (lstat(tmpfile, &statbuf)) {
+			log_err("closefile(): failed to stat file %s", tmpfile);
+			destroy_AtomicFile(f);
+			return -1;
+		}
+		if (statbuf.st_size <= (off_t)0L) {
+			log_err("closefile(): file %s has zero size", tmpfile);
+			destroy_AtomicFile(f);
+			return -1;
+		}
+		if (rename(tmpfile, f->filename) == -1) {
+			log_err("closefile(): failed to rename %s to %s", tmpfile, f->filename);
+			destroy_AtomicFile(f);
+			return -1;
+		}
 	}
 	destroy_AtomicFile(f);
+	return 0;
 }
 
 /* EOB */

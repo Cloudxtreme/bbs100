@@ -290,8 +290,7 @@ int i;
 			fprintf(f->f, "\n");
 	}
 	fprintf(f->f, "\n# EOB\n");
-	closefile(f);
-	return 0;
+	return closefile(f);
 }
 
 

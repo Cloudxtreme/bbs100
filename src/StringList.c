@@ -123,8 +123,7 @@ AtomicFile *f;
 		fprintf(f->f, "%s\n", sl->str);
 		sl = sl->next;
 	}
-	closefile(f);
-	return 0;
+	return closefile(f);
 }
 
 StringList *copy_StringList(StringList *sl) {

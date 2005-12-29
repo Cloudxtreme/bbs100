@@ -152,7 +152,10 @@ int i;
 
 	destroy_Message(usr->message);
 	destroy_Message(usr->new_message);
-	save_Room(usr->mail);
+
+	if (save_Room(usr->mail))
+		log_err("destroy_User(): failed to save mail room for user %s", usr->name);
+
 	destroy_Room(usr->mail);
 
 	listdestroy_BufferedMsg(usr->history);
@@ -1053,7 +1056,6 @@ User *tmp_user;
 
 
 int save_User(User *usr) {
-int ret;
 char filename[MAX_PATHLEN];
 File *f;
 
@@ -1075,19 +1077,25 @@ File *f;
 	path_strip(filename);
 
 	if ((f = Fcreate(filename)) == NULL) {
-		Perror(usr, "Failed to save userfile");
+		Perror(usr, "failed to save userfile");
 		return -1;
 	}
 	usr->flags &= USR_ALL;
 	usr->flags2 &= USR2_ALL;
-	ret = save_User_version1(f, usr);
-	Fclose(f);
-
+	if (save_User_version1(f, usr)) {
+		Perror(usr, "failed to save userfile");
+		Fcancel(f);
+		return -1;
+	}
+	if (Fclose(f)) {
+		Perror(usr, "failed to save userfile");
+		return -1;
+	}
 	if (!PARAM_HAVE_RESIDENT_INFO) {
 		destroy_StringIO(usr->info);		/* don't keep it resident */
 		usr->info = NULL;
 	}
-	return ret;
+	return 0;
 }
 
 int save_User_version1(File *f, User *usr) {

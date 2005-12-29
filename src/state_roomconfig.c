@@ -158,7 +158,9 @@ void state_room_config_menu(User *usr, char c) {
 
 			if (usr->runtime_flags & RTF_ROOM_EDITED) {
 				usr->curr_room->flags |= ROOM_DIRTY;		/* make sure it is saved! */
-				save_Room(usr->curr_room);
+				if (save_Room(usr->curr_room)) {
+					Perror(usr, "failed to save room");
+				}
 				usr->runtime_flags &= ~RTF_ROOM_EDITED;
 			}
 /* user was unassigned as roomaide */
@@ -637,7 +639,9 @@ StringIO *tmp;
 	save it now, or else have problems with PARAM_HAVE_RESIDENT_INFO
 */
 	usr->curr_room->flags |= ROOM_DIRTY;			/* make sure it is saved! */
-	save_Room(usr->curr_room);
+	if (save_Room(usr->curr_room)) {
+		Perror(usr, "failed to save room");
+	}
 	usr->runtime_flags &= ~RTF_ROOM_EDITED;
 
 	RET(usr);
