@@ -1259,6 +1259,10 @@ User *usr;
 	if (usr == NULL)
 		return;
 
+	if (usr->conn->sock > 0) {
+		Put(usr, "<default>\n");
+		Flush(usr);
+	}
 	close_Conn(usr->conn);
 }
 
