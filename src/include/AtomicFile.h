@@ -35,6 +35,7 @@ void destroy_AtomicFile(AtomicFile *);
 
 AtomicFile *openfile(char *filename, char *mode);
 int closefile(AtomicFile *);
+int cancelfile(AtomicFile *);
 
 #endif	/* ATOMICFILE_H_WJ102 */
 

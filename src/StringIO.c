@@ -317,7 +317,7 @@ int err, err2;
 	while((err = fread(buf, 1, PRINT_BUF-1, f->f)) > 0) {
 		err2 = write_StringIO(s, buf, err);
 		if (err2 != err) {
-			closefile(f);
+			cancelfile(f);
 			return -1;
 		}
 	}
@@ -340,7 +340,7 @@ int err, err2;
 	while((err = read_StringIO(s, buf, PRINT_BUF)) > 0) {
 		err2 = fwrite(buf, 1, err, f->f);
 		if (err2 != err) {
-			closefile(f);
+			cancelfile(f);
 			return -1;
 		}
 	}

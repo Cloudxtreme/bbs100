@@ -110,14 +110,35 @@ int closefile(AtomicFile *f) {
 		}
 		if (statbuf.st_size <= (off_t)0L) {
 			log_err("closefile(): file %s has zero size", tmpfile);
+			unlink(tmpfile);
 			destroy_AtomicFile(f);
 			return -1;
 		}
 		if (rename(tmpfile, f->filename) == -1) {
 			log_err("closefile(): failed to rename %s to %s", tmpfile, f->filename);
+			unlink(tmpfile);
 			destroy_AtomicFile(f);
 			return -1;
 		}
+	}
+	destroy_AtomicFile(f);
+	return 0;
+}
+
+int cancelfile(AtomicFile *f) {
+	if (f == NULL)
+		return -1;
+
+	fclose(f->f);
+	f->f = NULL;
+
+	if (f->filename != NULL) {
+		char tmpfile[MAX_PATHLEN];
+
+		cstrcpy(tmpfile, f->filename, MAX_PATHLEN);
+		cstrcat(tmpfile, ".tmp", MAX_PATHLEN);
+
+		unlink(tmpfile);
 	}
 	destroy_AtomicFile(f);
 	return 0;

@@ -137,7 +137,7 @@ int lineno;
 	return 0;
 
 err_load_Wrapper:
-	closefile(f);
+	cancelfile(f);
 	listdestroy_Wrapper(AllWrappers);
 	AllWrappers = NULL;
 	return -1;
