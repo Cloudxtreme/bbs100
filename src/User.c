@@ -110,6 +110,8 @@ int i;
 	if (usr == NULL)
 		return;
 
+	log_debug("destroy_User(%s) called", usr->name);
+
 	Free(usr->real_name);
 	Free(usr->street);
 	Free(usr->zipcode);
