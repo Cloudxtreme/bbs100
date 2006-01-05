@@ -153,7 +153,7 @@ int i;
 	destroy_Message(usr->message);
 	destroy_Message(usr->new_message);
 
-	if (save_Room(usr->mail))
+	if (usr->mail != NULL && save_Room(usr->mail))
 		log_err("destroy_User(): failed to save mail room for user %s", usr->name);
 
 	destroy_Room(usr->mail);
@@ -172,6 +172,7 @@ int i;
 	destroy_PQueue(usr->scroll);
 	destroy_Display(usr->display);
 
+	usr->name[0] = 0;
 	Free(usr);
 }
 
