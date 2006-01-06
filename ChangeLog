@@ -1,5 +1,6 @@
 Changes as of January 6th 2006
 - Free() is a macro that resets argument to NULL (to be sure)
+- reboot/shutdown waits a bit longer so the logout can complete nicely
 
 Changes as of January 5th 2006
 - tiny fix in destroy_User()

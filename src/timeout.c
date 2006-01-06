@@ -134,6 +134,10 @@ StringIO *screen;
 				}
 			}
 			destroy_StringIO(screen);
+			t->sleeptime = t->maxtime = LOGOUT_TIMEOUT+1;	/* two seconds to view the screen */
+			break;
+
+		case (TIMEOUT_REBOOT-4):
 			log_msg("reboot procedure completed, exiting");
 			exit_program(REBOOT);
 	}
@@ -172,6 +176,10 @@ StringIO *screen;
 				}
 			}
 			destroy_StringIO(screen);
+			t->sleeptime = t->maxtime = LOGOUT_TIMEOUT+1;		/* two seconds to view the screen */
+			break;
+
+		case (TIMEOUT_SHUTDOWN-4):
 			log_msg("shutdown sequence completed, exiting");
 			exit_program(SHUTDOWN);
 	}

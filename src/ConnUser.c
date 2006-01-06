@@ -160,6 +160,18 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		destroy_Conn(new_conn);
 		Return;
 	}
+	if (reboot_timer != NULL && time_to_dd(reboot_timer) < 10) {
+		put_Conn(new_conn, "\nSorry, but the system is rebooting. Come back soon.\n\n");
+		log_auth("connection from %s closed, reboot in progress", new_conn->ipnum);
+		destroy_Conn(new_conn);
+		Return;
+	}
+	if (shutdown_timer != NULL && time_to_dd(shutdown_timer) < 10) {
+		put_Conn(new_conn, "\nSorry, but the system is going down for maintenance. Come back soon.\n\n");
+		log_auth("connection from %s closed, shutdown in progress", new_conn->ipnum);
+		destroy_Conn(new_conn);
+		Return;
+	}
 	bufprintf(buf, MAX_LONGLINE, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
 		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
 
