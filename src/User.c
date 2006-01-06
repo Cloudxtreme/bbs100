@@ -110,8 +110,6 @@ int i;
 	if (usr == NULL)
 		return;
 
-	log_debug("destroy_User(%s) called", usr->name);
-
 	Free(usr->real_name);
 	Free(usr->street);
 	Free(usr->zipcode);
@@ -1037,7 +1035,7 @@ char buf[MAX_PATHLEN];
 int load_profile_info(User *usr) {
 User *tmp_user;
 
-	if (usr == NULL)
+	if (usr == NULL || !usr->name[0])
 		return -1;
 
 	if (usr->info != NULL)
@@ -1046,6 +1044,7 @@ User *tmp_user;
 	tmp_user = new_User();
 
 	if (load_User(tmp_user, usr->name, LOAD_USER_INFO) < 0) {
+		cstrcpy(tmp_user->name, "<tmp>", MAX_NAME);
 		destroy_User(tmp_user);
 		return -1;
 	}
@@ -1053,10 +1052,10 @@ User *tmp_user;
 	usr->info = tmp_user->info;
 	tmp_user->info = NULL;
 
+	cstrcpy(tmp_user->name, "<tmp>", MAX_NAME);
 	destroy_User(tmp_user);
 	return 0;
 }
-
 
 int save_User(User *usr) {
 char filename[MAX_PATHLEN];
