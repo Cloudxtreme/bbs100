@@ -280,7 +280,7 @@ User *usr;
 		return;
 
 	usr = (User *)conn->data;
-	if (!(usr->flags & USR_FORCE_TERM)) {
+	if (usr->display != NULL && !(usr->flags & USR_FORCE_TERM)) {
 		usr->display->term_width = t->term_width;
 		usr->display->term_height = t->term_height;
 	}
