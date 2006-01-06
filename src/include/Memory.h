@@ -40,14 +40,20 @@
 #include "BinAlloc.h"
 
 #define Malloc(x,y)		BinMalloc((x),(y))
-#define Free(x)			BinFree(x)
+#define Free(x)			do {				\
+							BinFree(x);		\
+							(x) = NULL;		\
+						} while(0)
 
 #else	/* USE_BINALLOC */
 
 #include <stdlib.h>
 
 #define Malloc(x,y)		memalloc(x)
-#define Free(x)			free(x)
+#define Free(x)			do {				\
+							free(x);		\
+							(x) = NULL;		\
+						} while(0)
 
 void *memalloc(size_t);
 
