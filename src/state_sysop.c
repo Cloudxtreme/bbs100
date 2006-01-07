@@ -2583,7 +2583,7 @@ int r;
 					bufprintf(filename, MAX_PATHLEN, "%s/%s", dl->name, sl->str);
 /* view the log file */
 					free_StringIO(usr->text);
-					if (load_StringIO(usr->text, filename) < 0) {
+					if (load_logfile(usr->text, filename) < 0) {
 						Print(usr, "<red>Failed to load file <white>%s\n", sl->str);
 						CURRENT_STATE(usr);
 						Return;
