@@ -1887,11 +1887,12 @@ void state_screens_menu(User *usr, char c) {
 				"Log<hotkey>in screen                      <hotkey>1st login screen\n"
 				"Log<hotkey>out screen                     <hotkey>User help\n"
 				"<hotkey>Motd screen                       <hotkey>Config menu help\n"
+				"Reboo<hotkey>t screen                     <hotkey>Room config menu help\n"
 			);
 			Put(usr,
-				"Cr<hotkey>ash screen                      <hotkey>Room config menu help\n"
-				"<hotkey>Boss screen                       <hotkey>Sysop menu help\n"
-				"<hotkey>Hostmap                           <hotkey>Nologin screen\n"
+				"Shut<hotkey>down screen                   <hotkey>Sysop menu help\n"
+				"Cr<hotkey>ash screen                      <hotkey>Boss screen\n"
+				"<hotkey>Nologin screen                    <hotkey>Hostmap\n"
 				"<hotkey>Local modifications\n"
 			);
 			read_menu(usr);
@@ -1931,6 +1932,16 @@ void state_screens_menu(User *usr, char c) {
 		case 'b':
 		case 'B':
 			screen_menu(usr, "Boss screen", PARAM_BOSS_SCREEN);
+			Return;
+
+		case 't':
+		case 'T':
+			screen_menu(usr, "Reboot screen", PARAM_REBOOT_SCREEN);
+			Return;
+
+		case 'd':
+		case 'D':
+			screen_menu(usr, "Shutdown screen", PARAM_SHUTDOWN_SCREEN);
 			Return;
 
 		case 'a':
