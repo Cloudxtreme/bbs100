@@ -182,6 +182,7 @@ What's new internally?
   patches have been applied
 - usr->flags2 adds some more config bits
 - new zoneinfo files so the time keeps being displayed correctly
+- a seperate 'guard' process reboots the BBS when needed
 - some bugs fixed ...
 
 
