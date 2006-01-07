@@ -152,6 +152,11 @@ Conn *conn;
 			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, cstrerror(errno));
 #endif
 */
+/*
+	SO_REUSEADDR allows us to do quick restarts of the BBS
+	Mind that on some OSes, it is possible to run a 'shadow' server on
+	the same port, if you set the bind address to INADDR_ANY
+*/
 		optval = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
 			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", service, cstrerror(errno));

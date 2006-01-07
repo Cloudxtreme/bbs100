@@ -3,6 +3,7 @@ Changes as of January 7th 2006
 - view yesterday's log (shortcut to the log archive)
 - edit reboot and shutdown screen from sysop menu
 - close() newfd before using dup2()
+- guard process reboots the BBS
 
 Changes as of January 6th 2006
 - Free() is a macro that resets argument to NULL (to be sure)

@@ -121,49 +121,7 @@ char filename[MAX_PATHLEN];
 		nologin_active = 0;				/* users can login */
 }
 
-static void goto_background(void) {
-pid_t pid;
-
-#ifdef TIOCNOTTY
-int fd;
-
-	if ((fd = open("/dev/tty", O_WRONLY 	/* detach from tty */
-
-#ifdef O_NOCTTY
-| O_NOCTTY
-#endif
-	)) != -1) {
-		ioctl(fd, TIOCNOTTY);
-		close(fd);
-	}
-#endif	/* TIOCNOTTY */
-
-	pid = fork();							/* go to background */
-	if (pid == (pid_t)-1L) {
-		log_err("failed to fork()");
-		exit_program(SHUTDOWN);
-	}
-	if (pid != (pid_t)0L)					/* parent: exit */
-		exit(0);
-
-	write_pidfile();						/* our pid has changed */
-
-	setsid();								/* become new process group leader */
-
-	pid = fork();
-	if (pid == (pid_t)-1L) {
-		log_err("failed to fork()");
-		exit_program(SHUTDOWN);
-	}
-	if (pid != (pid_t)0L)					/* parent: exit */
-		exit(0);
-
-	write_pidfile();
-}
-
 void exit_program(int reboot) {
-int code = 0;
-
 	deinit_Signal();
 
 	if (reboot)
@@ -180,15 +138,8 @@ int code = 0;
 		log_err("failed to save stats");
 
 	killall_process();					/* kill helper procs like the resolver */
-
-	if (reboot) {
-		execlp(PARAM_PROGRAM_MAIN, PARAM_PROGRAM_MAIN, NULL);	/* reboot */
-		log_err("reboot failed");
-		code = -1;
-	}
 	unlink(PARAM_PID_FILE);				/* shutdown, remove pidfile */
-
-	exit(code);
+	exit(reboot);
 }
 
 void usage(void) {
@@ -309,11 +260,11 @@ char buf[MAX_LONGLINE];
 
 	if (init_FileCache()) {
 		fprintf(stderr, "bbs100: failed to initialize file cache\n");
-		exit(-1);
+		exit_program(SHUTDOWN);
 	}
 	if (init_screens()) {
 		fprintf(stderr, "bbs100: failed to initialize screens\n");
-		exit(-1);
+		exit_program(SHUTDOWN);
 	}
 	printf("loading stat_file %s ... ", PARAM_STAT_FILE);
 	printf("%s\n", (load_Stats(&stats, PARAM_STAT_FILE) != 0) ? "failed" : "ok");
@@ -359,16 +310,14 @@ char buf[MAX_LONGLINE];
 		exit_program(SHUTDOWN);
 
 	if (debugger)
-		printf("running under debugger, signal handling disabled\n"
-			"running under debugger, not going to background\n"
-			"\n"
-		);
+		printf("running under debugger, signal handling disabled\n\n");
 
+	close(fileno(stdin));
 	if (init_log())					/* start logging to files */
 		exit_program(SHUTDOWN);
 
  	log_info("bbs restart");
-	log_entry(stderr, "bbs restart", 'I', NULL);
+	log_entry(stderr, "bbs restart", 'I', NULL);		/* write to authlog */
 
 #ifndef USE_BINALLOC
 	if (PARAM_HAVE_BINALLOC) {
@@ -377,9 +326,7 @@ char buf[MAX_LONGLINE];
 	}
 #endif
 
-	if (!debugger)
-		goto_background();
-	else
+	if (debugger)
 		log_msg("running under debugger");
 
 	init_ConnResolv();				/* start the asynchronous name resolver */

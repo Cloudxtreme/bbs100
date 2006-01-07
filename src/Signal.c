@@ -49,6 +49,7 @@
 #include <sys/signal.h>
 #endif
 
+
 static sigset_t sig_pending;	/* pending signals */
 static int crashing = 0;		/* we're crashing */
 int jump_set = 0;
@@ -582,8 +583,12 @@ User *usr;
 			flush_Conn(u->conn);
 			close_connection(u, "system crash");
 		}
-		if (!cstricmp(PARAM_ONCRASH, "recover"))
-			exit_program(REBOOT);
+/*
+	try to nicely shut the sockets down, before the guard process
+	reboots us
+*/
+		shut_allconns();
+		sleep(2);
 		abort();
 	}
 	crashing = 0;

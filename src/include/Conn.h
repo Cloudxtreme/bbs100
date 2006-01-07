@@ -99,6 +99,8 @@ int input_Conn(Conn *);
 void close_Conn(Conn *);
 void loop_Conn(Conn *, unsigned long);
 
+void shut_allconns(void);
+
 #endif	/* CONN_H_WJ105 */
 
 /* EOB */

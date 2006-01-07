@@ -69,11 +69,11 @@ OBJS = List.o PList.o Hash.o Queue.o StringList.o CallStack.o \
 	KVPair.o StringIO.o Display.o patchlist.o BinAlloc.o DirList.o \
 	main.o
 
-MORE_OBJS = mkpasswd.o resolver.o ccat.o bbs100_convert.o
+MORE_OBJS = mkpasswd.o resolver.o guard.o ccat.o bbs100_convert.o
 
 CFILES = $(OBJS:.o=.c) $(MORE_OBJS:.o=.c)
 
-TARGETS = bbs100_convert ccat mkpasswd resolver main
+TARGETS = bbs100_convert ccat mkpasswd resolver main guard
 SCRIPTS = expire_accounts.sh bbs
 
 all: .depend $(TARGETS)
@@ -109,6 +109,10 @@ cleanlog:
 main: $(OBJS)
 	@echo '  BUILD     main'
 	$(Q)$(CC) $(OBJS) -o main $(LFLAGS) $(LIBCRYPT) $(LIBXNET) $(LIBSOCKET)
+
+guard: guard.o
+	@echo '  BUILD     guard'
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) guard.o -o guard $(LFLAGS)
 
 mkpasswd: mkpasswd.o passwd.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     mkpasswd'

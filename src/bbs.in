@@ -30,6 +30,7 @@ AWK=@AWK@
 # PATH=/bin:/usr/bin
 PROG=`basename $0`
 
+GUARD=@bindir@/guard
 DEFAULT_PARAM=@prefix@/etc/param
 
 PARAM=${DEFAULT_PARAM}
@@ -60,6 +61,13 @@ then
 	exit 1
 fi
 
+if ${TEST} ! -x "${GUARD}" ;
+then
+	echo "${PROG}: cannot find ${GUARD}"
+	echo "${PROG}: please make sure bbs100 is installed correctly under " @prefix@
+	exit 1
+fi
+
 if ${TEST} ! -x "${BASEDIR}/${MAIN}" ;
 then
 	echo "${PROG}: cannot find program_main ${BASEDIR}/${MAIN}"
@@ -75,7 +83,7 @@ case "$1" in
 			PID=`cat ${PIDFILE}`
 			echo "${PROG}: already running, pid ${PID}"
 		else
-			${MAIN} ${PARAM}
+			${GUARD} ${MAIN} ${PARAM}
 		fi
 		;;
 

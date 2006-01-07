@@ -247,4 +247,20 @@ void loop_Conn(Conn *conn, unsigned long iter) {
 	conn->state = (iter > 0UL) ? CONN_LOOPING : CONN_ESTABLISHED;
 }
 
+/*
+	shutdown all conns
+	This is only used in an emergency (shutdown, crash) situation
+
+	because it neatly terminates the connection, there is less chance
+	of connections hanging around in a waiting state
+*/
+void shut_allconns(void) {
+Conn *c;
+
+	for(c = AllConns; c != NULL; c = c->next) {
+		shutdown(c->sock, SHUT_RDWR);
+		close(c->sock);
+	}
+}
+
 /* EOB */
