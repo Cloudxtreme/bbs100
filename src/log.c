@@ -113,6 +113,7 @@ int fd;
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
+	close(fileno(stdout));
 	dup2(fd, fileno(stdout));
 	close(fd);
 
@@ -123,6 +124,7 @@ int fd;
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
+	close(fileno(stderr));
 	dup2(fd, fileno(stderr));
 	close(fd);
 
