@@ -1,5 +1,6 @@
 Changes as of January 7th 2006
 - view old logs in color as well
+- view yesterday's log (shortcut to the log archive)
 
 Changes as of January 6th 2006
 - Free() is a macro that resets argument to NULL (to be sure)

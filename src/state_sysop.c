@@ -2217,8 +2217,8 @@ DirList *dl;
 		case INIT_STATE:
 			buffer_text(usr);
 			Put(usr, "<magenta>\n"
-				"View <hotkey>bbslog\n"
-				"View <hotkey>authlog\n"
+				"View <hotkey>bbslog                       View <hotkey>yesterday's bbslog\n"
+				"View <hotkey>authlog                      View <hotkey>Yesterday's authlog\n"
 				"View <hotkey>newusers log\n"
 				"\n"
 				"Access <hotkey>old logs\n"
@@ -2254,6 +2254,11 @@ DirList *dl;
 			read_text(usr);
 			Return;
 
+		case 'y':
+			Put(usr, "View yesterday's bbslog\n<green>");
+			yesterdays_log(usr, PARAM_SYSLOG);
+			Return;
+
 		case 'a':
 		case 'A':
 			Put(usr, "View authlog\n<green>");
@@ -2264,6 +2269,11 @@ DirList *dl;
 			}
 			PUSH(usr, STATE_PRESS_ANY_KEY);
 			read_text(usr);
+			Return;
+
+		case 'Y':
+			Put(usr, "View yesterday's authlog\n<green>");
+			yesterdays_log(usr, PARAM_AUTHLOG);
 			Return;
 
 		case 'n':
@@ -2355,6 +2365,55 @@ int color;
 	}
 	Fclose(f);
 	return 0;
+}
+
+/*
+	View yesterday's logfile
+	logfile is either PARAM_SYSLOG or PARAM_AUTHLOG
+*/
+void yesterdays_log(User *usr, char *logfile) {
+char *p, filename[MAX_PATHLEN];
+struct tm *tm;
+time_t t;
+
+	if (usr == NULL)
+		return;
+
+	Enter(yesterdays_log);
+
+	if (logfile == NULL || !*logfile) {
+		Perror(usr, "The log's filename not been defined yet");
+		Return;
+	}
+/* 'basename' logfile */
+	if ((p = cstrrchr(logfile, '/')) == NULL)
+		p = logfile;
+	else {
+		p++;
+		if (!*p)
+			p = logfile;
+	}
+	t = rtc;
+	t -= SECS_IN_DAY;			/* yesterday */
+	tm = localtime(&t);
+
+	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
+		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+	path_strip(filename);
+
+	if (!file_exists(filename)) {
+		Put(usr, "<red>Yesterday's log file is missing\n");
+		CURRENT_STATE(usr);
+		Return;
+	}
+	if (load_logfile(usr->text, filename) < 0) {
+		Perror(usr, "failed to load yesterday's log");
+		CURRENT_STATE(usr);
+		Return;
+	}
+	PUSH(usr, STATE_PRESS_ANY_KEY);
+	read_text(usr);
+	Return;
 }
 
 int load_newuserlog(User *usr) {

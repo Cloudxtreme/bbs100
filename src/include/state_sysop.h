@@ -185,6 +185,7 @@ void state_old_logs_year(User *, char);
 void state_old_logs_month(User *, char);
 void state_old_logs_files(User *, char);
 int load_logfile(StringIO *, char *);
+void yesterdays_log(User *, char *);
 int load_newuserlog(User *);
 void state_feelings_menu(User *, char);
 void state_add_feeling(User *, char);
