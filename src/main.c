@@ -373,7 +373,7 @@ char buf[MAX_LONGLINE];
 #ifndef USE_BINALLOC
 	if (PARAM_HAVE_BINALLOC) {
 		log_warn("/etc/param: have_binalloc is enabled, but support for it is not compiled in");
-		log_warn("compile with --enable-binalloc if you really want this feature");
+		log_warn("configure with --enable-binalloc and rebuild if you really want this feature");
 	}
 #endif
 
