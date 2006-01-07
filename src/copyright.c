@@ -46,7 +46,7 @@ char *print_copyright(int full, char *progname, char *buf, int buflen) {
 		cstrcat(buf, " ", buflen);
 		cstrcat(buf, progname, buflen);
 	}
-	cstrcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2005\n", buflen);
+	cstrcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2006\n", buflen);
 
 	if (full) {
 #ifdef HAVE_UNAME
