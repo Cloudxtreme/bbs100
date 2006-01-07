@@ -172,14 +172,6 @@ pid_t pid;
 int main(int argc, char **argv) {
 time_t start;
 
-	printf("bbs100 guard %s by Walter de Jong <walter@heiho.net> (C) 2006\n", VERSION);
-	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
-		"For details, see the GNU General Public License.\n\n");
-
-	if (argc <= 1) {
-		printf("usage: guard <main program>\n");
-		return 1;
-	}
 	if (argv[0][0] != '(') {
 		char *old_argv0, *new_argv0 = "(bbs100 guard)";
 
@@ -189,6 +181,14 @@ time_t start;
 
 		fprintf(stderr, "bbs100: startup failed\n");
 		exit(-1);
+	}
+	printf("bbs100 guard %s by Walter de Jong <walter@heiho.net> (C) 2006\n", VERSION);
+	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
+		"For details, see the GNU General Public License.\n\n");
+
+	if (argc <= 1) {
+		printf("usage: guard <main program>\n");
+		return 1;
 	}
 	if (getcwd(currdir, MAX_PATHLEN) == NULL) {
 		perror("guard: can't get current directory");

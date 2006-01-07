@@ -3860,7 +3860,7 @@ void state_maximums_menu(User *usr, char c) {
 				"Max number of messages in X <hotkey>history   <white>%6u<magenta>\n"
 				"Max number of <hotkey>Friends                 <white>%6u<magenta>\n"
 				"Max number of <hotkey>Enemies                 <white>%6u<magenta>\n"
-				"Max number of entries <hotkey>New user log    <white>%6u<magenta>\n",
+				"Max number of entries in <hotkey>New user log <white>%6u<magenta>\n",
 
 				PARAM_MAX_CHAT_HISTORY,
 				PARAM_MAX_HISTORY,
