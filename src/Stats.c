@@ -79,6 +79,7 @@ int version;
 	}
 	if (load_func != NULL && !load_func(f, st)) {
 		Fclose(f);
+		st->loaded = STATS_LOADED;
 		return 0;
 	}
 	Fclose(f);
@@ -306,7 +307,7 @@ err_load_Stats:
 int save_Stats(Stats *st, char *filename) {
 File *f;
 
-	if (st == NULL || filename == NULL || (f = Fcreate(filename)) == NULL)
+	if (st == NULL || st->loaded != STATS_LOADED || filename == NULL || (f = Fcreate(filename)) == NULL)
 		return -1;
 
 	if (save_Stats_version1(f, st)) {

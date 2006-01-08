@@ -29,7 +29,15 @@
 #include "CachedFile.h"
 #include "sys_time.h"
 
+/*
+	loaded = 'L' : this protects us from saving stats that were not even
+	properly loaded yet
+*/
+#define STATS_LOADED	0x4c
+
 typedef struct {
+	int loaded;
+
 	char oldest[MAX_NAME], youngest[MAX_NAME], most_logins[MAX_NAME];
 	char most_xsent[MAX_NAME], most_xrecv[MAX_NAME];
 	char most_esent[MAX_NAME], most_erecv[MAX_NAME];
