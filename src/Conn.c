@@ -260,6 +260,7 @@ Conn *c;
 	for(c = AllConns; c != NULL; c = c->next) {
 		shutdown(c->sock, SHUT_RDWR);
 		close(c->sock);
+		c->sock = -1;
 	}
 }
 
