@@ -1,3 +1,6 @@
+Changes as of January 8th 2006
+- word-wrapping kicked in 1 character too soon
+
 Changes as of January 7th 2006
 - view old logs in color as well
 - view yesterday's log (shortcut to the log archive)
