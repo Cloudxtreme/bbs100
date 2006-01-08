@@ -131,10 +131,12 @@ void exit_program(int reboot) {
 		log_msg("exit_program(): shutting down");
 
 /*
-	destroying all connections also closes the main listening socket
+	neatly close the main listening socket
 */
-	listdestroy_Conn(AllConns);
-
+	if (AllConns != NULL) {
+		shut_allconns();
+		sleep(2);
+	}
 	if (save_Stats(&stats, PARAM_STAT_FILE))
 		log_err("failed to save stats");
 
@@ -315,7 +317,6 @@ char buf[MAX_LONGLINE];
 	if (debugger)
 		printf("running under debugger, signal handling disabled\n\n");
 
-	close(fileno(stdin));
 	if (init_log())					/* start logging to files */
 		exit_program(SHUTDOWN);
 
