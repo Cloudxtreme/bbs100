@@ -32,6 +32,7 @@
 #include "edit.h"
 #include "bufprintf.h"
 #include "Memory.h"
+#include "cstrerror.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -164,17 +165,23 @@ char *p;
 }
 
 void ConnResolv_accept(Conn *conn) {
-int sock;
+int sock, err;
 struct sockaddr_un un;
 socklen_t un_len;
-char optval;
+char optval, errbuf[MAX_LINE];
 
 	if (conn == NULL)
 		return;
 
 	un_len = sizeof(struct sockaddr_un);
 	if ((sock = accept(conn->sock, (struct sockaddr *)&un, &un_len)) < 0) {
-		log_err("ConnResolv_accept(): failed to accept()");
+		err = errno;
+		log_err("ConnResolv_accept(): failed to accept(): %s", cstrerror(err, errbuf, MAX_LINE));
+
+		if (err == ENOTSOCK || err == EOPNOTSUPP) {
+			log_err("This is a serious error, aborting");
+			abort();
+		}
 		return;
 	}
 	if (conn_resolver != NULL) {

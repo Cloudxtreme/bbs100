@@ -114,7 +114,13 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	Enter(ConnUser_accept);
 
 	if ((s = accept(conn->sock, (struct sockaddr *)&client, &client_len)) < 0) {
-		log_err("ConnUser_accept(): failed to accept(): %s", cstrerror(errno, errbuf, MAX_LINE));
+		err = errno;
+		log_err("ConnUser_accept(): failed to accept(): %s", cstrerror(err, errbuf, MAX_LINE));
+
+		if (err == ENOTSOCK || err == EOPNOTSUPP) {
+			log_err("This is a serious error, aborting");
+			abort();
+		}
 		Return;
 	}
 	if ((new_user = new_User()) == NULL) {
