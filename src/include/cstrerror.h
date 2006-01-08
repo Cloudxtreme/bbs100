@@ -23,21 +23,7 @@
 #ifndef CSTRERROR_H_WJ105
 #define CSTRERROR_H_WJ105	1
 
-#include "config.h"
-
-#ifdef HAVE_STRERROR
-
-#include <string.h>
-
-#define cstrerror(x)		strerror((x))
-
-#else
-
-#define cstrerror(x)		c_strerror((x))
-
-char *c_strerror(int);
-
-#endif	/* HAVE_STRERROR */
+char *cstrerror(int, char *, int);
 
 #endif	/* CSTRERROR_H_WJ105 */
 

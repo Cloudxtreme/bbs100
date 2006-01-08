@@ -106,7 +106,7 @@ Conn *conn;
 void ConnUser_accept(Conn *conn) {
 User *new_user;
 Conn *new_conn;
-char buf[MAX_LONGLINE];
+char buf[MAX_LONGLINE], errbuf[MAX_LINE];
 int s, err, optval;
 struct sockaddr_storage client;
 socklen_t client_len = sizeof(struct sockaddr_storage);
@@ -114,7 +114,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	Enter(ConnUser_accept);
 
 	if ((s = accept(conn->sock, (struct sockaddr *)&client, &client_len)) < 0) {
-		log_err("ConnUser_accept(): failed to accept()");
+		log_err("ConnUser_accept(): failed to accept(): %s", cstrerror(errno, errbuf, MAX_LINE));
 		Return;
 	}
 	if ((new_user = new_User()) == NULL) {
@@ -145,10 +145,10 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 
 	optval = 0;
 	if (setsockopt(new_conn->sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
-		log_warn("ConnUser_accept(): setsockopt(SO_OOBINLINE) failed: %s", cstrerror(errno));
+		log_warn("ConnUser_accept(): setsockopt(SO_OOBINLINE) failed: %s", cstrerror(errno, errbuf, MAX_LINE));
 
 	if ((err = getnameinfo((struct sockaddr *)&client, client_len, buf, MAX_LONGLINE-1, NULL, 0, NI_NUMERICHOST)) != 0) {
-		log_warn("ConnUser_accept(): getnameinfo(): %s", inet_error(err));
+		log_warn("ConnUser_accept(): getnameinfo(): %s", inet_error(err, errbuf, MAX_LINE));
 		new_conn->ipnum = cstrdup("0.0.0.0");
 	} else
 		new_conn->ipnum = cstrdup(buf);

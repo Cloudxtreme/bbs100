@@ -173,7 +173,7 @@ char buf[MAX_PATHLEN];
 */
 int input_Conn(Conn *conn) {
 int err;
-char buf[MAX_PATHLEN];
+char buf[MAX_PATHLEN], errbuf[MAX_LINE];
 
 	if (conn == NULL || conn->sock < 0)
 		return -1;
@@ -207,7 +207,7 @@ char buf[MAX_PATHLEN];
 		}
 #endif
 		if (errno != EBADF)
-			log_warn("input_Conn(): read(): %s, closing connection", cstrerror(errno));
+			log_warn("input_Conn(): read(): %s, closing connection", cstrerror(errno, errbuf, MAX_LINE));
 		else
 			log_warn("input_Conn(): got EBADF, closing connection");
 

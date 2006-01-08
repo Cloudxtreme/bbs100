@@ -118,9 +118,9 @@ mkpasswd: mkpasswd.o passwd.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     mkpasswd'
 	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) mkpasswd.o passwd.o bufprintf.o cstrcpy.o copyright.o -o mkpasswd $(LFLAGS) $(LIBCRYPT)
 
-resolver: resolver.o bufprintf.o cstrcpy.o copyright.o
+resolver: resolver.o bufprintf.o cstrcpy.o cstrerror.o copyright.o
 	@echo '  BUILD     resolver'
-	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o bufprintf.o cstrcpy.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
+	$(Q)$(CC) -I$(INCLUDE) $(CFLAGS) resolver.o bufprintf.o cstrcpy.o cstrerror.o copyright.o -o resolver $(LFLAGS) $(LIBXNET) $(LIBSOCKET)
 
 ccat: ccat.o bufprintf.o cstrcpy.o copyright.o
 	@echo '  BUILD     ccat'

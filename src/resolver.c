@@ -110,7 +110,7 @@ struct addrinfo hints, *res, *ai_p;
 }
 
 int main(int argc, char **argv) {
-char request[128], result[NI_MAXHOST];
+char request[128], result[NI_MAXHOST], errbuf[MAX_LINE];
 struct sockaddr_un un;
 int s, n, un_len;
 
@@ -151,7 +151,7 @@ int s, n, un_len;
 
 	for(;;) {
 		if ((n = read(s, request, 127)) <= 0) {
-			fprintf(stderr, "resolver: read(): %s\n", cstrerror(errno));
+			fprintf(stderr, "resolver: read(): %s\n", cstrerror(errno, errbuf, MAX_LINE));
 			break;
 		}
 		request[n] = 0;
@@ -164,19 +164,19 @@ int s, n, un_len;
 	write the answer back to the unix socket connection
 */
 		if (write(s, request, strlen(request)) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno, errbuf, MAX_LINE));
 			break;
 		}
 		if (write(s, " ", 1) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno, errbuf, MAX_LINE));
 			break;
 		}
 		if (write(s, result, strlen(result)) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno, errbuf, MAX_LINE));
 			break;
 		}
 		if (write(s, "\r", 1) < 0) {
-			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno));
+			fprintf(stderr, "resolver: write(): %s\n", cstrerror(errno, errbuf, MAX_LINE));
 			break;
 		}
 	}

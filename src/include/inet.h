@@ -26,7 +26,7 @@
 
 #include "Conn.h"
 
-const char *inet_error(int);
+char *inet_error(int, char *, int);
 char *inet_printaddr(char *, char *, char *, int);
 
 int inet_listen(char *, char *, ConnType *);

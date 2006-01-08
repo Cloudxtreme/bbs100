@@ -80,11 +80,15 @@
 #define MAX_NEWCONNS	5
 
 
-const char *inet_error(int err) {
-	if (err == EAI_SYSTEM)
-		return (const char *)cstrerror(errno);
+char *inet_error(int err, char *buf, int maxlen) {
+	if (buf == NULL || maxlen < 0)
+		return NULL;
 
-	return (const char *)gai_strerror(err);
+	if (err == EAI_SYSTEM)
+		return cstrerror(errno, buf, maxlen);
+
+	bufprintf(buf, maxlen, (char *)gai_strerror(err));
+	return buf;
 }
 
 /*
@@ -102,7 +106,6 @@ char *inet_printaddr(char *host, char *service, char *buf, int buflen) {
 	return buf;
 }
 
-
 /*
 	listen on a service port
 	(actually, this function does a lot more than just listen()ing)
@@ -113,7 +116,7 @@ char *inet_printaddr(char *host, char *service, char *buf, int buflen) {
 int inet_listen(char *node, char *service, ConnType *conn_type) {
 int sock, err, optval, retval;
 struct addrinfo hints, *res, *ai_p;
-char host[NI_MAXHOST], serv[NI_MAXSERV], buf[NI_MAXHOST+NI_MAXSERV+MAX_LINE];
+char host[NI_MAXHOST], serv[NI_MAXSERV], buf[NI_MAXHOST+NI_MAXSERV+MAX_LINE], errbuf[MAX_LINE];
 Conn *conn;
 
 	retval = -1;
@@ -128,7 +131,7 @@ Conn *conn;
 /*	hints.ai_flags |= AI_PASSIVE; */			/* accept clients on any network */
 
 	if ((err = getaddrinfo(node, service, &hints, &res)) != 0) {
-		log_err("inet_listen(%s): %s", service, inet_error(err));
+		log_err("inet_listen(%s): %s", service, inet_error(err, errbuf, MAX_LINE));
 		return -1;
 	}
 	for(ai_p = res; ai_p != NULL; ai_p = ai_p->ai_next) {
@@ -139,7 +142,7 @@ Conn *conn;
 /* be cool about errors about IPv6 ... not many people have it yet */
 			if (!(errno == EAFNOSUPPORT && ai_p->ai_family == PF_INET6))
 				log_warn("inet_listen(%s): socket(family = %d, socktype = %d, protocol = %d) failed: %s",
-					service, ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol, cstrerror(errno));
+					service, ai_p->ai_family, ai_p->ai_socktype, ai_p->ai_protocol, cstrerror(errno, errbuf, MAX_LINE));
 			continue;
 		}
 /*
@@ -149,7 +152,7 @@ Conn *conn;
 #ifdef IPV6_V6ONLY
 		optval = 1;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(int))) == -1)
-			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, cstrerror(errno));
+			log_warn("inet_listen(%s): failed to set IPV6_V6ONLY: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 #endif
 */
 /*
@@ -159,11 +162,11 @@ Conn *conn;
 */
 		optval = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
-			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", service, cstrerror(errno));
+			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 
 		optval = 0;
 		if (setsockopt(sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
-			log_warn("inet_listen(%s): setsockopt(SO_OOBINLINE) failed: %s", service, cstrerror(errno));
+			log_warn("inet_listen(%s): setsockopt(SO_OOBINLINE) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
@@ -180,7 +183,7 @@ Conn *conn;
 	to make sure ...
 */
 		if (ioctl(sock, FIONBIO, &optval) == -1) {
-			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, cstrerror(errno));
+			log_err("inet_listen(%s): failed to set socket non-blocking: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 			close(sock);
 			continue;
 		}
@@ -230,6 +233,7 @@ Conn *conn;
 int unix_sock(char *path) {
 struct sockaddr_un un;
 int sock, optval;
+char errbuf[MAX_LINE];
 
 	unlink(path);
 
@@ -254,7 +258,7 @@ int sock, optval;
 		return -1;
 	}
 	if (listen(sock, MAX_NEWCONNS) == -1) {
-		log_err("unix_sock(): listen() failed: %s", cstrerror(errno));
+		log_err("unix_sock(): listen() failed: %s", cstrerror(errno, errbuf, MAX_LINE));
 		close(sock);
 		return -1;
 	}

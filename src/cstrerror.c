@@ -22,23 +22,25 @@
 
 #include "config.h"
 #include "cstrerror.h"
+#include "cstring.h"
 #include "bufprintf.h"
 
-#ifndef HAVE_STRERROR
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <errno.h>
 
+char *cstrerror(int err, char *buf, int maxlen) {
+	if (buf == NULL || maxlen < 0)
+		return NULL;
 
-/*
-	Note: returns a static buffer
-*/
-char *c_strerror(int err) {
-static char buf[64];
+#ifdef HAVE_STRERROR
+	cstrcpy(buf, strerror(err), maxlen);
+#else
+	bufprintf(buf, maxlen, "error %d", err);
+#endif
 
-	bufprintf(buf, 64, "errno == %d\n", errno);
 	return buf;
 }
-
-#endif	/* HAVE_STRERROR */
 
 /* EOB */

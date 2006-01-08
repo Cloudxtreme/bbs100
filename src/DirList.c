@@ -88,7 +88,7 @@ StringQueue *l;
 StringList *sl;
 DIR *dir;
 struct dirent *entry;
-char fullpath[MAX_PATHLEN], *path;
+char fullpath[MAX_PATHLEN], *path, errbuf[MAX_LINE];
 struct stat statbuf;
 int max, n;
 
@@ -96,7 +96,7 @@ int max, n;
 		return NULL;
 
 	if ((dir = opendir(dirname)) == NULL) {
-		log_err("listdir(): opendir(%s) failed %s", dirname, cstrerror(errno));
+		log_err("listdir(): opendir(%s) failed %s", dirname, cstrerror(errno, errbuf, MAX_LINE));
 		return NULL;
 	}
 	if ((l = new_StringQueue()) == NULL) {
@@ -117,7 +117,7 @@ int max, n;
 
 		cstrcpy(path, entry->d_name, max);
 		if (lstat(fullpath, &statbuf) < 0) {
-			log_err("listdir(): lstat(%s) failed: %s", fullpath, cstrerror(errno));
+			log_err("listdir(): lstat(%s) failed: %s", fullpath, cstrerror(errno, errbuf, MAX_LINE));
 			continue;
 		}
 		switch(statbuf.st_mode & S_IFMT) {

@@ -1481,7 +1481,7 @@ struct dirent *direntp;
 }
 
 int mkdir_p(char *pathname) {
-char *p;
+char *p, errbuf[MAX_LINE];
 
 	if (pathname == NULL)
 		return -1;
@@ -1503,7 +1503,7 @@ char *p;
 			if (errno == EEXIST)
 				continue;
 
-			log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno));
+			log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno, errbuf, MAX_LINE));
 			return -1;
 		}
 		*p = '/';
@@ -1513,7 +1513,7 @@ char *p;
 		if (errno == EEXIST)
 			return 0;
 
-		log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno));
+		log_err("mkdir_p(): failed to create directory %s : %s", pathname, cstrerror(errno, errbuf, MAX_LINE));
 		return -1;
 	}
 	return 0;

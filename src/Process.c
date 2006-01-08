@@ -121,10 +121,11 @@ int status;
 pid_t pid;
 PList *pl, *pl_next;
 Process *proc;
+char errbuf[MAX_LINE];
 
 	pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
 	if (pid == (pid_t)-1L) {
-		log_err("waitpid(): %s", cstrerror(errno));
+		log_err("waitpid(): %s", cstrerror(errno, errbuf, MAX_LINE));
 		return;
 	}
 	if (pid == (pid_t)0L) {

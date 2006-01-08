@@ -1,5 +1,6 @@
 Changes as of January 8th 2006
 - word-wrapping kicked in 1 character too soon
+- safe cstrerror()
 
 Changes as of January 7th 2006
 - view old logs in color as well
