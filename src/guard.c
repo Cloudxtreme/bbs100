@@ -22,7 +22,7 @@
 	if the program exits within MIN_RUNTIME seconds, it won't be
 	restarted automatically
 */
-#define MIN_RUNTIME		10
+#define MIN_RUNTIME		60
 
 #ifndef MAX_PATHLEN
 #define MAX_PATHLEN		1024
