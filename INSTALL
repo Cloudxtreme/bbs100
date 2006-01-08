@@ -54,7 +54,7 @@ You can find all important recent changes in the ChangeLog file.
 
 
 
-The rest of the README is for users that have never before run bbs100.
+The rest of the INSTALL is for users that have never before run bbs100.
 
 Before starting the BBS, edit the file '/home/bbs/etc/param'. This file
 contains the configuration of the BBS. Never mind all the options for now,
