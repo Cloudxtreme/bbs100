@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #ifdef HAVE_SYS_SIGNAL_H
@@ -491,14 +492,20 @@ unsigned long old_mail;
 	SIGHUP: set/reset nologin status
 */
 void sig_nologin(int sig) {
+char filename[MAX_PATHLEN];
+
 	Enter(sig_nologin);
 
 	log_msg("SIGHUP caught; reset nologin");
 
+	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+
 	if (!nologin_active) {
+		close(open(filename, O_CREAT|O_WRONLY|O_TRUNC, (mode_t)0660));
 		nologin_active = 1;
 		log_msg("nologin set ; users cannot login");
 	} else {
+		unlink(filename);
 		nologin_active = 0;
 		log_msg("nologin reset ; users can login");
 	}
