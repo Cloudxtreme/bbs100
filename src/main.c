@@ -115,9 +115,10 @@ static void check_nologin(void) {
 char filename[MAX_PATHLEN];
 
 	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
-	if (file_exists(filename))
+	if (file_exists(filename)) {
 		nologin_active = 1;
-	else
+		printf("NOTE: nologin is active, users will not be able to login\n\n");
+	} else
 		nologin_active = 0;				/* users can login */
 }
 
@@ -306,6 +307,8 @@ char buf[MAX_LONGLINE];
 	init_crypt();					/* init salt table for passwd encryption */
 	init_helper();					/* reset helping hands */
 
+	check_nologin();
+
 	if (init_ConnUser())			/* startup inet */
 		exit_program(SHUTDOWN);
 
@@ -333,7 +336,8 @@ char buf[MAX_LONGLINE];
 
 	stats.uptime = rtc = time(NULL);
 
-	check_nologin();
+	if (nologin_active)
+		log_warn("nologin is active");
 
 	mainloop();
 	exit_program(SHUTDOWN);			/* clean shutdown */
