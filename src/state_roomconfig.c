@@ -574,7 +574,7 @@ void state_change_roominfo(User *usr, char c) {
 		case 'E':
 			Put(usr, "Enter\n"
 				"<green>\n"
-				"Enter new room info, press <yellow><return><green> twice or press <yellow><Ctrl-C><green> to end\n"
+				"Enter new room info, press<yellow> <return><green> twice or press<yellow> <Ctrl-C><green> to end\n"
 			);
 			edit_text(usr, save_roominfo, abort_roominfo);
 			Return;
@@ -583,7 +583,7 @@ void state_change_roominfo(User *usr, char c) {
 		case 'U':
 			Put(usr, "Upload\n"
 				"<green>\n"
-				"Upload new room info, press <yellow><Ctrl-C><green> to end\n"
+				"Upload new room info, press<yellow> <Ctrl-C><green> to end\n"
 			);
 			usr->runtime_flags |= RTF_UPLOAD;
 			edit_text(usr, save_roominfo, abort_roominfo);
