@@ -293,3 +293,5 @@ Version 3.0:
 - Mickey hit a crasher when forwarding messages
 
 - English Buchanan found a problem with removing all messages in a room
+
+- Simon Tatham for describing list merge sort and giving a good code example

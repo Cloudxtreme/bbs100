@@ -215,11 +215,14 @@ ListType *root;
 }
 
 /*
-	sort a list using qsort()
+	sort a list using merge sort
+
+	implemented as described by Simon Tatham on the web, and with help
+	of his free open source example
 */
 ListType *sort_List(void *v, int (*sort_func)(void *, void *)) {
-ListType **root, *p, **arr;
-int count, i;
+ListType **root, *p, *q, *l, *e;
+int k = 1, n = 0, i, psize, qsize;
 
 	if (v == NULL)
 		return NULL;
@@ -228,39 +231,65 @@ int count, i;
 	if (*root == NULL || sort_func == NULL)
 		return *root;
 
-	count = 0;
-	for(p = *root; p != NULL; p = p->next)		/* count # of elements */
-		count++;
+	for(;;) {
+		p = *root;
+		*root = NULL;
+		l = NULL;
+		n = 0;
 
-	if (count <= 1)								/* nothing to be sorted */
-		return *root;
+		while(p != NULL) {
+			n++;
+			q = p;
+/* step along q for k places */
+			for(i = 0; i < k && q != NULL; i++)
+				q = q->next;
 
-	if ((arr = (ListType **)Malloc(count * sizeof(ListType *), TYPE_POINTER)) == NULL)
-		return *root;							/* malloc() failed, return root */
+			psize = i;
+			qsize = k;
 
-/* fill the array of pointers */
-	p = *root;
-	for(i = 0; i < count; i++) {
-		arr[i] = p;
-		p = p->next;
+/* sort elements until end of this sublist is reached */
+			while(psize > 0 || (qsize > 0 && q != NULL)) {
+				if (psize <= 0) {
+					e = q;
+					q = q->next;
+					qsize--;
+				} else {
+					if (qsize <= 0 || q == NULL) {
+						e = p;
+						p = p->next;
+						psize--;
+					} else {
+						if (sort_func(&p, &q) <= 0) {
+							e = p;
+							p = p->next;
+							psize--;
+						} else {
+							e = q;
+							q = q->next;
+							qsize--;
+						}
+					}
+				}
+/* put sorted element e onto results list l (tail pointer to *root) */
+				if (l == NULL) {
+					*root = l = e;
+					e->prev = e->next = NULL;
+				} else {
+					l->next = e;
+					e->prev = l;
+					e->next = NULL;
+					l = e;
+				}
+			}
+/* do it for the next part of the list */
+			p = q;
+		}
+/* do until the there's nothing to be sorted any more */
+		if (n <= 1)
+			return *root;
+
+		k *= 2;
 	}
-/* do the sorting (we include a nasty typecast here for convenience) */
-	qsort(arr, count, sizeof(ListType *), (int (*)(const void *, const void *))sort_func);
-
-/* rearrange the prev and next pointers */
-	arr[0]->prev = NULL;
-	arr[0]->next = arr[1];
-
-	for(i = 1; i < count-1; i++) {
-		arr[i]->prev = arr[i-1];
-		arr[i]->next = arr[i+1];
-	}
-	arr[i]->prev = arr[i-1];
-	arr[i]->next = NULL;
-
-/* Free the array and return new root */
-	*root = arr[0];
-	Free(arr);
 	return *root;
 }
 

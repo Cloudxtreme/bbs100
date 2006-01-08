@@ -183,6 +183,8 @@ What's new internally?
 - usr->flags2 adds some more config bits
 - new zoneinfo files so the time keeps being displayed correctly
 - a seperate 'guard' process reboots the BBS when needed
+- lists are now sorted using merge sort, much more efficient than the way
+  it used to be
 - some bugs fixed ...
 
 
