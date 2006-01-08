@@ -220,6 +220,10 @@ time_t start;
 	first_start(&argv[1]);
 
 /*
+	Odd (2) ...
+	When guard closes stdout/stderr, accept() will fail when SO_REUSEADDR
+	is used on the listen()ing socket
+
 	close(fileno(stdout));
 	close(fileno(stderr));
 */
