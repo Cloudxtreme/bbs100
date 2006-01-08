@@ -112,9 +112,12 @@ char *inet_printaddr(char *host, char *service, char *buf, int buflen) {
 
 	This function is protocol-family independent, so it supports
 	both IPv4 and IPv6 (and possibly even more ...)
+
+	Mind that this function may take a long time to complete, as bind()
+	may need some time to wait for a port to come available again
 */
 int inet_listen(char *node, char *service, ConnType *conn_type) {
-int sock, err, optval, retval;
+int sock, err, optval, retval, retry, success;
 struct addrinfo hints, *res, *ai_p;
 char host[NI_MAXHOST], serv[NI_MAXSERV], buf[NI_MAXHOST+NI_MAXSERV+MAX_LINE], errbuf[MAX_LINE];
 Conn *conn;
@@ -157,8 +160,8 @@ Conn *conn;
 */
 /*
 	SO_REUSEADDR allows us to do quick restarts of the BBS
-	Mind that on some OSes, it is possible to run a 'shadow' server on
-	the same port, if you set the bind address to INADDR_ANY
+	I have sometimes seen problems with this (the port going into TIME_WAIT
+	and new connections fail, without the socket reporting any error at all)
 */
 		optval = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
@@ -169,14 +172,38 @@ Conn *conn;
 			log_warn("inet_listen(%s): setsockopt(SO_OOBINLINE) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 
 		if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
+			err = errno;
+			success = 0;
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
-				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_warn("inet_listen(): bind() failed on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
-			else
+				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0) {
+/*
+	retry the bind a number of times if the port is in TIME_WAIT state
+*/
+				if (err == EADDRINUSE) {
+					for(retry = 0; retry < BIND_RETRIES; retry++) {
+						log_warn("inet_listen(): waiting on bind() on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
+						sleep(BIND_WAIT);
+						if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
+							err = errno;
+							if (err == EADDRINUSE)
+								continue;
+							else
+								break;				/* some other error */
+						} else {
+							success = 1;
+							break;
+						}
+					}
+				}
+				if (!success)
+					log_warn("inet_listen(): bind() failed on %s: %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE), cstrerror(err, errbuf, MAX_LINE));
+			} else
 				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
 
-			close(sock);
-			continue;
+			if (!success) {
+				close(sock);
+				continue;
+			}
 		}
 /*
 	I don't think FIONBIO is needed on a listening socket, but just

@@ -65,6 +65,11 @@
 #define STATE_SHUTDOWN_PASSWORD			state_shutdown_password
 #define STATE_NOLOGIN_YESNO				state_nologin_yesno
 
+#ifdef DEBUG
+#define STATE_CRASH_YESNO				state_crash_yesno
+#define STATE_CRASH_PASSWORD			state_crash_password
+#endif	/* DEBUG */
+
 #define STATE_SYSTEM_CONFIG_MENU		state_system_config_menu
 #define STATE_PARAM_BBS_NAME			state_param_bbs_name
 #define STATE_PARAM_BIND_ADDRESS		state_param_bind_address
@@ -208,6 +213,11 @@ void state_reboot_password(User *, char);
 void state_shutdown_time(User *, char);
 void state_shutdown_password(User *, char);
 void state_nologin_yesno(User *, char);
+
+#ifdef DEBUG
+void state_crash_yesno(User *, char);
+void state_crash_password(User *, char);
+#endif	/* DEBUG */
 
 void state_system_config_menu(User *, char);
 void state_param_bbs_name(User *, char);

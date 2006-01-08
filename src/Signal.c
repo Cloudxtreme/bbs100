@@ -587,6 +587,7 @@ User *usr;
 #endif
 		for(u = AllUsers; u != NULL; u = u->next) {
 			display_text(u, crash_screen);
+			Put(u, "<default>\n");
 			flush_Conn(u->conn);
 			close_connection(u, "system crash");
 		}

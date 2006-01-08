@@ -124,6 +124,9 @@ void state_sysop_menu(User *usr, char c) {
 				(shutdown_timer == NULL) ? "" : "Cancel ",
 				(shutdown_timer == NULL) ? "" : " <white>[!]<magenta>"
 			);
+#ifdef DEBUG
+			Put(usr, "<white>Ctrl-<hotkey>C<magenta>rash\n\n");
+#endif
 			if (!nologin_active)
 				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
 			else
@@ -304,6 +307,13 @@ void state_sysop_menu(User *usr, char c) {
 				CURRENT_STATE(usr);
 			}
 			Return;
+
+#ifdef DEBUG
+		case KEY_CTRL('C'):
+			Put(usr, "Crash\n");
+			CALL(usr, STATE_CRASH_YESNO);
+			Return;
+#endif
 
 		case 'n':
 		case 'N':
@@ -1383,11 +1393,11 @@ char total_buf[MAX_LINE];
 			"Enter reboot password: ", print_total_time((unsigned long)r + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
 	}
 	r = edit_password(usr, c);
-	if (r == EDIT_BREAK) {
+	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
 		if (reboot_timer != NULL)
-			Put(usr, "<red>Aborted, but note that another reboot procedure is already running\n\n");
+			Put(usr, "<red>Aborted, but note that another reboot procedure is already running\n");
 		else
-			Put(usr, "<red>Reboot cancelled\n\n");
+			Put(usr, "<red>Reboot cancelled\n");
 
 		POP_ARG(usr, &r, sizeof(int));
 		RET(usr);
@@ -1506,11 +1516,11 @@ char total_buf[MAX_LINE];
 			"Enter shutdown password: ", print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 	}
 	r = edit_password(usr, c);
-	if (r == EDIT_BREAK) {
+	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
 		if (shutdown_timer != NULL)
-			Put(usr, "<red>Aborted, but note that another shutdown procedure is already running\n\n");
+			Put(usr, "<red>Aborted, but note that another shutdown procedure is already running\n");
 		else
-			Put(usr, "<red>Shutdown cancelled\n\n");
+			Put(usr, "<red>Shutdown cancelled\n");
 
 		POP_ARG(usr, &r, sizeof(int));
 		RET(usr);
@@ -1570,6 +1580,87 @@ char total_buf[MAX_LINE];
 	}
 	Return;
 }
+
+#ifdef DEBUG
+/*
+	crash the BBS: request a core dump
+*/
+void state_crash_yesno(User *usr, char c) {
+	if (usr == NULL)
+		return;
+
+	Enter(state_crash_yesno);
+
+	if (c == INIT_STATE) {
+		Put(usr, "<cyan>Are you sure? (y/N): <white>");
+		Return;
+	}
+	switch(yesno(usr, c, 'N')) {
+		case YESNO_YES:
+			JMP(usr, STATE_CRASH_PASSWORD);
+			Return;
+
+		case YESNO_NO:
+			RET(usr);
+			Return;
+
+		default:
+			Put(usr, "<cyan>Crash the BBS, <hotkey>yes or <hotkey>no? (y/N): <white>");
+	}
+	Return;
+}
+
+void state_crash_password(User *usr, char c) {
+int r;
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_crash_password);
+
+	if (c == INIT_STATE) {
+		Print(usr, "\n"
+			"<yellow>*** <white>WARNING <yellow>***\n"
+			"\n"
+			"<red>This is serious. Enter the crash password and the system will dump core\n"
+			"Enter crash password: ");
+	}
+	r = edit_password(usr, c);
+	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
+		Put(usr, "<red>Cancelled\n");
+		RET(usr);
+		Return;
+	}
+	if (r == EDIT_RETURN) {
+		char *pwd;
+		User *u;
+
+		pwd = get_su_passwd(usr->name);
+		if (pwd == NULL) {				/* not allowed to enter sysop commands! (how did we get here?) */
+			Put(usr, "<red>Wrong password\n");
+			usr->runtime_flags &= ~RTF_SYSOP;
+			POP(usr);					/* drop out of sysop menu */
+			RET(usr);
+			Return;
+		}
+		if (verify_phrase(usr->edit_buf, pwd)) {
+			Put(usr, "<red>Wrong password\n");
+			RET(usr);
+			Return;
+		}
+		log_msg("SYSOP %s requested a core dump", usr->name);
+
+		for(u = AllUsers; u != NULL; u = u->next) {
+			display_text(u, crash_screen);
+			Put(u, "<default>\n");
+			flush_Conn(u->conn);
+		}
+		sleep(2);
+		abort();
+	}
+	Return;
+}
+#endif	/* DEBUG */
 
 void state_su_passwd(User *usr, char c) {
 int r;

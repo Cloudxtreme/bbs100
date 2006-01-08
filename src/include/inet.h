@@ -26,6 +26,12 @@
 
 #include "Conn.h"
 
+/*
+	bind() may retry for as long as 30*5 seconds == 2,5 minutes
+*/
+#define BIND_RETRIES	30
+#define BIND_WAIT		5
+
 char *inet_error(int, char *, int);
 char *inet_printaddr(char *, char *, char *, int);
 

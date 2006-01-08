@@ -22,7 +22,7 @@
 	if the program exits within MIN_RUNTIME seconds, it won't be
 	restarted automatically
 */
-#define MIN_RUNTIME		60
+#define MIN_RUNTIME		10
 
 #ifndef MAX_PATHLEN
 #define MAX_PATHLEN		1024
@@ -219,8 +219,10 @@ time_t start;
 */
 	first_start(&argv[1]);
 
+/*
 	close(fileno(stdout));
 	close(fileno(stderr));
+*/
 
 /*
 	monitor and restart the program if necessary
