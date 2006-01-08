@@ -1,10 +1,10 @@
 Changes as of January 8th 2006
-- word-wrapping kicked in 1 character too soon
 - safe cstrerror()
 - bind() retries for 2,5 minutes when the address is in use (the port is
   in TIME_WAIT)
 - when debug is enabled, sysop has a crash option to dump core
 - lists are now sorted using merge sort, which is more efficient
+- word-wrapping didn't take the length of the prompt into consideration
 
 Changes as of January 7th 2006
 - view old logs in color as well

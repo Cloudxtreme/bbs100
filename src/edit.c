@@ -1025,9 +1025,14 @@ char *p;
 */
 static void edit_wrap(User *usr, char c, char *prompt) {
 char erase[MAX_LONGLINE], wrap[MAX_LINE];
-int i, wrap_len;
+int i, wrap_len, n;
 
-	if (usr->edit_pos < MAX_LINE-1 && usr->edit_pos < usr->display->term_width-1) {
+	if (prompt == NULL)
+		n = 0;
+	else
+		n = strlen(prompt);
+
+	if (usr->edit_pos < MAX_LINE-1-n && usr->edit_pos < usr->display->term_width-1-n) {
 		edit_putchar(usr, c);
 		return;
 	}
@@ -1037,7 +1042,7 @@ int i, wrap_len;
 	erase[0] = wrap[0] = 0;
 
 	if (c != ' ' && cstrchr(Wrap_Charset2, c) == NULL) {
-		wrap_len = usr->display->term_width / 3;
+		wrap_len = (usr->display->term_width-n) / 3;
 		if (wrap_len >= MAX_LINE)
 			wrap_len = MAX_LINE-1;
 
