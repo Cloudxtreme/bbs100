@@ -167,6 +167,10 @@ Conn *conn;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
 			log_warn("inet_listen(%s): setsockopt(SO_REUSEADDR) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));
 
+		optval = 1;
+		if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(int)) == -1)
+			log_warn("inet_listen(%s): setsockopt(SO_KEEPALIVE) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));
+
 		optval = 0;
 		if (setsockopt(sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
 			log_warn("inet_listen(%s): setsockopt(SO_OOBINLINE) failed: %s", service, cstrerror(errno, errbuf, MAX_LINE));

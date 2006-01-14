@@ -1,3 +1,6 @@
+Changes as of January 14th 2006
+- use KEEPALIVE sockets
+
 Changes as of January 8th 2006
 - safe cstrerror()
 - bind() retries for 2,5 minutes when the address is in use (the port is

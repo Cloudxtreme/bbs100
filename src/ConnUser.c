@@ -149,6 +149,10 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 	if (ioctl(new_conn->sock, FIONBIO, &optval) == -1)		/* set non-blocking */
 		log_warn("ConnUser_accept(): failed to set socket nonblocking");
 
+	optval = 1;
+	if (setsockopt(new_conn->sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(int)) == -1)
+		log_warn("ConnUser_accept(): setsockopt(SO_KEEPALIVE) failed: %s", cstrerror(errno, errbuf, MAX_LINE));
+
 	optval = 0;
 	if (setsockopt(new_conn->sock, SOL_SOCKET, SO_OOBINLINE, &optval, sizeof(int)) == -1)
 		log_warn("ConnUser_accept(): setsockopt(SO_OOBINLINE) failed: %s", cstrerror(errno, errbuf, MAX_LINE));
