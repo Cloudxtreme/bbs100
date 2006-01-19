@@ -31,6 +31,11 @@
 #include <string.h>
 #include <sys/utsname.h>
 
+/*
+	nice for when debugging, you can always do a 'print version' while
+	analyzing a core dump
+*/
+char *version = VERSION;
 
 /*
 	Note: buf must be large enough (MAX_LONGLINE should do)
@@ -40,7 +45,7 @@ char *print_copyright(int full, char *progname, char *buf, int buflen) {
 		return NULL;
 
 	cstrcpy(buf, "bbs100 ", buflen);
-	cstrcat(buf, VERSION, buflen);
+	cstrcat(buf, version, buflen);
 
 	if (progname != NULL && *progname) {
 		cstrcat(buf, " ", buflen);

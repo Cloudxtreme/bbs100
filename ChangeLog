@@ -1,3 +1,7 @@
+Changes as of January 19th 2006
+- version is now a symbol (nice for 'print version' command while analyzing
+  a core dump)
+
 Changes as of January 14th 2006
 - use KEEPALIVE sockets
 

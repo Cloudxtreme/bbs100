@@ -27,6 +27,7 @@
 #define FULL	1
 
 extern char *copyright;
+extern char *version;
 
 char *print_copyright(int, char *, char *, int);
 
