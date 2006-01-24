@@ -1,3 +1,7 @@
+Changes as of January 24th 2006
+- bugfix; sometimes X would say that Y was busy mailing X, when Y was
+  mailing Z
+
 Changes as of January 19th 2006
 - version is now a symbol (nice for 'print version' command while analyzing
   a core dump)

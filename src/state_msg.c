@@ -945,7 +945,8 @@ int remove;
 					(PARAM_HAVE_FOLLOWUP && (usr->flags & USR_FOLLOWUP)) ? " in follow-up mode" : "");
 			else {
 				if ((usr->runtime_flags & RTF_BUSY_MAILING)
-					&& in_StringQueue(usr->recipients, from->name) != NULL)
+					&& usr->new_message != NULL
+					&& in_MailToQueue(usr->new_message->to, from->name) != NULL)
 					Print(from, "<yellow>%s<green> is busy mailing you a message\n", usr->name);
 				else {
 					if (PARAM_HAVE_HOLD && (usr->runtime_flags & RTF_HOLD)) {
