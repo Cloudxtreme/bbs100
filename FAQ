@@ -43,6 +43,15 @@ If you got bbs100 running on a platform not listed here, please share your
 experiences.
 
 
+WHAT ABOUT GCC 4?
+I have bad experiences with gcc 4. Maybe it is just me, but I have seen really
+strange crashes of code generated with gcc 4, while it was stable as a rock
+when built using gcc 3. On my test system, I explicitly specify the compiler
+of choice:
+
+    CC=gcc-3.3 ./configure --prefix=/home/bbs
+
+
 IS bbs100 IPv6 ENABLED?
 Yes. If you have problems with running bbs100 due to the networking code,
 please let me know.
@@ -50,9 +59,9 @@ please let me know.
 
 WHAT ABOUT RUNNING UNDER Cygwin?
 I did not succeed in building bbs100 3.0 with Cygwin 1.5.18 because it is not
-IPv6 ready. Check out http://www.ipv6style.jp/ for Cygwin patches.
+IPv6 ready. Check out http://win6.jp/Cygwin/ for Cygwin IPv6 extensions.
 (Your mileage may vary)
-Older versions of bbs100 do work with Cygwin, but you need a source patch
+Older versions of bbs100 do work with Cygwin, but need a source patch
 from http://www.heiho.net/bbs100/patches.html
 
 
