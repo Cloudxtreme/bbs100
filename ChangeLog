@@ -1,3 +1,7 @@
+Changes as of January 25th 2006
+- bugfix in logrotation: multiple rotation timers would be active at
+  the same time
+
 Changes as of January 24th 2006
 - bugfix; sometimes X would say that Y was busy mailing X, when Y was
   mailing Z

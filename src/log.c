@@ -74,9 +74,11 @@ struct tm *tm;
 		|| (!cstricmp(PARAM_LOGROTATE, "yearly") && tm->tm_yday == 1))
 		log_rotate();						/* will do an implicit logrotate_reset_timer() */
 	else {
-		log_err("unknown value '%s' for param logrotate", PARAM_LOGROTATE);
-		logrotate_reset_timer();
+		log_err("unknown value '%s' for param logrotate, resetting to 'daily'", PARAM_LOGROTATE);
+		Free(PARAM_LOGROTATE);
+		PARAM_LOGROTATE = cstrdup("daily");
 	}
+	logrotate_reset_timer();
 }
 
 /*
@@ -102,9 +104,13 @@ struct tm *tm;
 int init_log(void) {
 int fd;
 
-	if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
-		log_err("init_log(): failed to allocate a new Timer");
-		return -1;
+	if (logrotate_timer == NULL) {
+		if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
+			log_err("init_log(): failed to allocate a new Timer");
+			return -1;
+		}
+		logrotate_reset_timer();
+		add_Timer(&timerq, logrotate_timer);
 	}
 	if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
 		log_err("failed to open logfile %s", PARAM_SYSLOG);
@@ -132,14 +138,18 @@ int fd;
 		Free(PARAM_LOGROTATE);
 		PARAM_LOGROTATE = cstrdup("never");
 	}
-	if (!cstricmp(PARAM_LOGROTATE, "never"))
+	if (!cstricmp(PARAM_LOGROTATE, "never")
+		|| !cstricmp(PARAM_LOGROTATE, "daily")
+		|| !cstricmp(PARAM_LOGROTATE, "weekly")
+		|| !cstricmp(PARAM_LOGROTATE, "monthly")
+		|| !cstricmp(PARAM_LOGROTATE, "yearly"))
 		return 0;
 
-	logrotate_reset_timer();
-	add_Timer(&timerq, logrotate_timer);
+	log_warn("init_log(): unknown value '%s' for param logrotate; resetting to 'daily'");
+	Free(PARAM_LOGROTATE);
+	PARAM_LOGROTATE = cstrdup("daily");
 	return 0;
 }
-
 
 void log_entry(FILE *f, char *msg, char level, va_list ap) {
 time_t t;
@@ -223,9 +233,10 @@ va_list ap;
 	move_log() archives the logfile in the PARAM_ARCHIVEDIR directory
 */
 static void move_log(char *logfile) {
-char filename[MAX_PATHLEN], *p;
+char filename[MAX_PATHLEN+10], *p;
 time_t t;
 struct tm *tm;
+int i;
 
 	t = rtc;
 	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
@@ -247,6 +258,20 @@ struct tm *tm;
 		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 	path_strip(filename);
 
+/*
+	defensive programming so that logfiles don't get overwritten easily
+*/
+	p = filename + strlen(filename);
+	for(i = 1; i < 10; i++) {
+		if (!file_exists(filename))
+			break;
+
+		bufprintf(p, 10, "-%d", i);
+	}
+	if (i >= 10) {
+		log_err("too many logfiles already exist in the archive for this date; not rotating today");
+		return;
+	}
 	if (rename(logfile, filename) == -1)
 		log_err("failed to rename %s to %s", logfile, filename);
 }
@@ -260,7 +285,7 @@ void log_rotate(void) {
 
 	move_log(PARAM_SYSLOG);
 	move_log(PARAM_AUTHLOG);
-	init_log();
+	init_log();		/* create new logfiles */
 
 	log_entry(stdout, "start of new log", 'I', NULL);
 	log_entry(stderr, "start of new log", 'I', NULL);
