@@ -343,6 +343,21 @@ char buf[MAX_LINE];
 			notify_logout(usr);
 
 			Put(usr, "\n");
+/*
+	mail any X messages that were received while we were pressing 'Y'
+*/
+			if (usr->held_msgs != NULL) {
+				PList *pl;
+				BufferedMsg *m;
+				User *u;
+
+				for(pl = usr->held_msgs; pl != NULL; pl = pl->next) {
+					m = (BufferedMsg *)pl->p;
+
+					if ((u = is_online(m->from)) != NULL)
+						mail_lost_msg(u, m, usr);
+				}
+			}
 			display_screen(usr, PARAM_LOGOUT_SCREEN);
 			close_connection(usr, "LOGOUT %s (%s)", usr->name, usr->conn->hostname);
 			Return;
@@ -356,6 +371,71 @@ char buf[MAX_LINE];
 			Put(usr, buf);
 			Put(usr, "(y/N): <white>");
 	}
+	Return;
+}
+
+/*
+	this function looks a lot like state.c:mail_msg(), but it is not
+	quite the same ... (that's what you get with a state machine)
+
+	It saves the message as Mail>, but does not create a sender's copy
+*/
+void mail_lost_msg(User *from, BufferedMsg *msg, User *to) {
+Message *new_msg;
+int flags;
+char buf[PRINT_BUF], filename[MAX_PATHLEN];
+MailTo *mailto;
+
+	if (from == NULL || msg == NULL || to == NULL)
+		return;
+
+	Enter(mail_lost_msg);
+
+	if ((new_msg = new_Message()) == NULL) {
+		Perror(to, "Out of memory");
+		Return;
+	}
+	cstrcpy(new_msg->from, from->name, MAX_NAME);
+
+	if ((new_msg->to = new_MailToQueue()) == NULL) {
+		Perror(to, "Out of memory");
+		destroy_Message(new_msg);
+		Return;
+	}
+	if ((mailto = new_MailTo()) == NULL) {
+		Perror(to, "Out of memory");
+		Return;
+	}
+	mailto->name = to->name;
+	add_MailToQueue(new_msg->to, mailto);
+
+	new_msg->subject = cstrdup("<lost message>");
+
+	if ((new_msg->msg = new_StringIO()) == NULL) {
+		Perror(to, "Out of memory");
+		destroy_Message(new_msg);
+		Return;
+	}
+	put_StringIO(new_msg->msg, "<cyan>Delivery of this message was impossible. You do get it this way.\n \n");
+
+	flags = to->flags;
+	to->flags &= ~USR_XMSG_NUM;
+	buffered_msg_header(to, msg, buf, PRINT_BUF);
+	to->flags = flags;
+
+	put_StringIO(new_msg->msg, buf);
+	concat_StringIO(new_msg->msg, msg->msg);
+
+	new_msg->number = room_top(to->mail)+1;
+	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, new_msg->number);
+	path_strip(filename);
+
+	if (save_Message(new_msg, filename, 0))
+		Perror(to, "Error saving mail");
+	else
+		newMsg(to->mail, to);
+
+	destroy_Message(new_msg);
 	Return;
 }
 

@@ -1,6 +1,8 @@
 Changes as of February 1st 2006
 - fixed race condition for sending Mail to enemies
 - Mails with MailTo.number not set are no longer saved
+- fixed race condition with logging out while receiving an X message;
+  the lost messages are saved as Mail
 
 Changes as of January 25th 2006
 - bugfix in logrotation: multiple rotation timers would be active at

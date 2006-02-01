@@ -103,16 +103,19 @@ PList *pl;
 }
 
 void listdestroy_BufferedMsg(PList *root) {
-PList *pl;
+PList *pl, *pl_next;
 
 	if (root == NULL)
 		return;
 
 	root = rewind_PList(root);
-	for(pl = root; pl != NULL; pl = pl->next) {
+	for(pl = root; pl != NULL; pl = pl_next) {
+		pl_next = pl->next;
+
 		destroy_BufferedMsg((BufferedMsg *)pl->p);
 		pl->p = NULL;
 		destroy_PList(pl);
+		pl = NULL;
 	}
 }
 

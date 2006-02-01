@@ -49,6 +49,7 @@ void state_ansi_terminal(User *, char);
 void state_display_motd(User *, char);
 void state_go_online(User *, char);
 
+void mail_lost_msg(User *, BufferedMsg *, User *);
 int print_user_status(User *);
 
 extern StringList *banished;
