@@ -1408,8 +1408,6 @@ char total_buf[MAX_LINE];
 
 		POP_ARG(usr, &r, sizeof(int));
 
-		debug_breakpoint();
-
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
 			Put(usr, "<red>Wrong password\n");
@@ -1530,8 +1528,6 @@ char total_buf[MAX_LINE];
 		char *pwd, buf[PRINT_BUF];
 
 		POP_ARG(usr, &r, sizeof(int));
-
-		debug_breakpoint();
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {				/* not allowed to enter sysop commands! (how did we get here?) */

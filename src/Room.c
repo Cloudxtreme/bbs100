@@ -771,8 +771,6 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 	if (name == NULL || !*name || usr == NULL)
 		return NULL;
 
-	debug_breakpoint();
-
 	if ((r = find_Room(usr, name)) == NULL) {
 		int l;
 
