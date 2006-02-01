@@ -154,12 +154,12 @@ int r;
 			if (is_online(PARAM_NAME_GUEST) == NULL)
 				cstrcpy(usr->name, PARAM_NAME_GUEST, MAX_NAME);
 			else {
-				for(r = 2; r < 1024; r++) {
+				for(r = 2; r < MAX_GUESTS; r++) {
 					bufprintf(usr->tmpbuf[TMP_NAME], MAX_NAME, "%s %d", PARAM_NAME_GUEST, r);
 					if (is_online(usr->tmpbuf[TMP_NAME]) == NULL)
 						break;
 				}
-				if (r >= 1024) {
+				if (r >= MAX_GUESTS) {
 					Print(usr, "There are too many %s users online, please try again later\n", PARAM_NAME_GUEST);
 					close_connection(usr, "too many guest users online");
 					Return;
