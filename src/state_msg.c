@@ -968,9 +968,9 @@ int remove;
 		print_buffered_msg(usr, new_msg);
 		Put(usr, "\n");
 	}
-	Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
-
 	if (usr != from) {
+		Print(from, "<green>%s<green> received by <yellow>%s\n", msg_type, usr->name);
+
 /*
 	auto-reply if FOLLOWUP or if it was a Question
 	auto-reply is ignored when sending to yourself
