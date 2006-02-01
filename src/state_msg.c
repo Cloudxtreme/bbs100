@@ -2255,6 +2255,7 @@ void loop_send_mail(User *usr, char c) {
 	if (c == INIT_STATE)
 		LOOP(usr, count_Queue(usr->new_message->to)+1);
 	else {
+		StringList *sl;
 		MailTo *to;
 		User *u;
 		unsigned long i;
@@ -2262,6 +2263,21 @@ void loop_send_mail(User *usr, char c) {
 
 /* at the end of the loop, save a copy for the sender */
 		if (!usr->conn->loop_counter) {
+/*
+	check if any Mail was sent at all
+	if no Mail was sent, do not save a sender's copy either
+*/
+			for(to = (MailTo *)usr->new_message->to->head; to != NULL; to = to->next) {
+				if (to->number > 0L)
+					break;
+			}
+/*
+	if to == NULL, no Mail was sent at all
+	error message should already have been printed by now
+*/
+			if (to == NULL) {
+				Return;
+			}
 			usr->new_message->number = room_top(usr->mail)+1;
 			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
 			path_strip(filename);
@@ -2298,8 +2314,6 @@ void loop_send_mail(User *usr, char c) {
 		}
 		if ((u = is_online(to->name)) == NULL) {
 			if (!(usr->runtime_flags & RTF_SYSOP)) {	/* if not sysop, check permissions */
-				StringList *sl;
-
 				if ((u = new_User()) == NULL) {
 					Perror(usr, "Out of memory");
 					LOOP(usr, 0UL);
@@ -2312,7 +2326,7 @@ void loop_send_mail(User *usr, char c) {
 					Return;
 				}
 				if ((sl = in_StringList(u->enemies, usr->name)) != NULL) {
-					Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", sl->str);
+					Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", u->name);
 					destroy_User(u);
 					Return;
 				}
@@ -2320,9 +2334,15 @@ void loop_send_mail(User *usr, char c) {
 				u = NULL;
 			}
 			usr->new_message->number = to->number = get_mail_top(to->name)+1;
-		} else
+		} else {
+			if (!(usr->runtime_flags & RTF_SYSOP)) {
+				if ((sl = in_StringList(u->enemies, usr->name)) != NULL) {
+					Print(usr, "<yellow>%s<red> does not wish to receive <yellow>Mail><red> from you\n", u->name);
+					Return;
+				}
+			}
 			usr->new_message->number = to->number = room_top(u->mail)+1;
-
+		}
 		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
 		path_strip(filename);
 

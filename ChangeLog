@@ -1,3 +1,7 @@
+Changes as of February 1st 2006
+- fixed race condition for sending Mail to enemies
+- Mails with MailTo.number not set are no longer saved
+
 Changes as of January 25th 2006
 - bugfix in logrotation: multiple rotation timers would be active at
   the same time

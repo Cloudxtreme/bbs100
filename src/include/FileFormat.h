@@ -258,9 +258,10 @@
 	do {																	\
 		if ((y) != NULL)													\
 			for(to = (MailTo *)(y)->tail; to != NULL; to = to->next) {		\
-				if (flags == SAVE_MAILTO)									\
-					Fprintf(f, "%s=%s|%lu", (x), to->name, to->number);		\
-				else														\
+				if (flags == SAVE_MAILTO) {									\
+					if (to->number)											\
+						Fprintf(f, "%s=%s|%lu", (x), to->name, to->number);	\
+				} else														\
 					Fprintf(f, "%s=%s", (x), to->name);						\
 			}																\
 	} while(0)
