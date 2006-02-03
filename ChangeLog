@@ -1,6 +1,3 @@
-Changes as of February 3rd 2006
-- bugfix in flush_Conn() (for a bug that I've never seen manifest itself)
-
 Changes as of February 1st 2006
 - fixed race condition for sending Mail to enemies
 - Mails with MailTo.number not set are no longer saved

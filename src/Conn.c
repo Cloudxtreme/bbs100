@@ -163,7 +163,7 @@ char buf[MAX_PATHLEN];
 		if (err != n)							/* partially written */
 			seek_StringIO(conn->output, err - n, STRINGIO_CUR);
 
-		shift_StringIO(conn->output, err);
+		shift_StringIO(conn->output, STRINGIO_MINSIZE);
 	}
 	return 0;
 }
