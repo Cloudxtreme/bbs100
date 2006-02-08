@@ -23,6 +23,8 @@
 #ifndef SYS_TIME_H_WJ99
 #define SYS_TIME_H_WJ99 1
 
+#include "config.h"
+
 #ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>
 #include <time.h>

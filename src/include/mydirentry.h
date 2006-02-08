@@ -23,6 +23,8 @@
 #ifndef MYDIRENTRY_H_WJ99
 #define MYDIRENTRY_H_WJ99	1
 
+#include "config.h"
+
 #ifdef HAVE_DIRENT_H
 # include <dirent.h>
 # define NAMLEN(dirent) strlen((dirent)->d_name)
