@@ -19,6 +19,9 @@ Just "bee-bee-es one-hundred" or "bee-bee-es-hundred" if you like.
 WHY DID IT TAKE SO LONG FOR VERSION 3.0 TO COME?
 I kept making big changes, and when it was finally done, it still had
 to be tested for stability for a reasonably long period.
+bbs100 does not really adhere to the unwritten rule 'release frequent'.
+I'd rather deliver a quality product than an intermediate version that
+is full of weird bugs.
 
 
 PORTABILITY
