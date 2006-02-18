@@ -42,6 +42,7 @@
 #include "memset.h"
 #include "bufprintf.h"
 #include "cstrerror.h"
+#include "sys_wait.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -63,10 +64,6 @@
 
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
-#endif
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
 #endif
 
 #ifdef HAVE_SYS_FILIO_H

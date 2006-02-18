@@ -24,12 +24,9 @@
 
 #include "defines.h"
 #include "bufprintf.h"
+#include "sys_wait.h"
 
 #include <unistd.h>
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
 
 
 int my_mkdir(char *path, mode_t mode) {

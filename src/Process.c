@@ -32,6 +32,7 @@
 #include "Param.h"
 #include "ConnResolv.h"
 #include "cstrerror.h"
+#include "sys_wait.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,10 +40,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/socket.h>
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
 
 
 static PList *process_table = NULL;

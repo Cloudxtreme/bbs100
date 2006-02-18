@@ -27,6 +27,7 @@
 #include "util.h"
 #include "Param.h"
 #include "bufprintf.h"
+#include "sys_wait.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 
 
 #ifdef DEBUG
