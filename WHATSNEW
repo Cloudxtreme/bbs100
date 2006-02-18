@@ -124,6 +124,7 @@ What's new to the admins?
   who are not invited or room aide there.
 - sysop menu shows extensive information on the BinAlloc memory allocator
   if it is enabled
+- make live core dumps for debugging when built with -DEBUG
 
 
 What's new internally?

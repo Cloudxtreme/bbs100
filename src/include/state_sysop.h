@@ -66,8 +66,7 @@
 #define STATE_NOLOGIN_YESNO				state_nologin_yesno
 
 #ifdef DEBUG
-#define STATE_CRASH_YESNO				state_crash_yesno
-#define STATE_CRASH_PASSWORD			state_crash_password
+#define STATE_COREDUMP_YESNO			state_coredump_yesno
 #endif	/* DEBUG */
 
 #define STATE_SYSTEM_CONFIG_MENU		state_system_config_menu
@@ -215,8 +214,7 @@ void state_shutdown_password(User *, char);
 void state_nologin_yesno(User *, char);
 
 #ifdef DEBUG
-void state_crash_yesno(User *, char);
-void state_crash_password(User *, char);
+void state_coredump_yesno(User *, char);
 #endif	/* DEBUG */
 
 void state_system_config_menu(User *, char);

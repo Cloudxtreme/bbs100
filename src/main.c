@@ -56,6 +56,7 @@
 #include "BinAlloc.h"
 #include "helper.h"
 #include "OnlineUser.h"
+#include "coredump.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,36 +80,6 @@ AtomicFile *f;
 		fprintf(f->f, "%lu\n", (unsigned long)getpid());
 		closefile(f);
 	}
-}
-
-/*
-	save core dumps in the directory under log/crash/
-*/
-static int savecore(void) {
-struct stat statbuf;
-
-	if (!stat("core", &statbuf)) {
-		char filename[MAX_PATHLEN];
-		struct tm *tm;
-		int i;
-
-		if ((tm = localtime(&statbuf.st_ctime)) == NULL)
-			return 0;
-
-		bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
-		path_strip(filename);
-		i = 1;
-		while(!stat(filename, &statbuf) && i < 10) {
-			bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
-			path_strip(filename);
-			i++;
-		}
-		if (rename("core", filename) == -1)
-			printf("savecore(): failed to save core as %s\n\n", filename);
-		else
-			printf("saving core as %s\n\n", filename);
-	}
-	return 0;
 }
 
 static void check_nologin(void) {
@@ -256,7 +227,8 @@ char buf[MAX_LONGLINE];
 		exit(-1);
 	}
 	write_pidfile();
-	savecore();
+	if (savecore() < 0)
+		printf("failed to save core dump under %s\n", PARAM_CRASHDIR);
 
 	init_Signal(debugger);
 	bbs_init_process();

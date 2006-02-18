@@ -61,12 +61,12 @@
 #include "BinAlloc.h"
 #include "NewUserLog.h"
 #include "DirList.h"
+#include "coredump.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 
 
@@ -125,7 +125,7 @@ void state_sysop_menu(User *usr, char c) {
 				(shutdown_timer == NULL) ? "" : " <white>[!]<magenta>"
 			);
 #ifdef DEBUG
-			Put(usr, "<white>Ctrl-<hotkey>C<magenta>rash\n\n");
+			Put(usr, "<white>Ctrl-<hotkey>C<magenta>ore dump\n\n");
 #endif
 			if (!nologin_active)
 				Put(usr, "Activate <hotkey>nologin                  <hotkey>Help\n");
@@ -310,8 +310,8 @@ void state_sysop_menu(User *usr, char c) {
 
 #ifdef DEBUG
 		case KEY_CTRL('C'):
-			Put(usr, "Crash\n");
-			CALL(usr, STATE_CRASH_YESNO);
+			Put(usr, "Core dump\n");
+			CALL(usr, STATE_COREDUMP_YESNO);
 			Return;
 #endif
 
@@ -1579,13 +1579,13 @@ char total_buf[MAX_LINE];
 
 #ifdef DEBUG
 /*
-	crash the BBS: request a core dump
+	request a live core dump
 */
-void state_crash_yesno(User *usr, char c) {
+void state_coredump_yesno(User *usr, char c) {
 	if (usr == NULL)
 		return;
 
-	Enter(state_crash_yesno);
+	Enter(state_coredump_yesno);
 
 	if (c == INIT_STATE) {
 		Put(usr, "<cyan>Are you sure? (y/N): <white>");
@@ -1593,7 +1593,8 @@ void state_crash_yesno(User *usr, char c) {
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			JMP(usr, STATE_CRASH_PASSWORD);
+			dumpcore(usr);
+			RET(usr);
 			Return;
 
 		case YESNO_NO:
@@ -1601,58 +1602,7 @@ void state_crash_yesno(User *usr, char c) {
 			Return;
 
 		default:
-			Put(usr, "<cyan>Crash the BBS, <hotkey>yes or <hotkey>no? (y/N): <white>");
-	}
-	Return;
-}
-
-void state_crash_password(User *usr, char c) {
-int r;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_crash_password);
-
-	if (c == INIT_STATE) {
-		Print(usr, "\n"
-			"<yellow>*** <white>WARNING <yellow>***\n"
-			"\n"
-			"<red>This is serious. Enter the crash password and the system will dump core\n"
-			"Enter crash password: ");
-	}
-	r = edit_password(usr, c);
-	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
-		Put(usr, "<red>Cancelled\n");
-		RET(usr);
-		Return;
-	}
-	if (r == EDIT_RETURN) {
-		char *pwd;
-		User *u;
-
-		pwd = get_su_passwd(usr->name);
-		if (pwd == NULL) {				/* not allowed to enter sysop commands! (how did we get here?) */
-			Put(usr, "<red>Wrong password\n");
-			usr->runtime_flags &= ~RTF_SYSOP;
-			POP(usr);					/* drop out of sysop menu */
-			RET(usr);
-			Return;
-		}
-		if (verify_phrase(usr->edit_buf, pwd)) {
-			Put(usr, "<red>Wrong password\n");
-			RET(usr);
-			Return;
-		}
-		log_msg("SYSOP %s requested a core dump", usr->name);
-
-		for(u = AllUsers; u != NULL; u = u->next) {
-			display_text(u, crash_screen);
-			Put(u, "<default>\n");
-			flush_Conn(u->conn);
-		}
-		sleep(2);
-		abort();
+			Put(usr, "<cyan>Dump core, <hotkey>yes or <hotkey>no? (y/N): <white>");
 	}
 	Return;
 }
