@@ -83,6 +83,14 @@ re-occur for that user.
 This is a warning that can safely be ignored.
 
 
+WHAT DOES THE PARAMETER have_binalloc DO?
+It enables a special memory allocator. You shouldn't enable it because
+I suspect it's bugged. Nevertheless, it is quite useful for debugging
+and finding memory leaks. To enable it, you must build the bbs with
+the configure option --enable-binalloc=yes, and set the parameter in
+etc/param to 'yes' as well.
+
+
 YAWC
 Why isn't YAWC mentioned anywhere in the README or CREDITS?
 Well, YAWC is yet another clone of DOC by Kenneth Haglund (also known as
