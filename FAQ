@@ -16,6 +16,11 @@ How is 'bbs100' pronounced?
 Just "bee-bee-es one-hundred" or "bee-bee-es-hundred" if you like.
 
 
+WHY DID IT TAKE SO LONG FOR VERSION 3.0 TO COME?
+I kept making big changes, and when it was finally done, it still had
+to be tested for stability for a reasonably long period.
+
+
 PORTABILITY
 What platforms does bbs100 run on?
 Basically, it runs on any POSIX compliant platform.
