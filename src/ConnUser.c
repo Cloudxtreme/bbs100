@@ -37,6 +37,7 @@
 #include "cstring.h"
 #include "cstrerror.h"
 #include "sys_wait.h"
+#include "my_fcntl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,10 +63,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <errno.h>
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
 
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>

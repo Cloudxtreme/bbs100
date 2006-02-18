@@ -26,17 +26,13 @@
 #include "config.h"
 #include "version.h"
 #include "sys_wait.h"
+#include "my_fcntl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-
 #include <sys/types.h>
 
 #ifdef HAVE_SYS_IOCTL_H

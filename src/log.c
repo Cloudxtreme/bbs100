@@ -36,13 +36,14 @@
 #include "locale_system.h"
 #include "cstring.h"
 #include "sys_time.h"
+#include "my_fcntl.h"
 #include "bufprintf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
-#include <fcntl.h>
+
 
 #define MAX_LOGLINE	4096
 

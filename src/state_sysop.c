@@ -62,11 +62,11 @@
 #include "NewUserLog.h"
 #include "DirList.h"
 #include "coredump.h"
+#include "my_fcntl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <sys/types.h>
 
 

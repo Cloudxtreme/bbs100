@@ -57,15 +57,20 @@
 #include "helper.h"
 #include "OnlineUser.h"
 #include "coredump.h"
+#include "my_fcntl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+
 #include <sys/types.h>
+
 
 extern StringList *banished;
 

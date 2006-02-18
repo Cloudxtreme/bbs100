@@ -44,13 +44,14 @@
 #include "passwd.h"
 #include "Timer.h"
 #include "sys_time.h"
+#include "my_fcntl.h"
 #include "cstring.h"
 
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
-#include <fcntl.h>
 #include <ctype.h>
+
 
 static char chartab[256];
 static int std_crypt = 1;		/* does this system have a standard DES crypt(3) ? */

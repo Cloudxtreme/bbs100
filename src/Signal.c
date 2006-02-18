@@ -39,11 +39,11 @@
 #include "OnlineUser.h"
 #include "Memory.h"
 #include "bufprintf.h"
+#include "my_fcntl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <signal.h>
 
 #ifdef HAVE_SYS_SIGNAL_H
