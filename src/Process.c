@@ -42,6 +42,8 @@
 #include <sys/socket.h>
 
 
+int ignore_sigchld = 0;
+
 static PList *process_table = NULL;
 
 
@@ -126,7 +128,7 @@ char errbuf[MAX_LINE];
 		return;
 	}
 	if (pid == (pid_t)0L) {
-		log_msg("SIGCHLD caught; waitpid() says no child available");
+/*		log_err("SIGCHLD caught; waitpid() says no child available");	*/
 		return;
 	}
 	for(pl = process_table; pl != NULL; pl = pl_next) {
@@ -168,7 +170,15 @@ void process_sigpipe(int sig) {
 
 /* SIGCHLD was caused by an exiting child */
 void process_sigchld(int sig) {
-	log_err("SIGCHLD caught");
+/*
+	there are circumstances when we want to avoid this
+	(like when taking a core dump)
+	easiest portable solution is to simply use this variable and return
+*/
+	if (ignore_sigchld)
+		return;
+
+/*	log_msg("SIGCHLD caught");	*/
 	wait_process();
 }
 

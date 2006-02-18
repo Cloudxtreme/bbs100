@@ -39,6 +39,8 @@ typedef struct {
 	time_t start_time;
 } Process;
 
+extern int ignore_sigchld;
+
 int fork_process(Process *);
 int restart_process(Process *);
 void wait_process(void);

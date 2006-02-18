@@ -28,6 +28,7 @@
 #include "Param.h"
 #include "bufprintf.h"
 #include "sys_wait.h"
+#include "Process.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +46,17 @@ int err;
 
 	Enter(dumpcore);
 
+	log_msg("SYSOP %s requested a core dump", usr->name);
+
+/*
+	ignore SIGCHLD now; this merely supresses printing an error message;
+	the code in Process.c likes watching over our children ...
+*/
+	ignore_sigchld = 1;
+
 	if ((pid = fork()) == -1) {
 		Perror(usr, "Failed to create a core dump");
+		ignore_sigchld = 0;
 		Return;
 	}
 	if (!pid)
@@ -56,12 +66,18 @@ int err;
 		err = waitpid(pid, NULL, 0);
 	} while(err == -1 && errno == EINTR);
 
+	ignore_sigchld = 0;
+/*
+	Even though checking errors is correct, continue if waitpid() didn't
+	see our child. The SIGCHLD handler may already have beaten us to it.
+
 	if (err == -1 || !err) {
 		Print(usr, "<red>Failed to collect a core dump\n");
 		Return;
 	}
+*/
 	if ((err = savecore()) == 0) {
-		Print(usr, "No core file found\n");
+		Print(usr, "<red>Failed to collect a core dump\n");
 		Return;
 	}
 	if (err == -1) {
