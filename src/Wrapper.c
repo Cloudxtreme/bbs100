@@ -338,7 +338,14 @@ int bits;
 	if (read_inet_addr(maskbuf, mask, &bits))
 		return -1;
 
-	return 0;
+	if (flags & WRAPPER_IP4) {
+		if (bits & WRAPPER_IP4)
+			return 0;
+		return -1;
+	}
+	if (!(bits & WRAPPER_IP4))
+		return 0;
+	return -1;
 }
 
 char *print_inet_addr(IP_addr *addr, char *buf, int buflen, int flags) {
