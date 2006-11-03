@@ -913,13 +913,13 @@ int i;
 				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
-					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
-					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));
+					print_inet_addr(&w->addr, addr_buf, MAX_LINE, w->flags),
+					print_inet_mask(&w->mask, mask_buf, MAX_LINE, w->flags));
 			else
 				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
-					print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
-					print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags));
+					print_inet_addr(&w->addr, addr_buf, MAX_LINE, w->flags),
+					print_inet_mask(&w->mask, mask_buf, MAX_LINE, w->flags));
 
 			if (w->comment != NULL)
 				Print(usr, "%-40s <cyan># %s\n", buf, w->comment);
@@ -949,7 +949,7 @@ int i;
 			Return;
 		}
 		if (i == 1) {
-			int addr[8], mask[8];
+			IP_addr addr, mask;
 
 			Put(usr, "Add wrapper\n");
 			if ((w = new_Wrapper()) == NULL) {
@@ -957,12 +957,11 @@ int i;
 				RET(usr);
 				Return;
 			}
-			memset(addr, 0, sizeof(int)*8);
+			memset(&addr, 0, sizeof(IP_addr));
+			memset(&mask, 0xff, sizeof(IP_addr));
 
-			for(j = 0; j < 8; j++)
-				mask[j] = 0xffff;
-
-			set_Wrapper(w, 0, addr, mask, NULL);
+/* by default, start with a wrapper for IPv4 */
+			set_Wrapper(w, WRAPPER_IP4, &addr, &mask, NULL);
 			add_Wrapper(&AllWrappers, w);
 			i = count_List(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
@@ -1029,10 +1028,10 @@ char buf[MAX_LINE];
 					(w->flags & WRAPPER_APPLY_ALL) ? "All users" : "New users only");
 
 			Print(usr, "<hotkey>IP address                   <white>%s<magenta>\n",
-				print_inet_addr(w->addr, buf, MAX_LINE, w->flags));
+				print_inet_addr(&w->addr, buf, MAX_LINE, w->flags));
 
 			Print(usr, "IP <hotkey>mask                      <white>%s<magenta>\n",
-				print_inet_mask(w->mask, buf, MAX_LINE, w->flags));
+				print_inet_mask(&w->mask, buf, MAX_LINE, w->flags));
 
 			Print(usr,
 				"<hotkey>Comment                      <cyan>%s<magenta>\n"
@@ -1163,7 +1162,7 @@ int r, idx;
 			RET(usr);
 			Return;
 		}
-		if (read_inet_addr(usr->edit_buf, w->addr, &w->flags)) {
+		if (read_inet_addr(usr->edit_buf, &w->addr, &w->flags)) {
 			Put(usr, "<red>Bad IP net address (use numeric notation)\n");
 			RET(usr);
 			Return;
@@ -1214,7 +1213,7 @@ int r, idx;
 			RET(usr);
 			Return;
 		}
-		if (read_inet_mask(usr->edit_buf, w->mask, w->flags)) {
+		if (read_inet_mask(usr->edit_buf, &w->mask, w->flags)) {
 			Put(usr, "<red>Bad IP mask\n");
 			RET(usr);
 			Return;

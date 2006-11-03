@@ -1,5 +1,6 @@
 Changes as of November 3rd 2006
 - replaced get_basename() with standard basename()
+- Wrappers with in_addr and in6_addr, and inet_ntop(), inet_pton()
 
 Changes as of February 18th 2006
 - make live core dumps from the Sysop menu when built with -DEBUG

@@ -36,7 +36,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 Wrapper *AllWrappers = NULL;
 
@@ -53,21 +55,25 @@ void destroy_Wrapper(Wrapper *w) {
 	Free(w);
 }
 
-Wrapper *set_Wrapper(Wrapper *w, int flags, int *addr, int *mask, char *comment) {
+Wrapper *set_Wrapper(Wrapper *w, int flags, IP_addr *addr, IP_addr *mask, char *comment) {
+int size;
+
 	if (w == NULL)
 		return NULL;
 
 	w->flags = flags;
 
+	size = (flags & WRAPPER_IP4) ? sizeof(struct in_addr) : sizeof(struct in6_addr);
+
 	if (addr == NULL)
-		memset(w->addr, 0, sizeof(int)*8);
+		memset(&w->addr, 0, size);
 	else
-		memcpy(w->addr, addr, sizeof(int)*8);
+		memcpy(&w->addr, addr, size);
 
 	if (mask == NULL)
-		memset(w->mask, 0, sizeof(int)*8);
+		memset(&w->mask, 0, size);
 	else
-		memcpy(w->mask, mask, sizeof(int)*8);
+		memcpy(&w->mask, mask, size);
 
 	if (comment != NULL && *comment) {
 		while(*comment && (*comment == ' ' || *comment == '\t' || *comment == '#' || *comment == '\n'))
@@ -145,7 +151,8 @@ err_load_Wrapper:
 
 Wrapper *make_Wrapper(char *allowbuf, char *netbuf, char *maskbuf, char *comment) {
 Wrapper *w;
-int flags, addr[8], mask[8];
+int flags;
+IP_addr addr, mask;
 
 	if (allowbuf == NULL || !*allowbuf
 		|| netbuf == NULL || !*netbuf
@@ -153,10 +160,10 @@ int flags, addr[8], mask[8];
 		return NULL;
 
 	flags = 0;
-	if (read_inet_addr(netbuf, addr, &flags))
+	if (read_inet_addr(netbuf, &addr, &flags))
 		return NULL;
 
-	if (read_inet_mask(maskbuf, mask, flags))
+	if (read_inet_mask(maskbuf, &mask, flags))
 		return NULL;
 
 	if (!cstricmp(allowbuf, "allow"))
@@ -178,7 +185,7 @@ int flags, addr[8], mask[8];
 	if ((w = new_Wrapper()) == NULL)
 		return NULL;
 
-	if (set_Wrapper(w, flags, addr, mask, comment) == NULL) {
+	if (set_Wrapper(w, flags, &addr, &mask, comment) == NULL) {
 		destroy_Wrapper(w);
 		return NULL;
 	}
@@ -195,8 +202,8 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 	while(w != NULL) {
 		fprintf(f->f, "%s%s %s/%s", (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 			(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
-			print_inet_addr(w->addr, addr_buf, MAX_LINE, w->flags),
-			print_inet_mask(w->mask, mask_buf, MAX_LINE, w->flags)
+			print_inet_addr(&w->addr, addr_buf, MAX_LINE, w->flags),
+			print_inet_mask(&w->mask, mask_buf, MAX_LINE, w->flags)
 		);
 		if (w->comment != NULL)
 			fprintf(f->f, "\t# %s", w->comment);
@@ -213,25 +220,18 @@ char addr_buf[MAX_LINE], mask_buf[MAX_LINE];
 	always allow, unless denied
 
 	it is possible to deny whole networks and allow specific hosts
-
-	Mind that IPv4 masks can block IPv6 addresses and vice versa;
-	internally the wrappers are all converted to 8 16-bit words
-	The reason for this is that when you connect to ::ffff:127.0.0.1,
-	it presents itself in a different way than when you use 127.0.0.1
-	or ::1,	when they are really all the same destination (in the end)
-	Therefore I feel it is OK to treat the wrappers all in the same manner,
-	whether they are for IPv4 addresses or not
 */
 int allow_Wrapper(char *ipnum, int apply_all) {
 Wrapper *w;
-int addr[8], flags;
+IP_addr addr;
+int flags;
 
 	if (ipnum == NULL)
 		return 1;			/* bug or other problem; allow */
 
 	flags = 0;
-	if (read_inet_addr(ipnum, addr, &flags)) {
-		log_err("allow_Wrapper(): read_inet_addr(%s) failed (bug?), allowing connection", ipnum);
+	if (read_inet_addr(ipnum, &addr, &flags)) {
+		log_err("allow_Wrapper(): read_inet_addr(%s) failed, allowing connection", ipnum);
 		return 1;
 	}
 /* see if it is explicitly allowed */
@@ -239,7 +239,7 @@ int addr[8], flags;
 		if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
 			continue;
 
-		if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+		if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, &addr))
 			return 1;
 	}
 /* see if denied */
@@ -247,7 +247,7 @@ int addr[8], flags;
 		if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
 			continue;
 
-		if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+		if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, &addr))
 			return 0;
 	}
 /* default: allow */
@@ -255,14 +255,15 @@ int addr[8], flags;
 }
 
 int allow_one_Wrapper(Wrapper *w, char *ipnum, int apply_all) {
-int addr[8], flags;
+int flags;
+IP_addr addr;
 
 	if (w == NULL)
 		return 1;
 
 	flags = 0;
-	if (read_inet_addr(ipnum, addr, &flags)) {
-		log_err("allow_one_Wrapper(): read_inet_addr(%s) failed (bug?), allowing connection", ipnum);
+	if (read_inet_addr(ipnum, &addr, &flags)) {
+		log_err("allow_one_Wrapper(): read_inet_addr(%s) failed, allowing connection", ipnum);
 		return 1;
 	}
 /* see if it is explicitly allowed */
@@ -270,11 +271,11 @@ int addr[8], flags;
 	if (apply_all && !(w->flags & WRAPPER_APPLY_ALL))
 		return 1;
 
-	if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+	if ((w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, &addr))
 		return 1;
 
 /* see if denied */
-	if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, addr))
+	if (!(w->flags & WRAPPER_ALLOW) && mask_Wrapper(w, &addr))
 		return 0;
 
 /* default: allow */
@@ -285,18 +286,19 @@ int addr[8], flags;
 	see if the mask fits
 	(this doesn't say anything about allowing or denying)
 */
-int mask_Wrapper(Wrapper *w, int *addr) {
-int i;
+int mask_Wrapper(Wrapper *w, IP_addr *addr) {
+int i, size;
 
 	if (w == NULL) {
 		log_err("check_Wrapper(): BUG! w == NULL");
 		return 0;
 	}
-	for(i = 0; i < 8; i++) {
-		if ((w->addr[i] & w->mask[i]) != (addr[i] & w->mask[i]))
+	size = (w->flags & WRAPPER_IP4) ? 4 : 16;
+	for(i = 0; i < size; i++) {
+		if ((w->addr.saddr[i] & w->mask.saddr[i]) != (addr->saddr[i] & w->mask.saddr[i]))
 			break;
 	}
-	if (i == 8)
+	if (i == size)
 		return 1;
 
 	return 0;
@@ -304,245 +306,24 @@ int i;
 
 /*
 	read IPv4 or IPv6 internet address
-
-	IPv4 addresses are internally converted to ::ffff:123.123.123.123
-	although this is technically incorrect (since we may well be listening
-	to an IPv4 interface..!) but this does work OK for the wrappers
-
-	This function can probably be simplified a lot by using getnameinfo(),
-	but I want to stay away from using the internals of sockaddr_in and
-	sockaddr_in6
 */
-int read_inet_addr(char *ipnum, int *ip6, int *flags) {
-int a1, a2, a3, a4, l, i, num_colons, abbrev;
-char addr[MAX_LINE], *p, *startp;
-
-	if (ipnum == NULL || !*ipnum || ip6 == NULL || flags == NULL)
+int read_inet_addr(char *ipnum, IP_addr *addr, int *flags) {
+	if (ipnum == NULL || !*ipnum || addr == NULL || flags == NULL)
 		return -1;
 
-	cstrncpy(addr, ipnum, MAX_LINE);
-
-	if (sscanf(addr, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
-		if (a1 < 0 || a1 > 255
-			|| a2 < 0 || a2 > 255
-			|| a3 < 0 || a3 > 255
-			|| a4 < 0 || a4 > 255) {
-			log_err("read_inet_addr(): invalid IPv4 address %s", ipnum);
-			return -1;
-		}
-		ip6[0] = ip6[1] = ip6[2] = ip6[3] = ip6[4] = 0;
-		ip6[5] = 0xffff;
-		ip6[6] = (a1 << 8) | a2;
-		ip6[7] = (a3 << 8) | a4;
+	*flags &= ~WRAPPER_IP4;
+	if (inet_pton(AF_INET, ipnum, &addr->ipv4)) {		/* try as IPv4 */
 		*flags |= WRAPPER_IP4;
 		return 0;
 	}
-	*flags = 0;
-	if (cstrchr(addr, ':') == NULL) {
-		log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-		return -1;
-	}
-	if (*addr == '[') {
-		l = strlen(addr)-1;
-		if (addr[l] != ']') {
-			log_err("read_inet_addr(): missing ']' at the end of address '%s'\n", ipnum);
-			return -1;
-		}
-		addr[l] = 0;
-		memmove(addr, addr+1, l);
-		l--;
-	}
-	memset(ip6, 0, sizeof(int)*8);
-	num_colons = abbrev = 0;
-	startp = addr;
+	if (inet_pton(AF_INET6, ipnum, &addr->ipv6))		/* try as IPv6 */
+		return 0;
 
-/* start at left-hand side */
-	i = 0;
-	while((p = cstrchr(startp, ':')) != NULL) {
-		*p = 0;
-		num_colons++;
-		if (num_colons > 7) {
-			log_err("read_inet_addr(): too many colons in '%s'\n", ipnum);
-			return -1;
-		}
-		p++;
-		if (*p == ':') {		/* double colon */
-			abbrev = 1;
-			num_colons++;
-			if (num_colons > 7) {
-				log_err("read_inet_addr(): too many colons in '%s'\n", ipnum);
-				return -1;
-			}
-			p++;
-			if (*p == ':') {
-				log_err("read_inet_addr(): invalid syntax '%s'\n", ipnum);
-				return -1;
-			}
-			if (!*startp)
-				break;
-		}
-		if (!*startp) {
-			log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-			return -1;
-		}
-		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
-			if (i != 6) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
-				return -1;
-			}
-			if (a1 < 0 || a1 > 255
-				|| a2 < 0 || a2 > 255
-				|| a3 < 0 || a3 > 255
-				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
-				return -1;
-			}
-			ip6[6] = (a1 << 8) | a2;
-			ip6[7] = (a3 << 8) | a4;
-			startp = p = NULL;
-			num_colons++;
-			*flags |= WRAPPER_MIXED;
-			break;
-		} else {
-			if (!is_hexadecimal(startp)) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
-				return -1;
-			}
-			ip6[i] = (int)cstrtoul(startp, 16);
-			if (ip6[i] < 0 || ip6[i] > 0xffff) {
-				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-				return -1;
-			}
-			i++;
-		}
-		if (abbrev)			/* found a double colon */
-			break;
-
-		startp = p;
-	}
-	if (p == NULL && startp != NULL && *startp) {
-		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
-			if (i != 6) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
-				return -1;
-			}
-			if (a1 < 0 || a1 > 255
-				|| a2 < 0 || a2 > 255
-				|| a3 < 0 || a3 > 255
-				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
-				return -1;
-			}
-			ip6[6] = (a1 << 8) | a2;
-			ip6[7] = (a3 << 8) | a4;
-			startp = p = NULL;
-			num_colons++;
-			*flags |= WRAPPER_MIXED;
-		} else {
-			if (!is_hexadecimal(startp)) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
-				return -1;
-			}
-			ip6[i] = (int)cstrtoul(startp, 16);
-			if (ip6[i] < 0 || ip6[i] > 0xffff) {
-				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-				return -1;
-			}
-			i++;
-		}
-	}
-	if (p != NULL && *p) {
-/* right-hand side */
-		i = 7;
-		startp = p;
-		while((p = cstrrchr(startp, ':')) != NULL) {
-			num_colons++;
-			if (num_colons > 7) {
-				fprintf(stderr, "too many colons\n");
-				return -1;
-			}
-			if (abbrev && p > startp && p[-1] == ':') {
-				log_err("read_inet_addr(): multiple double colons in '%s'\n", ipnum);
-				return -1;
-			}
-			*p = 0;
-			p++;
-			if (!*p) {
-				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-				return -1;
-			}
-			if (sscanf(p, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
-				if (i != 7) {
-					log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
-					return -1;
-				}
-				if (a1 < 0 || a1 > 255
-					|| a2 < 0 || a2 > 255
-					|| a3 < 0 || a3 > 255
-					|| a4 < 0 || a4 > 255) {
-					log_err("read_inet_addr(): invalid mixed address %s", ipnum);
-					return -1;
-				}
-				ip6[6] = (a1 << 8) | a2;
-				ip6[7] = (a3 << 8) | a4;
-				i = 5;
-				num_colons++;
-				*flags |= WRAPPER_MIXED;
-			} else {
-				if (!is_hexadecimal(p)) {
-					log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
-					return -1;
-				}
-				ip6[i] = (int)cstrtoul(p, 16);
-				if (ip6[i] < 0 || ip6[i] > 0xffff) {
-					log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-					return -1;
-				}
-				i--;
-			}
-			if (i < 0)
-				break;
-		}
-	}
-	if (p == NULL && startp != NULL && *startp && i >= 0) {
-		if (sscanf(startp, "%d.%d.%d.%d", &a1, &a2, &a3, &a4) == 4) {
-			if (i != 7) {
-				log_err("read_inet_addr(): invalid mixed address '%s'\n", ipnum);
-				return -1;
-			}
-			if (a1 < 0 || a1 > 255
-				|| a2 < 0 || a2 > 255
-				|| a3 < 0 || a3 > 255
-				|| a4 < 0 || a4 > 255) {
-				log_err("read_inet_addr(): invalid mixed address %s", ipnum);
-				return -1;
-			}
-			ip6[6] = (a1 << 8) | a2;
-			ip6[7] = (a3 << 8) | a4;
-			i = 5;
-			num_colons++;
-			*flags |= WRAPPER_MIXED;
-		} else {
-			if (!is_hexadecimal(startp)) {
-				log_err("read_inet_addr(): invalid characters in address '%s'\n", ipnum);
-				return -1;
-			}
-			ip6[i] = (int)cstrtoul(startp, 16);
-			if (ip6[i] < 0 || ip6[i] > 0xffff) {
-				log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
-				return -1;
-			}
-			i--;
-		}
-	}
-	if (!abbrev && num_colons != 7) {
-		log_err("read_inet_addr(): too few colons in '%s'\n", ipnum);
-		return -1;
-	}
-	return 0;
+	log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
+	return -1;
 }
 
-int read_inet_mask(char *maskbuf, int *mask, int flags) {
+int read_inet_mask(char *maskbuf, IP_addr *mask, int flags) {
 int bits;
 
 	if (maskbuf == NULL || !*maskbuf || mask == NULL)
@@ -550,134 +331,62 @@ int bits;
 
 	if (is_numeric(maskbuf)) {
 		bits = cstrtoul(maskbuf, 10);
-
-		if (flags & WRAPPER_IP4)
-			ipv4_bitmask(bits, mask);
-		else
-			ipv6_bitmask(bits, mask);
+		ip_bitmask(bits, mask, flags);
 		return 0;
 	}
 	bits = 0;
 	if (read_inet_addr(maskbuf, mask, &bits))
 		return -1;
 
-	if (bits & WRAPPER_IP4)
-		mask[0] = mask[1] = mask[2] = mask[3] = mask[4] = 0xffff;
-
 	return 0;
 }
 
-char *print_inet_addr(int *addr, char *buf, int buflen, int flags) {
+char *print_inet_addr(IP_addr *addr, char *buf, int buflen, int flags) {
 	if (addr == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
-	if (flags & WRAPPER_IP4)
-		return print_ipv4_addr(addr, buf, buflen);
-
-	return print_ipv6_addr(addr, buf, buflen, flags);
+	return (char *)inet_ntop((flags & WRAPPER_IP4) ? AF_INET : AF_INET6, addr->saddr, buf, buflen);
 }
 
-char *print_ipv4_addr(int *addr, char *buf, int buflen) {
-int a1, a2, a3, a4;
-
-	if (addr == NULL || buf == NULL || buflen <= 0)
-		return NULL;
-
-	a1 = (addr[6] >> 8) & 0xff;
-	a2 = addr[6] & 0xff;
-	a3 = (addr[7] >> 8) & 0xff;
-	a4 = addr[7] & 0xff;
-
-	bufprintf(buf, buflen, "%d.%d.%d.%d", a1, a2, a3, a4);
-	return buf;
-}
-
-/*
-	print IPv6 address into buffer
-
-	flags are WRAPPER_xxx flags
-*/
-char *print_ipv6_addr(int *addr, char *buf, int buflen, int flags) {
-int i, num, best_zero_pos, longest_zero_len, zero_pos, zero_len, l;
-
-	if (addr == NULL || buf == NULL || buflen <= 0)
-		return NULL;
-
-	l = 0;
-	*buf = 0;
-
-	best_zero_pos = -1;
-	longest_zero_len = 0;
-
-	if (flags & WRAPPER_MIXED)
-		num = 6;
-	else
-		num = 8;
-
-	for(i = 0; i < num; i++) {
-		if (!addr[i]) {
-			zero_pos = i;
-			zero_len = 0;
-			while(!addr[i] && i < 8) {
-				zero_len++;
-				i++;
-			}
-			if (zero_len > longest_zero_len) {
-				longest_zero_len = zero_len;
-				best_zero_pos = zero_pos;
-			}
-		}
-	}
-	if (longest_zero_len == 1) {
-		longest_zero_len = 0;
-		best_zero_pos = -1;
-	}
-	for(i = 0; i < num; i++) {
-		if (i == best_zero_pos) {
-			i += longest_zero_len-1;
-			buf[l++] = ':';
-			buf[l++] = ':';
-			continue;
-		}
-		l += bufprintf(buf+l, buflen - l, "%x", addr[i]);
-
-		if ((i < (num - 1)) && best_zero_pos != i+1)
-			buf[l++] = ':';
-	}
-	if (flags & WRAPPER_MIXED) {
-		if (buf[l-1] != ':')
-			buf[l++] = ':';
-
-		l += bufprintf(buf+l, buflen - l, "%d.%d.%d.%d", (addr[6] >> 8) & 0xff, addr[6] & 0xff, (addr[7] >> 8) & 0xff, addr[7] & 0xff);
-	}
-	buf[l] = 0;
-	return buf;
-}
-
-char *print_inet_mask(int *mask, char *buf, int buflen, int flags) {
-int i, b, bits, num_bits, zeroes, complex_mask;
+char *print_inet_mask(IP_addr *mask, char *buf, int buflen, int flags) {
+int i, num_bits, complex_mask, size;
+unsigned char bite, bits;
 
 	if (mask == NULL || buf == NULL || buflen <= 0)
 		return NULL;
 
 /* see if we can print the mask as '/24' or something like that */
 
-	num_bits = zeroes = complex_mask = 0;
+	num_bits = complex_mask = 0;
 
-	for(i = (flags & WRAPPER_IP4) ? 6 : 0; i < 8; i++) {
-		for(b = 15; b >= 0; b--) {
-			bits = 1 << b;
-			if (mask[i] & bits) {
-				if (zeroes) {
-					complex_mask = 1;
-					break;
-				}
+	size = (flags & WRAPPER_IP4) ? 4 : 16;
+	for(i = 0; i < size; i++) {
+		if ((unsigned char)mask->saddr[i] == 0xff) {
+			num_bits += 8;
+			continue;
+		}
+		bite = (unsigned char)mask->saddr[i];
+		bits = (1 << 7);
+		while(bits) {
+			if (bite & bits) {		/* count number of set bits */
+				bite &= ~bits;		/* clear that bit */
 				num_bits++;
-			} else
-				zeroes = 1;
+			} else {
+				if (bite)			/* if only zeroes left, it's (possibly) a short mask */
+					complex_mask = 1;
+				break;
+			}
+			bits >>= 1;
 		}
 		if (complex_mask)
 			break;
+
+		for(i++; i < size; i++) {
+			if (mask->saddr[i]) {	/* if only zeroes left, it's a short mask */
+				complex_mask = 1;
+				break;
+			}
+		}
 	}
 	if (!complex_mask) {
 		bufprintf(buf, buflen, "%d", num_bits);
@@ -686,48 +395,31 @@ int i, b, bits, num_bits, zeroes, complex_mask;
 	return print_inet_addr(mask, buf, buflen, flags);
 }
 
-void ipv4_bitmask(int bits, int *mask) {
-int i, num, rest;
+/*
+	generate bitmask from short (eg. '/24') netmask
+*/
+void ip_bitmask(int bits, IP_addr *mask, int flags) {
+int i, num, rest, size;
+
+	size = (flags & WRAPPER_IP4) ? 4 : 16;		/* # of bytes in IPv4/6 address */
 
 	if (bits < 0)
 		bits = 0;
 
-	if (bits > 32)
-		bits = 32;
+	if (bits > size*8)
+		bits = size*8;
 
-	num = 6 + bits / 16;
-	rest = bits % 16;
-
-	for(i = 0; i < num; i++)
-		mask[i] = 0xffff;
-
-	if (rest)
-		mask[i++] = (0xffff >> rest) ^ 0xffff;
-
-	while(i < 8)
-		mask[i++] = 0;
-}
-
-void ipv6_bitmask(int bits, int *mask) {
-int i, num, rest;
-
-	if (bits < 0)
-		bits = 0;
-
-	if (bits > 128)
-		bits = 128;
-
-	num = bits / 16;
-	rest = bits % 16;
+	num = bits / 8;
+	rest = bits % 8;
 
 	for(i = 0; i < num; i++)
-		mask[i] = 0xffff;
+		mask->saddr[i] = 0xff;
 
 	if (rest)
-		mask[i++] = (0xffff >> rest) ^ 0xffff;
+		mask->saddr[i++] = ~(0xff >> rest);
 
-	while(i < 8)
-		mask[i++] = 0;
+	while(i < size)
+		mask->saddr[i++] = 0;
 }
 
 /* EOB */

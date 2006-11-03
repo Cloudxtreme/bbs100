@@ -25,6 +25,8 @@
 
 #include "List.h"
 
+#include <netinet/in.h>
+
 #define add_Wrapper(x,y)		(Wrapper *)add_List((x), (y))
 #define concat_Wrapper(x,y)		(Wrapper *)concat_List((x), (y))
 #define remove_Wrapper(x,y)		(Wrapper *)remove_List((x), (y))
@@ -40,12 +42,19 @@
 #define WRAPPER_NEW_USER		0
 #define WRAPPER_ALL_USERS		1
 
+typedef union {
+	struct in_addr ipv4;
+	struct in6_addr ipv6;
+	char saddr[1];
+} IP_addr;
+
 typedef struct Wrapper_tag Wrapper;
 
 struct Wrapper_tag {
 	List(Wrapper);
 
-	int flags, addr[8], mask[8];
+	int flags;
+	IP_addr addr, mask;
 	char *comment;
 };
 
@@ -53,24 +62,21 @@ extern Wrapper *AllWrappers;
 
 Wrapper *new_Wrapper(void);
 void destroy_Wrapper(Wrapper *);
-Wrapper *set_Wrapper(Wrapper *, int, int *, int *, char *);
+Wrapper *set_Wrapper(Wrapper *, int, IP_addr *, IP_addr *, char *);
 Wrapper *make_Wrapper(char *, char *, char *, char *);
 int load_Wrapper(char *);
 int save_Wrapper(Wrapper *, char *);
 int allow_Wrapper(char *, int);
 int allow_one_Wrapper(Wrapper *w, char *, int);
-int mask_Wrapper(Wrapper *w, int *);
+int mask_Wrapper(Wrapper *w, IP_addr *);
 
-int read_inet_addr(char *, int *, int *);
-int read_inet_mask(char *, int *, int);
+int read_inet_addr(char *, IP_addr *, int *);
+int read_inet_mask(char *, IP_addr *, int);
 
-char *print_inet_addr(int *, char *, int, int);
-char *print_ipv4_addr(int *, char *, int);
-char *print_ipv6_addr(int *, char *, int, int);
-char *print_inet_mask(int *, char *, int, int);
+char *print_inet_addr(IP_addr *, char *, int, int);
+char *print_inet_mask(IP_addr *, char *, int, int);
 
-void ipv4_bitmask(int, int *);
-void ipv6_bitmask(int, int *);
+void ip_bitmask(int, IP_addr *, int);
 
 #endif	/* _WRAPPER_H_WJ99 */
 
