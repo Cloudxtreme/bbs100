@@ -1162,7 +1162,7 @@ int r, idx;
 			RET(usr);
 			Return;
 		}
-		if (read_inet_addr(usr->edit_buf, &w->addr, &w->flags)) {
+		if (read_wrapper_addr(w, usr->edit_buf)) {
 			Put(usr, "<red>Bad IP net address (use numeric notation)\n");
 			RET(usr);
 			Return;
@@ -1213,7 +1213,7 @@ int r, idx;
 			RET(usr);
 			Return;
 		}
-		if (read_inet_mask(usr->edit_buf, &w->mask, w->flags)) {
+		if (read_wrapper_mask(w, usr->edit_buf)) {
 			Put(usr, "<red>Bad IP mask\n");
 			RET(usr);
 			Return;

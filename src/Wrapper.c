@@ -304,6 +304,27 @@ int i, size;
 	return 0;
 }
 
+int read_wrapper_addr(Wrapper *w, char *addr) {
+int oldflags;
+
+	if (w == NULL || addr == NULL)
+		return -1;
+
+	oldflags = w->flags;
+	if (read_inet_addr(addr, &w->addr, &w->flags))
+		return -1;
+
+/* if type of wrapper changed, reset the high mask bits */
+	if ((oldflags & WRAPPER_IP4) != (w->flags & WRAPPER_IP4))
+		memset((char *)&w->mask+sizeof(struct in_addr), 0, sizeof(IP_addr) - sizeof(struct in_addr));
+
+	return 0;
+}
+
+int read_wrapper_mask(Wrapper *w, char *mask) {
+	return read_inet_mask(mask, &w->mask, w->flags);
+}
+
 /*
 	read IPv4 or IPv6 internet address
 */
@@ -341,10 +362,14 @@ int bits;
 	if (flags & WRAPPER_IP4) {
 		if (bits & WRAPPER_IP4)
 			return 0;
+
+		ip_bitmask(32, mask, flags);
 		return -1;
 	}
 	if (!(bits & WRAPPER_IP4))
 		return 0;
+
+	ip_bitmask(128, mask, flags);
 	return -1;
 }
 
@@ -407,6 +432,11 @@ unsigned char bite, bits;
 */
 void ip_bitmask(int bits, IP_addr *mask, int flags) {
 int i, num, rest, size;
+
+	if (mask == NULL)
+		return;
+
+	memset(mask, 0, sizeof(IP_addr));
 
 	size = (flags & WRAPPER_IP4) ? 4 : 16;		/* # of bytes in IPv4/6 address */
 

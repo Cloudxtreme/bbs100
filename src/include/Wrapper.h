@@ -70,6 +70,9 @@ int allow_Wrapper(char *, int);
 int allow_one_Wrapper(Wrapper *w, char *, int);
 int mask_Wrapper(Wrapper *w, IP_addr *);
 
+int read_wrapper_addr(Wrapper *, char *);
+int read_wrapper_mask(Wrapper *, char *);
+
 int read_inet_addr(char *, IP_addr *, int *);
 int read_inet_mask(char *, IP_addr *, int);
 
