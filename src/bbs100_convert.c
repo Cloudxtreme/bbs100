@@ -30,23 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-char *basename(char *argv0, char *buf, int buflen) {
-char *p;
-
-	if ((p = cstrrchr(argv0, '/')) == NULL) {
-		cstrcpy(buf, argv0, buflen);
-		return buf;
-	}
-	p++;
-	if (!*p) {
-		cstrcpy(buf, argv0, buflen);
-		return buf;
-	}
-	cstrcpy(buf, p, buflen);
-	return buf;
-}
+#include <libgen.h>
 
 void strip_line(char *buf) {
 int l;
@@ -315,13 +299,13 @@ char buf[MAX_PATHLEN], *p;
 	printf("%s", print_copyright(SHORT, "bbs100_convert", buf, MAX_PATHLEN));
 
 	if (argc <= 1 || (argc > 1 && strcmp(argv[1], "--"))) {
-		basename(argv[0], buf, MAX_PATHLEN);
+		p = basename(argv[0]);
 		printf("specify filenames on stdin\n"
 			"typical usage is, from the bbs' basedir:\n"
 			"\n");
-		printf("find users -type f -print | %s --\n", buf);
-		printf("find rooms -type f -print | %s --\n", buf);
-		printf("echo etc/statistics | %s --\n\n", buf);
+		printf("find users -type f -print | %s --\n", p);
+		printf("find rooms -type f -print | %s --\n", p);
+		printf("echo etc/statistics | %s --\n\n", p);
 		return 1;
 	}
 	while(fgets(buf, MAX_PATHLEN, stdin) != NULL) {

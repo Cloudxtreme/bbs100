@@ -37,7 +37,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <errno.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -45,17 +47,6 @@
 #include <sys/un.h>
 #include <netdb.h>
 
-
-char *get_basename(char *path) {
-char *p;
-
-	if ((p = cstrrchr(path, '/')) == NULL)
-		return path;
-	p++;
-	if (!*p)
-		return path;
-	return p;
-}
 
 RETSIGTYPE sigpipe_handler(int sig) {
 	fprintf(stderr, "resolver: SIGPIPE caught, terminating\n");
@@ -116,7 +107,7 @@ int s, n, un_len;
 
 	printf("%s", print_copyright(SHORT, "resolver", result, NI_MAXHOST));
 
-	if (strcmp(get_basename(argv[0]), "(bbs100 resolver)")) {
+	if (strcmp(basename(argv[0]), "(bbs100 resolver)")) {
 		printf("You must not run this program by hand. It is supposed to be started by\n"
 			"the bbs100 main program.\n");
 		exit(1);

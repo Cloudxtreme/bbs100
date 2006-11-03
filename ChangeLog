@@ -1,6 +1,10 @@
+Changes as of November 3rd 2006
+- replaced get_basename() with standard basename()
+
 Changes as of February 18th 2006
 - make live core dumps from the Sysop menu when built with -DEBUG
   without having to crash the BBS
+- release 3.0
 
 Changes as of February 8th 2006
 - fixed dependencies on config.h for some includes

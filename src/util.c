@@ -1428,17 +1428,6 @@ unsigned long maxnum = 0UL, n;
 	return maxnum;
 }
 
-char *get_basename(char *path) {
-char *p;
-
-	if ((p = cstrrchr(path, '/')) == NULL)
-		return path;
-	p++;
-	if (!*p)
-		return path;
-	return p;
-}
-
 /*
 	rm -rf : first empty directory, then remove directory
 */

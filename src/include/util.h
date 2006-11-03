@@ -120,7 +120,6 @@ char *print_number(unsigned long, char *, int);
 char *print_numberth(unsigned long, char *, int);
 char *possession(char *, char *, char *, int);
 unsigned long get_mail_top(char *);
-char *get_basename(char *);
 int rm_rf_trashdir(char *);
 int mkdir_p(char *);
 char *path_strip(char *);
