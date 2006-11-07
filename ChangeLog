@@ -1,5 +1,6 @@
 Changes as of November 7th 2006
 - IP mask should be entered in same form as IP address (v4 or v6)
+- fixed bug: mailing to yourself is possible again
 
 Changes as of November 3rd 2006
 - replaced get_basename() with standard basename()

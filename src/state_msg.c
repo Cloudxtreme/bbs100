@@ -2309,7 +2309,11 @@ void loop_send_mail(User *usr, char c) {
 			}
 			to = to->next;
 		}
-		if (to == NULL || to->name == NULL || !strcmp(usr->name, to->name)) {
+		if (to == NULL || to->name == NULL) {
+			Return;
+		}
+		if (!strcmp(usr->name, to->name)) {
+			to->number = 1L;		/* pretend mail was sent to self */
 			Return;
 		}
 		if ((u = is_online(to->name)) == NULL) {
