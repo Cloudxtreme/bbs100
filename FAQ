@@ -53,12 +53,14 @@ experiences.
 
 
 WHAT ABOUT GCC 4?
-I have bad experiences with gcc 4. Maybe it is just me, but I have seen really
-strange crashes of code generated with gcc 4, while it was stable as a rock
-when built using gcc 3. On my test system, I explicitly specify the compiler
-of choice:
+I have bad experiences with early versions of gcc 4. Maybe it is just me,
+but I have seen really strange crashes of code generated with gcc 4, while
+it was stable as a rock when built using gcc 3.
+On my test system, I explicitly specify the compiler of choice:
 
     CC=gcc-3.3 ./configure --prefix=/home/bbs
+
+gcc 4.1 seems to be OK, but when in doubt, please use gcc-3.3.
 
 
 IS bbs100 IPv6 ENABLED?
