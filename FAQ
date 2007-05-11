@@ -44,6 +44,7 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     Unicos 10.0.0.x         Cray C90
     OS X                    Apple MacIntosh G5
     RedHat Enterprise       IA64
+    SuSE Linux              IA64
 
 All this with just configure and make setup.
 The portability list changes with each version, so your mileage may vary.
