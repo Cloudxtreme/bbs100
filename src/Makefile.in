@@ -198,6 +198,9 @@ install: $(TARGETS) $(SCRIPTS)
 			echo '*** unable to initialize the bbs100 directory structure' ; \
 			echo ' ' ; \
 		fi ; \
+	else \
+		echo "  COPYDIR   $(prefix)/etc/zoneinfo/" ; \
+		( cd ../etc && $(TAR) -cf - zoneinfo ) | ( cd $(prefix)/etc && $(TAR) -xf - ) ; \
 	fi
 	@if $(TEST) -f symtab ; \
 	then \
