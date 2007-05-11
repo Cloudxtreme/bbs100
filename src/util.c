@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1730,13 +1730,13 @@ BufferedMsg *m;
 
 		if (m->from[0] && strcmp(usr->name, m->from) && !in_StringList(usr->enemies, m->from)
 			&& !in_StringList(talked_to, m->from))
-			add_StringList(&talked_to, new_StringList(m->from));
+			(void)add_StringList(&talked_to, new_StringList(m->from));
 
 		for(sl = m->to; sl != NULL; sl = sl->next)
 			if (sl->str != NULL && sl->str[0] && strcmp(usr->name, sl->str)
 				&& !in_StringList(usr->enemies, sl->str)
 				&& !in_StringList(talked_to, sl->str))
-				add_StringList(&talked_to, new_StringList(sl->str));
+				(void)add_StringList(&talked_to, new_StringList(sl->str));
 	}
 	return talked_to;
 }

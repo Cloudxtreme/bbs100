@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ static void generic_print_history(User *usr, BufferedMsg *m) {
 
 	deinit_StringQueue(usr->recipients);
 	if (!strcmp(m->from, usr->name))
-		concat_StringQueue(usr->recipients, copy_StringList(m->to));
+		(void)concat_StringQueue(usr->recipients, copy_StringList(m->to));
 	else
-		add_StringQueue(usr->recipients, new_StringList(m->from));
+		(void)add_StringQueue(usr->recipients, new_StringList(m->from));
 }
 
 
@@ -208,7 +208,7 @@ History_Reply_Code:
 				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
-					add_StringQueue(usr->recipients, sl);
+					(void)add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
 			if (count_Queue(usr->recipients) <= 0)
@@ -608,7 +608,7 @@ Held_History_Reply:
 				if ((sl = new_StringList(m->from)) == NULL) {
 					Perror(usr, "Out of memory");
 				} else
-					add_StringQueue(usr->recipients, sl);
+					(void)add_StringQueue(usr->recipients, sl);
 			}
 			check_recipients(usr);
 			if (count_Queue(usr->recipients) <= 0)
@@ -652,7 +652,7 @@ Held_History_Reply:
 				Put(usr, "Stop\n");
 
 Exit_Held_History:
-			rewind_PList(usr->held_msgs);
+			(void)rewind_PList(usr->held_msgs);
 			usr->msg_seq_recv += count_List(usr->held_msgs);
 			concat_BufferedMsg(&usr->history, usr->held_msgs);
 			usr->held_msgs = usr->held_msgp = NULL;

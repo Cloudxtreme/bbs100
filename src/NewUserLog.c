@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ NewUserLog *old;
 		&& (old = pop_NewUserQueue(newusers)) != NULL)
 		destroy_NewUserLog(old);
 
-	add_NewUserQueue(newusers, l);
+	(void)add_NewUserQueue(newusers, l);
 }
 
 void log_newuser(char *name) {

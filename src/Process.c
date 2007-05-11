@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ char errbuf[MAX_LINE];
 	destroy this plist, because restart_process() adds a new one if it succeeds
 	Note: do not destroy pl->p; it's pointing to static memory
 */
-			remove_PList(&process_table, pl);
+			(void)remove_PList(&process_table, pl);
 			destroy_PList(pl);
 
 			restart_process(proc);

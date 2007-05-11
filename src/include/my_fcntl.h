@@ -1,8 +1,8 @@
 /*
-	my_fcntl.h	WJ106
+	my_fcntl.h	WJ107
 */
 
-#ifndef MY_FCNTL_H_WJ106
+#ifndef MY_FCNTL_H_WJ107
 #define MY_FCNTL_H_WJ106	1
 
 #include "config.h"

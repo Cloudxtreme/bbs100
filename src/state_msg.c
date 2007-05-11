@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ StringList *sl;
 						deinit_StringQueue(sq);
 						return -1;
 					}
-					add_MailToQueue(msg->to, m);
+					(void)add_MailToQueue(msg->to, m);
 				}
 			}
 		} else {
@@ -255,7 +255,7 @@ StringList *sl;
 					deinit_StringQueue(sq);
 					return -1;
 				}
-				add_MailToQueue(msg->to, m);
+				(void)add_MailToQueue(msg->to, m);
 			}
 		}
 		destroy_StringList(sl);
@@ -849,7 +849,7 @@ int remove;
 		}
 		if (remove) {
 			if ((sl = in_StringQueue(from->recipients, usr->name)) != NULL) {
-				remove_StringQueue(from->recipients, sl);
+				(void)remove_StringQueue(from->recipients, sl);
 				destroy_StringList(sl);
 			}
 			Return;
@@ -857,8 +857,8 @@ int remove;
 	}
 /* there is intent to receive it, so from may talk to usr */
 	if ((from->flags & USR_X_DISABLED) && strcmp(from->name, usr->name) && in_StringList(from->override, usr->name) == NULL) {
-		prepend_StringList(&from->override, new_StringList(usr->name));
-		sort_StringList(&usr->override, alphasort_StringList);
+		(void)prepend_StringList(&from->override, new_StringList(usr->name));
+		(void)sort_StringList(&usr->override, alphasort_StringList);
 	}
 	if ((msg->flags & BUFMSG_TYPE) == BUFMSG_XMSG) {
 		cstrcpy(msg_type, (!PARAM_HAVE_XMSG_HDR || msg->xmsg_header == NULL || !msg->xmsg_header[0]) ? "eXpress message" : msg->xmsg_header, MAX_LINE);
@@ -1440,7 +1440,7 @@ Joined *j;
 			j->number = MAIL_ROOM;
 			if (usr->mail != NULL)
 				j->generation = usr->mail->generation;
-			prepend_Joined(&usr->rooms, j);
+			(void)prepend_Joined(&usr->rooms, j);
 		}
 		if (usr->mail->head_msg > j->last_read)
 			return usr->mail;
@@ -1599,7 +1599,7 @@ Joined *j;
 
 	if (room_access(r, usr->name) < 0) {
 		if (j != NULL) {
-			remove_Joined(&usr->rooms, j);
+			(void)remove_Joined(&usr->rooms, j);
 			destroy_Joined(j);
 		}
 		Return NULL;
@@ -1617,7 +1617,7 @@ Joined *j;
 			Return NULL;
 		}
 		j->number = r->number;
-		prepend_Joined(&usr->rooms, j);
+		(void)prepend_Joined(&usr->rooms, j);
 	}
 	if (j->generation != r->generation) {
 		j->generation = r->generation;
@@ -1846,13 +1846,13 @@ int pos, len;
 		Perror(usr, "Out of memory");
 		Return -1;
 	}
-	add_PQueue(usr->scroll, usr->scrollp);
+	(void)add_PQueue(usr->scroll, usr->scrollp);
 
 	while(pos < len) {
 		usr->display->cpos = 0;
 		usr->display->line = 0;
 		pos += Out_text(NULL, usr, usr->text->buf+pos, &usr->display->cpos, &usr->display->line, 1, 0);
-		add_PQueue(usr->scroll, new_PList(usr->text->buf+pos));
+		(void)add_PQueue(usr->scroll, new_PList(usr->text->buf+pos));
 	}
 	usr->scrollp = (PList *)usr->scroll->tail;
 	usr->read_lines = 0;

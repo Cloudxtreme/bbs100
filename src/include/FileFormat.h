@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,29 +154,29 @@
 		}														\
 	} while(0)
 
-#define FF1_LOAD_STRINGQUEUE(x,y)							\
-	do {													\
-		if (ff1_continue)									\
-			break;											\
-		if (!strcmp(buf, (x))) {							\
-			if (*p)											\
-				add_StringQueue((y), new_StringList(p));	\
-			ff1_continue = 1;								\
-		}													\
-	} while(0)
-
-#define FF1_LOAD_MAILTO(x,y)									\
+#define FF1_LOAD_STRINGQUEUE(x,y)								\
 	do {														\
 		if (ff1_continue)										\
 			break;												\
 		if (!strcmp(buf, (x))) {								\
-			if (*p) {											\
-				if ((y) == NULL)								\
-					(y) = new_MailToQueue();					\
-				add_MailToQueue((y), new_MailTo_from_str(p));	\
-			}													\
+			if (*p)												\
+				(void)add_StringQueue((y), new_StringList(p));	\
 			ff1_continue = 1;									\
 		}														\
+	} while(0)
+
+#define FF1_LOAD_MAILTO(x,y)										\
+	do {															\
+		if (ff1_continue)											\
+			break;													\
+		if (!strcmp(buf, (x))) {									\
+			if (*p) {												\
+				if ((y) == NULL)									\
+					(y) = new_MailToQueue();						\
+				(void)add_MailToQueue((y), new_MailTo_from_str(p));	\
+			}														\
+			ff1_continue = 1;										\
+		}															\
 	} while(0)
 
 #define FF1_LOAD_STRINGIO(x,y)										\
@@ -200,7 +200,7 @@
 			break;															\
 		if (!strcmp(buf, (x))) {											\
 			if (*p && user_exists(p) && in_StringList((y), p) == NULL)		\
-				prepend_StringList(&(y), new_StringList(p));				\
+				(void)prepend_StringList(&(y), new_StringList(p));			\
 			ff1_continue = 1;												\
 		}																	\
 	} while(0)

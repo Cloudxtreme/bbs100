@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ char buf[MAX_PATHLEN];
 		listener = NULL;
 		return -1;
 	}
-	add_Conn(&AllConns, listener);
+	(void)add_Conn(&AllConns, listener);
 	return 0;
 }
 
@@ -185,7 +185,7 @@ char optval, errbuf[MAX_LINE];
 		return;
 	}
 	if (conn_resolver != NULL) {
-		remove_Conn(&AllConns, conn_resolver);
+		(void)remove_Conn(&AllConns, conn_resolver);
 		destroy_Conn(conn_resolver);
 		conn_resolver = NULL;
 	}
@@ -204,7 +204,7 @@ char optval, errbuf[MAX_LINE];
 		log_err("ConnResolv_accept(): name resolving disabled");
 		destroy_Conn(conn_resolver);
 	} else
-		add_Conn(&AllConns, conn_resolver);
+		(void)add_Conn(&AllConns, conn_resolver);
 }
 
 void ConnResolv_linkdead(Conn *c) {

@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,7 @@ int i, addr;
 			addr %= newsize;
 
 			kv->prev = kv->next = NULL;
-			add_KVPair(&new_hash[addr], kv);
+			(void)add_KVPair(&new_hash[addr], kv);
 		}
 	}
 	Free(h->hash);
@@ -114,7 +114,7 @@ KVPair *kv;
 		addr = -addr;
 	addr %= h->size;
 
-	add_KVPair(&h->hash[addr], kv);
+	(void)add_KVPair(&h->hash[addr], kv);
 	h->num++;
 /*
 	a hash performs well if it has a percentage of free slots
@@ -141,7 +141,7 @@ KVPair *kv;
 	for(kv = h->hash[addr]; kv != NULL; kv = kv->next) {
 		if (!strcmp(kv->key, key)) {
 			kv->value.v = NULL;
-			remove_KVPair(&h->hash[addr], kv);
+			(void)remove_KVPair(&h->hash[addr], kv);
 			destroy_KVPair(kv);
 
 			h->num--;

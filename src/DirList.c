@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,7 +151,7 @@ int max, n;
 			log_err("listdir(): out of memory for directory %s", dirname);
 			break;
 		}
-		add_StringQueue(l, sl);
+		(void)add_StringQueue(l, sl);
 	}
 	closedir(dir);
 	sort_StringQueue(l, alphasort_StringList);

@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ Conn *conn;
 		conn->conn_type = conn_type;
 		conn->state = CONN_LISTEN;
 		conn->sock = sock;
-		add_Conn(&AllConns, conn);
+		(void)add_Conn(&AllConns, conn);
 
 		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
@@ -341,7 +341,7 @@ char input_char[2];
 
 /* remove dead connections */
 			if (c->sock <= 0) {
-				remove_Conn(&AllConns, c);
+				(void)remove_Conn(&AllConns, c);
 				destroy_Conn(c);
 				continue;
 			}
@@ -480,7 +480,7 @@ char input_char[2];
 				}
 			}
 			if (c->sock <= 0) {					/* remove dead connections */
-				remove_Conn(&AllConns, c);
+				(void)remove_Conn(&AllConns, c);
 				destroy_Conn(c);
 				continue;
 			}

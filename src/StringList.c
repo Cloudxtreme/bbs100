@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ char buf[1024];
 
 	while(fgets(buf, 1024, f->f) != NULL) {
 		chop(buf);
-		add_StringList(&sl, new_StringList(buf));
+		(void)add_StringList(&sl, new_StringList(buf));
 	}
 	closefile(f);
 	return sl;

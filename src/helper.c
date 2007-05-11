@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ void add_helper(User *usr) {
 		usr->flags &= ~USR_HELPING_HAND;
 		return;
 	}
-	add_PQueue(&helpers, new_PList(usr));
+	(void)add_PQueue(&helpers, new_PList(usr));
 }
 
 void remove_helper(User *usr) {
@@ -58,7 +58,7 @@ PList *pl;
 		return;
 
 	if ((pl = in_PList((PList *)helpers.tail, usr)) != NULL) {
-		remove_PQueue(&helpers, pl);
+		(void)remove_PQueue(&helpers, pl);
 		destroy_PList(pl);
 	}
 }
@@ -86,14 +86,14 @@ char instead[24] = "";
 				continue;
 
 			if (!strcmp(usr->question_asked, u->name)) {
-				remove_PQueue(&helpers, pl);
+				(void)remove_PQueue(&helpers, pl);
 
 				if (!(u->flags & USR_HELPING_HAND) || u->total_time / SECS_IN_DAY < PARAM_HELPER_AGE) {
 					u->flags &= ~USR_HELPING_HAND;
 					destroy_PList(pl);
 					break;
 				}
-				add_PQueue(&helpers, pl);
+				(void)add_PQueue(&helpers, pl);
 
 				if (!silent)
 					Print(usr, "<green>The question goes to <yellow>%s\n", usr->question_asked);
@@ -117,7 +117,7 @@ char instead[24] = "";
 			destroy_PList(pl);
 			continue;
 		}
-		add_PQueue(&helpers, pl);
+		(void)add_PQueue(&helpers, pl);
 
 		if (!strcmp(u->name, usr->name)) {
 			if (count_Queue(&helpers) > 1)

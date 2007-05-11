@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ int lineno;
 		if ((w = make_Wrapper(allowbuf, netbuf, maskbuf, comment)) == NULL)
 			goto err_load_Wrapper;
 
-		add_Wrapper(&AllWrappers, w);
+		(void)add_Wrapper(&AllWrappers, w);
 	}
 	closefile(f);
 	return 0;

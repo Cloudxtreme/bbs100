@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -337,8 +337,8 @@ int (*load_func)(File *, User *, char *, int) = NULL;
 			usr->default_room = LOBBY_ROOM;
 		unload_Room(rm);
 
-		sort_StringList(&usr->friends, alphasort_StringList);
-		sort_StringList(&usr->enemies, alphasort_StringList);
+		(void)sort_StringList(&usr->friends, alphasort_StringList);
+		(void)sort_StringList(&usr->enemies, alphasort_StringList);
 
 		if (!usr->name[0])
 			cstrncpy(usr->name, username, MAX_NAME);
@@ -612,7 +612,7 @@ int term_width, term_height, ff1_continue;
 			j->last_read = last_read;
 			j->roominfo_read = roominfo_read;
 
-			prepend_Joined(&usr->rooms, j);
+			(void)prepend_Joined(&usr->rooms, j);
 			unload_Room(r);
 			continue;
 		} else
@@ -906,7 +906,7 @@ int i;
 			j->last_read = last_read;
 			j->roominfo_read = roominfo_read;
 
-			prepend_Joined(&usr->rooms, j);
+			(void)prepend_Joined(&usr->rooms, j);
 			unload_Room(r);
 		}
 	} else
@@ -939,7 +939,7 @@ int i;
 				break;
 
 			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-				prepend_StringList(&usr->friends, sl);
+				(void)prepend_StringList(&usr->friends, sl);
 		}
 	} else
 		LOAD_USER_SKIPLIST;
@@ -955,7 +955,7 @@ int i;
 				break;
 
 			if (user_exists(buf) && (sl = new_StringList(buf)) != NULL)
-				prepend_StringList(&usr->enemies, sl);
+				(void)prepend_StringList(&usr->enemies, sl);
 		}
 	} else
 		LOAD_USER_SKIPLIST;

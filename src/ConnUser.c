@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -184,8 +184,8 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		Return;
 	}
 	log_auth("CONN (%s)", new_conn->ipnum);
-	add_Conn(&AllConns, new_conn);
-	add_User(&AllUsers, new_user);
+	(void)add_Conn(&AllConns, new_conn);
+	(void)add_User(&AllUsers, new_user);
 	dns_gethostname(new_conn->ipnum);		/* send out request for hostname */
 
 /*
@@ -279,7 +279,7 @@ User *usr;
 		return;
 
 	remove_OnlineUser(usr);
-	remove_User(&AllUsers, usr);
+	(void)remove_User(&AllUsers, usr);
 	destroy_User(usr);
 
 	conn->data = NULL;

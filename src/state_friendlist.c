@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ StringList *sl;
 			}
 /* remove myself from the recipient list */
 			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_ADD_FRIEND);
@@ -117,7 +117,7 @@ StringList *sl;
 /* remove myself from the recipient list */
 
 			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_REMOVE_FRIEND);
@@ -182,9 +182,9 @@ int r;
 			Return;
 		}
 		if ((new_friend = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->enemies, new_friend);
-			prepend_StringList(&usr->friends, new_friend);
-			sort_StringList(&usr->friends, alphasort_StringList);
+			(void)remove_StringList(&usr->enemies, new_friend);
+			(void)prepend_StringList(&usr->friends, new_friend);
+			(void)sort_StringList(&usr->friends, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your enemy to friend list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -194,8 +194,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		prepend_StringList(&usr->friends, new_friend);
-		sort_StringList(&usr->friends, alphasort_StringList);
+		(void)prepend_StringList(&usr->friends, new_friend);
+		(void)sort_StringList(&usr->friends, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -228,7 +228,7 @@ int r;
 			Put(usr, "<green>Stopped being friends with yourself? How sad and lonely...\n");
 		else {
 			if ((rm_friend = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->friends, rm_friend);
+				(void)remove_StringList(&usr->friends, rm_friend);
 				destroy_StringList(rm_friend);
 			} else
 				Put(usr, "<red>There is no such person on your friend list\n");
@@ -302,7 +302,7 @@ StringList *sl;
 /* remove myself from the recipient list */
 
 			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_ADD_ENEMY);
@@ -322,7 +322,7 @@ StringList *sl;
 /* remove myself from the recipient list */
 
 			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			enter_name(usr, STATE_REMOVE_ENEMY);
@@ -387,9 +387,9 @@ int r;
 			Return;
 		}
 		if ((new_enemy = in_StringList(usr->friends, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->friends, new_enemy);
-			prepend_StringList(&usr->enemies, new_enemy);
-			sort_StringList(&usr->enemies, alphasort_StringList);
+			(void)remove_StringList(&usr->friends, new_enemy);
+			(void)prepend_StringList(&usr->enemies, new_enemy);
+			(void)sort_StringList(&usr->enemies, alphasort_StringList);
 			Print(usr, "<yellow>%s<green> moved from your friend to enemy list\n", usr->edit_buf);
 			RET(usr);
 			Return;
@@ -399,8 +399,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		prepend_StringList(&usr->enemies, new_enemy);
-		sort_StringList(&usr->enemies, alphasort_StringList);
+		(void)prepend_StringList(&usr->enemies, new_enemy);
+		(void)sort_StringList(&usr->enemies, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -438,7 +438,7 @@ int r;
 			Put(usr, "<green>Time to come to peace with yourself?\n");
 		else {
 			if ((rm_enemy = in_StringList(usr->enemies, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->enemies, rm_enemy);
+				(void)remove_StringList(&usr->enemies, rm_enemy);
 				destroy_StringList(rm_enemy);
 			} else
 				Put(usr, "<red>There is no such person on your enemy list\n");
@@ -607,8 +607,8 @@ int r;
 			RET(usr);
 			Return;
 		}
-		prepend_StringList(&usr->override, new_override);
-		sort_StringList(&usr->override, alphasort_StringList);
+		(void)prepend_StringList(&usr->override, new_override);
+		(void)sort_StringList(&usr->override, alphasort_StringList);
 		RET(usr);
 	}
 	Return;
@@ -641,7 +641,7 @@ int r;
 			Put(usr, "<green>You may always send yourself messages\n");
 		else {
 			if ((rm_override = in_StringList(usr->override, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->override, rm_override);
+				(void)remove_StringList(&usr->override, rm_override);
 				destroy_StringList(rm_override);
 			} else
 				Put(usr, "<red>There is no such person on your override list\n");

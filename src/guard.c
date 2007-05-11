@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ time_t start;
 		fprintf(stderr, "bbs100: startup failed\n");
 		exit(-1);
 	}
-	printf("bbs100 guard %s by Walter de Jong <walter@heiho.net> (C) 2006\n", VERSION);
+	printf("bbs100 guard %s by Walter de Jong <walter@heiho.net> (C) 2007\n", VERSION);
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
 

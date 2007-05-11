@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -482,9 +482,9 @@ StringList *sl;
 				usr->runtime_flags |= RTF_ROOM_EDITED;
 
 				if (PARAM_HAVE_CATEGORY)
-					sort_Room(&AllRooms, room_sort_by_category);
+					(void)sort_Room(&AllRooms, room_sort_by_category);
 				else
-					sort_Room(&AllRooms, room_sort_by_number);
+					(void)sort_Room(&AllRooms, room_sort_by_number);
 			}
 			RET(usr);
 			Return;
@@ -508,9 +508,9 @@ StringList *sl;
 			usr->runtime_flags |= RTF_ROOM_EDITED;
 
 			if (PARAM_HAVE_CATEGORY)
-				sort_Room(&AllRooms, room_sort_by_category);
+				(void)sort_Room(&AllRooms, room_sort_by_category);
 			else
-				sort_Room(&AllRooms, room_sort_by_number);
+				(void)sort_Room(&AllRooms, room_sort_by_number);
 		}
 		RET(usr);
 		Return;
@@ -690,9 +690,9 @@ int r;
 			Return;
 		}
 		if ((sl = in_StringList(usr->curr_room->kicked, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->curr_room->kicked, sl);
-			prepend_StringList(&usr->curr_room->invited, sl);
-			sort_StringList(&usr->curr_room->invited, alphasort_StringList);
+			(void)remove_StringList(&usr->curr_room->kicked, sl);
+			(void)prepend_StringList(&usr->curr_room->invited, sl);
+			(void)sort_StringList(&usr->curr_room->invited, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was kicked, but is now invited\n", sl->str);
 /*
@@ -710,7 +710,7 @@ int r;
 			}
 		} else {
 			if ((sl = in_StringList(usr->curr_room->invited, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->curr_room->invited, sl);
+				(void)remove_StringList(&usr->curr_room->invited, sl);
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> is uninvited\n", usr->edit_buf);
@@ -726,8 +726,8 @@ int r;
 					unjoin_room(u, usr->curr_room);
 				}
 			} else {
-				prepend_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
-				sort_StringList(&usr->curr_room->invited, alphasort_StringList);
+				(void)prepend_StringList(&usr->curr_room->invited, new_StringList(usr->edit_buf));
+				(void)sort_StringList(&usr->curr_room->invited, alphasort_StringList);
 
 				Print(usr, "<yellow>%s<green> is invited\n", usr->edit_buf);
 
@@ -807,9 +807,9 @@ int r;
 			Return;
 		}
 		if ((sl = in_StringList(usr->curr_room->invited, usr->edit_buf)) != NULL) {
-			remove_StringList(&usr->curr_room->invited, sl);
-			prepend_StringList(&usr->curr_room->kicked, sl);
-			sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
+			(void)remove_StringList(&usr->curr_room->invited, sl);
+			(void)prepend_StringList(&usr->curr_room->kicked, sl);
+			(void)sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> was invited, but is now kicked\n", sl->str);
 
@@ -832,7 +832,7 @@ int r;
 			}
 		} else {
 			if ((sl = in_StringList(usr->curr_room->kicked, usr->edit_buf)) != NULL) {
-				remove_StringList(&usr->curr_room->kicked, sl);
+				(void)remove_StringList(&usr->curr_room->kicked, sl);
 				destroy_StringList(sl);
 
 				Print(usr, "<yellow>%s<green> was kicked, but not anymore\n", usr->edit_buf);
@@ -847,8 +847,8 @@ int r;
 					join_room(u, usr->curr_room);
 				}
 			} else {
-				prepend_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
-				sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
+				(void)prepend_StringList(&usr->curr_room->kicked, new_StringList(usr->edit_buf));
+				(void)sort_StringList(&usr->curr_room->kicked, alphasort_StringList);
 
 				Print(usr, "<yellow>%s<green> has been kicked out\n", usr->edit_buf);
 
@@ -925,7 +925,7 @@ int r;
 				RET(usr);
 				Return;
 			}
-			remove_StringList(&usr->curr_room->room_aides, sl);
+			(void)remove_StringList(&usr->curr_room->room_aides, sl);
 			Print(usr, "<yellow>%s<green> is no longer %s of this room\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 			destroy_StringList(sl);
 
@@ -935,8 +935,8 @@ int r;
 					u->runtime_flags &= ~RTF_ROOMAIDE;
 			}
 		} else {
-			prepend_StringList(&usr->curr_room->room_aides, new_StringList(usr->edit_buf));
-			sort_StringList(&usr->curr_room->room_aides, alphasort_StringList);
+			(void)prepend_StringList(&usr->curr_room->room_aides, new_StringList(usr->edit_buf));
+			(void)sort_StringList(&usr->curr_room->room_aides, alphasort_StringList);
 
 			Print(usr, "<yellow>%s<green> assigned as %s\n", usr->edit_buf, PARAM_NAME_ROOMAIDE);
 
@@ -1160,7 +1160,7 @@ void (*func)(User *, char *, ...);
 		Print(usr, "<red>The<yellow> %s><red> room is special and cannot be deleted\n", room->name);
 		Return;
 	}
-	remove_Room(&AllRooms, room);
+	(void)remove_Room(&AllRooms, room);
 
 	for(u = AllUsers; u != NULL; u = u->next) {
 		if (u->name[0] && u->curr_room == room) {
@@ -1173,7 +1173,7 @@ void (*func)(User *, char *, ...);
 				"You are dropped off in the <yellow>%s>\n\n", Lobby_room->name);
 /* unjoin */
 			if ((j = in_Joined(u->rooms, u->curr_room->number)) != NULL) {
-				remove_Joined(&u->rooms, j);
+				(void)remove_Joined(&u->rooms, j);
 				destroy_Joined(j);
 			}
 			u->curr_room = Lobby_room;

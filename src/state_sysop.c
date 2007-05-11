@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -406,7 +406,7 @@ int r;
 	we must resort the list
 */
 		if (PARAM_HAVE_CATEGORY)
-			sort_Room(&AllRooms, room_sort_by_number);
+			(void)sort_Room(&AllRooms, room_sort_by_number);
 
 		room->number = SPECIAL_ROOMS;			/* lowest possible new room number */
 		for(rm = AllRooms; rm != NULL; rm = rm->next) {
@@ -417,7 +417,7 @@ int r;
 					break;
 		}
 		if (PARAM_HAVE_CATEGORY)
-			sort_Room(&AllRooms, room_sort_by_category);
+			(void)sort_Room(&AllRooms, room_sort_by_category);
 
 		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
@@ -437,7 +437,7 @@ int r;
 			} else {
 				j->number = room->number;
 				j->generation = room->generation;
-				prepend_Joined(&usr->rooms, j);
+				(void)prepend_Joined(&usr->rooms, j);
 			}
 		} else {
 			j->zapped = 0;
@@ -447,12 +447,12 @@ int r;
 		Print(usr, "<yellow>The room has been assigned number <white>%u\n", room->number);
 		log_msg("SYSOP %s created room %u %s", usr->name, room->number, room->name);
 
-		prepend_Room(&AllRooms, room);		/* add room to all rooms list */
+		(void)prepend_Room(&AllRooms, room);		/* add room to all rooms list */
 
 		if (PARAM_HAVE_CATEGORY)
-			sort_Room(&AllRooms, room_sort_by_category);
+			(void)sort_Room(&AllRooms, room_sort_by_category);
 		else
-			sort_Room(&AllRooms, room_sort_by_number);
+			(void)sort_Room(&AllRooms, room_sort_by_number);
 
 		JMP(usr, STATE_ROOM_CONFIG_MENU);
 		usr->runtime_flags |= RTF_ROOM_EDITED;
@@ -621,7 +621,7 @@ int n;
 				r->flags |= ROOM_DIRTY;
 			}
 		}
-		remove_StringList(&category, sl);
+		(void)remove_StringList(&category, sl);
 		destroy_StringList(sl);
 
 		usr->runtime_flags |= RTF_CATEGORY_EDITED;
@@ -850,7 +850,7 @@ int r;
 			StringList *sl;
 
 			if ((sl = in_StringList(banished, usr->edit_buf)) != NULL) {
-				remove_StringList(&banished, sl);
+				(void)remove_StringList(&banished, sl);
 				destroy_StringList(sl);
 				Print(usr, "<green>Unbanished <yellow>%s\n", usr->edit_buf);
 				log_msg("SYSOP %s unbanished user %s", usr->name, usr->edit_buf);
@@ -865,7 +865,7 @@ int r;
 					RET(usr);
 					Return;
 				} else {
-					add_StringList(&banished, sl);
+					(void)add_StringList(&banished, sl);
 					Print(usr, "<yellow>%s<green> banished\n", usr->edit_buf);
 					log_msg("SYSOP %s banished user %s", usr->name, usr->edit_buf);
 				}
@@ -962,7 +962,7 @@ int i;
 
 /* by default, start with a wrapper for IPv4 */
 			set_Wrapper(w, WRAPPER_IP4, &addr, &mask, NULL);
-			add_Wrapper(&AllWrappers, w);
+			(void)add_Wrapper(&AllWrappers, w);
 			i = count_List(AllWrappers) - 1;
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 		} else {
@@ -1111,7 +1111,7 @@ char buf[MAX_LINE];
 		case 'd':
 		case 'D':
 			Put(usr, "Delete\n");
-			remove_Wrapper(&AllWrappers, w);
+			(void)remove_Wrapper(&AllWrappers, w);
 			destroy_Wrapper(w);
 			usr->runtime_flags |= RTF_WRAPPER_EDITED;
 			POP_ARG(usr, &idx, sizeof(int));
@@ -4579,9 +4579,9 @@ void state_features_menu(User *usr, char c) {
 			usr->runtime_flags |= RTF_PARAM_EDITED;
 
 			if (PARAM_HAVE_CATEGORY)
-				sort_Room(&AllRooms, room_sort_by_category);
+				(void)sort_Room(&AllRooms, room_sort_by_category);
 			else
-				sort_Room(&AllRooms, room_sort_by_number);
+				(void)sort_Room(&AllRooms, room_sort_by_number);
 
 			CURRENT_STATE(usr);
 			Return;

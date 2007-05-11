@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,9 +175,9 @@ int fun_common(User *usr, char c) {
 				deinit_StringQueue(usr->recipients);
 				if (usr->message->anon != NULL && usr->message->anon[0]) {
 					if (usr->runtime_flags & (RTF_SYSOP | RTF_ROOMAIDE))
-						add_StringQueue(usr->recipients, new_StringList(usr->message->from));
+						(void)add_StringQueue(usr->recipients, new_StringList(usr->message->from));
 				} else
-					add_StringQueue(usr->recipients, new_StringList(usr->message->from));
+					(void)add_StringQueue(usr->recipients, new_StringList(usr->message->from));
 			}
 			if (c == 'p')
 				enter_name(usr, STATE_LONG_PROFILE);
@@ -560,13 +560,13 @@ void loop_ping(User *usr, char c) {
 		}
 		if (!strcmp(sl->str, usr->name)) {
 			Put(usr, "<red>You are keeping yourself busy pinging yourself\n");
-			remove_StringQueue(usr->recipients, sl);
+			(void)remove_StringQueue(usr->recipients, sl);
 			destroy_StringList(sl);
 			Return;
 		}
 		if ((u = is_online(sl->str)) == NULL) {
 			Print(usr, "<yellow>%s <red>suddenly logged off!\n", sl->str);
-			remove_StringQueue(usr->recipients, sl);
+			(void)remove_StringQueue(usr->recipients, sl);
 			destroy_StringList(sl);
 			Return;
 		}
@@ -707,7 +707,7 @@ char total_buf[MAX_LINE], *hidden;
 		load_profile_info(u);
 
 		deinit_StringQueue(usr->recipients);		/* place entered name in history */
-		add_StringQueue(usr->recipients, new_StringList(usr->edit_buf));
+		(void)add_StringQueue(usr->recipients, new_StringList(usr->edit_buf));
 	}
 /*
 	make the profile
@@ -1015,7 +1015,7 @@ int recv_it;
 
 /* user is already gone, so remove from recipient list */
 			if ((sl = in_StringQueue(usr->recipients, name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			CALL(usr, STATE_MAIL_SEND_MSG);
@@ -1100,7 +1100,7 @@ unsigned int flags;
 		Return;
 	}
 	mailto->name = name;
-	add_MailToQueue(usr->new_message->to, mailto);
+	(void)add_MailToQueue(usr->new_message->to, mailto);
 
 	usr->new_message->subject = cstrdup("<lost message>");
 
@@ -1877,7 +1877,7 @@ int total;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
-			add_PQueue(pq, new_PList(u));
+			(void)add_PQueue(pq, new_PList(u));
 		}
 	} else {
 		for(u = AllUsers; u != NULL; u = u->next) {
@@ -1887,7 +1887,7 @@ int total;
 			if (!(usr->flags & USR_SHOW_ENEMIES) && in_StringList(usr->enemies, u->name) != NULL)
 				continue;
 
-			add_PQueue(pq, new_PList(u));
+			(void)add_PQueue(pq, new_PList(u));
 		}
 	}
 
@@ -2176,12 +2176,12 @@ int msgtype;
 /* don't add the same user multiple times */
 
 				if (in_StringQueue(usr->recipients, sl->str) == NULL)
-					add_StringQueue(usr->recipients, sl);
+					(void)add_StringQueue(usr->recipients, sl);
 				else
 					destroy_StringList(sl);
 			}
 			if ((sl = in_StringQueue(usr->recipients, usr->name)) != NULL) {
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 			}
 			check_recipients(usr);
@@ -2510,9 +2510,9 @@ char buf[MAX_LONGLINE], *p;
 		};
 
 		for(i = 0; sourcefiles[i] != NULL; i++)
-			prepend_StringList(&ls, new_StringList(sourcefiles[i]));
+			(void)prepend_StringList(&ls, new_StringList(sourcefiles[i]));
 
-		sort_StringList(&ls, alphasort_StringList);
+		(void)sort_StringList(&ls, alphasort_StringList);
 
 		flags = usr->flags;
 		usr->flags &= ~(USR_ANSI|USR_BOLD);
@@ -2586,7 +2586,7 @@ int total;
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
 
-		add_PQueue(pq, new_PList(u));
+		(void)add_PQueue(pq, new_PList(u));
 	}
 	if (count_Queue(pq) <= 0) {
 		Put(usr, "<red>None of your friends are online\n");
@@ -2648,7 +2648,7 @@ int total;
 		if ((u = is_online(sl->str)) == NULL)
 			continue;
 
-		add_PQueue(pq, new_PList(u));
+		(void)add_PQueue(pq, new_PList(u));
 	}
 	if (count_Queue(pq) <= 0) {
 		Put(usr, "<red>Nobody you talked to is online anymore\n");

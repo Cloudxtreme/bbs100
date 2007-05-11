@@ -1,8 +1,8 @@
 /*
-	sys_wait.h	WJ106
+	sys_wait.h	WJ107
 */
 
-#ifndef SYS_WAIT_H_WJ106
+#ifndef SYS_WAIT_H_WJ107
 #define SYS_WAIT_H_WJ106	1
 
 #include "config.h"

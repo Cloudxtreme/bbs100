@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->invited, username) == NULL)
-		prepend_StringList(&r->invited, new_StringList(username));
+		(void)prepend_StringList(&r->invited, new_StringList(username));
 
 	r->flags = ROOM_SUBJECTS | ROOM_NOZAP | ROOM_INVITE_ONLY;
 
@@ -144,10 +144,10 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 	r->name = cstrdup(roomname);
 
 	if (in_StringList(r->room_aides, username) == NULL)
-		prepend_StringList(&r->room_aides, new_StringList(username));
+		(void)prepend_StringList(&r->room_aides, new_StringList(username));
 
 	if (in_StringList(r->invited, username) == NULL)
-		prepend_StringList(&r->invited, new_StringList(username));
+		(void)prepend_StringList(&r->invited, new_StringList(username));
 
 	r->flags = ROOM_CHATROOM | ROOM_NOZAP | ROOM_INVITE_ONLY;
 	Return r;
@@ -216,9 +216,9 @@ int version;
 			r->flags &= ~ROOM_CHATROOM;
 			r->flags |= ROOM_DIRTY;
 		}
-		sort_StringList(&r->room_aides, alphasort_StringList);
-		sort_StringList(&r->invited, alphasort_StringList);
-		sort_StringList(&r->kicked, alphasort_StringList);
+		(void)sort_StringList(&r->room_aides, alphasort_StringList);
+		(void)sort_StringList(&r->invited, alphasort_StringList);
+		(void)sort_StringList(&r->kicked, alphasort_StringList);
 		return r;
 	}
 	destroy_Room(r);
@@ -726,7 +726,7 @@ Room *r;
 
 						r = load_Mail(name, load_room_flags);
 						*quote = '\'';
-						prepend_Room(&HomeRooms, r);
+						(void)prepend_Room(&HomeRooms, r);
 						return r;
 					}
 					*quote = '\'';
@@ -926,7 +926,7 @@ int load_room_flags;
 	if ((r = load_Home(username, load_room_flags)) == NULL)
 		return NULL;
 
-	prepend_Room(&HomeRooms, r);
+	(void)prepend_Room(&HomeRooms, r);
 	return r;
 }
 
@@ -1007,7 +1007,7 @@ void unload_Room(Room *r) {
 		return;
 
 	if (r->number == HOME_ROOM && count_Queue(r->inside) <= 0) {	/* demand loaded Home room */
-		remove_Room(&HomeRooms, r);
+		(void)remove_Room(&HomeRooms, r);
 		if (save_Room(r))
 			log_err("unload_Room(): failed to save room #%u %s", r->number, r->name);
 
@@ -1027,7 +1027,7 @@ void unload_Room(Room *r) {
 */
 		for(h = HomeRooms; h != NULL; h = h->next) {
 			if (h == r) {
-				remove_Room(&HomeRooms, r);
+				(void)remove_Room(&HomeRooms, r);
 				if (save_Room(r))
 					log_err("unload_Room(): failed to save HomeRoom #%u %s", r->number, r->name);
 				destroy_Room(r);
@@ -1039,7 +1039,7 @@ void unload_Room(Room *r) {
 	house-cleaning work...
 */
 			if (count_Queue(h->inside) <= 0) {
-				remove_Room(&HomeRooms, r);
+				(void)remove_Room(&HomeRooms, r);
 				if (save_Room(r))
 					log_err("unload_Room(): failed to save room #%u %s", r->number, r->name);
 
@@ -1155,7 +1155,7 @@ int load_room_flags, len;
 				fflush(stdout);
 
 				if ((newroom = load_Room(u, load_room_flags)) != NULL) {
-					prepend_Room(&AllRooms, newroom);
+					(void)prepend_Room(&AllRooms, newroom);
 					room_readdir(newroom);
 					printf("%s>\n", newroom->name);
 				} else {
@@ -1172,9 +1172,9 @@ int load_room_flags, len;
 	closedir(dirp);
 
 	if (PARAM_HAVE_CATEGORY)
-		sort_Room(&AllRooms, room_sort_by_category);
+		(void)sort_Room(&AllRooms, room_sort_by_category);
 	else
-		sort_Room(&AllRooms, room_sort_by_number);
+		(void)sort_Room(&AllRooms, room_sort_by_number);
 
 /*
 	find the Lobby>

@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -890,7 +890,7 @@ char num_buf[MAX_NUMBER];
 
 						for(to = (MailTo *)usr->message->to->tail; to != NULL; to = to->next) {
 							if (strcmp(to->name, usr->name) && !mail_access(usr, to->name))
-								add_MailToQueue(m->to, new_MailTo_from_str(to->name));
+								(void)add_MailToQueue(m->to, new_MailTo_from_str(to->name));
 						}
 					}
 				}
@@ -1165,7 +1165,7 @@ Joined *j;
 		}
 		j->number = r->number;
 		j->generation = r->generation;
-		prepend_Joined(&usr->rooms, j);
+		(void)prepend_Joined(&usr->rooms, j);
 	}
 	return j;
 }
@@ -1186,11 +1186,11 @@ Joined *j;
 			}
 			j->number = r->number;
 			j->generation = r->generation;
-			prepend_Joined(&usr->rooms, j);
+			(void)prepend_Joined(&usr->rooms, j);
 		}
 		j->zapped = 1;
 	} else {
-		remove_Joined(&usr->rooms, j);
+		(void)remove_Joined(&usr->rooms, j);
 		destroy_Joined(j);
 	}
 }
@@ -1827,7 +1827,7 @@ void enter_room(User *usr, Room *r) {
 	the reason we do it this late is that you now won't get to see people walking in
 	and out of the room in the history, if there is no one else there
 */
-	add_PQueue(usr->curr_room->inside, new_PList(usr));
+	(void)add_PQueue(usr->curr_room->inside, new_PList(usr));
 }
 
 void leave_room(User *usr) {
@@ -1837,14 +1837,14 @@ PList *p;
 		return;
 
 	if (usr->curr_room->inside != NULL && (p = in_PList((PList *)usr->curr_room->inside->tail, usr)) != NULL) {
-		remove_PQueue(usr->curr_room->inside, p);
+		(void)remove_PQueue(usr->curr_room->inside, p);
 		destroy_PList(p);
 	}
 	if (usr->curr_room->flags & ROOM_CHATROOM)
 		leave_chatroom(usr);
 
 	if (usr->curr_room->number == HOME_ROOM && count_Queue(usr->curr_room->inside) <= 0) {
-		remove_Room(&HomeRooms, usr->curr_room);
+		(void)remove_Room(&HomeRooms, usr->curr_room);
 		if (save_Room(usr->curr_room)) {
 			Perror(usr, "failed to save room");
 		}
@@ -1983,7 +1983,7 @@ void chatroom_tell(Room *r, char *str) {
 
 	Enter(chatroom_tell);
 
-	add_StringQueue(r->chat_history, new_StringList(str));
+	(void)add_StringQueue(r->chat_history, new_StringList(str));
 	r->flags |= ROOM_DIRTY;
 	if (count_Queue(r->chat_history) > PARAM_MAX_CHAT_HISTORY)
 		destroy_StringList(pop_StringQueue(r->chat_history));
@@ -2031,7 +2031,7 @@ void chatroom_tell_user(User *u, char *str) {
 		Return;
 	}
 	if (u->runtime_flags & RTF_BUSY)
-		add_StringQueue(u->chat_history, new_StringList(str));
+		(void)add_StringQueue(u->chat_history, new_StringList(str));
 	else {
 /*
 	when not busy, pretty print the lines

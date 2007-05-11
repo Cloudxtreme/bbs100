@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -407,7 +407,7 @@ MailTo *mailto;
 		Return;
 	}
 	mailto->name = to->name;
-	add_MailToQueue(new_msg->to, mailto);
+	(void)add_MailToQueue(new_msg->to, mailto);
 
 	new_msg->subject = cstrdup("<lost message>");
 
@@ -558,7 +558,7 @@ int i, new_mail;
 		if ((j = new_Joined()) != NULL) {
 			j->number = MAIL_ROOM;
 			j->generation = usr->mail->generation;
-			prepend_Joined(&usr->rooms, j);
+			(void)prepend_Joined(&usr->rooms, j);
 		}
 	}
 	usr->runtime_flags &= ~RTF_BUSY;

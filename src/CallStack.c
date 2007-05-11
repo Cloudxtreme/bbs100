@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ CallStack *cs;
 		return;
 
 	cs->ip = state;
-	push_CallStack(&conn->callstack, cs);
+	(void)push_CallStack(&conn->callstack, cs);
 }
 
 /*
@@ -135,7 +135,7 @@ char *cs;
 		return;
 
 	memcpy(cs + sizeof(ListType), arg, size);
-	push_CallStack(&conn->callstack, (CallStack *)cs);
+	(void)push_CallStack(&conn->callstack, (CallStack *)cs);
 }
 
 /*
@@ -197,8 +197,8 @@ char *new_cs;
 	cs_ret = pop_CallStack(&conn->callstack);
 	cs_arg = pop_CallStack(&conn->callstack);
 	Free(cs_arg);
-	push_CallStack(&conn->callstack, (CallStack *)new_cs);
-	push_CallStack(&conn->callstack, cs_ret);
+	(void)push_CallStack(&conn->callstack, (CallStack *)new_cs);
+	(void)push_CallStack(&conn->callstack, cs_ret);
 }
 
 /* EOB */

@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ char *print_copyright(int full, char *progname, char *buf, int buflen) {
 		cstrcat(buf, " ", buflen);
 		cstrcat(buf, progname, buflen);
 	}
-	cstrcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2006\n", buflen);
+	cstrcat(buf, " by Walter de Jong <walter@heiho.net> (C) 2007\n", buflen);
 
 	if (full) {
 #ifdef HAVE_UNAME

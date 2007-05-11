@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ PList *pl;
 	if ((pl = new_PList(msg)) == NULL)
 		return NULL;
 
-	add_PList(root, pl);
+	(void)add_PList(root, pl);
 	return msg;
 }
 
@@ -96,7 +96,7 @@ PList *pl;
 		return NULL;
 
 	pl->p = NULL;
-	remove_PList(root, pl);
+	(void)remove_PList(root, pl);
 	destroy_PList(pl);
 
 	return msg;

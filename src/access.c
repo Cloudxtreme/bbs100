@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ int joined_visible(User *usr, Room *r, Joined *j) {
 	}
 	if (in_StringList(r->kicked, usr->name) != NULL || j == NULL || j->generation != r->generation) {
 		if (j != NULL) {
-			remove_Joined(&usr->rooms, j);
+			(void)remove_Joined(&usr->rooms, j);
 			destroy_Joined(j);
 		}
 		return 0;
@@ -331,7 +331,7 @@ User *u;
 				Print(usr, "<red>Sorry, but <yellow>%s<red> does not wish to receive any messages right now\n", sl->str);
 
 Remove_Checked_Recipient:
-				remove_StringQueue(usr->recipients, sl);
+				(void)remove_StringQueue(usr->recipients, sl);
 				destroy_StringList(sl);
 				continue;
 			}

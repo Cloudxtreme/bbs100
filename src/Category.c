@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,8 +67,8 @@ int save_Category(void) {
 
 void add_Category(char *c) {
 	if (!in_Category(c)) {
-		add_StringList(&category, new_StringList(c));
-		sort_StringList(&category, alphasort_StringList);
+		(void)add_StringList(&category, new_StringList(c));
+		(void)sort_StringList(&category, alphasort_StringList);
 	}
 }
 
@@ -76,7 +76,7 @@ void remove_Category(char *c) {
 StringList *sl;
 
 	if ((sl = in_StringList(category, c)) != NULL) {
-		remove_StringList(&category, sl);
+		(void)remove_StringList(&category, sl);
 		destroy_StringList(sl);
 	}
 }

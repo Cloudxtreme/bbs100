@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ char many_buf[MAX_LINE];
 					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
-					remove_StringQueue(usr->recipients, sl);
+					(void)remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
 					if (count_Queue(usr->recipients) <= 0)
 						usr->runtime_flags &= ~RTF_MULTI;
@@ -133,7 +133,7 @@ char many_buf[MAX_LINE];
 					if (access_func != multi_mail_access && is_online(sl->str) == NULL)
 						continue;
 
-					add_StringQueue(usr->recipients, new_StringList(sl->str));
+					(void)add_StringQueue(usr->recipients, new_StringList(sl->str));
 			}
 			Put(usr, print_many(usr, many_buf, MAX_LINE));
 			break;
@@ -159,7 +159,7 @@ char many_buf[MAX_LINE];
 						if (access_func != multi_mail_access && is_online(sl->str) == NULL)
 							continue;
 
-						add_StringQueue(usr->recipients, new_StringList(sl->str));
+						(void)add_StringQueue(usr->recipients, new_StringList(sl->str));
 				}
 				listdestroy_StringList(talked_to);
 				Put(usr, print_many(usr, many_buf, MAX_LINE));
@@ -180,7 +180,7 @@ char many_buf[MAX_LINE];
 				}
 				for(u = AllUsers; u != NULL; u = u->next) {
 					if (u->name[0])
-						add_StringQueue(usr->recipients, new_StringList(u->name));
+						(void)add_StringQueue(usr->recipients, new_StringList(u->name));
 				}
 				Put(usr, print_many(usr, many_buf, MAX_LINE));
 			}
@@ -210,7 +210,7 @@ char many_buf[MAX_LINE];
 						usr->edit_buf[0] = 0;
 
 						erase_many(usr);
-						remove_StringQueue(usr->recipients, sl);
+						(void)remove_StringQueue(usr->recipients, sl);
 						destroy_StringList(sl);
 
 						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
@@ -268,7 +268,7 @@ char many_buf[MAX_LINE];
 				if (!(usr->runtime_flags & RTF_MULTI))
 					deinit_StringQueue(usr->recipients);
 
-				add_StringQueue(usr->recipients, sl);
+				(void)add_StringQueue(usr->recipients, sl);
 			}
 			usr->edit_buf[0] = 0;
 			usr->edit_pos = 0;
@@ -317,15 +317,15 @@ char many_buf[MAX_LINE];
 				usr->edit_buf[0] = 0;
 
 				if (count_Queue(usr->recipients) <= 0) {
-					add_StringQueue(usr->recipients, sl);
+					(void)add_StringQueue(usr->recipients, sl);
 					Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 				} else {
 					if (count_Queue(usr->recipients) == 1) {
 						erase_many(usr);
-						add_StringQueue(usr->recipients, sl);
+						(void)add_StringQueue(usr->recipients, sl);
 						Print(usr, "\b \b\b \b%s", print_many(usr, many_buf, MAX_LINE));
 					} else
-						add_StringQueue(usr->recipients, sl);
+						(void)add_StringQueue(usr->recipients, sl);
 				}
 			}
 			usr->edit_pos = 0;
@@ -435,7 +435,7 @@ char many_buf[MAX_LINE];
 					cstrcpy(usr->edit_buf, sl->str, MAX_LINE);
 					usr->edit_pos = strlen(usr->edit_buf);
 
-					remove_StringQueue(usr->recipients, sl);
+					(void)remove_StringQueue(usr->recipients, sl);
 					destroy_StringList(sl);
 					if (count_Queue(usr->recipients) <= 0)
 						usr->runtime_flags &= ~RTF_MULTI;
@@ -1909,7 +1909,7 @@ User *u;
 			continue;
 
 		if (!usr->edit_pos || !strncmp(u->name, usr->edit_buf, usr->edit_pos))
-			add_StringQueue(usr->tablist, new_StringList(u->name));
+			(void)add_StringQueue(usr->tablist, new_StringList(u->name));
 	}
 /* now link end to beginning and beginning to end, forming a cyclic chain */
 	if (count_Queue(usr->tablist) > 0) {
@@ -1952,7 +1952,7 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 			if (j != NULL && j->zapped)
 				zapped = add_StringList(&zapped, new_StringList(r->name));
 			else
-				add_StringQueue(usr->tablist, new_StringList(r->name));
+				(void)add_StringQueue(usr->tablist, new_StringList(r->name));
 		} else {
 			bufprintf(room_name, MAX_LINE+2, " %s ", r->name);
 			if (cstristr(room_name, match) != NULL) {
@@ -1973,11 +1973,11 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 			unload_Room(r);
 	}
 	zapped = rewind_StringList(zapped);
-	concat_StringQueue(usr->tablist, zapped);
+	(void)concat_StringQueue(usr->tablist, zapped);
 	very_similar = rewind_StringList(very_similar);
-	concat_StringQueue(usr->tablist, very_similar);
+	(void)concat_StringQueue(usr->tablist, very_similar);
 	similar = rewind_StringList(similar);
-	concat_StringQueue(usr->tablist, similar);
+	(void)concat_StringQueue(usr->tablist, similar);
 
 /* now link end to beginning and beginning to end, forming a cyclic chain */
 	if (count_Queue(usr->tablist) > 0) {

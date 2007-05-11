@@ -1,6 +1,6 @@
 /*
-    bbs100 3.0 WJ106
-    Copyright (C) 2006  Walter de Jong <walter@heiho.net>
+    bbs100 3.1 WJ107
+    Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,7 +216,7 @@ int i;
 				log_err("Out of memory allocating SignalVector for signal %d", sig);
 				return -1;
 			}
-			add_SignalVector(&(sig_table[i].handlers), h);
+			(void)add_SignalVector(&(sig_table[i].handlers), h);
 			return 0;
 		}
 	}
@@ -233,7 +233,7 @@ int i;
 
 			for(h = sig_table[i].handlers; h != NULL; h = h->next) {
 				if (h->handler == handler)
-					remove_SignalVector(&sig_table[i].handlers, h);
+					(void)remove_SignalVector(&sig_table[i].handlers, h);
 			}
 			return;
 		}

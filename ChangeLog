@@ -1,3 +1,6 @@
+Changes as of May 11th 2007
+- removed all compiler warnings for gcc 4
+
 Changes as of November 7th 2006
 - IP mask should be entered in same form as IP address (v4 or v6)
 - fixed bug: mailing to yourself is possible again
