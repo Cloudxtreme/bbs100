@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -53,6 +53,7 @@ int i;
 	KVPair_setstring(KVPARAM_BASEDIR,			"basedir",			".");
 	KVPair_setstring(KVPARAM_BINDIR,			"bindir",			"bin/");
 	KVPair_setstring(KVPARAM_CONFDIR,			"confdir",			"etc/");
+	KVPair_setstring(KVPARAM_HELPDIR,			"helpdir",			"etc/help/");
 	KVPair_setstring(KVPARAM_FEELINGSDIR,		"feelingsdir",		"etc/feelings/");
 	KVPair_setstring(KVPARAM_ZONEINFODIR,		"zoneinfodir",		"etc/zoneinfo/");
 	KVPair_setstring(KVPARAM_USERDIR,			"userdir",			"users/");
@@ -78,16 +79,9 @@ int i;
 	KVPair_setstring(KVPARAM_SHUTDOWN_SCREEN,	"shutdown_screen",	"etc/shutdown");
 	KVPair_setstring(KVPARAM_CRASH_SCREEN,		"crash_screen",		"etc/crash");
 	KVPair_setstring(KVPARAM_BOSS_SCREEN,		"boss_screen",		"etc/boss");
+	KVPair_setstring(KVPARAM_FIRST_LOGIN,		"first_login",		"etc/first_login");
 
 	KVPair_setstring(KVPARAM_SEP4, "", "");
-
-	KVPair_setstring(KVPARAM_FIRST_LOGIN,		"first_login",		"etc/first_login");
-	KVPair_setstring(KVPARAM_HELP_STD,			"help_std",			"etc/help.std");
-	KVPair_setstring(KVPARAM_HELP_CONFIG,		"help_config",		"etc/help.config");
-	KVPair_setstring(KVPARAM_HELP_ROOMCONFIG,	"help_roomconfig",	"etc/help.roomconfig");
-	KVPair_setstring(KVPARAM_HELP_SYSOP,		"help_sysop",		"etc/help.sysop");
-
-	KVPair_setstring(KVPARAM_SEP5, "", "");
 
 	KVPair_setstring(KVPARAM_HOSTMAP_FILE,		"hostmap_file",		"etc/hostmap");
 	KVPair_setstring(KVPARAM_HOSTS_ACCESS_FILE,	"hosts_access_file","etc/hosts_access");
@@ -99,7 +93,7 @@ int i;
 	KVPair_setstring(KVPARAM_SYMTAB_FILE,		"symtab_file",		"etc/symtab");
 	KVPair_setstring(KVPARAM_DEFAULT_TIMEZONE,	"default_timezone",	"Europe/Amsterdam");
 
-	KVPair_setstring(KVPARAM_SEP6, "", "");
+	KVPair_setstring(KVPARAM_SEP5, "", "");
 
 	KVPair_setstring(KVPARAM_SYSLOG,			"syslog",			"log/bbslog");
 	KVPair_setstring(KVPARAM_AUTHLOG,			"authlog",			"log/authlog");
@@ -109,7 +103,7 @@ int i;
 	KVPair_setstring(KVPARAM_ONCRASH,			"oncrash",			"dumpcore");
 	KVPair_setstring(KVPARAM_CRASHDIR,			"crashdir",			"log/crash/");
 
-	KVPair_setstring(KVPARAM_SEP7, "", "");
+	KVPair_setstring(KVPARAM_SEP6, "", "");
 
 	KVPair_setint(KVPARAM_MAX_CACHED,			"max_cached",		DEFAULT_MAX_CACHED);
 	KVPair_setint(KVPARAM_MAX_MESSAGES,			"max_messages",		DEFAULT_MAX_MESSAGES);
@@ -128,14 +122,14 @@ int i;
 	KVPair_setint(KVPARAM_HELPER_AGE,			"helper_age",		DEFAULT_HELPER_AGE);
 	KVPair_setint(KVPARAM_CHUNK_SIZE,			"chunk_size",		DEFAULT_CHUNK_SIZE);
 
-	KVPair_setstring(KVPARAM_SEP8, "", "");
+	KVPair_setstring(KVPARAM_SEP7, "", "");
 
 	KVPair_setstring(KVPARAM_NAME_SYSOP,		"name_sysop",		"Sysop");
 	KVPair_setstring(KVPARAM_NAME_ROOMAIDE,		"name_room_aide",	"Room Aide");
 	KVPair_setstring(KVPARAM_NAME_HELPER,		"name_helper",		"Helping Hand");
 	KVPair_setstring(KVPARAM_NAME_GUEST,		"name_guest",		"Guest");
 
-	KVPair_setstring(KVPARAM_SEP9, "", "");
+	KVPair_setstring(KVPARAM_SEP8, "", "");
 
 	KVPair_setstring(KVPARAM_NOTIFY_LOGIN,		"notify_login",		"is formed from some <yellow>golden<magenta> stardust");
 	KVPair_setstring(KVPARAM_NOTIFY_LOGOUT,		"notify_logout",	"explodes into <yellow>golden<magenta> stardust");
@@ -148,7 +142,7 @@ int i;
 	KVPair_setstring(KVPARAM_NOTIFY_ENTER_CHAT,	"notify_enter_chat","enters");
 	KVPair_setstring(KVPARAM_NOTIFY_LEAVE_CHAT,	"notify_leave_chat","leaves");
 
-	KVPair_setstring(KVPARAM_SEP10, "", "");
+	KVPair_setstring(KVPARAM_SEP9, "", "");
 
 	KVPair_setbool(KVPARAM_HAVE_XMSGS,			"have_xmsgs",		PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_EMOTES,			"have_emotes",		PARAM_TRUE);
@@ -173,6 +167,7 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_FILECACHE,		"have_filecache",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_RESIDENT_INFO,	"have_resident_info",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_DISABLED_MSG,	"have_disabled_msg",PARAM_TRUE);
+
 	return 0;
 }
 

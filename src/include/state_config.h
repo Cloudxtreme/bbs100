@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -62,6 +62,8 @@
 #define STATE_CONFIG_TIMEZONE			state_config_timezone
 #define STATE_TZ_CONTINENT				state_tz_continent
 #define STATE_TZ_CITY					state_tz_city
+
+int help_config(User *);
 
 void state_config_menu(User *, char);
 void state_config_address(User *, char);

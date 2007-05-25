@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,7 @@
 #define STATE_MALLOC_STATUS				state_malloc_status
 #define STATE_SCREENS_MENU				state_screens_menu
 #define STATE_SCREEN_ACTION				state_screen_action
+#define STATE_HELP_FILES				state_help_files
 #define STATE_VIEW_LOGS					state_view_logs
 #define STATE_OLD_LOGS_YEAR				state_old_logs_year
 #define STATE_OLD_LOGS_MONTH			state_old_logs_month
@@ -102,10 +103,6 @@
 #define STATE_PARAM_CRASH_SCREEN		state_param_crash_screen
 #define STATE_PARAM_FIRST_LOGIN			state_param_first_login
 #define STATE_PARAM_CREDITS_SCREEN		state_param_credits_screen
-#define STATE_PARAM_HELP_STD			state_param_help_std
-#define STATE_PARAM_HELP_CONFIG			state_param_help_config
-#define STATE_PARAM_HELP_ROOMCONFIG		state_param_help_roomconfig
-#define STATE_PARAM_HELP_SYSOP			state_param_help_sysop
 #define STATE_PARAM_HOSTS_ACCESS		state_param_hosts_access
 #define STATE_PARAM_BANISHED_FILE		state_param_banished_file
 #define STATE_PARAM_STAT_FILE			state_param_stat_file
@@ -156,6 +153,8 @@
 #define STATE_PARAM_ARCHIVEDIR			state_param_archivedir
 #define STATE_PARAM_CRASHDIR			state_param_crashdir
 
+int sysop_help(User *);
+
 void state_sysop_menu(User *, char);
 void state_categories_menu(User *, char);
 void state_add_category(User *, char);
@@ -184,6 +183,7 @@ void download_file(User *, char *, char *);
 void upload_file(User *, char *, char *);
 void upload_save(User *, char);
 void upload_abort(User *, char);
+void state_help_files(User *, char);
 void state_view_logs(User *, char);
 void state_old_logs_year(User *, char);
 void state_old_logs_month(User *, char);
@@ -246,10 +246,6 @@ void state_param_shutdown_screen(User *, char);
 void state_param_crash_screen(User *, char);
 void state_param_first_login(User *, char);
 void state_param_credits_screen(User *, char);
-void state_param_help_std(User *, char);
-void state_param_help_config(User *, char);
-void state_param_help_roomconfig(User *, char);
-void state_param_help_sysop(User *, char);
 void state_param_hosts_access(User *, char);
 void state_param_banished_file(User *, char);
 void state_param_stat_file(User *, char);

@@ -3,6 +3,31 @@ bbs100 by Walter de Jong <walter@heiho.net> (C) 2007
 bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
+
+UPGRADING FROM bbs100 3.0 or 3.1
+
+bbs100 3.2 contains a new menu-driven online Help system.
+The Help files reside under $basedir/etc/help/
+Be sure to update the etc/param file;
+
+add the line:
+
+    helpdir         etc/help/
+
+remove the lines:
+
+    help_std                etc/help.std
+    help_config             etc/help.config
+    help_roomconfig         etc/help.roomconfig
+    help_sysop              etc/help.sysop
+
+You may remove the files etc/help.*, but beware that you haven't
+customized them.
+
+If you forget to update etc/param in the way described here, the
+BBS will function normally and display the default Help files.
+
+
 UPGRADING FROM bbs100 2.x
 
 Be sure to update the files under etc/, such as the online Help files.

@@ -1,0 +1,38 @@
+     <key>w    Who is online
+<white>Shft-<key>W<green>    Short list of who is online
+<white>Ctrl-<key>W<green>    Customize the Who list
+<white>Ctrl-<key>F<green>    Online friends
+<white>Ctrl-<key>T<green>    People you talked to
+
+     <key>x    Send eXpress Message
+     <key>:/<key>;  Send Emote
+     <key>*    Send Feeling
+<white>Ctrl-<key>P<green>    Ping; see if user is busy
+
+     <key>v    Reply to sender of last received message
+<white>Shft-<key>V<green>    Reply to all recipients of the last received message
+<white>Ctrl-<key>X<green>    Message history
+     <key>X    Toggle message reception on/off
+     <key>B    Toggle beeping on/off
+<white>Ctrl-<key>B<green>    Toggle hold messages on/off
+<white>Shft-<key>F<green>    Toggle Follow up (auto-reply) mode
+     <key>q    Ask question
+     <key>0-<key>9  Quick send eXpress Message
+<white>Ctrl-<key>Q<green>    Quickview quicklist
+
+     <key>p    Profile user
+     <key>P    Short profile user
+
+Users can send you messages, unless you have message reception
+disabled. When you have turned off message reception, you can still
+send messages to people, and they will be able to answer as they are
+automatically unblocked. For more information, see the Help section
+about Friends and Enemies.
+
+You can temporarily put messages on hold. This is particularly
+convenient if you prefer to read all new messages, before engaging
+in chat.
+
+The Follow up (or auto reply) mode ensures you never forget to
+answer someone.
+

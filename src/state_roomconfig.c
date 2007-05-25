@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -181,13 +181,9 @@ void state_room_config_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "Help\n");
-			if (load_screen(usr->text, PARAM_HELP_ROOMCONFIG) < 0) {
-				Put(usr, "<red>No help available\n");
+			if (help_roomconfig(usr))
 				break;
-			}
-			PUSH(usr, STATE_PRESS_ANY_KEY);
-			read_text(usr);
+
 			Return;
 
 		case 'r':
@@ -428,6 +424,22 @@ void state_room_config_menu(User *usr, char c) {
 	else
 		Print(usr, "<yellow>\n[%s] Room Config%c <white>", usr->curr_room->name, (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
+}
+
+int help_roomconfig(User *usr) {
+char filename[MAX_PATHLEN];
+
+	Put(usr, "Help\n");
+
+	bufprintf(filename, MAX_PATHLEN, "%s/roomconfig", PARAM_HELPDIR);
+
+	if (load_screen(usr->text, filename) < 0) {
+		Put(usr, "<red>No help available\n");
+		return -1;
+	}
+	PUSH(usr, STATE_PRESS_ANY_KEY);
+	read_text(usr);
+	return 0;
 }
 
 void state_choose_category(User *usr, char c) {

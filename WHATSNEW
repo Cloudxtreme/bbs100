@@ -4,6 +4,16 @@ bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
 
+bbs100 version 3.2 is a minor update to version 3.1. Most important changes are:
+ * fixed a bug that could crash the BBS
+ * the Help function is now a menu system; update any custom Help files
+   if you have them
+   See the UPGRADING file for more information.
+
+The rest of this file is about what is new in version 3.1 and 3.0.
+
+--
+
 bbs100 version 3.1 is a minor update to version 3.0. Most important are the
 updated timezone files to keep the right track of time.
 The rest of this file is about what is new in version 3.0.

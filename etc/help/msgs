@@ -1,0 +1,18 @@
+<space><green>   Read next unread message
+     <key>e    Enter a message in a room
+<white>Shft-<key>E<green>    Upload a message in a room
+     <key>m    Mail a message
+<white>Shft-<key>M<green>    Upload a mail message
+     <key>d    Delete message
+     <key>u    Undelete a deleted message
+     <key>b    Read backwards
+     <key>a    Read current message again
+     <key>r    Reply to message
+<white>Ctrl-<key>R<green>    Upload a reply to a message
+<white>Shft-<key>R<green>    Reply to all recipients of a <yellow>Mail><green> message
+     <key>f    Forward message to other recipients or to another room
+     <key>#    Read a specific message number
+     <key>-    Read last <n> messages
+     <key>+    Skip next <n> messages
+     <key>(    Read the parent of a reply
+

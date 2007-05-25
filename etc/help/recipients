@@ -1,0 +1,22 @@
+     <white>Tab<green>  Expand user name
+     <key>\    Expand 'backwards'
+     <key>,    Add recipient
+<white>Ctrl-<key>L<green>    List recipients
+<white>Ctrl-<key>F<green>    Add all friends
+<white>Ctrl-<key>T<green>    Add everyone I talked to
+<white>Ctrl-<key>R<green>    Remove from the recipient list
+
+When sending an eXpress Message or an Emote, or when mailing
+someone you are given a prompt 'Enter recipient: '.
+
+This prompt supports automatic name expansion; press<yellow> <Tab><green>
+and BackTab<yellow> <\><green>
+
+It is possible to enter multiple recipients; at the end of a
+name press comma<yellow> <,><green> instead of<yellow> <return><green>
+to try it out. You can press<yellow> <Ctrl-L><green> for a list of already
+entered recipients. Hit<yellow> <Ctrl-F><green> to enter your friends, or<yellow>
+<Ctrl-T><green> to enter the names of the users you have already talked to
+in this session. To remove someone from the recipients list, enter the name
+and hit<yellow> <Ctrl-R><green>.
+

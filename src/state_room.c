@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include "state_friendlist.h"
 #include "state_roomconfig.h"
 #include "state_sysop.h"
+#include "state_help.h"
 #include "edit.h"
 #include "util.h"
 #include "screens.h"
@@ -175,11 +176,7 @@ char num_buf[MAX_NUMBER];
 		case 'H':
 		case '?':
 			Put(usr, "<white>Help\n");
-			if (load_screen(usr->text, PARAM_HELP_STD) < 0) {
-				Put(usr, "<red>No help available\n");
-				break;
-			}
-			read_text(usr);
+			CALL(usr, STATE_HELP_MENU);
 			Return;
 
 		case 'q':

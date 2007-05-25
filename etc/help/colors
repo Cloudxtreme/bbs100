@@ -1,0 +1,32 @@
+<green>It is possible to use colors in your messages. To enter colors, enter the name
+of the color enclosed in angle brackets <yellow>'<lt><yellow>'<green> and <yellow>'<gt><yellow>'<green>.
+To quicken typing, use<yellow> <Tab> and BackTab<yellow> <\><green> to expand the color names.
+It is also possible to hit either <yellow> <Ctrl-V><green> or<yellow> <^><green> (the caret)
+while editing, followed by a special color character. 
+
+  <lt>white<gt>  or <white>Ctrl-<key>V <key>w<green> for <white>White<green>      <lt>cyan<gt>    or <white>Ctrl-<key>V <key>c<green> for <cyan>Cyan<green>
+  <lt>yellow<gt> or <white>Ctrl-<key>V <key>y<green> for <yellow>Yellow<green>     <lt>blue<gt>    or <white>Ctrl-<key>V <key>b<green> for <blue>Blue<green>
+  <lt>red<gt>    or <white>Ctrl-<key>V <key>r<green> for <red>Red<green>        <lt>magenta<gt> or <white>Ctrl-<key>V <key>m<green> for <magenta>Magenta<green>
+  <lt>green<gt>  or <white>Ctrl-<key>V <key>g<green> for <green>Green<green>      <lt>black<gt>   or <white>Ctrl-<key>V <key>k<green> for blacK <black>blacK<green>
+<yellow>
+Example:
+
+  Kermit the frog sang a song about being <lt>green<gt>green.
+
+<red>         displays as<yellow>
+
+  Kermit the frog sang a song about being <green>green.
+
+<yellow>
+Example 2:
+
+  He also sang about the ^rr^ya^gi^cn^bb^mo^ww^y connection.
+
+<red>         displays as<yellow>
+
+  He also sang about the <red>r<yellow>a<green>i<cyan>n<blue>b<magenta>o<white>w<yellow> connection.
+
+<green>
+Mind that you can backspace the color character as well; it may seem odd
+for the first time that you can backspace an 'invisible' character.
+

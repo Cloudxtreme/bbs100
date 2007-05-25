@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -227,17 +227,29 @@ void state_config_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "Help\n");
-			if (load_screen(usr->text, PARAM_HELP_CONFIG) < 0) {
-				Put(usr, "<red>No help available\n");
+			if (help_config(usr))
 				break;
-			}
-			PUSH(usr, STATE_PRESS_ANY_KEY);
-			read_text(usr);
+
 			Return;
 	}
 	Print(usr, "<yellow>\n[Config] %c <white>", (usr->runtime_flags & RTF_SYSOP) ? '#' : '>');
 	Return;
+}
+
+int help_config(User *usr) {
+char filename[MAX_PATHLEN];
+
+	Put(usr, "Help\n");
+
+	bufprintf(filename, MAX_PATHLEN, "%s/config", PARAM_HELPDIR);
+
+	if (load_screen(usr->text, filename) < 0) {
+		Put(usr, "<red>No help available\n");
+		return -1;
+	}
+	PUSH(usr, STATE_PRESS_ANY_KEY);
+	read_text(usr);
+	return 0;
 }
 
 

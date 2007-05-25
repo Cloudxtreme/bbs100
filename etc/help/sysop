@@ -5,13 +5,15 @@
 
      <key>c    Create new room
 <white>Ctrl-<key>D<green>    Delete room; remove all room data
-     <key>g    Create or delete room categories
      <key>d    Disconnect user
-<white>Ctrl-<key>N<green>    Nuke user; remove user data
+<white>Ctrl-<key>N<green>    Nuke user; delete user
      <key>b    Banish/Unbanish username
      <key>w    Edit TCP wrappers for locking out sites
+     <key>f    Add or remove Feelings
+     <key>c    Add or remove room categories
+     <key>s    Upload or download screens and Help files
+     <key>l    View the access and error logs
      <key>u    Remove file from internal cache
-     <key>m    Display object allocation summary
 
 <white>Ctrl-<key>P<green>    Adjust system parameters and configuration
      <key>p    Change <yellow>Super User<green> mode password

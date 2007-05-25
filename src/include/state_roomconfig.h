@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,8 @@
 #define STATE_RESET_CREATION_DATE	state_reset_creation_date
 #define STATE_REMOVE_ALL_POSTS		state_remove_all_posts
 #define STATE_DELETE_ROOM			state_delete_room
+
+int help_roomconfig(User *);
 
 void state_room_config_menu(User *, char);
 void state_choose_category(User *, char);

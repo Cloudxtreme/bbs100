@@ -1,0 +1,52 @@
+<green>A bbs100 BBS is a bulletin board system that offers:
+
+* interactive chat with other users that are currently online
+  (this is known as the eXpress Message or Xmsg system)
+
+* discussion through messages posted in rooms
+
+* IRC-like chat in the chatrooms
+
+The system is primarily aimed at fun for everyone. Users that
+misbehave can be expelled (or: banished) from the BBS.
+
+Every room has its own topic. If your post is off-topic, it may be
+removed by the Room Aide (or RA), who manages the room.
+All rooms have a unique room number. Some people prefer to remember
+room numbers, but you may also go to a room by its name.
+Rooms that have topics that are in the same category, are often said
+to be on the same floor.
+
+Through interactive chat, you may send messages to other users that
+are currently online. bbs100 offers three main kinds of messages:
+
+* eXpress Messages
+  This is the most common message, that may be a couple of lines long
+
+* Emotes
+  One-liner that usally expresses what you are doing now or how you
+  are feeling at this moment
+
+* Feelings
+  Pre-fab messages (often containing sowe ASCII art) to display
+  your feelings
+
+You may also ask Questions through interactive chat. Questions are
+automatically received by Helping Hands; these users are available
+to help others. If you are experienced enough, you can make yourself
+available to help others, too.
+
+If a particular person is not online right now, you can leave a
+message in the Mail room. The Mail will be read as soon as he
+or she returns.
+
+Every user on bbs100 has his own profile information, to present
+yourself to others. Your profile can be customized in the Config
+Menu. Press<white> <Ctrl-C><green> to enter the Config menu.
+
+Add fun people to your Friends list, and block people if you have to.
+
+<yellow>
+<center>To logout of the system, press<white> <L><yellow> for Logout.
+<center>Be sure to always logout neatly, do NOT just disconnect!
+

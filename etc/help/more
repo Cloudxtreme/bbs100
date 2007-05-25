@@ -1,0 +1,14 @@
+On the<yellow> --More--<green> prompt, you can use the following keys:
+<yellow>
+<space><green>   Next page
+     <key>b/<key>u  Previous page
+     <key>q/<key>s  Quit/stop reading here
+     <key>g    Goto beginning
+     <key>G    Goto end<yellow>
+<enter><green>   Next line
+     <key>+    Next line
+     <key>-    Previous line
+     <key>/    Find text
+     <key>?    Find backwards
+<white>Ctrl-<key>L<green>    Reprint page
+

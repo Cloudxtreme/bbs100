@@ -9,6 +9,7 @@ port_number             1234
 basedir                 xxx
 bindir                  bin/
 confdir                 etc/
+helpdir                 etc/help/
 feelingsdir             etc/feelings/
 zoneinfodir             etc/zoneinfo/
 userdir                 users/
@@ -30,12 +31,7 @@ reboot_screen           etc/reboot
 shutdown_screen         etc/shutdown
 crash_screen            etc/crash
 boss_screen             etc/boss
-
 first_login             etc/first_login
-help_std                etc/help.std
-help_config             etc/help.config
-help_roomconfig         etc/help.roomconfig
-help_sysop              etc/help.sysop
 
 hostmap_file            etc/hostmap
 hosts_access_file       etc/hosts_access

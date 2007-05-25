@@ -1,5 +1,5 @@
 #
-#   bbs100 3.1 WJ107
+#   bbs100 3.2 WJ107
 #   Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 #
 #   This program is free software; you can redistribute it and/or modify
@@ -62,7 +62,7 @@ OBJS = List.o PList.o Hash.o Queue.o StringList.o CallStack.o \
 	Signal.o SignalVector.o Timer.o timeout.o Feeling.o helper.o \
 	state.o state_room.o state_login.o state_msg.o state_friendlist.o \
 	state_config.o state_roomconfig.o state_sysop.o state_history.o \
-	passwd.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
+	state_help.o passwd.o Message.o Room.o Joined.o Stats.o BufferedMsg.o \
 	SU_Passwd.o Param.o Types.o Memory.o SymbolTable.o HostMap.o \
 	FileFormat.o Timezone.o Worldclock.o locale_system.o locales.o \
 	Category.o Conn.o ConnUser.o ConnResolv.o Telnet.o NewUserLog.o \
@@ -201,6 +201,8 @@ install: $(TARGETS) $(SCRIPTS)
 	else \
 		echo "  COPYDIR   $(prefix)/etc/zoneinfo/" ; \
 		( cd ../etc && $(TAR) -cf - zoneinfo ) | ( cd $(prefix)/etc && $(TAR) -xf - ) ; \
+		echo "  COPYDIR   $(prefix)/etc/help/" ; \
+		( cd ../etc && $(TAR) -cf - help ) | ( cd $(prefix)/etc && $(TAR) -xf - ) ; \
 	fi
 	@if $(TEST) -f symtab ; \
 	then \

@@ -1,5 +1,5 @@
 /*
-    bbs100 3.1 WJ107
+    bbs100 3.2 WJ107
     Copyright (C) 2007  Walter de Jong <walter@heiho.net>
 
     This program is free software; you can redistribute it and/or modify
@@ -157,13 +157,9 @@ void state_sysop_menu(User *usr, char c) {
 		case 'h':
 		case 'H':
 		case '?':
-			Put(usr, "Help\n");
-			if (load_screen(usr->text, PARAM_HELP_SYSOP) < 0) {
-				Put(usr, "<red>No help available\n");
+			if (sysop_help(usr))
 				break;
-			}
-			PUSH(usr, STATE_PRESS_ANY_KEY);
-			read_text(usr);
+
 			Return;
 
 		case 'r':
@@ -335,6 +331,24 @@ void state_sysop_menu(User *usr, char c) {
 	}
 	Print(usr, "<yellow>\n[%s] # <white>", PARAM_NAME_SYSOP);
 	Return;
+}
+
+
+/*
+	read Help for the sysop menu
+*/
+int sysop_help(User *usr) {
+char filename[MAX_PATHLEN];
+
+	Put(usr, "Help\n");
+	bufprintf(filename, MAX_PATHLEN, "%s/sysop", PARAM_HELPDIR);
+	if (load_screen(usr->text, filename) < 0) {
+		Put(usr, "<red>No help available\n");
+		return 1;
+	}
+	PUSH(usr, STATE_PRESS_ANY_KEY);
+	read_text(usr);
+	return 0;
 }
 
 
@@ -1921,15 +1935,14 @@ void state_screens_menu(User *usr, char c) {
 
 			Put(usr, "<magenta>\n"
 				"Log<hotkey>in screen                      <hotkey>1st login screen\n"
-				"Log<hotkey>out screen                     <hotkey>User help\n"
-				"<hotkey>Motd screen                       <hotkey>Config menu help\n"
-				"Reboo<hotkey>t screen                     <hotkey>Room config menu help\n"
+				"Log<hotkey>out screen                     <hotkey>Motd screen\n"
+				"Reboo<hotkey>t screen                     <hotkey>Nologin screen\n"
 			);
 			Put(usr,
-				"Shut<hotkey>down screen                   <hotkey>Sysop menu help\n"
-				"Cr<hotkey>ash screen                      <hotkey>Boss screen\n"
-				"<hotkey>Nologin screen                    <hotkey>Hostmap\n"
-				"<hotkey>Local modifications\n"
+				"Shut<hotkey>down screen                   <hotkey>Boss screen\n"
+				"Cr<hotkey>ash screen                      Hostma<hotkey>p\n"
+				"\n"
+				"<hotkey>Local modifications               <hotkey>Help files\n"
 			);
 			read_menu(usr);
 			Return;
@@ -1994,28 +2007,8 @@ void state_screens_menu(User *usr, char c) {
 			screen_menu(usr, "1st login screen", PARAM_FIRST_LOGIN);
 			Return;
 
-		case 'u':
-		case 'U':
-			screen_menu(usr, "User help", PARAM_HELP_STD);
-			Return;
-
-		case 'c':
-		case 'C':
-			screen_menu(usr, "Config menu help", PARAM_HELP_CONFIG);
-			Return;
-
-		case 'r':
-		case 'R':
-			screen_menu(usr, "Room config menu help", PARAM_HELP_ROOMCONFIG);
-			Return;
-
-		case 's':
-		case 'S':
-			screen_menu(usr, "Sysop menu help", PARAM_HELP_SYSOP);
-			Return;
-
-		case 'h':
-		case 'H':
+		case 'p':
+		case 'P':
 			screen_menu(usr, "Hostmap", PARAM_HOSTMAP_FILE);
 			Return;
 
@@ -2023,6 +2016,12 @@ void state_screens_menu(User *usr, char c) {
 		case 'L':
 		case ']':
 			screen_menu(usr, "Local modifications file", PARAM_MODS_SCREEN);
+			Return;
+
+		case 'h':
+		case 'H':
+			Put(usr, "Help files\n");
+			CALL(usr, STATE_HELP_FILES);
 			Return;
 	}
 	Print(usr, "<yellow>\n[%s] Screens# <white>", PARAM_NAME_SYSOP);
@@ -2246,6 +2245,139 @@ void upload_save(User *usr, char c) {
 void upload_abort(User *usr, char c) {
 	free_StringIO(usr->text);
 	RET(usr);
+}
+
+
+void state_help_files(User *usr, char c) {
+char filename[MAX_PATHLEN];
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_help_files);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			usr->runtime_flags |= RTF_BUSY;
+
+			buffer_text(usr);
+
+			Put(usr, "<magenta>\n"
+				"<hotkey>Introduction                 Editing recipient <hotkey>lists\n"
+				"e<hotkey>Xpress messages             Editing with <hotkey>colors\n"
+				"<hotkey>Friends and enemies          <hotkey>Navigating the --More-- prompt\n"
+			);
+			Put(usr,
+				"Reading and posting <hotkey>messages\n"
+				"The <hotkey>room system\n"
+				"Customizing your <hotkey>profile     <hotkey>Other commands\n"
+			);
+			Put(usr, "\n"
+				"Confi<hotkey>g menu help             Room <hotkey>Aide help\n"
+				"<hotkey>Sysop menu help\n"
+			);
+			read_menu(usr);
+			Return;
+
+		case ' ':
+		case KEY_RETURN:
+		case KEY_BS:
+			Print(usr, "%s menu\n", PARAM_NAME_SYSOP);
+			RET(usr);
+			Return;
+
+		case KEY_CTRL('L'):
+			Put(usr, "\n");
+			CURRENT_STATE(usr);
+			Return;
+
+		case '`':
+			CALL(usr, STATE_BOSS);
+			Return;
+
+		case 'i':
+		case 'I':
+			bufprintf(filename, MAX_PATHLEN, "%s/intro", PARAM_HELPDIR);
+			screen_menu(usr, "Help Introduction", filename);
+			Return;
+
+		case 'x':
+		case 'X':
+			bufprintf(filename, MAX_PATHLEN, "%s/xmsg", PARAM_HELPDIR);
+			screen_menu(usr, "Help X messages", filename);
+			Return;
+
+		case 'f':
+		case 'F':
+			bufprintf(filename, MAX_PATHLEN, "%s/friends", PARAM_HELPDIR);
+			screen_menu(usr, "Help Friends & enemies", filename);
+			Return;
+
+		case 'm':
+		case 'M':
+			bufprintf(filename, MAX_PATHLEN, "%s/msgs", PARAM_HELPDIR);
+			screen_menu(usr, "Help on Messages", filename);
+			Return;
+
+		case 'r':
+		case 'R':
+			bufprintf(filename, MAX_PATHLEN, "%s/rooms", PARAM_HELPDIR);
+			screen_menu(usr, "Help on Room commands", filename);
+			Return;
+
+		case 'p':
+		case 'P':
+			bufprintf(filename, MAX_PATHLEN, "%s/profile", PARAM_HELPDIR);
+			screen_menu(usr, "Help on Profile info", filename);
+			Return;
+
+		case 'l':
+		case 'L':
+			bufprintf(filename, MAX_PATHLEN, "%s/recipient", PARAM_HELPDIR);
+			screen_menu(usr, "Help on recipient lists", filename);
+			Return;
+
+		case 'c':
+		case 'C':
+			bufprintf(filename, MAX_PATHLEN, "%s/colors", PARAM_HELPDIR);
+			screen_menu(usr, "Help on colors", filename);
+			Return;
+
+		case 'n':
+		case 'N':
+			bufprintf(filename, MAX_PATHLEN, "%s/more", PARAM_HELPDIR);
+			screen_menu(usr, "Help on the --More-- prompt", filename);
+			Return;
+
+		case 'o':
+		case 'O':
+			bufprintf(filename, MAX_PATHLEN, "%s/other", PARAM_HELPDIR);
+			screen_menu(usr, "Help on other commands", filename);
+			Return;
+
+		case 'g':
+		case 'G':
+			bufprintf(filename, MAX_PATHLEN, "%s/config", PARAM_HELPDIR);
+			screen_menu(usr, "Config Menu Help", filename);
+			Return;
+
+		case 'a':
+		case 'A':
+			bufprintf(filename, MAX_PATHLEN, "%s/roomconfig", PARAM_HELPDIR);
+			screen_menu(usr, "Room Aide Menu Help", filename);
+			Return;
+
+		case 's':
+		case 'S':
+			bufprintf(filename, MAX_PATHLEN, "%s/sysop", PARAM_HELPDIR);
+			screen_menu(usr, "Sysop Menu Help", filename);
+			Return;
+	}
+	Print(usr, "<yellow>\n[%s] Help files# <white>", PARAM_NAME_SYSOP);
+	Return;
 }
 
 
@@ -3549,11 +3681,8 @@ void state_config_files_menu(User *usr, char c) {
 				PARAM_FIRST_LOGIN, PARAM_CRASH_SCREEN);
 
 			Print(usr, "Cred<hotkey>its         <white> %-22s<magenta>\n"
-				"\n"
-				"Standard <hotkey>help   <white> %-22s<magenta>  Room config h<hotkey>elp<white> %s<magenta>\n",
-				PARAM_CREDITS_SCREEN, PARAM_HELP_STD, PARAM_HELP_ROOMCONFIG);
-			Print(usr, "<hotkey>Config menu help<white> %-22s<magenta>  <hotkey>Sysop menu help <white> %s<magenta>\n",
-				PARAM_HELP_CONFIG, PARAM_HELP_SYSOP);
+				"\n",
+				PARAM_CREDITS_SCREEN);
 
 			Print(usr, "<hotkey>Param file      <white> %-22s<magenta>  Uni<hotkey>x PID file   <white> %s<magenta>\n",
 				param_file, PARAM_PID_FILE);
@@ -3644,30 +3773,6 @@ void state_config_files_menu(User *usr, char c) {
 		case 'I':
 			Put(usr, "Credits screen\n");
 			CALL(usr, STATE_PARAM_CREDITS_SCREEN);
-			Return;
-
-		case 'h':
-		case 'H':
-			Put(usr, "Standard help\n");
-			CALL(usr, STATE_PARAM_HELP_STD);
-			Return;
-
-		case 'c':
-		case 'C':
-			Put(usr, "Config menu help\n");
-			CALL(usr, STATE_PARAM_HELP_CONFIG);
-			Return;
-
-		case 'e':
-		case 'E':
-			Put(usr, "Room config help\n");
-			CALL(usr, STATE_PARAM_HELP_ROOMCONFIG);
-			Return;
-
-		case 's':
-		case 'S':
-			Print(usr, "%s help\n", PARAM_NAME_SYSOP);
-			CALL(usr, STATE_PARAM_HELP_SYSOP);
 			Return;
 
 		case 'p':
@@ -3786,30 +3891,6 @@ void state_param_first_login(User *usr, char c) {
 void state_param_credits_screen(User *usr, char c) {
 	Enter(state_param_first_login);
 	change_string_param(usr, c, &PARAM_CREDITS_SCREEN, "<green>Enter credits screen: <yellow>");
-	Return;
-}
-
-void state_param_help_std(User *usr, char c) {
-	Enter(state_param_help_std);
-	change_string_param(usr, c, &PARAM_HELP_STD, "<green>Enter standard help file: <yellow>");
-	Return;
-}
-
-void state_param_help_config(User *usr, char c) {
-	Enter(state_param_help_config);
-	change_string_param(usr, c, &PARAM_HELP_CONFIG, "<green>Enter Config menu help: <yellow>");
-	Return;
-}
-
-void state_param_help_roomconfig(User *usr, char c) {
-	Enter(state_param_help_roomconfig);
-	change_string_param(usr, c, &PARAM_HELP_ROOMCONFIG, "<green>Enter Room Config help: <yellow>");
-	Return;
-}
-
-void state_param_help_sysop(User *usr, char c) {
-	Enter(state_param_help_sysop);
-	change_string_param(usr, c, &PARAM_HELP_SYSOP, "<green>Enter Sysop menu help: <yellow>");
 	Return;
 }
 

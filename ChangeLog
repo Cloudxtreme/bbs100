@@ -1,5 +1,6 @@
 Changes as of May 25th 2007
 - applied patch by Georbit to fix crasher bug
+- new Help system with a menu
 
 Changes as of May 11th 2007
 - removed all compiler warnings for gcc 4

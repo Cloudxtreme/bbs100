@@ -1,0 +1,25 @@
+<white>Ctrl-<key>F<green>    Online friends
+     <key>>    Edit friend list
+     <key><    Block users; edit enemy list
+     <key>o    Edit override list
+
+<white>Ctrl-<key>C<green>    Config menu
+
+Put people you know on your Friend list. With<yellow> <Ctrl-F><green> you
+will be able to quickly see who of your friends is online.
+
+Users can send you messages, unless you have message reception
+disabled. Users that are on your friend list can always contact
+you, unless you are explicitly blocking them; there is an option
+to do this in the Config menu.
+You can use your enemy list to block annoying users.
+
+When you have turned off message reception, you can still send
+messages to people, and they will be able to answer as they are
+automatically unblocked -- they are placed on a socalled override
+list. The override list is managed automatically by the BBS, but
+it is also possible to edit it by hand.
+
+It is possible to hide your profile information from people.
+You can enable this option in the Config menu.
+

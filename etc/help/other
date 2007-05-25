@@ -1,0 +1,16 @@
+     <key>l    Logout / Leave chatroom
+     <key>h    Display Help information
+     <key>t    Time and date
+<white>Ctrl-<key>D<green>    Change Doing field
+<white>Ctrl-<key>L<green>    Lock terminal
+     <key>`    For when the boss comes by
+
+<white>Ctrl-<key>C<green>    Config menu
+<white>Ctrl-<key>A<green>    Room config menu
+<white>Shft-<key>S<green>    Display statistics
+
+     <key>[    Display version information
+     <key>]    View the local modifications to a standard bbs100 BBS
+     <key>{    View the credits
+<white>Ctrl-<key>G<green>    View the GNU General Public License
+

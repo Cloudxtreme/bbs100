@@ -1,0 +1,19 @@
+     <key>j    Jump to a specific room
+     <key>z    Zap room; never read this room again
+<white>Ctrl-<key>Z<green>    Zap all rooms
+     <key>i    Read room information
+     <key>k    List all known rooms
+     <key>s    Stop reading, Skip this room
+     <key>g    Goto next unread room
+
+<white>Ctrl-<key>A<green>    Room config menu
+
+You may need an invitation for certain rooms. Please contact the room aide
+for an invitation if necessary.
+
+In public rooms, the room aide may decide to have you removed from the room
+if you do not display proper conduct.
+
+<yellow>Home><green> is your personal chat room. Type<yellow> /<Ctrl-A><green> to enter the Room Config
+menu, where you can invite people to your home.
+
