@@ -65,7 +65,6 @@ When in a <yellow>chat room<green>, press slash <key>/ before giving the command
 <white>Ctrl-<key>G<green>    View the GNU General Public License
      <key>[    Display version information
      <key>]    View the local modifications to a standard bbs100 BBS
-     <key>}    Check for source code changes
      <key>{    View the credits
 
 On the<yellow> --More--<green> prompt, you can use the following keys:
