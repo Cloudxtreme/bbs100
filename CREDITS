@@ -297,3 +297,5 @@ Version 3.0:
 - Simon Tatham for describing list merge sort and giving a good code example
 
 - English Buchanan found a problem with the 'busy mailing' message
+
+- Georbit found and fixed crasher bug in shift_StringIO()

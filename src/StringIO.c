@@ -141,19 +141,22 @@ char *p;
 	reallocate it to maxsize. This keeps buffers from growing and growing
 */
 int shift_StringIO(StringIO *s, int maxsize) {
+int data_left;
+
 	if (s == NULL)
 		return -1;
 
 	if (s->buf == NULL || s->pos <= 0)
 		return 0;
 
-	if (s->len > 0) {
-		memmove(s->buf, s->buf + s->pos, s->len);
-		s->len -= s->pos;
-	}
-	if (s->len < 0)
-		s->len = 0;
+	data_left = s->len - s->pos;
+	if (data_left > 0)
+		memmove(s->buf, s->buf + s->pos, data_left);
+	else
+		data_left = 0;
+
 	s->pos = 0;
+	s->len = data_left;
 
 	if (!s->len && s->size > maxsize) {			/* shrink the buffer */
 		char *p;
