@@ -83,7 +83,7 @@ int fun_common(User *usr, char c) {
 
 	switch(c) {
 		case KEY_CTRL('G'):
-			Put(usr, "<white>GNU General Public License\n");
+			Put(usr, "<white>GNU General Public License\n<green>");
 			if (load_screen(usr->text, PARAM_GPL_SCREEN) < 0) {
 				Put(usr, "<red>The GPL file is missing\n");				/* or out of memory! */
 				break;
