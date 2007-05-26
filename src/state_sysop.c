@@ -3408,17 +3408,19 @@ void state_system_config_menu(User *usr, char c) {
 			Print(usr, "\n"
 				"<hotkey>Base directory     <white> %s<magenta>\n"
 				"B<hotkey>inary directory   <white> %s<magenta>\n"
-				"<hotkey>Config directory   <white> %s<magenta>\n"
-				"<hotkey>Feelings directory <white> %s<magenta>\n",
+				"<hotkey>Config directory   <white> %s<magenta>\n",
 
 				PARAM_BASEDIR,
 				PARAM_BINDIR,
-				PARAM_CONFDIR,
-				PARAM_FEELINGSDIR
+				PARAM_CONFDIR
 			);
 			Print(usr,
+				"<hotkey>Help directory     <white> %s<magenta>\n"
+				"<hotkey>Feelings directory <white> %s<magenta>\n"
 				"<hotkey>Zoneinfo directory <white> %s<magenta>\n",
 
+				PARAM_HELPDIR,
+				PARAM_FEELINGSDIR,
 				PARAM_ZONEINFODIR
 			);
 			Print(usr,
@@ -3501,6 +3503,12 @@ void state_system_config_menu(User *usr, char c) {
 		case 'C':
 			Put(usr, "Config directory\n");
 			CALL(usr, STATE_PARAM_CONFDIR);
+			Return;
+
+		case 'h':
+		case 'H':
+			Put(usr, "Help directory\n");
+			CALL(usr, STATE_PARAM_HELPDIR);
 			Return;
 
 		case 'f':
@@ -3599,6 +3607,12 @@ void state_param_bindir(User *usr, char c) {
 void state_param_confdir(User *usr, char c) {
 	Enter(state_param_confdir);
 	change_string_param(usr, c, &PARAM_CONFDIR, "<green>Enter config directory: <yellow>");
+	Return;
+}
+
+void state_param_helpdir(User *usr, char c) {
+	Enter(state_param_helpdir);
+	change_string_param(usr, c, &PARAM_HELPDIR, "<green>Enter help directory: <yellow>");
 	Return;
 }
 

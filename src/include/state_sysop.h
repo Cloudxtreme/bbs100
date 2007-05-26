@@ -78,6 +78,7 @@
 #define STATE_PARAM_BASEDIR				state_param_basedir
 #define STATE_PARAM_BINDIR				state_param_bindir
 #define STATE_PARAM_CONFDIR				state_param_confdir
+#define STATE_PARAM_HELPDIR				state_param_helpdir
 #define STATE_PARAM_FEELINGSDIR			state_param_feelingsdir
 #define STATE_PARAM_ZONEINFODIR			state_param_zoneinfodir
 #define STATE_PARAM_USERDIR				state_param_userdir
@@ -225,6 +226,7 @@ void state_param_file(User *, char);
 void state_param_basedir(User *, char);
 void state_param_bindir(User *, char);
 void state_param_confdir(User *, char);
+void state_param_helpdir(User *, char);
 void state_param_feelingsdir(User *, char);
 void state_param_zoneinfodir(User *, char);
 void state_param_userdir(User *, char);
