@@ -299,3 +299,7 @@ Version 3.0:
 - English Buchanan found a problem with the 'busy mailing' message
 
 - Georbit found and fixed crasher bug in shift_StringIO()
+
+- Ignacio Arque'-Latour suggested the Help menu
+  I think this has been suggested by others before, but now I actually
+  implemented it
