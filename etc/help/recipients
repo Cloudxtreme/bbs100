@@ -6,8 +6,8 @@
 <white>Ctrl-<key>T<green>    Add everyone I talked to
 <white>Ctrl-<key>R<green>    Remove from the recipient list
 
-When sending an eXpress Message or an Emote, or when mailing
-someone you are given a prompt 'Enter recipient: '.
+When sending an <yellow>eXpress Message<green> or an <yellow>Emote,<green> or when mailing
+someone you are given a prompt<yellow> 'Enter recipient: '.<green>
 
 This prompt supports automatic name expansion; press<yellow> <Tab><green>
 and BackTab<yellow> <\><green>

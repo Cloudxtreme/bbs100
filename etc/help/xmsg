@@ -24,15 +24,15 @@
      <key>P    Short profile user
 
 Users can send you messages, unless you have message reception
-disabled. When you have turned off message reception, you can still
+<yellow>disabled. <green>When you have turned off message reception, you can still
 send messages to people, and they will be able to answer as they are
 automatically unblocked. For more information, see the Help section
-about Friends and Enemies.
+about <yellow>Friends and Enemies.<green>
 
-You can temporarily put messages on hold. This is particularly
+You can temporarily put messages <yellow>on hold.<green> This is particularly
 convenient if you prefer to read all new messages, before engaging
 in chat.
 
-The Follow up (or auto reply) mode ensures you never forget to
+The <yellow>Follow up<green> (or auto reply) mode ensures you never forget to
 answer someone.
 

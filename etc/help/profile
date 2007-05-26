@@ -3,12 +3,12 @@
 
 <white>Ctrl-<key>C<green>    Config menu
 
-The profile information tells who you are, where you live,
+The <yellow>profile<green> information tells who you are, where you live,
 and for example, what your hobbies are. You are free to customize
 it and show how you like to present yourself.
 
-You are not obliged to fill out your address information.
-You have the option of hiding it from specific people in the Config menu.
+You are not obliged to fill out your <yellow>address<green> information.
+You have the option of <yellow>hiding<green> it from specific people in the Config menu.
 Mind that without hiding it, anyone can <hotkey>profile you and see your
 real name, home address, phone number, etc.
 <red>

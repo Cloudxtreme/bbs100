@@ -1,7 +1,7 @@
-<green>A bbs100 BBS is a bulletin board system that offers:
+<green>A <yellow>bbs100<green> BBS is a bulletin board system that offers:
 
 * interactive chat with other users that are currently online
-  (this is known as the eXpress Message or Xmsg system)
+  (this is known as the <yellow>eXpress Message<green> or Xmsg system)
 
 * discussion through messages posted in rooms
 
@@ -11,7 +11,7 @@ The system is primarily aimed at fun for everyone. Users that
 misbehave can be expelled (or: banished) from the BBS.
 
 Every room has its own topic. If your post is off-topic, it may be
-removed by the Room Aide (or RA), who manages the room.
+removed by the <yellow>Room Aide<green> (or RA), who manages the room.
 All rooms have a unique room number. Some people prefer to remember
 room numbers, but you may also go to a room by its name.
 Rooms that have topics that are in the same category, are often said
@@ -19,34 +19,34 @@ to be on the same floor.
 
 Through interactive chat, you may send messages to other users that
 are currently online. bbs100 offers three main kinds of messages:
-
-* eXpress Messages
+<yellow>
+* eXpress Messages<green>
   This is the most common message, that may be a couple of lines long
-
-* Emotes
+<yellow>
+* Emotes<green>
   One-liner that usally expresses what you are doing now or how you
   are feeling at this moment
-
-* Feelings
-  Pre-fab messages (often containing sowe ASCII art) to display
+<yellow>
+* Feelings<green>
+  Pre-fab messages (often containing some ASCII art) to display
   your feelings
 
-You may also ask Questions through interactive chat. Questions are
-automatically received by Helping Hands; these users are available
+You may also ask <yellow>Questions<green> through interactive chat. Questions are
+automatically received by <yellow>Helping Hands;<green> these users are available
 to help others. If you are experienced enough, you can make yourself
 available to help others, too.
 
 If a particular person is not online right now, you can leave a
-message in the Mail room. The Mail will be read as soon as he
+message in the <yellow>Mail<green> room. The Mail will be read as soon as he
 or she returns.
 
-Every user on bbs100 has his own profile information, to present
-yourself to others. Your profile can be customized in the Config
-Menu. Press<white> <Ctrl-C><green> to enter the Config menu.
+Every user on bbs100 has his own <yellow>profile<green> information, to present
+yourself to others. Your profile can be customized in the <yellow>Config
+Menu.<green> Press<white> <Ctrl-C><green> to enter the Config menu.
 
-Add fun people to your Friends list, and block people if you have to.
+Add fun people to your <yellow>Friends<green> list, and block people if you have to.
 
 <yellow>
-<center>To logout of the system, press<white> <L><yellow> for Logout.
-<center>Be sure to always logout neatly, do NOT just disconnect!
+To logout of the system, press<white> <L><yellow> for Logout.
+Be sure to always logout neatly, do NOT just disconnect!
 

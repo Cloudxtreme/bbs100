@@ -1,3 +1,7 @@
+Changes as of May 26th 2007
+- PARAM_HELPDIR configucable through Sysop menu
+- fixed typos in Help text
+
 Changes as of May 25th 2007
 - applied patch by Georbit to fix crasher bug
 - new Help system with a menu
