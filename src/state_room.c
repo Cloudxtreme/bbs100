@@ -876,17 +876,19 @@ char num_buf[MAX_NUMBER];
 						destroy_Message(m);
 						break;
 					}
-					if (add_MailToQueue(m->to, new_MailTo_from_str(usr->message->from)) == NULL) {
-						Perror(usr, "Out of memory");
-						destroy_Message(m);
-						break;
+					if (in_MailToQueue(m->to, usr->message->from) == NULL) {
+						if (add_MailToQueue(m->to, new_MailTo_from_str(usr->message->from)) == NULL) {
+							Perror(usr, "Out of memory");
+							destroy_Message(m);
+							break;
+						}
 					}
 /* reply to all */
 					if (c == 'R' && usr->message->to != NULL) {
 						MailTo *to;
 
 						for(to = (MailTo *)usr->message->to->tail; to != NULL; to = to->next) {
-							if (strcmp(to->name, usr->name) && !mail_access(usr, to->name))
+							if (strcmp(to->name, usr->name) && !mail_access(usr, to->name) && in_MailToQueue(m->to, to->name) == NULL)
 								(void)add_MailToQueue(m->to, new_MailTo_from_str(to->name));
 						}
 					}
