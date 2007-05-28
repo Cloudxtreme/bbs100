@@ -1,4 +1,7 @@
 Changes as of May 26th 2007
+- fix stupid looking 'Originally in ...' when doing Reply in Mail>
+
+Changes as of May 26th 2007
 - PARAM_HELPDIR configucable through Sysop menu
 - fixed typos in Help text
 

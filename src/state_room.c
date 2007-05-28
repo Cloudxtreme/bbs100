@@ -941,13 +941,12 @@ char num_buf[MAX_NUMBER];
 				if (usr->message->subject && usr->message->subject[0])
 					m->subject = cstrdup(usr->message->subject);
 
-				m->room_name = cstrdup(usr->curr_room->name);
-
 				if (usr->curr_room == usr->mail)
 					m->reply_number = 0UL;
-				else
+				else {
 					m->reply_number = usr->message->number;
-
+					m->room_name = cstrdup(usr->curr_room->name);
+				}
 				destroy_Message(usr->new_message);
 				usr->new_message = m;
 				enter_the_message(usr);
