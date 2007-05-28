@@ -1,6 +1,7 @@
 Changes as of May 28th 2007
 - fix stupid looking 'Originally in ...' when doing Reply in Mail>
 - fixed bug; sending double Mail replies back to the sender in some cases
+- fixed bug; 'v' reply to Answer/Question did not work
 
 Changes as of May 26th 2007
 - PARAM_HELPDIR configucable through Sysop menu

@@ -303,3 +303,8 @@ Version 3.0:
 - Ignacio Arque'-Latour suggested the Help menu
   I think this has been suggested by others before, but now I actually
   implemented it
+
+- English Buchanan found a problem with double mail replies being sent
+  in certain cases
+
+- Myth found a problem that "Answers" could not be replied to with 'v'

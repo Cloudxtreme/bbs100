@@ -2143,7 +2143,8 @@ int msgtype;
 	while(pl != NULL) {
 		m = (BufferedMsg *)pl->p;
 		msgtype = m->flags & BUFMSG_TYPE;
-		if ((msgtype == BUFMSG_XMSG || msgtype == BUFMSG_EMOTE || msgtype == BUFMSG_FEELING)
+		if ((msgtype == BUFMSG_XMSG || msgtype == BUFMSG_EMOTE || msgtype == BUFMSG_FEELING
+			|| msgtype == BUFMSG_QUESTION || msgtype == BUFMSG_ANSWER)
 			&& strcmp(m->from, usr->name))
 			break;
 
