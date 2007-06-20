@@ -1,3 +1,6 @@
+Changes as of June 20th 2007
+- tagged for release as 3.2
+
 Changes as of May 28th 2007
 - fix stupid looking 'Originally in ...' when doing Reply in Mail>
 - fixed bug; sending double Mail replies back to the sender in some cases
