@@ -86,7 +86,7 @@ struct Room_tag {
 	StringList *room_aides, *kicked, *invited;
 	StringQueue *chat_history;
 	StringIO *info;
-	PQueue *inside;		/* queue of pointers to online users (chat room only) */
+	PQueue *inside;		/* queue of pointers to online users */
 };
 
 extern Room *AllRooms;
