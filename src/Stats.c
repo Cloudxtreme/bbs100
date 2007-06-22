@@ -453,7 +453,7 @@ unsigned long num;
 	Print(usr, "<green>The system was last booted on <cyan>%s\n", print_date(usr, stats.uptime, date_buf, MAX_LINE));
 	Print(usr, "<green>Uptime is <yellow>%s\n", print_total_time(rtc - stats.uptime, date_buf, MAX_LINE));
 	Print(usr, "<yellow>%s<green> successful login%s made since boot time\n",
-		print_number(stats.num_logins, date_buf, MAX_LINE), (stats.num_logins == 1UL) ? "" : "s");
+		print_number(stats.num_logins, date_buf, sizeof(date_buf)), (stats.num_logins == 1UL) ? "" : "s");
 
 	print_reboot_status(usr);
 
@@ -462,19 +462,19 @@ unsigned long num;
 		MemInfo mem_info;
 #endif
 
-		Print(usr, "\n<green>Cache size: <yellow>%s", print_number(cache_size, date_buf, MAX_LINE));
-		Print(usr, "/%s<green>   ", print_number(num_cached, date_buf, MAX_LINE));
-		Print(usr, "hits: <yellow>%s<green>   ", print_number(stats.cache_hit, date_buf, MAX_LINE));
-		Print(usr, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf, MAX_LINE));
+		Print(usr, "\n<green>Cache size: <yellow>%s", print_number(cache_size, date_buf, sizeof(date_buf)));
+		Print(usr, "/%s<green>   ", print_number(num_cached, date_buf, sizeof(date_buf)));
+		Print(usr, "hits: <yellow>%s<green>   ", print_number(stats.cache_hit, date_buf, sizeof(date_buf)));
+		Print(usr, "misses: <yellow>%s<green>   ", print_number(stats.cache_miss, date_buf, sizeof(date_buf)));
 		Print(usr, "rate: <yellow>%lu%%\n", ((stats.cache_hit + stats.cache_miss) > 0) ? 100UL * stats.cache_hit / (stats.cache_hit + stats.cache_miss) : 0UL);
 
 #ifdef USE_BINALLOC
 		get_MemInfo(&mem_info);
 		Print(usr, "<green>\n"
-			"Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, date_buf, MAX_LINE));
-		Print(usr, "Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, MAX_LINE));
-		Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, MAX_LINE));
-		Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, MAX_LINE));
+			"Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, date_buf, sizeof(date_buf)));
+		Print(usr, "Total bin memory<yellow>  %12s <green>bytes\n", print_number(mem_info.total, date_buf, sizeof(date_buf)));
+		Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, date_buf, sizeof(date_buf)));
+		Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, date_buf, sizeof(date_buf)));
 #endif
 	}
 	Print(usr, "\n<yellow>User statistics\n");
@@ -511,95 +511,95 @@ unsigned long num;
 	if ((l = strlen(stats.most_read)) > w)
 		w = l;
 
-	Print(usr, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(stats.logins, date_buf, MAX_LINE));
+	Print(usr, "\n<green>Most logins are by                     <white>%-*s<green> : <yellow>%s\n", w, stats.most_logins, print_number(stats.logins, date_buf, sizeof(date_buf)));
 	if (PARAM_HAVE_XMSGS) {
 		if (stats.xsent > 0 && stats.most_xsent[0])
-			Print(usr, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf, MAX_LINE));
+			Print(usr, "<green>Most eXpress Messages were sent by     <white>%-*s<green> : <yellow>%s\n", w, stats.most_xsent, print_number(stats.xsent, date_buf, sizeof(date_buf)));
 
 		if (stats.xrecv > 0 && stats.most_xrecv[0])
-			Print(usr, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf, MAX_LINE));
+			Print(usr, "<green>Most eXpress Messages were received by <white>%-*s<green> : <yellow>%s\n", w, stats.most_xrecv, print_number(stats.xrecv, date_buf, sizeof(date_buf)));
 	}
 	if (PARAM_HAVE_EMOTES) {
 		if (stats.esent > 0 && stats.most_esent[0])
-			Print(usr, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf, MAX_LINE));
+			Print(usr, "<green>Most emotes were sent by               <white>%-*s<green> : <yellow>%s\n", w, stats.most_esent, print_number(stats.esent, date_buf, sizeof(date_buf)));
 
 		if (stats.erecv > 0 && stats.most_erecv[0])
-			Print(usr, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf, MAX_LINE));
+			Print(usr, "<green>Most emotes were received by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_erecv, print_number(stats.erecv, date_buf, sizeof(date_buf)));
 	}
 	if (PARAM_HAVE_FEELINGS) {
 		if (stats.fsent > 0 && stats.most_fsent[0])
-			Print(usr, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf, MAX_LINE));
+			Print(usr, "<green>Most Feelings were sent by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_fsent, print_number(stats.fsent, date_buf, sizeof(date_buf)));
 
 		if (stats.frecv > 0 && stats.most_frecv[0])
-			Print(usr, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf, MAX_LINE));
+			Print(usr, "<green>Most Feelings were received by         <white>%-*s<green> : <yellow>%s\n", w, stats.most_frecv, print_number(stats.frecv, date_buf, sizeof(date_buf)));
 	}
 	if (PARAM_HAVE_QUESTIONS) {
 		if (stats.qsent > 0 && stats.most_qsent[0])
-			Print(usr, "<green>Most Questions were asked by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_qsent, print_number(stats.qsent, date_buf, MAX_LINE));
+			Print(usr, "<green>Most Questions were asked by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_qsent, print_number(stats.qsent, date_buf, sizeof(date_buf)));
 
 		if (stats.qansw > 0 && stats.most_qansw[0])
-			Print(usr, "<green>Most Answers were given by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_qansw, print_number(stats.qansw, date_buf, MAX_LINE));
+			Print(usr, "<green>Most Answers were given by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_qansw, print_number(stats.qansw, date_buf, sizeof(date_buf)));
 	}
 	if (stats.posted > 0 && stats.most_posted[0])
-		Print(usr, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf, MAX_LINE));
+		Print(usr, "<green>Most messages were posted by           <white>%-*s<green> : <yellow>%s\n", w, stats.most_posted, print_number(stats.posted, date_buf, sizeof(date_buf)));
 
 	if (stats.read > 0 && stats.most_read[0])
-		Print(usr, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf, MAX_LINE));
+		Print(usr, "<green>Most messages were read by             <white>%-*s<green> : <yellow>%s\n", w, stats.most_read, print_number(stats.read, date_buf, sizeof(date_buf)));
 
 	if (usr->runtime_flags & RTF_SYSOP) {
 		Put(usr, "\n<yellow>Since boot time\n");
 
 		if (PARAM_HAVE_XMSGS) {
-			Print(usr, "<green>eXpress Messages sent: <yellow>%-15s", print_number(stats.xsent_boot, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.xrecv_boot, date_buf, MAX_LINE));
+			Print(usr, "<green>eXpress Messages sent: <yellow>%-15s", print_number(stats.xsent_boot, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.xrecv_boot, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_EMOTES) {
-			Print(usr, "<green>Emotes sent          : <yellow>%-15s", print_number(stats.esent_boot, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.erecv_boot, date_buf, MAX_LINE));
+			Print(usr, "<green>Emotes sent          : <yellow>%-15s", print_number(stats.esent_boot, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.erecv_boot, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_FEELINGS) {
-			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(stats.fsent_boot, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.frecv_boot, date_buf, MAX_LINE));
+			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(stats.fsent_boot, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(stats.frecv_boot, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_QUESTIONS) {
-			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(stats.qsent_boot, date_buf, MAX_LINE));
-			Print(usr, "<green> answered: <yellow>%s\n", print_number(stats.qansw_boot, date_buf, MAX_LINE));
+			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(stats.qsent_boot, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> answered: <yellow>%s\n", print_number(stats.qansw_boot, date_buf, sizeof(date_buf)));
 		}
-		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(stats.posted_boot, date_buf, MAX_LINE));
-		Print(usr, "<green> read    : <yellow>%s\n", print_number(stats.read_boot, date_buf, MAX_LINE));
+		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(stats.posted_boot, date_buf, sizeof(date_buf)));
+		Print(usr, "<green> read    : <yellow>%s\n", print_number(stats.read_boot, date_buf, sizeof(date_buf)));
 	}
 	if (!is_guest(usr->name)) {
 		Put(usr, "\n<yellow>Your statistics\n");
 
 		if (PARAM_HAVE_XMSGS) {
-			Print(usr, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr->xsent, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->xrecv, date_buf, MAX_LINE));
+			Print(usr, "<green>eXpress Messages sent: <yellow>%-15s", print_number(usr->xsent, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->xrecv, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_EMOTES) {
-			Print(usr, "<green>Emotes sent          : <yellow>%-15s", print_number(usr->esent, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->erecv, date_buf, MAX_LINE));
+			Print(usr, "<green>Emotes sent          : <yellow>%-15s", print_number(usr->esent, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->erecv, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_FEELINGS) {
-			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf, MAX_LINE));
-			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->frecv, date_buf, MAX_LINE));
+			Print(usr, "<green>Feelings sent        : <yellow>%-15s", print_number(usr->fsent, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> received: <yellow>%s\n", print_number(usr->frecv, date_buf, sizeof(date_buf)));
 		}
 		if (PARAM_HAVE_QUESTIONS) {
-			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(usr->qsent, date_buf, MAX_LINE));
-			Print(usr, "<green> answered: <yellow>%s\n", print_number(usr->qansw, date_buf, MAX_LINE));
+			Print(usr, "<green>Questions asked      : <yellow>%-15s", print_number(usr->qsent, date_buf, sizeof(date_buf)));
+			Print(usr, "<green> answered: <yellow>%s\n", print_number(usr->qansw, date_buf, sizeof(date_buf)));
 		}
-		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(usr->posted, date_buf, MAX_LINE));
-		Print(usr, "<green> read    : <yellow>%s\n", print_number(usr->read, date_buf, MAX_LINE));
+		Print(usr, "<green>Messages posted      : <yellow>%-15s", print_number(usr->posted, date_buf, sizeof(date_buf)));
+		Print(usr, "<green> read    : <yellow>%s\n", print_number(usr->read, date_buf, sizeof(date_buf)));
 
-		Print(usr, "\n<green>Account created on <cyan>%s<green>\n", print_date(usr, usr->birth, date_buf, MAX_LINE));
-		Print(usr, "You have logged on <yellow>%s<green> times, ", print_number(usr->logins, date_buf, MAX_LINE));
+		Print(usr, "\n<green>Account created on <cyan>%s<green>\n", print_date(usr, usr->birth, date_buf, sizeof(date_buf)));
+		Print(usr, "You have logged on <yellow>%s<green> times, ", print_number(usr->logins, date_buf, sizeof(date_buf)));
 
 		num = (unsigned long)((rtc - usr->birth) / (unsigned long)(30 * SECS_IN_DAY));
 		if (num == 0UL)
 			num = 1UL;
 		num = usr->logins / num;
 
-		Print(usr, "an average of <yellow>%s<green> time%s per month\n", print_number(num, date_buf, MAX_LINE), (num == 1UL) ? "" : "s");
-		Print(usr, "Your total online time is <yellow>%s\n", print_total_time(usr->total_time, date_buf, MAX_LINE));
+		Print(usr, "an average of <yellow>%s<green> time%s per month\n", print_number(num, date_buf, sizeof(date_buf)), (num == 1UL) ? "" : "s");
+		Print(usr, "Your total online time is <yellow>%s\n", print_total_time(usr->total_time, date_buf, sizeof(date_buf)));
 	}
 	read_text(usr);
 	Return;

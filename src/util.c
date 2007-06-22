@@ -248,7 +248,7 @@ int pos, n, dont_auto_color, color, is_symbol;
 				if (!*str)
 					break;
 
-				print_hotkey(usr, *str, buf, MAX_COLORBUF, cpos);
+				print_hotkey(usr, *str, buf, sizeof(buf), cpos);
 				put_StringIO(dev, buf);
 
 				dont_auto_color = force_auto_color_off;
@@ -520,7 +520,7 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 		if (!c)
 			return 7;
 
-		print_hotkey(usr, c, buf, PRINT_BUF, cpos);
+		print_hotkey(usr, c, buf, sizeof(buf), cpos);
 		put_StringIO(dev, buf);
 		return 8;
 	}

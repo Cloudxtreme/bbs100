@@ -153,7 +153,7 @@ int i, j = 0, n = 0;
 		return NULL;
 
 	buf[0] = 0;
-	bufprintf(buf2, MAX_NUMBER, "%lu", ul);
+	bufprintf(buf2, sizeof(buf2), "%lu", ul);
 	i = strlen(buf2)-1;
 	if (i < 0)
 		return buf;

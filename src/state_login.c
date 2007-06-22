@@ -592,7 +592,7 @@ int i, new_mail;
 			exclaim[0] = 0;
 
 		Print(usr, "<green>Welcome back, <yellow>%s! <green>"
-			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf, MAX_NUMBER), exclaim);
+			"This is your <yellow>%s<green> login%s\n", usr->name, print_numberth(usr->logins, num_buf, sizeof(num_buf)), exclaim);
 	}
 /*
 	note that the last IP was stored in tmpbuf[TMP_FROM_HOST] by load_User() in User.c
@@ -943,7 +943,7 @@ User *u;
 
 		if (tm->tm_mday == bday_day && tm->tm_mon == bday_mon && tm->tm_year > bday_year)
 			Print(usr, "\n<magenta>Today is your <yellow>%s<magenta> BBS birthday!\n",
-				print_numberth(tm->tm_year - bday_year, num_buf, MAX_NUMBER));
+				print_numberth(tm->tm_year - bday_year, num_buf, sizeof(num_buf)));
 	}
 	print_reboot_status(usr);
 

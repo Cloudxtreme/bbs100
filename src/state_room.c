@@ -1106,15 +1106,15 @@ void PrintPrompt(User *usr) {
 				if (usr->flags & USR_ROOMNUMBERS)
 					Print(usr, "<yellow>\n[%u %s]<green> msg #%s (%s remaining) %c ",
 						usr->curr_room->number, roomname,
-						print_number(usr->curr_msg, num_buf1, MAX_NUMBER),
-						print_number(remaining, num_buf2, MAX_NUMBER),
+						print_number(usr->curr_msg, num_buf1, sizeof(num_buf1)),
+						print_number(remaining, num_buf2, sizeof(num_buf2)),
 						(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 					);
 				else
 					Print(usr, "<yellow>\n[%s]<green> msg #%s (%s remaining) %c ",
 						roomname,
-						print_number(usr->curr_msg, num_buf1, MAX_NUMBER),
-						print_number(remaining, num_buf2, MAX_NUMBER),
+						print_number(usr->curr_msg, num_buf1, sizeof(num_buf1)),
+						print_number(remaining, num_buf2, sizeof(num_buf2)),
 						(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 					);
 			} else {

@@ -287,8 +287,8 @@ History_Reply_Code:
 		remaining--;
 
 	Print(usr, "<yellow>\n[X History]<magenta> msg #%s (%s remaining) %c<white> ",
-		print_number(n, num_buf1, MAX_NUMBER),
-		print_number(remaining, num_buf2, MAX_NUMBER),
+		print_number(n, num_buf1, sizeof(num_buf1)),
+		print_number(remaining, num_buf2, sizeof(num_buf2)),
 		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 	);
 	Return;
@@ -705,8 +705,8 @@ Exit_Held_History:
 		remaining--;
 
 	Print(usr, "<yellow>\n[Held Messages]<magenta> msg #%s (%s remaining) %c<white> ",
-		print_number(n, num_buf1, MAX_NUMBER),
-		print_number(remaining, num_buf2, MAX_NUMBER),
+		print_number(n, num_buf1, sizeof(num_buf1)),
+		print_number(remaining, num_buf2, sizeof(num_buf2)),
 		(usr->runtime_flags & RTF_SYSOP) ? '#' : '>'
 	);
 	Return;

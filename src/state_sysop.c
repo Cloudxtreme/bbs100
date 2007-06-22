@@ -1851,10 +1851,10 @@ MemStats mem_stats;
 
 			Put(usr, "<yellow>Memory allocation status\n<green>");
 			get_MemInfo(&mem_info);
-			Print(usr, "Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, num_buf1, MAX_NUMBER));
+			Print(usr, "Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, num_buf1, sizeof(num_buf1)));
 			Print(usr, "Total bin memory<yellow>  %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.total, num_buf1, MAX_NUMBER), mem_info.balance);
-			Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, MAX_NUMBER));
-			Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, MAX_NUMBER));
+			Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, sizeof(num_buf1)));
+			Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, sizeof(num_buf1)));
 
 			if (!PARAM_HAVE_BINALLOC)
 				Put(usr, "<red>\nThe bin allocator is currently not active\n"
@@ -1881,8 +1881,8 @@ MemStats mem_stats;
 					num_buf1,
 					num_buf2,
 					num_buf3,
-					print_number(membin_info.bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, MAX_NUMBER),
-					print_number(membin_info.free, num_buf5, MAX_NUMBER)
+					print_number(membin_info.bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, sizeof(num_buf4)),
+					print_number(membin_info.free, num_buf5, sizeof(num_buf5))
 				);
 				total_bins += membin_info.bins;
 				total_free += membin_info.free;
@@ -1899,8 +1899,8 @@ MemStats mem_stats;
 				num_buf1,
 				num_buf2,
 				num_buf3,
-				print_number(total_bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, MAX_NUMBER),
-				print_number(total_free, num_buf5, MAX_NUMBER)
+				print_number(total_bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, sizeof(num_buf4)),
+				print_number(total_free, num_buf5, sizeof(num_buf5))
 			);
 			read_menu(usr);
 			Return;
