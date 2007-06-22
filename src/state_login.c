@@ -107,11 +107,14 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		Free(usr->tmpbuf[TMP_NAME]);
-		if ((usr->tmpbuf[TMP_NAME] = cstrdup(usr->edit_buf)) == NULL) {
+		if ((usr->tmpbuf[TMP_NAME] = (char *)Malloc(MAX_NAME, TYPE_CHAR))) == NULL) {
 			Perror(usr, "Out of memory");
 			close_connection(usr, "out of memory");
 			Return;
 		}
+		strncpy(usr->tmpbuf[TMP_NAME], usr->edit_buf, MAX_NAME);
+		usr->tmpbuf[TMP_NAME][MAX_NAME-1] = 0;
+
 		usr->edit_buf[0] = 0;
 		usr->edit_pos = 0;
 

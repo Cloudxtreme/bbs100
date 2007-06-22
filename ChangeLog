@@ -1,5 +1,5 @@
-Changes as of June 20th 2007
-- tagged for release as 3.2
+Changes as of June 22nd 2007
+- fixed bug; buffer overflow when logging in as Guest when a Guest was already there
 
 Changes as of May 28th 2007
 - fix stupid looking 'Originally in ...' when doing Reply in Mail>
