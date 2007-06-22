@@ -107,7 +107,7 @@ int r;
 	}
 	if (r == EDIT_RETURN) {
 		Free(usr->tmpbuf[TMP_NAME]);
-		if ((usr->tmpbuf[TMP_NAME] = (char *)Malloc(MAX_NAME, TYPE_CHAR))) == NULL) {
+		if ((usr->tmpbuf[TMP_NAME] = (char *)Malloc(MAX_NAME, TYPE_CHAR)) == NULL) {
 			Perror(usr, "Out of memory");
 			close_connection(usr, "out of memory");
 			Return;

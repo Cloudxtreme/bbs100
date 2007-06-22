@@ -179,7 +179,7 @@ Conn *conn;
 */
 				if (err == EADDRINUSE) {
 					for(retry = 0; retry < BIND_RETRIES; retry++) {
-						log_warn("inet_listen(): waiting on bind() on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
+						log_warn("inet_listen(): waiting on bind() on %s", inet_printaddr(host, serv, buf, sizeof(buf)));
 						sleep(BIND_WAIT);
 						if (bind(sock, (struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen) == -1) {
 							err = errno;
@@ -194,7 +194,7 @@ Conn *conn;
 					}
 				}
 				if (!success)
-					log_warn("inet_listen(): bind() failed on %s: %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE), cstrerror(err, errbuf, MAX_LINE));
+					log_warn("inet_listen(): bind() failed on %s: %s", inet_printaddr(host, serv, buf, sizeof(buf)), cstrerror(err, errbuf, sizeof(errbuf)));
 			} else
 				log_warn("inet_listen(%s): bind failed on an interface, but I don't know which one(!)", service);
 
@@ -215,7 +215,7 @@ Conn *conn;
 		if (listen(sock, MAX_NEWCONNS) == -1) {
 			if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 				host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
+				log_err("inet_listen(): listen() failed on %s", inet_printaddr(host, serv, buf, sizeof(buf)));
 			else
 				log_err("inet_listen(%s): listen() failed", service);
 			close(sock);
@@ -237,7 +237,7 @@ Conn *conn;
 
 		if (getnameinfo((struct sockaddr *)ai_p->ai_addr, ai_p->ai_addrlen,
 			host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
-			log_msg("listening on %s", inet_printaddr(host, serv, buf, NI_MAXHOST+NI_MAXSERV+MAX_LINE));
+			log_msg("listening on %s", inet_printaddr(host, serv, buf, sizeof(buf)));
 		else
 			log_msg("listening on port %s", service);
 
