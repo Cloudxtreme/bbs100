@@ -104,11 +104,11 @@ struct stat statbuf;
 		if ((tm = localtime(&statbuf.st_ctime)) == NULL)
 			return -1;
 
-		bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
+		bufprintf(filename, sizeof(filename), "%s/core.%04d%02d%02d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 		path_strip(filename);
 		i = 1;
 		while(!stat(filename, &statbuf) && i < 10) {
-			bufprintf(filename, MAX_PATHLEN, "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
+			bufprintf(filename, sizeof(filename), "%s/core.%04d%02d%02d-%d", PARAM_CRASHDIR, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, i);
 			path_strip(filename);
 			i++;
 		}

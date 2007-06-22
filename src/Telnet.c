@@ -140,12 +140,12 @@ char buf[MAX_TELNETBUF];
 					break;
 
 				case TELOPT_NEW_ENVIRON:		/* NEW-ENVIRON SEND */
-					bufprintf(buf, MAX_TELNETBUF, "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
+					bufprintf(buf, sizeof(buf), "%c%c%c%c%c%c", IAC, SB, TELOPT_NEW_ENVIRON, 1, IAC, SE);
 					write_Conn(conn, buf, 6);
 					break;
 
 				default:
-					bufprintf(buf, MAX_TELNETBUF, "%c%c%c", IAC, DONT, c);
+					bufprintf(buf, sizeof(buf), "%c%c%c", IAC, DONT, c);
 					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;
@@ -160,7 +160,7 @@ char buf[MAX_TELNETBUF];
 					break;
 
 				default:
-					bufprintf(buf, MAX_TELNETBUF, "%c%c%c", IAC, WONT, c);
+					bufprintf(buf, sizeof(buf), "%c%c%c", IAC, WONT, c);
 					write_Conn(conn, buf, 3);
 			}
 			t->state = TS_DATA;

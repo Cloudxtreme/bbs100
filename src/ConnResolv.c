@@ -86,7 +86,7 @@ char buf[MAX_PATHLEN];
 	}
 /* make pathname for the unix domain socket */
 
-	bufprintf(buf, MAX_PATHLEN, "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
+	bufprintf(buf, sizeof(buf), "%s/resolver.%lu", PARAM_CONFDIR, (unsigned long)getpid());
 	path_strip(buf);
 	if ((listener->sock = unix_sock(buf)) < 0) {
 		log_err("failed to create unix domain socket");

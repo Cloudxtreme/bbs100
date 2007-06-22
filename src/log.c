@@ -161,7 +161,7 @@ int l;
 	t = rtc;
 	tm = localtime(&t);		/* logging goes in localtime */
 
-	l = bufprintf(buf, MAX_LOGLINE, "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
+	l = bufprintf(buf, sizeof(buf), "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
 	bufvprintf(buf+l, MAX_LOGLINE - l, msg, ap);
 /*
@@ -242,7 +242,7 @@ int i;
 	t = rtc;
 	t -= SECS_IN_DAY/2;			/* take week/month number of yesterday */
 	tm = localtime(&t);
-	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
+	bufprintf(filename, sizeof(filename), "%s/%04d/%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1);
 	path_strip(filename);
 	if (mkdir_p(filename) < 0)
 		return;
@@ -255,7 +255,7 @@ int i;
 		if (!*p)
 			p = logfile;
 	}
-	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
+	bufprintf(filename, sizeof(filename), "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
 		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 	path_strip(filename);
 

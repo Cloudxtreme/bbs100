@@ -150,7 +150,7 @@ char buf[PRINT_BUF];
 	if (slp == NULL)
 		return NULL;
 
-	bufvprintf(buf, PRINT_BUF, fmt, ap);
+	bufvprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	if ((sl = new_StringList(buf)) == NULL)
 		return *slp;

@@ -241,7 +241,7 @@ char filename[MAX_PATHLEN];
 
 	Put(usr, "Help\n");
 
-	bufprintf(filename, MAX_PATHLEN, "%s/config", PARAM_HELPDIR);
+	bufprintf(filename, sizeof(filename), "%s/config", PARAM_HELPDIR);
 
 	if (load_screen(usr->text, filename) < 0) {
 		Put(usr, "<red>No help available\n");
@@ -2156,7 +2156,7 @@ int r;
 						CURRENT_STATE(usr);
 						Return;
 					}
-					bufprintf(dirname, MAX_PATHLEN, "%s/%s", PARAM_ZONEINFODIR, sl->str);
+					bufprintf(dirname, sizeof(dirname), "%s/%s", PARAM_ZONEINFODIR, sl->str);
 					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						log_err("state_tz_continent(): list_DirList(%s) failed", dirname);
 						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
@@ -2269,7 +2269,7 @@ char zonename[MAX_PATHLEN], *p;
 						CURRENT_STATE(usr);
 						Return;
 					}
-					bufprintf(zonename, MAX_PATHLEN, "%s/%s", usr->tmpbuf[0], sl->str);
+					bufprintf(zonename, sizeof(zonename), "%s/%s", usr->tmpbuf[0], sl->str);
 					path_strip(zonename);
 					if ((tz = load_Timezone(zonename)) == NULL) {
 						Put(usr, "<red>That time zone cannot be used right now. Please try again later\n");

@@ -317,7 +317,7 @@ void state_sysop_menu(User *usr, char c) {
 				char filename[MAX_PATHLEN];
 
 				Put(usr, "Deactivate nologin\n");
-				bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+				bufprintf(filename, sizeof(filename), "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
 				unlink(filename);
 				nologin_active = 0;
 				log_msg("SYSOP %s deactivated nologin", usr->name);
@@ -341,7 +341,7 @@ int sysop_help(User *usr) {
 char filename[MAX_PATHLEN];
 
 	Put(usr, "Help\n");
-	bufprintf(filename, MAX_PATHLEN, "%s/sysop", PARAM_HELPDIR);
+	bufprintf(filename, sizeof(filename), "%s/sysop", PARAM_HELPDIR);
 	if (load_screen(usr->text, filename) < 0) {
 		Put(usr, "<red>No help available\n");
 		return 1;
@@ -433,7 +433,7 @@ int r;
 		if (PARAM_HAVE_CATEGORY)
 			(void)sort_Room(&AllRooms, room_sort_by_category);
 
-		bufprintf(buf, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
+		bufprintf(buf, sizeof(buf), "%s/%u", PARAM_ROOMDIR, room->number);
 		path_strip(buf);
 		if (make_dir(buf, (mode_t)0750) < 0) {
 			log_err("failed to create new room directory %s", buf);
@@ -797,9 +797,9 @@ char path[MAX_PATHLEN], newpath[MAX_PATHLEN];
 				close_connection(u, "user is being nuked by %s", usr->name);
 				u = NULL;
 			}
-			bufprintf(path, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
+			bufprintf(path, sizeof(path), "%s/%c/%s", PARAM_USERDIR, usr->edit_buf[0], usr->edit_buf);
 			path_strip(path);
-			bufprintf(newpath, MAX_PATHLEN, "%s/%s", PARAM_TRASHDIR, path);
+			bufprintf(newpath, sizeof(newpath), "%s/%s", PARAM_TRASHDIR, path);
 			path_strip(newpath);
 /*
 	Move the user directory
@@ -924,13 +924,13 @@ int i;
 		i = 2;
 		for(w = AllWrappers; w != NULL; w = w->next) {
 			if (PARAM_HAVE_WRAPPER_ALL)
-				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s%s %s/%s",
+				bufprintf(buf, sizeof(buf), "<yellow>%2d <white>%s%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					(w->flags & WRAPPER_APPLY_ALL) ? "_all" : "",
 					print_inet_addr(&w->addr, addr_buf, MAX_LINE, w->flags),
 					print_inet_mask(&w->mask, mask_buf, MAX_LINE, w->flags));
 			else
-				bufprintf(buf, MAX_LONGLINE, "<yellow>%2d <white>%s %s/%s",
+				bufprintf(buf, sizeof(buf), "<yellow>%2d <white>%s %s/%s",
 					i, (w->flags & WRAPPER_ALLOW) ? "allow" : "deny",
 					print_inet_addr(&w->addr, addr_buf, MAX_LINE, w->flags),
 					print_inet_mask(&w->mask, mask_buf, MAX_LINE, w->flags));
@@ -1443,7 +1443,7 @@ char total_buf[MAX_LINE];
 			Print(usr, "<red>Reboot time altered to %s (including one minute grace period)\n",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 
-			bufprintf(buf, PRINT_BUF, "The system is now rebooting in %s",
+			bufprintf(buf, sizeof(buf), "The system is now rebooting in %s",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
@@ -1465,7 +1465,7 @@ char total_buf[MAX_LINE];
 		Put(usr, "\n<red>Reboot procedure started\n");
 
 		if (reboot_timer->sleeptime > 0) {
-			bufprintf(buf, PRINT_BUF, "The system is rebooting in %s",
+			bufprintf(buf, sizeof(buf), "The system is rebooting in %s",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
@@ -1563,7 +1563,7 @@ char total_buf[MAX_LINE];
 			Print(usr, "<red>Shutdown time altered to %s (including one minute grace period)\n",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 
-			bufprintf(buf, PRINT_BUF, "The system is now shutting down in %s",
+			bufprintf(buf, sizeof(buf), "The system is now shutting down in %s",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 			RET(usr);
@@ -1581,7 +1581,7 @@ char total_buf[MAX_LINE];
 		Put(usr, "\n<red>Shutdown sequence initiated\n");
 
 		if (shutdown_timer->sleeptime > 0) {
-			bufprintf(buf, PRINT_BUF, "The system is shutting down in %s",
+			bufprintf(buf, sizeof(buf), "The system is shutting down in %s",
 				print_total_time((unsigned long)(r + SECS_IN_MIN), total_buf, MAX_LINE));
 			system_broadcast(0, buf);
 		}
@@ -1762,7 +1762,7 @@ char filename[MAX_PATHLEN];
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+			bufprintf(filename, sizeof(filename), "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
 			close(open(filename, O_CREAT|O_WRONLY|O_TRUNC, (mode_t)0660));
 			nologin_active = 1;
 			log_msg("SYSOP %s activated nologin", usr->name);
@@ -1821,7 +1821,7 @@ int r;
 #define NUM_DASH(x,y)								\
 	do {											\
 		if ((x))									\
-			bufprintf((y), MAX_NUMBER, "%d", (x));	\
+			bufprintf((y), sizeof(y), "%d", (x));	\
 		else {										\
 			(y)[0] = '-';							\
 			(y)[1] = 0;								\
@@ -2300,79 +2300,79 @@ char filename[MAX_PATHLEN];
 
 		case 'i':
 		case 'I':
-			bufprintf(filename, MAX_PATHLEN, "%s/intro", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/intro", PARAM_HELPDIR);
 			screen_menu(usr, "Help Introduction", filename);
 			Return;
 
 		case 'x':
 		case 'X':
-			bufprintf(filename, MAX_PATHLEN, "%s/xmsg", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/xmsg", PARAM_HELPDIR);
 			screen_menu(usr, "Help X messages", filename);
 			Return;
 
 		case 'f':
 		case 'F':
-			bufprintf(filename, MAX_PATHLEN, "%s/friends", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/friends", PARAM_HELPDIR);
 			screen_menu(usr, "Help Friends & enemies", filename);
 			Return;
 
 		case 'm':
 		case 'M':
-			bufprintf(filename, MAX_PATHLEN, "%s/msgs", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/msgs", PARAM_HELPDIR);
 			screen_menu(usr, "Help on Messages", filename);
 			Return;
 
 		case 'r':
 		case 'R':
-			bufprintf(filename, MAX_PATHLEN, "%s/rooms", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/rooms", PARAM_HELPDIR);
 			screen_menu(usr, "Help on Room commands", filename);
 			Return;
 
 		case 'p':
 		case 'P':
-			bufprintf(filename, MAX_PATHLEN, "%s/profile", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/profile", PARAM_HELPDIR);
 			screen_menu(usr, "Help on Profile info", filename);
 			Return;
 
 		case 'l':
 		case 'L':
-			bufprintf(filename, MAX_PATHLEN, "%s/recipient", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/recipient", PARAM_HELPDIR);
 			screen_menu(usr, "Help on recipient lists", filename);
 			Return;
 
 		case 'c':
 		case 'C':
-			bufprintf(filename, MAX_PATHLEN, "%s/colors", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/colors", PARAM_HELPDIR);
 			screen_menu(usr, "Help on colors", filename);
 			Return;
 
 		case 'n':
 		case 'N':
-			bufprintf(filename, MAX_PATHLEN, "%s/more", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/more", PARAM_HELPDIR);
 			screen_menu(usr, "Help on the --More-- prompt", filename);
 			Return;
 
 		case 'o':
 		case 'O':
-			bufprintf(filename, MAX_PATHLEN, "%s/other", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/other", PARAM_HELPDIR);
 			screen_menu(usr, "Help on other commands", filename);
 			Return;
 
 		case 'g':
 		case 'G':
-			bufprintf(filename, MAX_PATHLEN, "%s/config", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/config", PARAM_HELPDIR);
 			screen_menu(usr, "Config Menu Help", filename);
 			Return;
 
 		case 'a':
 		case 'A':
-			bufprintf(filename, MAX_PATHLEN, "%s/roomconfig", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/roomconfig", PARAM_HELPDIR);
 			screen_menu(usr, "Room Aide Menu Help", filename);
 			Return;
 
 		case 's':
 		case 'S':
-			bufprintf(filename, MAX_PATHLEN, "%s/sysop", PARAM_HELPDIR);
+			bufprintf(filename, sizeof(filename), "%s/sysop", PARAM_HELPDIR);
 			screen_menu(usr, "Sysop Menu Help", filename);
 			Return;
 	}
@@ -2576,7 +2576,7 @@ time_t t;
 	t -= SECS_IN_DAY;			/* yesterday */
 	tm = localtime(&t);
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
+	bufprintf(filename, sizeof(filename), "%s/%04d/%02d/%s.%04d%02d%02d", PARAM_ARCHIVEDIR, tm->tm_year+1900, tm->tm_mon+1,
 		p, tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday);
 	path_strip(filename);
 
@@ -2654,7 +2654,7 @@ int r;
 					char dirname[MAX_PATHLEN];
 					DirList *dl2;
 
-					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
+					bufprintf(dirname, sizeof(dirname), "%s/%s", dl->name, usr->edit_buf);
 					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_SLASHES)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						CURRENT_STATE(usr);
@@ -2728,7 +2728,7 @@ int r;
 					char dirname[MAX_PATHLEN];
 					DirList *dl2;
 
-					bufprintf(dirname, MAX_PATHLEN, "%s/%s", dl->name, usr->edit_buf);
+					bufprintf(dirname, sizeof(dirname), "%s/%s", dl->name, usr->edit_buf);
 					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						Print(usr, "<red>Failed to read directory <white>%s\n", dirname);
 						break;
@@ -2818,7 +2818,7 @@ int r;
 						CURRENT_STATE(usr);
 						Return;
 					}
-					bufprintf(filename, MAX_PATHLEN, "%s/%s", dl->name, sl->str);
+					bufprintf(filename, sizeof(filename), "%s/%s", dl->name, sl->str);
 /* view the log file */
 					free_StringIO(usr->text);
 					if (load_logfile(usr->text, filename) < 0) {
@@ -3042,7 +3042,7 @@ char filename[MAX_PATHLEN], *p;
 		RET(usr);
 		Return;
 	}
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
 
 	Free(usr->tmpbuf[TMP_NAME]);
 	usr->tmpbuf[TMP_NAME] = NULL;
@@ -3176,7 +3176,7 @@ char filename[MAX_PATHLEN], *p;
 	}
 	switch(yesno(usr, c, 'N')) {
 		case YESNO_YES:
-			bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+			bufprintf(filename, sizeof(filename), "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
 			Free(usr->tmpbuf[TMP_NAME]);
 			usr->tmpbuf[TMP_NAME] = NULL;
 
@@ -3218,7 +3218,7 @@ char filename[MAX_PATHLEN];
 		RET(usr);
 		Return;
 	}
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
 	Free(usr->tmpbuf[TMP_NAME]);
 	usr->tmpbuf[TMP_NAME] = NULL;
 
@@ -3248,7 +3248,7 @@ char filename[MAX_PATHLEN];
 		RET(usr);
 		Return;
 	}
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_FEELINGSDIR, usr->tmpbuf[TMP_NAME]);
 	Free(usr->tmpbuf[TMP_NAME]);
 	usr->tmpbuf[TMP_NAME] = NULL;
 

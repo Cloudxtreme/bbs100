@@ -176,7 +176,7 @@ socklen_t client_len = sizeof(struct sockaddr_storage);
 		destroy_Conn(new_conn);
 		Return;
 	}
-	bufprintf(buf, MAX_LONGLINE, "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
+	bufprintf(buf, sizeof(buf), "%c%c%c%c%c%c%c%c%c%c%c%c", IAC, WILL, TELOPT_SGA, IAC, WILL, TELOPT_ECHO,
 		IAC, DO, TELOPT_NAWS, IAC, DO, TELOPT_NEW_ENVIRON);
 
 	if (write(new_conn->sock, buf, strlen(buf)) < 0) {

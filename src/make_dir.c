@@ -23,7 +23,6 @@
 #ifndef HAVE_MKDIR
 
 #include "defines.h"
-#include "bufprintf.h"
 #include "sys_wait.h"
 
 #include <unistd.h>
@@ -59,8 +58,6 @@ struct stat statbuf;
 
 
 #ifndef HAVE_RMDIR
-
-#include "bufprintf.h"
 
 #include <unistd.h>
 #include <errno.h>

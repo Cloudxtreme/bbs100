@@ -82,13 +82,13 @@ char err_msg[MAX_LINE] = "";
 
 	if (!strcmp(usr->edit_buf, "Sysop")) {
 		if (su_passwd == NULL) {
-			bufprintf(err_msg, MAX_LINE, " <white>--> <red>This BBS has no Sysops");
+			bufprintf(err_msg, sizeof(err_msg), " <white>--> <red>This BBS has no Sysops");
 			goto No_multi_mail;
 		}
 		return 1;
 	}
 	if (is_guest(usr->edit_buf)) {
-		bufprintf(err_msg, MAX_LINE, " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
+		bufprintf(err_msg, sizeof(err_msg), " <white>--> <red>%ss can't receive <yellow>Mail><red> here", PARAM_NAME_GUEST);
 		goto No_multi_mail;
 	}
 	if (!user_exists(usr->edit_buf)) {

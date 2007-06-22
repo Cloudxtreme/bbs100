@@ -90,7 +90,7 @@ AtomicFile *f;
 static void check_nologin(void) {
 char filename[MAX_PATHLEN];
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
 	if (file_exists(filename)) {
 		nologin_active = 1;
 		printf("NOTE: nologin is active, users will not be able to login\n\n");

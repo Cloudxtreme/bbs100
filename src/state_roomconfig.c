@@ -431,7 +431,7 @@ char filename[MAX_PATHLEN];
 
 	Put(usr, "Help\n");
 
-	bufprintf(filename, MAX_PATHLEN, "%s/roomconfig", PARAM_HELPDIR);
+	bufprintf(filename, sizeof(filename), "%s/roomconfig", PARAM_HELPDIR);
 
 	if (load_screen(usr->text, filename) < 0) {
 		Put(usr, "<red>No help available\n");
@@ -1115,7 +1115,7 @@ User *u;
 	Enter(remove_all_posts);
 
 	for(num = room->tail_msg; num <= room->head_msg; num++) {
-		bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, num);
+		bufprintf(buf, sizeof(buf), "%s/%u/%lu", PARAM_ROOMDIR, room->number, num);
 		path_strip(buf);
 		unlink_file(buf);
 	}
@@ -1194,9 +1194,9 @@ void (*func)(User *, char *, ...);
 		}
 	}
 /* move room to trash/ directory */
-	bufprintf(path, MAX_PATHLEN, "%s/%u", PARAM_ROOMDIR, room->number);
+	bufprintf(path, sizeof(path), "%s/%u", PARAM_ROOMDIR, room->number);
 	path_strip(path);
-	bufprintf(newpath, MAX_PATHLEN, "%s/%s", PARAM_TRASHDIR, path);
+	bufprintf(newpath, sizeof(newpath), "%s/%s", PARAM_TRASHDIR, path);
 	path_strip(newpath);
 
 	rm_rf_trashdir(newpath);	/* make sure trash/newpath is empty or rename() will fail */

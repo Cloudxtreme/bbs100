@@ -104,7 +104,7 @@ int i;
 		tz->refcount++;									/* somebody is using it (!) */
 		return tz;
 	}
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_ZONEINFODIR, name);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_ZONEINFODIR, name);
 	path_strip(filename);
 
 	if ((f = openfile(filename, "r")) == NULL) {

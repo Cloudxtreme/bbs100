@@ -36,7 +36,7 @@
 
 
 #define HELP_TEXT(x)												\
-	bufprintf(filename, MAX_PATHLEN, "%s/" x, PARAM_HELPDIR);		\
+	bufprintf(filename, sizeof(filename), "%s/" x, PARAM_HELPDIR);	\
 	if (load_screen(usr->text, filename) < 0) {						\
 		Put(usr, "<red>No help available\n");						\
 		break;														\

@@ -332,7 +332,7 @@ char buf[MAX_LINE];
 				}
 			}
 		}
-		bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+		bufprintf(buf, sizeof(buf), "<cyan>%s? ", RND_STR(Str_Really_Logout));
 		Put(usr, buf);
 		Put(usr, "(y/N): <white>");
 		usr->runtime_flags |= RTF_BUSY;
@@ -367,7 +367,7 @@ char buf[MAX_LINE];
 			break;
 
 		default:
-			bufprintf(buf, MAX_LINE, "<cyan>%s? ", RND_STR(Str_Really_Logout));
+			bufprintf(buf, sizeof(buf), "<cyan>%s? ", RND_STR(Str_Really_Logout));
 			Put(usr, buf);
 			Put(usr, "(y/N): <white>");
 	}
@@ -427,7 +427,7 @@ MailTo *mailto;
 	concat_StringIO(new_msg->msg, msg->msg);
 
 	new_msg->number = room_top(to->mail)+1;
-	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, new_msg->number);
+	bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, new_msg->number);
 	path_strip(filename);
 
 	if (save_Message(new_msg, filename, 0))
@@ -576,7 +576,7 @@ int i, new_mail;
 		if (usr->doing == NULL) {
 			char buf[MAX_LINE];
 
-			bufprintf(buf, MAX_LINE, "is new to <white>%s", PARAM_BBS_NAME);
+			bufprintf(buf, sizeof(buf), "is new to <white>%s", PARAM_BBS_NAME);
 			usr->doing = cstrdup(buf);
 		}
 	} else {
@@ -601,8 +601,8 @@ int i, new_mail;
 		if (usr->last_online_time > 0UL) {
 			int l;
 
-			l = bufprintf(online_for, MAX_LINE+10, "%c, for %c", color_by_name("green"), color_by_name("yellow"));
-			print_total_time(usr->last_online_time, online_for+l, MAX_LINE+10-l);
+			l = bufprintf(online_for, sizeof(online_for), "%c, for %c", color_by_name("green"), color_by_name("yellow"));
+			print_total_time(usr->last_online_time, online_for+l, sizeof(online_for) - l);
 		} else
 			online_for[0] = 0;
 
@@ -837,7 +837,7 @@ int r;
 		}
 		cstrcpy(usr->passwd, crypted, MAX_CRYPTED_PASSWD);
 
-		bufprintf(dirname, MAX_PATHLEN, "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
+		bufprintf(dirname, sizeof(dirname), "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
 		path_strip(dirname);
 		if (make_dir(dirname, (mode_t)0750))
 			Perror(usr, "Failed to create user directory");

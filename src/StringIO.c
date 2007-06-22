@@ -381,7 +381,7 @@ char buf[PRINT_BUF];
 	if (s == NULL || fmt == NULL || !*fmt)
 		return 0;
 
-	bufvprintf(buf, PRINT_BUF, fmt, args);
+	bufvprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 
 	return put_StringIO(s, buf);

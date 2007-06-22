@@ -385,8 +385,8 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 			reboot_timer->restart = TIMEOUT_REBOOT;
 			set_Timer(&timerq, reboot_timer, reboot_timer->maxtime);
 
-			bufprintf(buf, MAX_LONGLINE, "The system is now rebooting in %s", 
-				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+			bufprintf(buf, sizeof(buf), "The system is now rebooting in %s", 
+				print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, sizeof(total_buf)));
 			system_broadcast(0, buf);
 		}
 		Return;
@@ -398,8 +398,8 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 	}
 	add_Timer(&timerq, reboot_timer);
 
-	bufprintf(buf, MAX_LONGLINE, "The system is rebooting in %s",
-		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+	bufprintf(buf, sizeof(buf), "The system is rebooting in %s",
+		print_total_time((unsigned long)reboot_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, sizeof(total_buf)));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -419,8 +419,8 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 			shutdown_timer->restart = TIMEOUT_REBOOT;
 			set_Timer(&timerq, shutdown_timer, shutdown_timer->maxtime);
 
-			bufprintf(buf, MAX_LONGLINE, "The system is now shutting down in %s",
-				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+			bufprintf(buf, sizeof(buf), "The system is now shutting down in %s",
+				print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, sizeof(total_buf)));
 			system_broadcast(0, buf);
 		}
 		Return;
@@ -432,8 +432,8 @@ char buf[MAX_LONGLINE], total_buf[MAX_LINE];
 	}
 	add_Timer(&timerq, shutdown_timer);
 
-	bufprintf(buf, MAX_LONGLINE, "The system is shutting down in %s",
-		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, MAX_LINE));
+	bufprintf(buf, sizeof(buf), "The system is shutting down in %s",
+		print_total_time((unsigned long)shutdown_timer->sleeptime + (unsigned long)SECS_IN_MIN, total_buf, sizeof(total_buf)));
 	system_broadcast(0, buf);
 	Return;
 }
@@ -498,7 +498,7 @@ char filename[MAX_PATHLEN];
 
 	log_msg("SIGHUP caught; reset nologin");
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
+	bufprintf(filename, sizeof(filename), "%s/%s", PARAM_CONFDIR, NOLOGIN_FILE);
 
 	if (!nologin_active) {
 		close(open(filename, O_CREAT|O_WRONLY|O_TRUNC, (mode_t)0660));

@@ -718,7 +718,7 @@ char total_buf[MAX_LINE], *hidden;
 	if (PARAM_HAVE_VANITY && u->vanity != NULL && u->vanity[0]) {
 		char fmt[16];
 
-		bufprintf(fmt, 16, "%%-%ds", MAX_NAME + 10);
+		bufprintf(fmt, sizeof(fmt), "%%-%ds", MAX_NAME + 10);
 		Print(usr, fmt, u->name);
 		Print(usr, "<magenta>* <white>%s <magenta>*", u->vanity);
 	} else
@@ -783,8 +783,8 @@ char total_buf[MAX_LINE], *hidden;
 		if (u->last_online_time > 0UL) {
 			int l;
 
-			l = bufprintf(online_for, MAX_LINE+10, "%c for %c", color_by_name("green"), color_by_name("yellow"));
-			print_total_time(u->last_online_time, online_for+l, MAX_LINE+10-l);
+			l = bufprintf(online_for, sizeof(online_for), "%c for %c", color_by_name("green"), color_by_name("yellow"));
+			print_total_time(u->last_online_time, online_for+l, sizeof(online_for) - l);
 		} else
 			online_for[0] = 0;
 
@@ -835,8 +835,8 @@ char total_buf[MAX_LINE], *hidden;
 		if (in_StringList(u->friends, usr->name) != NULL) {
 			char namebuf[MAX_NAME+20];
 
-			bufprintf(namebuf, MAX_NAME+20, "<yellow>%s<green>", u->name);
-			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf, MAX_LINE));
+			bufprintf(namebuf, sizeof(namebuf), "<yellow>%s<green>", u->name);
+			Print(usr, "<green>You are on %s\n", possession(namebuf, "friend list", total_buf, sizeof(total_buf)));
 		}
 	}
 	visible = 1;
@@ -1452,7 +1452,7 @@ int r;
 					RET(usr);
 					Return;
 				}
-				bufprintf(filename, MAX_PATHLEN, "%s/%s", PARAM_FEELINGSDIR, sl->str);
+				bufprintf(filename, sizeof(filename), "%s/%s", PARAM_FEELINGSDIR, sl->str);
 				if ((file = Fopen(filename)) == NULL) {
 					destroy_BufferedMsg(msg);
 					Perror(usr, "The feeling has passed");
@@ -2012,11 +2012,11 @@ User *u;
 		width = (usr->display->term_width > (PRINT_BUF-36)) ? (PRINT_BUF-36) : usr->display->term_width;
 
 		if (u->doing == NULL || !u->doing[0])
-			bufprintf(buf, PRINT_BUF, "%c%s<cyan>", col, u->name);
+			bufprintf(buf, sizeof(buf), "%c%s<cyan>", col, u->name);
 		else {
-			bufprintf(buf, PRINT_BUF, "%c%s <cyan>%s", col, u->name, u->doing);
-			expand_center(buf, buf2, PRINT_BUF - 36, width);
-			expand_hline(buf2, buf, PRINT_BUF - 36, width);
+			bufprintf(buf, sizeof(buf), "%c%s <cyan>%s", col, u->name, u->doing);
+			expand_center(buf, buf2, sizeof(buf2) - 36, width);
+			expand_hline(buf2, buf, sizeof(buf) - 36, width);
 		}
 		l = color_index(buf, width - 9);
 		buf[l] = 0;
@@ -2086,7 +2086,7 @@ PList *pl, *pl_cols[16];
 
 			who_list_status(usr, u, &stat, &col);
 
-			bufprintf(buf+buflen, PRINT_BUF - buflen, "<white>%c%c%-18s", stat, col, u->name);
+			bufprintf(buf+buflen, sizeof(buf) - buflen, "<white>%c%c%-18s", stat, col, u->name);
 			buflen = strlen(buf);
 
 			if ((i+1) < cols) {
@@ -2209,7 +2209,7 @@ char numbuf[MAX_NUMBER], many_buf[MAX_LINE];
 	usr->edit_buf[0] = 0;
 
 	if (usr->flags & USR_XMSG_NUM)
-		bufprintf(numbuf, MAX_NUMBER, "(#%d) ", usr->msg_seq_sent+1);
+		bufprintf(numbuf, sizeof(numbuf), "(#%d) ", usr->msg_seq_sent+1);
 	else
 		numbuf[0] = 0;
 
@@ -2780,15 +2780,15 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 	Put(usr, "\n");
 	l = 0;
 	if (PARAM_HAVE_CALENDAR)
-		l += bufprintf(line, PRINT_BUF, "<magenta>  S  M Tu  W Th  F  S");
+		l += bufprintf(line, sizeof(line), "<magenta>  S  M Tu  W Th  F  S");
 
 	if (PARAM_HAVE_WORLDCLOCK) {
 		if (PARAM_HAVE_CALENDAR)
-			l += bufprintf(line+l, PRINT_BUF - l, "    ");
+			l += bufprintf(line+l, sizeof(line) - l, "    ");
 
-		l += print_worldclock(usr, 0, line+l, PRINT_BUF - l);
-		l += bufprintf(line+l, PRINT_BUF - l, "    ");
-		l += print_worldclock(usr, 1, line+l, PRINT_BUF - l);
+		l += print_worldclock(usr, 0, line+l, sizeof(line) - l);
+		l += bufprintf(line+l, sizeof(line) - l, "    ");
+		l += print_worldclock(usr, 1, line+l, sizeof(line) - l);
 	}
 	line[l++] = '\n';
 	line[l] = 0;
@@ -2803,28 +2803,28 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 	green_color = 1;
 
 	if (PARAM_HAVE_CALENDAR)
-		l += bufprintf(line, PRINT_BUF, "<green>");
+		l += bufprintf(line, sizeof(line), "<green>");
 
 	for(w = 0; w < 5; w++) {
 		if (PARAM_HAVE_CALENDAR) {
-			l += bufprintf(line+l, PRINT_BUF - l, (green_color == 0) ? "<yellow>" : "<green>");
+			l += bufprintf(line+l, sizeof(line) - l, (green_color == 0) ? "<yellow>" : "<green>");
 
 			for(d = 0; d < 7; d++) {
 				tmp = user_time(usr, t);
 
 /* highlight today and bbs birthday */
 				if  (tmp->tm_mday == today && tmp->tm_mon == today_month && tmp->tm_year == today_year)
-					l += bufprintf(line+l, PRINT_BUF - l, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+					l += bufprintf(line+l, sizeof(line) - l, "<white> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 				else {
 					if (tmp->tm_mday == bday_day && tmp->tm_mon == bday_mon && tmp->tm_year > bday_year)
-						l += bufprintf(line+l, PRINT_BUF - l, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
+						l += bufprintf(line+l, sizeof(line) - l, "<magenta> %2d<%s>", tmp->tm_mday, (green_color == 0) ? "yellow" : "green");
 					else {
 						if (old_month != tmp->tm_mon) {
 							green_color ^= 1;
-							l += bufprintf(line+l, PRINT_BUF - l, (green_color == 0) ? "<yellow>" : "<green>");
+							l += bufprintf(line+l, sizeof(line) - l, (green_color == 0) ? "<yellow>" : "<green>");
 							old_month = tmp->tm_mon;
 						}
-						l += bufprintf(line+l, PRINT_BUF - l, " %2d", tmp->tm_mday);
+						l += bufprintf(line+l, sizeof(line) - l, " %2d", tmp->tm_mday);
 					}
 				}
 				t += SECS_IN_DAY;
@@ -2832,11 +2832,11 @@ char date_buf[MAX_LINE], line[PRINT_BUF];
 		}
 		if (PARAM_HAVE_WORLDCLOCK) {
 			if (PARAM_HAVE_CALENDAR)
-				l += bufprintf(line+l, PRINT_BUF - l, "    ");
+				l += bufprintf(line+l, sizeof(line) - l, "    ");
 
-			l += print_worldclock(usr, w+2, line+l, PRINT_BUF - l);
-			l += bufprintf(line+l, PRINT_BUF - l, "    ");
-			l += print_worldclock(usr, w+7, line+l, PRINT_BUF - l);
+			l += print_worldclock(usr, w+2, line+l, sizeof(line) - l);
+			l += bufprintf(line+l, sizeof(line) - l, "    ");
+			l += print_worldclock(usr, w+7, line+l, sizeof(line) - l);
 		}
 		line[l++] = '\n';
 		line[l] = 0;

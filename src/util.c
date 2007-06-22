@@ -235,9 +235,9 @@ int pos, n, dont_auto_color, color, is_symbol;
 					usr->color = c;
 					color = Ansi_Color(usr, c);
 					if (usr->flags & USR_BOLD)
-						bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", color);
+						bufprintf(buf, sizeof(buf), "\x1b[1;%dm", color);
 					else
-						bufprintf(buf, MAX_COLORBUF, "\x1b[%dm", color);
+						bufprintf(buf, sizeof(buf), "\x1b[%dm", color);
 					put_StringIO(dev, buf);
 					dont_auto_color = AUTO_COLOR_FORCED;
 				}
@@ -256,7 +256,7 @@ int pos, n, dont_auto_color, color, is_symbol;
 
 			case KEY_CTRL('N'):
 				if (usr->flags & USR_ANSI) {
-					bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+					bufprintf(buf, sizeof(buf), "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
 					put_StringIO(dev, buf);
 				} else
 					if (usr->flags & USR_BOLD)
@@ -481,7 +481,7 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, sizeof(colorbuf), "<%s>", color_table[i].name);
 
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf))) {
 			if (!(usr->flags & USR_ANSI))
@@ -491,9 +491,9 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 
 			color = Ansi_Color(usr, c);
 			if (usr->flags & USR_BOLD)
-				bufprintf(buf, PRINT_BUF, "\x1b[1;%dm", color);
+				bufprintf(buf, sizeof(buf), "\x1b[1;%dm", color);
 			else
-				bufprintf(buf, PRINT_BUF, "\x1b[%dm", color);
+				bufprintf(buf, sizeof(buf), "\x1b[%dm", color);
 			put_StringIO(dev, buf);
 			return strlen(colorbuf)-1;
 		}
@@ -508,9 +508,9 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 		usr->color = KEY_CTRL('F');
 		color = Ansi_Color(usr, KEY_CTRL('F'));
 		if (usr->flags & USR_BOLD)
-			bufprintf(buf, PRINT_BUF, "\x1b[1;%dm", color);
+			bufprintf(buf, sizeof(buf), "\x1b[1;%dm", color);
 		else
-			bufprintf(buf, PRINT_BUF, "\x1b[%dm", color);
+			bufprintf(buf, sizeof(buf), "\x1b[%dm", color);
 		put_StringIO(dev, buf);
 		return 6;
 	}
@@ -536,13 +536,13 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 */
 		if (usr->flags & USR_ANSI) {
 			if (usr->flags & USR_BOLD)
-				bufprintf(buf, PRINT_BUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				bufprintf(buf, sizeof(buf), "\x1b[1;%dm%c\x1b[1;%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 			else
-				bufprintf(buf, PRINT_BUF, "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
+				bufprintf(buf, sizeof(buf), "\x1b[%dm%c\x1b[%dm", color_table[usr->colors[HOTKEY]].value, c, Ansi_Color(usr, usr->color));
 
 			(*cpos)++;
 		} else {
-			bufprintf(buf, PRINT_BUF, "<%c>", c);
+			bufprintf(buf, sizeof(buf), "<%c>", c);
 			*cpos += 3;
 		}
 		put_StringIO(dev, buf);
@@ -555,7 +555,7 @@ char colorbuf[MAX_COLORBUF], buf[PRINT_BUF], *p;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {
 		if (usr->flags & USR_ANSI) {
-			bufprintf(buf, PRINT_BUF, "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
+			bufprintf(buf, sizeof(buf), "\x1b[0;%dm", color_table[usr->colors[BACKGROUND]].value+10);
 			put_StringIO(dev, buf);
 		} else
 			if (usr->flags & USR_BOLD)
@@ -863,7 +863,7 @@ char colorbuf[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, sizeof(colorbuf), "<%s>", color_table[i].name);
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf)))
 			return strlen(colorbuf);
 	}
@@ -1265,7 +1265,7 @@ char filename[MAX_PATHLEN];
 	if (is_guest(name))
 		return 1;
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
+	bufprintf(filename, sizeof(filename), "%s/%c/%s/UserData", PARAM_USERDIR, *name, name);
 	path_strip(filename);
 	return file_exists(filename);
 }
@@ -1288,7 +1288,7 @@ struct tm *tm;
 		if ((u->flags & USR_12HRCLOCK) && tm->tm_hour > 12)
 			tm->tm_hour -= 12;
 
-		bufprintf(buf, PRINT_BUF, "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
+		bufprintf(buf, sizeof(buf), "\n<beep><white>*** <yellow>System message received at %d:%02d <white>***<red>\n"
 			"%s\n", tm->tm_hour, tm->tm_min, msg);
 
 		if (u->curr_room != NULL && (u->curr_room->flags & ROOM_CHATROOM) && !(u->runtime_flags & RTF_BUSY))
@@ -1411,7 +1411,7 @@ DIR *dirp;
 struct dirent *direntp;
 unsigned long maxnum = 0UL, n;
 
-	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(buf, sizeof(buf), "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(buf);
 	if ((dirp = opendir(buf)) == NULL)
 		return maxnum;
@@ -1440,7 +1440,7 @@ struct dirent *direntp;
 		return -1;
 
 /* safety check */
-	bufprintf(buf, MAX_PATHLEN, "%s/", PARAM_TRASHDIR);
+	bufprintf(buf, sizeof(buf), "%s/", PARAM_TRASHDIR);
 	path_strip(buf);
 	if (strncmp(buf, dirname, strlen(buf)) || cstrstr(dirname, "..") != NULL)
 		return -1;
@@ -1597,9 +1597,9 @@ char buf[MAX_LINE*4], format[MAX_LINE], filename[MAX_PATHLEN], *p;
 		total++;
 	}
 	if (flags & FORMAT_NUMBERED)
-		bufprintf(format, MAX_LINE, "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
+		bufprintf(format, sizeof(format), "%c%%3d %c%%-%ds", (char)color_by_name("green"), (char)color_by_name("yellow"), max_width);
 	else
-		bufprintf(format, MAX_LINE, "%c%%-%ds", (char)color_by_name("yellow"), max_width);
+		bufprintf(format, sizeof(format), "%c%%-%ds", (char)color_by_name("yellow"), max_width);
 
 	cols = term_width / (max_width+6);
 	if (cols < 1)
@@ -1647,9 +1647,9 @@ char buf[MAX_LINE*4], format[MAX_LINE], filename[MAX_PATHLEN], *p;
 					*p = ' ';
 			}
 			if (flags & FORMAT_NUMBERED)
-				buflen += bufprintf(buf+buflen, MAX_LINE*4 - buflen, format, idx, filename);
+				buflen += bufprintf(buf+buflen, sizeof(buf) - buflen, format, idx, filename);
 			else
-				buflen += bufprintf(buf+buflen, MAX_LINE*4 - buflen, format, filename);
+				buflen += bufprintf(buf+buflen, sizeof(buf) - buflen, format, filename);
 			idx += rows;
 
 			if ((i+1) < cols) {

@@ -81,7 +81,7 @@ void destroy_Room(Room *r) {
 Room *load_Room(unsigned int number, int flags) {
 char filename[MAX_PATHLEN];
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%u/RoomData", PARAM_ROOMDIR, number);
+	bufprintf(filename, sizeof(filename), "%s/%u/RoomData", PARAM_ROOMDIR, number);
 	path_strip(filename);
 	return load_RoomData(filename, number, flags);
 }
@@ -95,7 +95,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	Enter(load_Mail);
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
+	bufprintf(filename, sizeof(filename), "%s/%c/%s/MailData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
 	if ((r = load_RoomData(filename, MAIL_ROOM, flags)) == NULL) {
@@ -114,7 +114,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	r->flags = ROOM_SUBJECTS | ROOM_NOZAP | ROOM_INVITE_ONLY;
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(filename, sizeof(filename), "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 	room_readroomdir(r, filename, MAX_PATHLEN);
 	Return r;
@@ -129,7 +129,7 @@ char filename[MAX_PATHLEN], roomname[MAX_LINE];
 
 	Enter(load_Home);
 
-	bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
+	bufprintf(filename, sizeof(filename), "%s/%c/%s/HomeData", PARAM_USERDIR, *username, username);
 	path_strip(filename);
 
 	if ((r = load_RoomData(filename, 2, flags)) == NULL) {
@@ -489,14 +489,14 @@ File *f;
 		*p = 0;
 
 		if (r->number == MAIL_ROOM)
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/MailData", PARAM_USERDIR, *name, name);
+			bufprintf(filename, sizeof(filename), "%s/%c/%s/MailData", PARAM_USERDIR, *name, name);
 		else
 			if (r->number == HOME_ROOM)
-				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
+				bufprintf(filename, sizeof(filename), "%s/%c/%s/HomeData", PARAM_USERDIR, *name, name);
 
 		load_roominfo(r, name);
 	} else {
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
+		bufprintf(filename, sizeof(filename), "%s/%u/RoomData", PARAM_ROOMDIR, r->number);
 		load_roominfo(r, NULL);
 	}
 	path_strip(filename);
@@ -570,9 +570,9 @@ char filename[MAX_PATHLEN];
 		if (usr == NULL)
 			filename[0] = 0;
 		else
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%ld", PARAM_USERDIR, usr->name[0], usr->name, r->tail_msg);
+			bufprintf(filename, sizeof(filename), "%s/%c/%s/%ld", PARAM_USERDIR, usr->name[0], usr->name, r->tail_msg);
 	} else
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%ld", PARAM_ROOMDIR, r->number, r->tail_msg);
+		bufprintf(filename, sizeof(filename), "%s/%u/%ld", PARAM_ROOMDIR, r->number, r->tail_msg);
 
 	if (r->head_msg - r->tail_msg > r->max_msgs) {
 		if (filename[0] && unlink_file(filename) == -1)
@@ -637,7 +637,7 @@ char dirname[MAX_PATHLEN];
 	if (r == NULL || (r->flags & ROOM_CHATROOM))
 		return;
 
-	bufprintf(dirname, MAX_PATHLEN, "%s/%u/", PARAM_ROOMDIR, r->number);
+	bufprintf(dirname, sizeof(dirname), "%s/%u/", PARAM_ROOMDIR, r->number);
 	path_strip(dirname);
 	room_readroomdir(r, dirname, MAX_PATHLEN);
 }
@@ -648,7 +648,7 @@ char buf[MAX_PATHLEN];
 	if (r == NULL || username == NULL || !*username)
 		return;
 
-	bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/", PARAM_USERDIR, *username, username);
+	bufprintf(buf, sizeof(buf), "%s/%c/%s/", PARAM_USERDIR, *username, username);
 	path_strip(buf);
 	room_readroomdir(r, buf, MAX_PATHLEN);
 }
@@ -791,9 +791,9 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 /*
 	didn't find any room, try a substring that matches whole words
 */
-		bufprintf(match, MAX_LINE+2, " %s ", name);
+		bufprintf(match, sizeof(match), " %s ", name);
 		for(r = AllRooms; r != NULL; r = r->next) {
-			bufprintf(room_name, MAX_LINE+2, " %s ", r->name);
+			bufprintf(room_name, sizeof(room_name), " %s ", r->name);
 			if (cstrstr(room_name, match) != NULL) {
 				if (r->number == LOBBY_ROOM || r->number == MAIL_ROOM || r->number == HOME_ROOM)
 					return find_Roombynumber(usr, r->number);
@@ -1134,7 +1134,7 @@ int load_room_flags, len;
 	if (!PARAM_HAVE_RESIDENT_INFO)
 		load_room_flags &= ~LOAD_ROOM_INFO;
 
-	bufprintf(buf, MAX_PATHLEN, "%s/", PARAM_ROOMDIR);
+	bufprintf(buf, sizeof(buf), "%s/", PARAM_ROOMDIR);
 	path_strip(buf);
 	len = strlen(buf);
 	bufp = buf+len;

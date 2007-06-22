@@ -408,7 +408,7 @@ StringIO *tmp;
 			Return;
 		}
 		usr->new_message->number = room_top(room)+1;
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, room->number, usr->new_message->number);
+		bufprintf(filename, sizeof(filename), "%s/%u/%lu", PARAM_ROOMDIR, room->number, usr->new_message->number);
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename, 0)) {
@@ -609,9 +609,9 @@ Joined *j;
 
 /* construct filename */
 	if (usr->curr_room == usr->mail)
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->curr_msg);
+		bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->curr_msg);
 	else
-		bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->curr_msg);
+		bufprintf(filename, sizeof(filename), "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->curr_msg);
 	path_strip(filename);
 
 /* load the message */
@@ -724,7 +724,7 @@ int r;
 				JMP(usr, LOOP_DELETE_MAIL);
 				Return;
 			} else {
-				bufprintf(buf, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				bufprintf(buf, sizeof(buf), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 				path_strip(buf);
 
 				if (save_Message(usr->message, buf, 0))
@@ -733,7 +733,7 @@ int r;
 					Print(usr, "<green>Deleted only the local copy\n");
 			}
 		} else {
-			bufprintf(buf, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+			bufprintf(buf, sizeof(buf), "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
 			path_strip(buf);
 
 			if (save_Message(usr->message, buf, 0)) {
@@ -778,7 +778,7 @@ int r;
 				JMP(usr, LOOP_UNDELETE_MAIL);
 				Return;
 			} else {
-				bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+				bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 				path_strip(filename);
 
 				if (save_Message(usr->message, filename, 0)) {
@@ -787,7 +787,7 @@ int r;
 					Put(usr, "<green>Undeleted only the local copy\n");
 			}
 		} else {
-			bufprintf(filename, MAX_PATHLEN, "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
+			bufprintf(filename, sizeof(filename), "%s/%u/%lu", PARAM_ROOMDIR, usr->curr_room->number, usr->message->number);
 			path_strip(filename);
 
 			if (save_Message(usr->message, filename, 0)) {
@@ -1122,7 +1122,7 @@ int from_me = 0;
 		if (msg_num <= 0)
 			msg_num = 1;
 
-		bufprintf(numbuf, MAX_NUMBER, "(#%d) ", msg_num);
+		bufprintf(numbuf, sizeof(numbuf), "(#%d) ", msg_num);
 	}
 	if (!strcmp(msg->from, usr->name)) {
 		from_me = 1;
@@ -1140,13 +1140,13 @@ int from_me = 0;
 	}
 	if (msg->flags & BUFMSG_SYSOP) {
 		if (from_me)
-			bufprintf(frombuf, MAX_LONGLINE, "as %s ", PARAM_NAME_SYSOP);
+			bufprintf(frombuf, sizeof(frombuf), "as %s ", PARAM_NAME_SYSOP);
 		else
-			bufprintf(frombuf, MAX_LONGLINE, "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
+			bufprintf(frombuf, sizeof(frombuf), "<%s>%s: %s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow",
 				PARAM_NAME_SYSOP, msg->from);
 	} else {
 		if (!from_me)
-			bufprintf(frombuf, MAX_LONGLINE, "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
+			bufprintf(frombuf, sizeof(frombuf), "<%s>%s", ((msg->flags & BUFMSG_TYPE) == BUFMSG_EMOTE) ? "cyan" : "yellow", msg->from);
 	}
 	if (msg->to != NULL && msg->to->next != NULL)
 		cstrcpy(multi, "Multi ", MAX_NAME);
@@ -1675,15 +1675,15 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 /* print message header */
 
 	if (msg->anon != NULL && msg->anon[0])
-		bufprintf(from, MAX_LINE, "<cyan>- %s <cyan>-", msg->anon);
+		bufprintf(from, sizeof(from), "<cyan>- %s <cyan>-", msg->anon);
 	else
 		if (msg->flags & MSG_FROM_SYSOP)
-			bufprintf(from, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->from);
+			bufprintf(from, sizeof(from), "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->from);
 		else
 			if (msg->flags & MSG_FROM_ROOMAIDE)
-				bufprintf(from, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->from);
+				bufprintf(from, sizeof(from), "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->from);
 			else
-				bufprintf(from, MAX_LINE, "<yellow>%s", msg->from);
+				bufprintf(from, sizeof(from), "<yellow>%s", msg->from);
 
 	if (msg->to != NULL) {			/* in the Mail> room */
 		MailTo *to;
@@ -1694,7 +1694,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			max_dl = MAX_LONGLINE-1;
 
 		if (!strcmp(msg->from, usr->name) && !(msg->flags & (MSG_FROM_SYSOP|MSG_FROM_ROOMAIDE)) && msg->anon == NULL) {
-			l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
+			l = bufprintf(buf, sizeof(buf), "<cyan>%s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE));
 			dl = color_strlen(buf);
 
 			for(to = (MailTo *)msg->to->tail; to != NULL && to->next != NULL; to = to->next) {
@@ -1702,11 +1702,11 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 					continue;
 
 				if ((dl + strlen(to->name) + 2) < max_dl)
-					l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
+					l += bufprintf(buf+l, sizeof(buf) - l, "<yellow>%s<green>, ", to->name);
 				else {
 					Put(usr, buf);
 					Put(usr, "\n");
-					l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", to->name);
+					l = bufprintf(buf, sizeof(buf), "<yellow>%s<green>, ", to->name);
 				}
 				dl = color_strlen(buf);
 			}
@@ -1715,7 +1715,7 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			if (count_Queue(msg->to) == 1 && msg->to->tail != NULL && ((MailTo *)msg->to->tail)->name != NULL && !strcmp(((MailTo *)msg->to->tail)->name, usr->name))
 				Print(usr, "<cyan>%s<green> from %s<green>\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 			else {
-				l = bufprintf(buf, MAX_LONGLINE, "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
+				l = bufprintf(buf, sizeof(buf), "<cyan>%s<green> from %s<green> to ", print_date(usr, msg->mtime, date_buf, MAX_LINE), from);
 				dl = color_strlen(buf);
 
 				for(to = (MailTo *)msg->to->tail; to != NULL && to->next != NULL; to = to->next) {
@@ -1724,11 +1724,11 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 
 					if ((dl + strlen(to->name) + 2) < MAX_LINE) {
 						l = strlen(buf);
-						l += bufprintf(buf+l, MAX_LONGLINE - l, "<yellow>%s<green>, ", to->name);
+						l += bufprintf(buf+l, sizeof(buf) - l, "<yellow>%s<green>, ", to->name);
 					} else {
 						Put(usr, buf);
 						Put(usr, "\n");
-						l = bufprintf(buf, MAX_LONGLINE, "<yellow>%s<green>, ", to->name);
+						l = bufprintf(buf, sizeof(buf), "<yellow>%s<green>, ", to->name);
 					}
 					dl = color_strlen(buf);
 				}
@@ -1740,15 +1740,15 @@ char from[MAX_LINE], buf[MAX_LONGLINE], date_buf[MAX_LINE];
 			char reply[MAX_LINE];
 
 			if (msg->flags & REPLY_TO_ANON)
-				bufprintf(reply, MAX_LINE, "<cyan>- %s <cyan>-", msg->reply_name);
+				bufprintf(reply, sizeof(reply), "<cyan>- %s <cyan>-", msg->reply_name);
 			else
 				if (msg->flags & REPLY_TO_SYSOP)
-					bufprintf(reply, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->reply_name);
+					bufprintf(reply, sizeof(reply), "<yellow>%s: %s", PARAM_NAME_SYSOP, msg->reply_name);
 				else
 					if (msg->flags & REPLY_TO_ROOMAIDE)
-						bufprintf(reply, MAX_LINE, "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->reply_name);
+						bufprintf(reply, sizeof(reply), "<yellow>%s: %s", PARAM_NAME_ROOMAIDE, msg->reply_name);
 					else
-						bufprintf(reply, MAX_LINE, "<yellow>%s", msg->reply_name);
+						bufprintf(reply, sizeof(reply), "<yellow>%s", msg->reply_name);
 
 			Print(usr, "<cyan>%s<green> from %s<green> in reply to %s\n", print_date(usr, msg->mtime, date_buf, MAX_LINE), from, reply);
 		} else
@@ -2279,7 +2279,7 @@ void loop_send_mail(User *usr, char c) {
 				Return;
 			}
 			usr->new_message->number = room_top(usr->mail)+1;
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
+			bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->new_message->number);
 			path_strip(filename);
 
 			if (save_Message(usr->new_message, filename, SAVE_MAILTO))
@@ -2347,7 +2347,7 @@ void loop_send_mail(User *usr, char c) {
 			}
 			usr->new_message->number = to->number = room_top(u->mail)+1;
 		}
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
+		bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, usr->new_message->number);
 		path_strip(filename);
 
 		if (!save_Message(usr->new_message, filename, 0)) {
@@ -2393,7 +2393,7 @@ void loop_delete_mail(User *usr, char c) {
 
 		if (!usr->conn->loop_counter) {
 /* delete the sender's copy */
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+			bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 			path_strip(filename);
 
 			if (save_Message(usr->message, filename, SAVE_MAILTO)) {
@@ -2416,7 +2416,7 @@ void loop_delete_mail(User *usr, char c) {
 		if (!to->number) {	/* this happens for old messages, that don't have the new format yet */
 			Return;
 		}
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+		bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
 		path_strip(filename);
 
 		possession(to->name, "Mail>", room_name, MAX_LINE);
@@ -2457,7 +2457,7 @@ void loop_undelete_mail(User *usr, char c) {
 
 		if (!usr->conn->loop_counter) {
 /* undelete the sender's copy */
-			bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
+			bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, usr->name[0], usr->name, usr->message->number);
 			path_strip(filename);
 
 			if (save_Message(usr->message, filename, SAVE_MAILTO)) {
@@ -2480,7 +2480,7 @@ void loop_undelete_mail(User *usr, char c) {
 		if (!to->number) {	/* this happens for old messages, that don't have the new format yet */
 			Return;
 		}
-		bufprintf(filename, MAX_PATHLEN, "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
+		bufprintf(filename, sizeof(filename), "%s/%c/%s/%lu", PARAM_USERDIR, to->name[0], to->name, to->number);
 		path_strip(filename);
 
 		possession(to->name, "Mail>", room_name, MAX_LINE);

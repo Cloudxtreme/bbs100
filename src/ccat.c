@@ -142,7 +142,7 @@ char buf[MAX_COLORBUF], c;
 			case KEY_CTRL('W'):
 			case KEY_CTRL('F'):
 				usr_color = Ansi_Color(c);
-				bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", usr_color);
+				bufprintf(buf, sizeof(buf), "\x1b[1;%dm", usr_color);
 				Write(buf);
 				break;
 
@@ -151,12 +151,12 @@ char buf[MAX_COLORBUF], c;
 				if (!*str)
 					break;
 
-				bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, *str, usr_color);
+				bufprintf(buf, sizeof(buf), "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, *str, usr_color);
 				Write(buf);
 				break;
 
 			case KEY_CTRL('N'):
-				bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
+				bufprintf(buf, sizeof(buf), "\x1b[0;%dm", color_table[BACKGROUND].value+10);
 				Write(buf);
 				Write("\x1b[1m");
 				break;
@@ -198,13 +198,13 @@ char colorbuf[MAX_COLORBUF], buf[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, sizeof(colorbuf), "<%s>", color_table[i].name);
 
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf))) {
 			c = color_table[i].key;
 
 			usr_color = Ansi_Color(c);
-			bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", usr_color);
+			bufprintf(buf, sizeof(buf), "\x1b[1;%dm", usr_color);
 			Write(buf);
 			return strlen(colorbuf)-1;
 		}
@@ -214,7 +214,7 @@ char colorbuf[MAX_COLORBUF], buf[MAX_COLORBUF];
 
 	if (!cstrnicmp(code, "<flash>", 7) || !cstrnicmp(code, "<blink>", 7)) {
 		color = Ansi_Color(KEY_CTRL('F'));
-		bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm", color);
+		bufprintf(buf, sizeof(buf), "\x1b[1;%dm", color);
 		Write(buf);
 		return 6;
 	}
@@ -224,7 +224,7 @@ char colorbuf[MAX_COLORBUF], buf[MAX_COLORBUF];
 		if (!c)
 			return 7;
 
-		bufprintf(buf, MAX_COLORBUF, "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, c, usr_color);
+		bufprintf(buf, sizeof(buf), "\x1b[1;%dm%c\x1b[1;%dm", color_table[HOTKEY].value, c, usr_color);
 		Write(buf);
 		return 8;
 	}
@@ -233,7 +233,7 @@ char colorbuf[MAX_COLORBUF], buf[MAX_COLORBUF];
 		return 5;
 	}
 	if (!cstrnicmp(code, "<normal>", 8)) {
-		bufprintf(buf, MAX_COLORBUF, "\x1b[0;%dm", color_table[BACKGROUND].value+10);
+		bufprintf(buf, sizeof(buf), "\x1b[0;%dm", color_table[BACKGROUND].value+10);
 		Write(buf);
 		Write("\x1b[1m");
 		return 7;
@@ -327,7 +327,7 @@ char colorbuf[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(colorbuf, MAX_COLORBUF, "<%s>", color_table[i].name);
+		bufprintf(colorbuf, sizeof(colorbuf), "<%s>", color_table[i].name);
 		if (!cstrnicmp(code, colorbuf, strlen(colorbuf)))
 			return strlen(colorbuf);
 	}

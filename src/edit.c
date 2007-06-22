@@ -1585,7 +1585,7 @@ char colorbuf[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		l = bufprintf(colorbuf, MAX_COLORBUF, "<%s", color_table[i].name);
+		l = bufprintf(colorbuf, sizeof(colorbuf), "<%s", color_table[i].name);
 		if (usr->edit_pos < l)
 			continue;
 
@@ -1648,7 +1648,7 @@ char color[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
+		bufprintf(color, sizeof(color), "<%s", color_table[i].name);
 		cstrlwr(color);
 
 		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
@@ -1665,7 +1665,7 @@ char color[MAX_COLORBUF];
 				if (i >= HOTKEY)
 					i = 1;				/* skip 0, which is black */
 
-				bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
+				bufprintf(color, sizeof(color), "<%s", color_table[i].name);
 				cstrlwr(color);
 				n = 1;
 			}
@@ -1707,7 +1707,7 @@ char color[MAX_COLORBUF];
 		if (i == HOTKEY)
 			continue;
 
-		bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
+		bufprintf(color, sizeof(color), "<%s", color_table[i].name);
 		cstrlwr(color);
 
 		if (!cstrnicmp(usr->edit_buf+pos, color, n)) {
@@ -1726,7 +1726,7 @@ char color[MAX_COLORBUF];
 					if (i == HOTKEY)
 						i--;
 				}
-				bufprintf(color, MAX_COLORBUF, "<%s", color_table[i].name);
+				bufprintf(color, sizeof(color), "<%s", color_table[i].name);
 				cstrlwr(color);
 				n = 1;
 			}
@@ -1931,7 +1931,7 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 
 	deinit_StringQueue(usr->tablist);
 
-	bufprintf(match, MAX_LINE+2, " %s ", usr->edit_buf);
+	bufprintf(match, sizeof(match), " %s ", usr->edit_buf);
 
 	for(r = AllRooms; r != NULL; r = r_next) {
 		r_next = r->next;
@@ -1954,7 +1954,7 @@ char room_name[MAX_LINE+2], match[MAX_LINE+2];
 			else
 				(void)add_StringQueue(usr->tablist, new_StringList(r->name));
 		} else {
-			bufprintf(room_name, MAX_LINE+2, " %s ", r->name);
+			bufprintf(room_name, sizeof(room_name), " %s ", r->name);
 			if (cstristr(room_name, match) != NULL) {
 				if (!room_visible(usr, r))
 					continue;
