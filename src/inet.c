@@ -81,7 +81,7 @@ char *inet_error(int err, char *buf, int maxlen) {
 	if (err == EAI_SYSTEM)
 		return cstrerror(errno, buf, maxlen);
 
-	bufprintf(buf, maxlen, (char *)gai_strerror(err));
+	bufprintf(buf, maxlen, "%s", (char *)gai_strerror(err));
 	return buf;
 }
 
