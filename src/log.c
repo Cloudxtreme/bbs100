@@ -45,9 +45,6 @@
 #include <unistd.h>
 
 
-#define MAX_LOGLINE	4096
-
-
 StringList *internal_log = NULL;
 int internal_log_len = 0;
 
@@ -163,7 +160,7 @@ int l;
 
 	l = bufprintf(buf, sizeof(buf), "%c%c%c %2d %02d:%02d:%02d %c ", lc_system->months[tm->tm_mon][0], lc_system->months[tm->tm_mon][1], lc_system->months[tm->tm_mon][2],
 		tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, level);
-	bufvprintf(buf+l, MAX_LOGLINE - l, msg, ap);
+	bufvprintf(buf+l, sizeof(buf) - l, msg, ap);
 /*
 	This is nice but it causes deadly recursion when Malloc() is trying
 	to log something
