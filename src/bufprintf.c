@@ -47,6 +47,14 @@ va_list args;
 int bufvprintf(char *buf, int buflen, char *fmt, va_list args) {
 int ret;
 
+	if (buflen <= 0)
+		return 0;
+
+	if (args == NULL) {						/* some v*printf() implementations may bomb on args == NULL */
+		strncpy(buf, fmt, buflen);
+		buf[buflen-1] = 0;
+		return strlen(buf);
+	}
 #ifdef HAVE_VSNPRINTF
 	vsnprintf(buf, buflen, fmt, args);
 	ret = strlen(buf);						/* <-- important! */

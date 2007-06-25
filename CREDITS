@@ -308,3 +308,6 @@ Version 3.0:
   in certain cases
 
 - Myth found a problem that "Answers" could not be replied to with 'v'
+
+- Haroon Al-Qahtani hit a crasher on debian GNU/Linux PPC
+  Many thanks for helping resolve this problem
