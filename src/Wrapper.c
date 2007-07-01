@@ -333,11 +333,11 @@ int read_inet_addr(char *ipnum, IP_addr *addr, int *flags) {
 		return -1;
 
 	*flags &= ~WRAPPER_IP4;
-	if (inet_pton(AF_INET, ipnum, &addr->ipv4)) {		/* try as IPv4 */
+	if (inet_pton(AF_INET, ipnum, &addr->ipv4) > 0) {		/* try as IPv4 */
 		*flags |= WRAPPER_IP4;
 		return 0;
 	}
-	if (inet_pton(AF_INET6, ipnum, &addr->ipv6))		/* try as IPv6 */
+	if (inet_pton(AF_INET6, ipnum, &addr->ipv6) > 0)		/* try as IPv6 */
 		return 0;
 
 	log_err("read_inet_addr(): invalid address '%s'\n", ipnum);
