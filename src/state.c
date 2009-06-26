@@ -1707,7 +1707,7 @@ int r;
 	Enter(state_su_prompt);
 
 	if (c == INIT_STATE)
-		Print(usr, "<green>Enter password: ", PARAM_NAME_SYSOP);
+		Print(usr, "<green>Enter %s password: ", PARAM_NAME_SYSOP);
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
