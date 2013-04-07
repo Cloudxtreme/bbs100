@@ -28,7 +28,7 @@
 #include "config.h"
 #include "Timer.h"
 #include "User.h"
-#include "Signal.h"
+#include "Signals.h"
 #include "sys_time.h"
 #include "cstring.h"
 #include "Memory.h"

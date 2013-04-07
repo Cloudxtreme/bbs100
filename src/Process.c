@@ -27,7 +27,7 @@
 #include "inet.h"
 #include "util.h"
 #include "log.h"
-#include "Signal.h"
+#include "Signals.h"
 #include "cstring.h"
 #include "Param.h"
 #include "ConnResolv.h"
@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <signal.h>
 #include <sys/socket.h>
 
 

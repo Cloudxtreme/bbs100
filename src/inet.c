@@ -38,7 +38,7 @@
 #include "cstring.h"
 #include "log.h"
 #include "User.h"
-#include "Signal.h"
+#include "Signals.h"
 #include "memset.h"
 #include "bufprintf.h"
 #include "cstrerror.h"
@@ -54,7 +54,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <errno.h>

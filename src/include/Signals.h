@@ -17,11 +17,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Signal.h	WJ97
+	Signals.h	WJ97
 */
 
-#ifndef SIGNAL_H_WJ97
-#define SIGNAL_H_WJ97 1
+#ifndef SIGNALS_H_WJ97
+#define SIGNALS_H_WJ97 1
 
 #include <config.h>
 #include "SignalVector.h"
@@ -117,6 +117,6 @@ void sig_nologin(int);
 
 void crash_recovery(void);
 
-#endif	/* SIGNAL_H_WJ97 */
+#endif	/* SIGNALS_H_WJ97 */
 
 /* EOB */

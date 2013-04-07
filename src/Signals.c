@@ -17,11 +17,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Signal.c	WJ97
+	Signals.c	WJ97
 */
 
 #include "config.h"
-#include "Signal.h"
+#include "Signals.h"
 #include "debug.h"
 #include "main.h"
 #include "cstring.h"
@@ -44,7 +44,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 
 #ifdef HAVE_SYS_SIGNAL_H
 #include <sys/signal.h>

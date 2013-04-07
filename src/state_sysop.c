@@ -55,7 +55,7 @@
 #include "OnlineUser.h"
 #include "Category.h"
 #include "Wrapper.h"
-#include "Signal.h"
+#include "Signals.h"
 #include "memset.h"
 #include "bufprintf.h"
 #include "BinAlloc.h"
