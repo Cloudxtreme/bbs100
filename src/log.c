@@ -278,15 +278,15 @@ int i;
 	rotate: close the logfile and start a new one
 */
 void log_rotate(void) {
-	log_entry(stdout, "switching to new log", 'I', NULL);
-	log_entry(stderr, "switching to new log", 'I', NULL);
+	log_info("switching to new log");
+	log_auth("switching to new log");
 
 	move_log(PARAM_SYSLOG);
 	move_log(PARAM_AUTHLOG);
 	init_log();		/* create new logfiles */
 
-	log_entry(stdout, "start of new log", 'I', NULL);
-	log_entry(stderr, "start of new log", 'I', NULL);
+	log_info("start of new log");
+	log_auth("start of new log");
 }
 
 /* EOB */

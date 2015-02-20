@@ -297,7 +297,7 @@ char buf[MAX_LONGLINE];
 		exit_program(SHUTDOWN);
 
  	log_info("bbs restart");
-	log_entry(stderr, "bbs restart", 'I', NULL);		/* write to authlog */
+ 	log_auth("bbs restart");
 
 #ifndef USE_BINALLOC
 	if (PARAM_HAVE_BINALLOC) {
