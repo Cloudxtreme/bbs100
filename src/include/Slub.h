@@ -17,46 +17,42 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Memory.c	WJ100
-
-	This file used to contain useful code, but currently it's just
-	a placeholder for BinAlloc
+	Slub.h WJ115
 */
 
-#include "config.h"
-#include "Memory.h"
-#include "BinAlloc.h"
-#include "Slub.h"
+#ifndef SLUB_H_WJ115
+#define SLUB_H_WJ115	1
 
-#ifndef USE_BINALLOC
-#include "calloc.h"
-#endif
+#include "List.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#define prepend_Slub(x,y)	(Slub *)prepend_List((x), (y))
+#define remove_Slub(x,y)	(Slub *)remove_List((x), (y))
 
-int init_Memory(void) {
-#ifdef USE_BINALLOC
-	return init_BinAlloc();
-#else
-  #ifdef USE_SLUB
-	init_MemCache();
-  #endif
-	return 0;
-#endif
-}
+#define SLUB_PAGESIZE		4096
 
-void deinit_Memory(void) {
-#ifdef USE_BINALLOC
-	deinit_BinAlloc();
-#endif
-}
+#define MAX_SLUB_OBJSIZE	256
+#define SLUB_SIZESTEP		16
+#define NUM_MEMCACHES		(MAX_SLUB_OBJSIZE / SLUB_SIZESTEP)
 
-#ifndef USE_BINALLOC
-void *memalloc(size_t size) {
-	return calloc(size, 1);
-}
-#endif
+typedef struct Slub_tag Slub;
+
+struct Slub_tag {
+	List(Slub);
+	unsigned int first, numfree;
+	void *page;
+};
+
+typedef struct {
+	unsigned int size;
+	Slub *full, *partial;
+} MemCache;
+
+
+void init_MemCache(void);
+
+void *memcache_alloc(unsigned int);
+void memcache_free(void *);
+
+#endif	/* SLUB_H_WJ115 */
 
 /* EOB */

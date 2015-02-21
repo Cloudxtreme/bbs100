@@ -47,6 +47,18 @@
 
 #else	/* USE_BINALLOC */
 
+#ifdef USE_SLUB
+
+#include "Slub.h"
+
+#define Malloc(x,y)		memcache_alloc(x)
+#define Free(x)			do {					\
+							memcache_free(x);	\
+							(x) = NULL;			\
+						} while(0)
+
+#else
+
 #include <stdlib.h>
 
 #define Malloc(x,y)		memalloc(x)
@@ -57,6 +69,7 @@
 
 void *memalloc(size_t);
 
+#endif	/* USE_SLUB */
 #endif	/* USE_BINALLOC */
 
 int init_Memory(void);
