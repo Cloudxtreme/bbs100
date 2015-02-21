@@ -247,6 +247,7 @@ static void register_Slub(Slub *s, MemCache *m) {
 	}
 	pagetable[0].page = s->page;
 	pagetable[0].memcache = m;
+	pagetable[0].slub = s;
 	needs_sorting = 1;
 }
 
@@ -286,47 +287,34 @@ Slub *s;
 
 /*
 	try free object from this MemCache
-	Returns 0 if object was not found, not freed
-	Returns 1 if indeed object was in this MemCache, now freed
-	Returns 2 if the slab was freed afterwards, too
+	Returns 1 if the slab was also freed
 */
-int MemCache_free(MemCache *m, void *addr) {
-Slub *s;
-
-	for(s = m->full; s != NULL; s = s->next) {
-		if (addr >= s->page && addr < s->page + SLUB_PAGESIZE) {
-			Slub_free(s, addr, m->size);
+int MemCache_free(MemCache *m, Slub *s, void *addr) {
+	if (s->numfree == 0) {
+		/* slub must be on the full list */
+		Slub_free(s, addr, m->size);
+		/*
+			slab is now partially full
+			let's move it to the partial list
+		*/
+		s = remove_Slub(&m->full, s);
+		s = prepend_Slub(&m->partial, s);
+	} else {
+		/* slub must be on the partial list */
+		Slub_free(s, addr, m->size);
+		if (s->numfree >= SLUB_PAGESIZE / m->size) {
 			/*
-				slab is now partially full
-				let's move it to the partial list
+				slab is now empty
+				let's free it
 			*/
-			s = remove_Slub(&m->full, s);
-			s = prepend_Slub(&m->partial, s);
-			log_debug("free()d object");
+			s = remove_Slub(&m->partial, s);
+			destroy_Slub(s);
 			return 1;
 		}
 	}
-
-	/* it was not on the full list, look in partial */
-	for(s = m->partial; s != NULL; s = s->next) {
-		if (addr >= s->page && addr < s->page + SLUB_PAGESIZE) {
-			Slub_free(s, addr, m->size);
-			if (s->numfree >= SLUB_PAGESIZE / m->size) {
-				/*
-					slab is now empty
-					let's free it
-				*/
-				s = remove_Slub(&m->partial, s);
-				destroy_Slub(s);
-				log_debug("free()d object and destroyed slab");
-				return 2;
-			}
-			return 1;
-		}
-	}
-	log_debug("object not found (bug?)");
 	return 0;
 }
+
 
 void *memcache_alloc(unsigned int size) {
 int idx;
@@ -367,7 +355,6 @@ unsigned long addr;
 
 void memcache_free(void *addr) {
 SlubPageTable *p;
-int ret;
 
 	if (addr == NULL) {
 		return;
@@ -380,17 +367,12 @@ int ret;
 	sort_pagetable();
 	p = bsearch(addr, pagetable, pagetable_size, sizeof(SlubPageTable), cmp_address);
 	if (p != NULL) {
-		ret = MemCache_free(p->memcache, addr);
-		if (ret == 2) {
+		if (MemCache_free(p->memcache, p->slub, addr)) {
 			/* slab was freed, now clean up pagetable entry */
 			p->page = NULL;
 			p->memcache = NULL;
+			p->slub = NULL;
 			needs_sorting = 1;
-		} else {
-			if (ret == 0) {
-				fprintf(stderr, "memcache_free(): slab not found\n");
-				abort();
-			}
 		}
 	} else {
 		/* not found; must have been malloc()ed or calloc()ed */

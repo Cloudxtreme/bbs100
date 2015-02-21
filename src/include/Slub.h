@@ -53,6 +53,7 @@ typedef struct {
 typedef struct {
 	void *page;
 	MemCache *memcache;
+	Slub *slub;
 } SlubPageTable;
 
 void init_MemCache(void);
