@@ -1,4 +1,4 @@
-bbs100 by Walter de Jong <walter@heiho.net> (C) 2007
+bbs100 by Walter de Jong <walter@heiho.net> (C) 1997-2015
 
 THE NAME
 Why is it called bbs100?
@@ -32,7 +32,8 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
     Platform                Architecture
 ------------------------------------------------------------------------------
     Linux 3.x               ARMv7 (Raspbian)
-    Linux 2.x               intel PC  (Debian, RedHat, Slackware)
+    OS X 10.x               intel iMac, MacBook, MacBook Air, MacBook Pro
+    Linux 2.x / 3.x         intel PC  (Debian, RedHat, Slackware, Arch)
     Linux 2.x               DEC Alpha (as tested by News of MatrixBBS)
     LinuxPPC                PowerMac  (as tested by Joshua Bell of lumpBBS)
     FreeBSD 3.x / 4.x       intel PC

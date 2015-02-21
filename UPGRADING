@@ -1,7 +1,13 @@
-bbs100 by Walter de Jong <walter@heiho.net> (C) 2007
+bbs100 by Walter de Jong <walter@heiho.net> (C) 1997-2015
 
 bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
+
+
+UPGRADING FROM bbs100 3.2
+
+Parameter have_binalloc has been removed, so you can delete the parameter
+from etc/param
 
 
 UPGRADING FROM bbs100 3.0 or 3.1

@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-#	bbs100 3.2 expire_accounts.sh	WJ99
+#	bbs100 3.3 expire_accounts.sh	WJ99
 #
 
 DAYS=100		# expire accounts not used in 100 days
