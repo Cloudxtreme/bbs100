@@ -33,7 +33,7 @@ Worldclock worldclock[] = {
 	{ "America/Los_Angeles",	NULL,	NULL, },
 	{ "America/Chicago",		NULL,	NULL, },
 	{ "America/New_York",		NULL,	NULL, },
-	{ "America/Rio_de_Janeiro",	NULL,	NULL, },
+	{ "America/Sao_Paulo",		NULL,	NULL, },
 	{ "Europe/London",			NULL,	NULL, },
 	{ "Africa/Cairo",			NULL,	NULL, },
 	{ "Europe/Moscow",			NULL,	NULL, },
