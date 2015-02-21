@@ -195,8 +195,6 @@ install: $(TARGETS) $(SCRIPTS)
 			echo ' ' ; \
 		fi ; \
 	else \
-		echo "  COPYDIR   $(prefix)/etc/zoneinfo/" ; \
-		( cd ../etc && $(TAR) -cf - zoneinfo ) | ( cd $(prefix)/etc && $(TAR) -xf - ) ; \
 		echo "  COPYDIR   $(prefix)/etc/help/" ; \
 		( cd ../etc && $(TAR) -cf - help ) | ( cd $(prefix)/etc && $(TAR) -xf - ) ; \
 	fi
