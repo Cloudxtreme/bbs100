@@ -31,6 +31,7 @@ So far, I've succesfully compiled and run bbs100 on the following platforms:
 
     Platform                Architecture
 ------------------------------------------------------------------------------
+    Linux 3.x               ARMv7 (Raspbian)
     Linux 2.x               intel PC  (Debian, RedHat, Slackware)
     Linux 2.x               DEC Alpha (as tested by News of MatrixBBS)
     LinuxPPC                PowerMac  (as tested by Joshua Bell of lumpBBS)
@@ -94,14 +95,6 @@ re-occur for that user.
 This is a warning that can safely be ignored.
 
 
-WHAT DOES THE PARAMETER have_binalloc DO?
-It enables a special memory allocator. You shouldn't enable it because
-I suspect it's bugged. Nevertheless, it is quite useful for debugging
-and finding memory leaks. To enable it, you must build the bbs with
-the configure option --enable-binalloc=yes, and set the parameter in
-etc/param to 'yes' as well.
-
-
 YAWC
 Why isn't YAWC mentioned anywhere in the README or CREDITS?
 Well, YAWC is yet another clone of DOC by Kenneth Haglund (also known as
@@ -119,3 +112,4 @@ There used to be a mailing list, but it is not active anymore.
 If you need help on modifying bbs100, the author (me) is always happy to
 provide you with some pointers and explain how specific parts of bbs100 work,
 and what you should do to make it work the way you want it to work.
+
