@@ -162,11 +162,10 @@
 #define KVPARAM_HAVE_MAILROOM		param[KVPARAM_HAVE_N+17]
 #define KVPARAM_HAVE_CATEGORY		param[KVPARAM_HAVE_N+18]
 #define KVPARAM_HAVE_WRAPPER_ALL	param[KVPARAM_HAVE_N+19]
-#define KVPARAM_HAVE_BINALLOC		param[KVPARAM_HAVE_N+20]
-#define KVPARAM_HAVE_FILECACHE		param[KVPARAM_HAVE_N+21]
-#define KVPARAM_HAVE_RESIDENT_INFO	param[KVPARAM_HAVE_N+22]
-#define KVPARAM_HAVE_DISABLED_MSG	param[KVPARAM_HAVE_N+23]
-#define NUM_PARAM					(KVPARAM_HAVE_N+24)
+#define KVPARAM_HAVE_FILECACHE		param[KVPARAM_HAVE_N+20]
+#define KVPARAM_HAVE_RESIDENT_INFO	param[KVPARAM_HAVE_N+21]
+#define KVPARAM_HAVE_DISABLED_MSG	param[KVPARAM_HAVE_N+22]
+#define NUM_PARAM					(KVPARAM_HAVE_N+23)
 
 #define SPARAM(x)					(KVPARAM_##x)->value.s
 #define IPARAM(x)					(KVPARAM_##x)->value.i
@@ -305,7 +304,6 @@
 #define DEFAULT_SAVE_TIMEOUT		5		/* save user every 5 minutes */
 #define DEFAULT_CACHE_TIMEOUT		30		/* expire unused cached files every 30 minutes */
 #define DEFAULT_HELPER_AGE			1		/* minimum age in days required for Helper status */
-#define DEFAULT_CHUNK_SIZE			4096	/* chunk size for BinAlloc() */
 #define DEFAULT_UMASK				007		/* allow user+group, deny others */
 
 extern KVPair **param;

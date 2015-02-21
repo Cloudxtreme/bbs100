@@ -120,7 +120,6 @@ int i;
 	KVPair_setint(KVPARAM_SAVE_TIMEOUT,			"periodic_saving",	DEFAULT_SAVE_TIMEOUT);
 	KVPair_setint(KVPARAM_CACHE_TIMEOUT,		"cache_expire",		DEFAULT_CACHE_TIMEOUT);
 	KVPair_setint(KVPARAM_HELPER_AGE,			"helper_age",		DEFAULT_HELPER_AGE);
-	KVPair_setint(KVPARAM_CHUNK_SIZE,			"chunk_size",		DEFAULT_CHUNK_SIZE);
 
 	KVPair_setstring(KVPARAM_SEP7, "", "");
 
@@ -163,7 +162,6 @@ int i;
 	KVPair_setbool(KVPARAM_HAVE_MAILROOM,		"have_mailroom",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_CATEGORY,		"have_category",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_WRAPPER_ALL,	"have_wrapper_all",	PARAM_TRUE);
-	KVPair_setbool(KVPARAM_HAVE_BINALLOC,		"have_binalloc",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_FILECACHE,		"have_filecache",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_RESIDENT_INFO,	"have_resident_info",	PARAM_TRUE);
 	KVPair_setbool(KVPARAM_HAVE_DISABLED_MSG,	"have_disabled_msg",PARAM_TRUE);

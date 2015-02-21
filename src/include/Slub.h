@@ -17,44 +17,50 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-	Memory.h	WJ100
+	Slub.h WJ115
 */
 
-#ifndef MEMORY_H_WJ100
-#define MEMORY_H_WJ100
+#ifndef SLUB_H_WJ115
+#define SLUB_H_WJ115	1
 
-#include "Types.h"
+#include "List.h"
 
-/*
-	all routines use Malloc() and Free()
-*/
+#define prepend_Slub(x,y)	(Slub *)prepend_List((x), (y))
+#define remove_Slub(x,y)	(Slub *)remove_List((x), (y))
 
-#ifdef USE_SLUB
+#define SLUB_PAGESIZE		4096
 
-#include "Slub.h"
+#define MAX_SLUB_OBJSIZE	256
+#define SLUB_SIZESTEP		16
+#define NUM_MEMCACHES		(MAX_SLUB_OBJSIZE / SLUB_SIZESTEP)
 
-#define Malloc(x,y)		memcache_alloc(x)
-#define Free(x)			do {					\
-							memcache_free(x);	\
-							(x) = NULL;			\
-						} while(0)
+#define INIT_PAGETABLE_SIZE	512
+#define GROW_PAGETABLE		512
 
-#else
+typedef struct Slub_tag Slub;
 
-#include <stdlib.h>
+struct Slub_tag {
+	List(Slub);
+	unsigned int first, numfree;
+	void *page;
+};
 
-#define Malloc(x,y)		memalloc(x)
-#define Free(x)			do {				\
-							free(x);		\
-							(x) = NULL;		\
-						} while(0)
+typedef struct {
+	unsigned int size;
+	Slub *full, *partial;
+} MemCache;
 
-void *memalloc(size_t);
+typedef struct {
+	void *page;
+	MemCache *memcache;
+	Slub *slub;
+} SlubPageTable;
 
-#endif	/* USE_SLUB */
+void init_MemCache(void);
 
-int init_Memory(void);
+void *memcache_alloc(unsigned int);
+void memcache_free(void *);
 
-#endif	/* MEMORY_H_WJ100 */
+#endif	/* SLUB_H_WJ115 */
 
 /* EOB */

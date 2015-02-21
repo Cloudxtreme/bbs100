@@ -6,7 +6,7 @@ bbs_name                bbs100
 bind_address            0.0.0.0
 port_number             1234
 
-basedir                 xxx
+basedir                 /home/walter/src/bbs100
 bindir                  bin/
 confdir                 etc/
 helpdir                 etc/help/
@@ -101,7 +101,6 @@ have_homeroom           yes
 have_mailroom           yes
 have_category           yes
 have_wrapper_all        yes
-have_binalloc           no
 have_filecache          yes
 have_resident_info      yes
 have_disabled_msg       yes

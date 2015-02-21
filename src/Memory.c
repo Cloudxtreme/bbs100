@@ -18,16 +18,13 @@
 */
 /*
 	Memory.c	WJ100
-
-	This file used to contain useful code, but currently it's just
-	a placeholder for BinAlloc
 */
 
 #include "config.h"
 #include "Memory.h"
-#include "BinAlloc.h"
+#include "Slub.h"
 
-#ifndef USE_BINALLOC
+#ifndef USE_SLUB
 #include "calloc.h"
 #endif
 
@@ -36,22 +33,15 @@
 #include <string.h>
 
 int init_Memory(void) {
-#ifdef USE_BINALLOC
-	return init_BinAlloc();
-#else
+#ifdef USE_SLUB
+	init_MemCache();
+#endif
 	return 0;
-#endif
 }
 
-void deinit_Memory(void) {
-#ifdef USE_BINALLOC
-	deinit_BinAlloc();
-#endif
-}
-
-#ifndef USE_BINALLOC
-void *memalloc(size_t size) {
-	return calloc(size, 1);
+#ifndef USE_SLUB
+void *memalloc(size_t n) {
+	return calloc(1, n);
 }
 #endif
 
