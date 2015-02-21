@@ -2234,8 +2234,8 @@ else
 $as_echo "no" >&6; }
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to disable the slub allocator" >&5
-$as_echo_n "checking whether to disable the slub allocator... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable the slub allocator" >&5
+$as_echo_n "checking whether to enable the slub allocator... " >&6; }
 # Check whether --enable-slub was given.
 if test "${enable_slub+set}" = set; then :
   enableval=$enable_slub; slub=no
