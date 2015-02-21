@@ -20,8 +20,8 @@
 	Slub.c	WJ115
 
 	Slub allocator for bbs100
-
-	FIXME the bbs should use logging rather than printf()
+	The bbs makes tons of tiny memory allocations
+	Slub helps fragmentation
 */
 
 #include "Slub.h"
@@ -51,7 +51,7 @@ int i;
 
 	pagetable_size = INIT_PAGETABLE_SIZE;
 	if ((pagetable = (SlubPageTable *)malloc(sizeof(SlubPageTable) * pagetable_size)) == NULL) {
-		fprintf(stderr, "init_MemCache(): out of memory (?)\n");
+		log_err("init_MemCache(): out of memory");
 		abort();
 	}
 	memset(pagetable, 0, sizeof(SlubPageTable) * pagetable_size);
@@ -63,17 +63,17 @@ char *page;
 unsigned int i;
 
 	if (objsize > SLUB_PAGESIZE) {
-		fprintf(stderr, "fatal error: new_Slub(): objsize too large\n");
+		log_err("new_Slub(): objsize too large");
 		abort();
 	}
 
 	if ((page = (char *)malloc(SLUB_PAGESIZE)) == NULL) {
-		fprintf(stderr, "new_Slub(): out of memory (?)\n");
+		log_err("new_Slub(): out of memory");
 		return NULL;
 	}
 
 	if ((s = (Slub *)malloc(sizeof(Slub))) == NULL) {
-		fprintf(stderr, "new_Slub(): out of memory (?)\n");
+		log_err("new_Slub(): out of memory");
 		free(page);
 		return NULL;
 	}
@@ -112,27 +112,27 @@ char *obj;
 
 #ifdef DEBUG
 	if (objsize > SLUB_PAGESIZE) {
-		fprintf(stderr, "Slub_alloc(): invalid object size requested\n");
+		log_err("Slub_alloc(): invalid object size requested");
 		abort();
 	}
 	if (s == NULL) {
-		fprintf(stderr, "Slub_alloc(): s == NULL\n");
+		log_err("Slub_alloc(): s == NULL");
 		abort();
 	}
 	if (s->page == NULL) {
-		fprintf(stderr, "Slub_alloc(): s->page == NULL\n");
+		log_err("Slub_alloc(): s->page == NULL");
 		abort();
 	}
 	if (!s->numfree) {
-		fprintf(stderr, "Slub_alloc(): s->numfree == 0\n");
+		log_err("Slub_alloc(): s->numfree == 0");
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		fprintf(stderr, "Slub_alloc(): s->numfree has invalid value\n");
+		log_err("Slub_alloc(): s->numfree has invalid value");
 		abort();
 	}
 	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		fprintf(stderr, "Slub_alloc(): s->first has invalid value");
+		log_err("Slub_alloc(): s->first has invalid value");
 		abort();
 	}
 #endif	/* DEBUG */
@@ -142,7 +142,7 @@ char *obj;
 #ifdef DEBUG
 	if (!s->numfree) {
 		if (s->first != 0xffff) {
-			fprintf(stderr, "Slub_alloc(): invalid end marker\n");
+			log_err("Slub_alloc(): invalid end marker");
 			abort();
 		}
 	}
@@ -161,23 +161,23 @@ char *p;
 
 #ifdef DEBUG
 	if (s == NULL) {
-		fprintf(stderr, "Slub_free(): s == NULL\n");
+		log_err("Slub_free(): s == NULL");
 		abort();
 	}
 	if (s->page == NULL) {
-		fprintf(stderr, "Slub_free(): s->page == NULL\n");
+		log_err("Slub_free(): s->page == NULL");
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		fprintf(stderr, "Slub_free(): s->numfree has invalid value\n");
+		log_err("Slub_free(): s->numfree has invalid value");
 		abort();
 	}
 	if (objsize > SLUB_PAGESIZE) {
-		fprintf(stderr, "Slub_free(): invalid object size requested\n");
+		log_err("Slub_free(): invalid object size requested");
 		abort();
 	}
 	if (addr < s->page || addr > s->page + SLUB_PAGESIZE - objsize) {
-		fprintf(stderr, "Slub_free(): invalid address\n");
+		log_err("Slub_free(): invalid address");
 		abort();
 	}
 #endif	/* DEBUG */
@@ -191,11 +191,11 @@ char *p;
 
 #ifdef DEBUG
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		fprintf(stderr, "Slub_free(): s->numfree has invalid value\n");
+		log_err("Slub_free(): s->numfree has invalid value");
 		abort();
 	}
 	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		fprintf(stderr, "Slub_free(): s->first has invalid value");
+		log_err("Slub_free(): s->first has invalid value");
 		abort();
 	}
 #endif	/* DEBUG */
@@ -230,7 +230,7 @@ unsigned int new_size;
 
 	new_size = pagetable_size + GROW_PAGETABLE;
 	if ((new_table = (SlubPageTable *)malloc(sizeof(SlubPageTable) * new_size)) == NULL) {
-		fprintf(stderr, "grow_pagetable(): out of memory\n");
+		log_err("grow_pagetable(): out of memory");
 		abort();
 	}
 	memset(new_table, 0, sizeof(SlubPageTable) * GROW_PAGETABLE);
@@ -270,7 +270,7 @@ Slub *s;
 
 	addr = Slub_alloc(m->partial, m->size);
 	if (addr == NULL) {
-		fprintf(stderr, "MemCache_alloc(): failed to allocate %u bytes", m->size);
+		log_err("MemCache_alloc(): failed to allocate %u bytes", m->size);
 		abort();
 	}
 
@@ -320,7 +320,7 @@ void *memcache_alloc(unsigned int size) {
 int idx;
 
 	if (!size) {
-		fprintf(stderr, "memcache_alloc(): invalid size requested\n");
+		log_err("memcache_alloc(): invalid size requested");
 		abort();
 	}
 
@@ -330,7 +330,7 @@ int idx;
 
 	idx = size / SLUB_SIZESTEP;
 	if (idx >= NUM_MEMCACHES) {
-		fprintf(stderr, "memcache_alloc(): how did this happen? size == %u\n", size);
+		log_err("memcache_alloc(): how did this happen? size == %u", size);
 		abort();
 	}
 	return MemCache_alloc(&memcaches[idx]);
