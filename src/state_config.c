@@ -2153,7 +2153,7 @@ int r;
 						Return;
 					}
 					bufprintf(dirname, sizeof(dirname), "%s/%s", PARAM_ZONEINFODIR, sl->str);
-					if ((dl2 = list_DirList(dirname, IGNORE_SYMLINKS|IGNORE_HIDDEN|NO_DIRS)) == NULL) {
+					if ((dl2 = list_DirList(dirname, IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						log_err("state_tz_continent(): list_DirList(%s) failed", dirname);
 						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
 						destroy_DirList(dl);
