@@ -1,3 +1,6 @@
+Changes as of February 21st 2015
+- implemented a SLUB allocator
+
 Changes as of July 1st 2007
 - release 3.2
 
