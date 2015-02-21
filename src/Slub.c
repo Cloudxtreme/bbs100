@@ -25,6 +25,7 @@
 */
 
 #include "Slub.h"
+#include "log.h"
 #include "calloc.h"
 
 #include <stdlib.h>
@@ -32,6 +33,10 @@
 #include <string.h>
 
 static MemCache memcaches[NUM_MEMCACHES];
+
+static SlubPageTable *pagetable = NULL;
+static unsigned int pagetable_size = 0;
+static int needs_sorting = 0;
 
 
 void init_MemCache(void) {
@@ -43,6 +48,13 @@ int i;
 	for(i = 0; i < NUM_MEMCACHES; i++) {
 		memcaches[i].size = (i + 1) * SLUB_SIZESTEP;
 	}
+
+	pagetable_size = INIT_PAGETABLE_SIZE;
+	if ((pagetable = (SlubPageTable *)malloc(sizeof(SlubPageTable) * pagetable_size)) == NULL) {
+		fprintf(stderr, "init_MemCache(): out of memory (?)\n");
+		abort();
+	}
+	memset(pagetable, 0, sizeof(SlubPageTable) * pagetable_size);
 }
 
 Slub *new_Slub(unsigned int objsize) {
@@ -189,6 +201,55 @@ char *p;
 #endif	/* DEBUG */
 }
 
+/* sorting function */
+static int cmp_pagetable(const void *v1, const void *v2) {
+SlubPageTable *a, *b;
+
+	a = (SlubPageTable *)v1;
+	b = (SlubPageTable *)v2;
+	if ((unsigned long)a->page < (unsigned long)b->page) {
+		return -1;
+	}
+	if ((unsigned long)a->page > (unsigned long)b->page) {
+		return 1;
+	}
+	return 0;
+}
+
+static void sort_pagetable(void) {
+	if (!needs_sorting) {
+		return;
+	}
+	qsort(pagetable, pagetable_size, sizeof(SlubPageTable), cmp_pagetable);
+	needs_sorting = 0;
+}
+
+static void grow_pagetable(void) {
+SlubPageTable *new_table;
+unsigned int new_size;
+
+	new_size = pagetable_size + GROW_PAGETABLE;
+	if ((new_table = (SlubPageTable *)malloc(sizeof(SlubPageTable) * new_size)) == NULL) {
+		fprintf(stderr, "grow_pagetable(): out of memory\n");
+		abort();
+	}
+	memset(new_table, 0, sizeof(SlubPageTable) * GROW_PAGETABLE);
+	memcpy(new_table + GROW_PAGETABLE, pagetable, sizeof(SlubPageTable) * pagetable_size);
+	free(pagetable);
+	pagetable = new_table;
+	pagetable_size = new_size;
+}
+
+static void register_Slub(Slub *s, MemCache *m) {
+	sort_pagetable();
+	if (pagetable[0].page != NULL) {
+		grow_pagetable();
+	}
+	pagetable[0].page = s->page;
+	pagetable[0].memcache = m;
+	needs_sorting = 1;
+}
+
 void *MemCache_alloc(MemCache *m) {
 void *addr;
 Slub *s;
@@ -201,6 +262,9 @@ Slub *s;
 		if ((m->partial = new_Slub(m->size)) == NULL) {
 			return NULL;
 		}
+
+		/* register it in pagetable */
+		register_Slub(m->partial, m);
 	}
 
 	addr = Slub_alloc(m->partial, m->size);
@@ -224,6 +288,7 @@ Slub *s;
 	try free object from this MemCache
 	Returns 0 if object was not found, not freed
 	Returns 1 if indeed object was in this MemCache, now freed
+	Returns 2 if the slab was freed afterwards, too
 */
 int MemCache_free(MemCache *m, void *addr) {
 Slub *s;
@@ -231,14 +296,13 @@ Slub *s;
 	for(s = m->full; s != NULL; s = s->next) {
 		if (addr >= s->page && addr < s->page + SLUB_PAGESIZE) {
 			Slub_free(s, addr, m->size);
-			if (s->numfree >= SLUB_PAGESIZE / m->size) {
-				/*
-					slab is now empty
-					let's free it
-				*/
-				s = remove_Slub(&m->full, s);
-				destroy_Slub(s);
-			}
+			/*
+				slab is now partially full
+				let's move it to the partial list
+			*/
+			s = remove_Slub(&m->full, s);
+			s = prepend_Slub(&m->partial, s);
+			log_debug("free()d object");
 			return 1;
 		}
 	}
@@ -254,10 +318,13 @@ Slub *s;
 				*/
 				s = remove_Slub(&m->partial, s);
 				destroy_Slub(s);
+				log_debug("free()d object and destroyed slab");
+				return 2;
 			}
 			return 1;
 		}
 	}
+	log_debug("object not found (bug?)");
 	return 0;
 }
 
@@ -281,8 +348,26 @@ int idx;
 	return MemCache_alloc(&memcaches[idx]);
 }
 
+static int cmp_address(const void *a, const void *b) {
+SlubPageTable *p;
+unsigned long addr;
+
+	addr = (unsigned long)a;
+	p = (SlubPageTable *)b;
+
+	if (addr < (unsigned long)p->page) {
+		return -1;
+	}
+	if (addr > (unsigned long)p->page + SLUB_PAGESIZE) {
+		return 1;
+	}
+	/* address is in this page */
+	return 0;
+}
+
 void memcache_free(void *addr) {
-int i;
+SlubPageTable *p;
+int ret;
 
 	if (addr == NULL) {
 		return;
@@ -290,24 +375,27 @@ int i;
 
 	/*
 		find the page where addr lives
-		This is not fast code ...
-		sadly we can not calculate the page number from the address
-		because we do not have a page table, as we do not reserve
-		a static block of memory at startup
-
-		Could be sped up iff we passed the type/objsize as argument
-
-		FIXME what if we made a sorted list of addrs that acts like a page table?
+		first find the memcache
 	*/
-	for(i = 0; i < NUM_MEMCACHES; i++) {
-		/* try free the object */
-		if (MemCache_free(&memcaches[i], addr)) {
-			return;
+	sort_pagetable();
+	p = bsearch(addr, pagetable, pagetable_size, sizeof(SlubPageTable), cmp_address);
+	if (p != NULL) {
+		ret = MemCache_free(p->memcache, addr);
+		if (ret == 2) {
+			/* slab was freed, now clean up pagetable entry */
+			p->page = NULL;
+			p->memcache = NULL;
+			needs_sorting = 1;
+		} else {
+			if (ret == 0) {
+				fprintf(stderr, "memcache_free(): slab not found\n");
+				abort();
+			}
 		}
+	} else {
+		/* not found; must have been malloc()ed or calloc()ed */
+		free(addr);
 	}
-
-	/* not found; must have been malloc()ed or calloc()ed */
-	free(addr);
 }
 
 /* EOB */

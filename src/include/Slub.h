@@ -34,6 +34,9 @@
 #define SLUB_SIZESTEP		16
 #define NUM_MEMCACHES		(MAX_SLUB_OBJSIZE / SLUB_SIZESTEP)
 
+#define INIT_PAGETABLE_SIZE	512
+#define GROW_PAGETABLE		512
+
 typedef struct Slub_tag Slub;
 
 struct Slub_tag {
@@ -47,6 +50,10 @@ typedef struct {
 	Slub *full, *partial;
 } MemCache;
 
+typedef struct {
+	void *page;
+	MemCache *memcache;
+} SlubPageTable;
 
 void init_MemCache(void);
 
