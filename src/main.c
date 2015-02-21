@@ -53,7 +53,6 @@
 #include "ConnUser.h"
 #include "ConnResolv.h"
 #include "bufprintf.h"
-#include "BinAlloc.h"
 #include "helper.h"
 #include "OnlineUser.h"
 #include "coredump.h"
@@ -153,12 +152,6 @@ char buf[MAX_LONGLINE];
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
 	}
-#ifdef USE_BINALLOC
-	if (init_BinAlloc()) {
-		fprintf(stderr, "bbs100: out of memory (?)\n");
-		exit(-1);
-	}
-#endif
 	printf("%s\n", print_copyright(SHORT, "main", buf, MAX_LONGLINE));
 	printf("bbs100 comes with ABSOLUTELY NO WARRANTY. This is free software.\n"
 		"For details, see the GNU General Public License.\n\n");
@@ -218,11 +211,6 @@ char buf[MAX_LONGLINE];
 		printf("ok\n");
 	check_Param();
 	print_Param();
-
-#ifdef USE_BINALLOC
-	if (!PARAM_HAVE_BINALLOC)
-		disable_BinAlloc();
-#endif
 
 	umask(PARAM_UMASK);
 
@@ -298,13 +286,6 @@ char buf[MAX_LONGLINE];
 
  	log_info("bbs restart");
  	log_auth("bbs restart");
-
-#ifndef USE_BINALLOC
-	if (PARAM_HAVE_BINALLOC) {
-		log_warn("/etc/param: have_binalloc is enabled, but support for it is not compiled in");
-		log_warn("configure with --enable-binalloc and rebuild if you really want this feature");
-	}
-#endif
 
 	if (debugger)
 		log_msg("running under debugger");

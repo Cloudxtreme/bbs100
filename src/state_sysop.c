@@ -58,7 +58,6 @@
 #include "Signals.h"
 #include "memset.h"
 #include "bufprintf.h"
-#include "BinAlloc.h"
 #include "NewUserLog.h"
 #include "DirList.h"
 #include "coredump.h"
@@ -104,12 +103,7 @@ void state_sysop_menu(User *usr, char c) {
 
 			if (PARAM_HAVE_FILECACHE)
 				Put(usr, "<hotkey>Uncache file                      ");
-
-#ifdef USE_BINALLOC
-			Print(usr, "<hotkey>Memory allocation status\n");
-#else
 			Put(usr, "\n");
-#endif
 
 			Print(usr, "\n"
 				"<white>Ctrl-<hotkey>P<magenta>arameters                   %s <hotkey>password\n"
@@ -208,14 +202,6 @@ void state_sysop_menu(User *usr, char c) {
 			Put(usr, "Uncache file\n");
 			CALL(usr, STATE_UNCACHE_FILE);
 			Return;
-
-#ifdef USE_BINALLOC
-		case 'm':
-		case 'M':
-			Put(usr, "Memory allocation status\n");
-			CALL(usr, STATE_MALLOC_STATUS);
-			Return;
-#endif
 
 		case 's':
 		case 'S':
@@ -1810,113 +1796,6 @@ int r;
 	}
 	Return;
 }
-
-
-#ifdef USE_BINALLOC
-
-/*
-	print only a dash if the number is zero
-	this makes things much more readable
-*/
-#define NUM_DASH(x,y)								\
-	do {											\
-		if ((x))									\
-			bufprintf((y), sizeof(y), "%d", (x));	\
-		else {										\
-			(y)[0] = '-';							\
-			(y)[1] = 0;								\
-		}											\
-	} while(0)
-
-void state_malloc_status(User *usr, char c) {
-int i, total_bins, total_free, total_obj, total_balance;
-char num_buf1[MAX_NUMBER], num_buf2[MAX_NUMBER], num_buf3[MAX_NUMBER], num_buf4[MAX_NUMBER], num_buf5[MAX_NUMBER];
-MemInfo mem_info;
-MemBinInfo membin_info;
-MemStats mem_stats;
-
-	if (usr == NULL)
-		return;
-
-	Enter(state_malloc_status);
-
-	switch(c) {
-		case INIT_PROMPT:
-			break;
-
-		case INIT_STATE:
-			Put(usr, "\n");
-
-			buffer_text(usr);
-
-			Put(usr, "<yellow>Memory allocation status\n<green>");
-			get_MemInfo(&mem_info);
-			Print(usr, "Total memory<yellow>      %12s <green>bytes\n", print_number(mem_info.total + mem_info.malloc, num_buf1, sizeof(num_buf1)));
-			Print(usr, "Total bin memory<yellow>  %12s <green>bytes        Global balance:<white> %d<green>\n", print_number(mem_info.total, num_buf1, MAX_NUMBER), mem_info.balance);
-			Print(usr, "Bin memory in use<yellow> %12s <green>bytes\n", print_number(mem_info.in_use, num_buf1, sizeof(num_buf1)));
-			Print(usr, "Foreign memory<yellow>    %12s <green>bytes\n", print_number(mem_info.malloc, num_buf1, sizeof(num_buf1)));
-
-			if (!PARAM_HAVE_BINALLOC)
-				Put(usr, "<red>\nThe bin allocator is currently not active\n"
-					"<green>What you see here is the residue from when it was still enabled\n"
-					"Further allocations will use 'foreign' memory\n"
-				);
-
-			Print(usr, "\n<yellow>Bin allocator status (bin size: %d bytes, usable: %d bytes)\n", BIN_SIZE, MAX_BIN_FREE);
-			Print(usr, "<yellow>%-16s %4s %6s %7s %6s %15s %15s\n",
-				"type", "size", "number", "balance", "bins", "total", "free");
-
-			total_bins = total_free = total_obj = total_balance = 0;
-			for(i = 0; i < NUM_TYPES; i++) {
-				get_MemBinInfo(&membin_info, i);
-				get_MemStats(&mem_stats, i);
-
-				NUM_DASH(mem_stats.num, num_buf1);
-				NUM_DASH(mem_stats.balance, num_buf2);
-				NUM_DASH(membin_info.bins, num_buf3);
-
-				Print(usr, "<green>%-16s<white> %4d %6s %7s %6s %15s %15s\n",
-					Types_table[i].type,
-					Types_table[i].size + MARKER_SIZE,
-					num_buf1,
-					num_buf2,
-					num_buf3,
-					print_number(membin_info.bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, sizeof(num_buf4)),
-					print_number(membin_info.free, num_buf5, sizeof(num_buf5))
-				);
-				total_bins += membin_info.bins;
-				total_free += membin_info.free;
-				total_obj += mem_stats.num;
-				total_balance += mem_stats.balance;
-			}
-			NUM_DASH(total_obj, num_buf1);
-			NUM_DASH(total_balance, num_buf2);
-			NUM_DASH(total_bins, num_buf3);
-
-			Print(usr, "<yellow>%-16s %4s %6s %7s %6s %15s %15s\n",
-				"total",
-				"",
-				num_buf1,
-				num_buf2,
-				num_buf3,
-				print_number(total_bins * (BIN_SIZE + sizeof(unsigned long) + MARKER_SIZE), num_buf4, sizeof(num_buf4)),
-				print_number(total_free, num_buf5, sizeof(num_buf5))
-			);
-			read_menu(usr);
-			Return;
-
-		default:
-			wipe_line(usr);
-			RET(usr);
-			Return;
-	}
-	Put(usr, "<white>\n"
-		"[Press a key]");
-	Return;
-}
-
-#endif	/* USE_BINALLOC */
-
 
 void state_screens_menu(User *usr, char c) {
 	if (usr == NULL)
@@ -4562,20 +4441,13 @@ void state_features_menu(User *usr, char c) {
 			);
 			Print(usr,
 				"<hotkey>Calendar              <white>%-3s<magenta>      <hotkey>World clock             <white>%s<magenta>\n"
-				"<hotkey>File cache            <white>%-3s<magenta>"
-
-#ifdef USE_BINALLOC
-				"      <hotkey>Bin allocator           <white>%s<magenta>\n"
-#else
-				"\n"
-#endif
+				"<hotkey>File cache            <white>%-3s<magenta>\n"
 				"Wrapper a<hotkey>pply to all  <white>%-3s<magenta>      <hotkey>Display warnings        <white>%s<magenta>\n",
 
 				(PARAM_HAVE_CALENDAR == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_WORLDCLOCK == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_FILECACHE == PARAM_FALSE) ? "off" : "on",
-				(PARAM_HAVE_BINALLOC == PARAM_FALSE) ? "off" : "on",
 
 				(PARAM_HAVE_WRAPPER_ALL == PARAM_FALSE) ? "off" : "on",
 				(PARAM_HAVE_DISABLED_MSG == PARAM_FALSE) ? "off" : "on"
@@ -4697,17 +4569,6 @@ void state_features_menu(User *usr, char c) {
 			else
 				init_FileCache();
 			Return;
-
-#ifdef USE_BINALLOC
-		case 'b':
-		case 'B':
-			TOGGLE_FEAT(PARAM_HAVE_BINALLOC, "Bin allocator");
-			if (PARAM_HAVE_BINALLOC == PARAM_FALSE)
-				disable_BinAlloc();
-			else
-				enable_BinAlloc();
-			Return;
-#endif
 
 		case 'p':
 		case 'P':

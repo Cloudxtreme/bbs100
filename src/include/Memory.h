@@ -29,24 +29,6 @@
 	all routines use Malloc() and Free()
 */
 
-/*
-	commented out by default
-
-#define USE_BINALLOC	1
-*/
-
-#ifdef USE_BINALLOC
-
-#include "BinAlloc.h"
-
-#define Malloc(x,y)		BinMalloc((x),(y))
-#define Free(x)			do {				\
-							BinFree(x);		\
-							(x) = NULL;		\
-						} while(0)
-
-#else	/* USE_BINALLOC */
-
 #ifdef USE_SLUB
 
 #include "Slub.h"
@@ -70,10 +52,8 @@
 void *memalloc(size_t);
 
 #endif	/* USE_SLUB */
-#endif	/* USE_BINALLOC */
 
 int init_Memory(void);
-void deinit_Memory(void);
 
 #endif	/* MEMORY_H_WJ100 */
 

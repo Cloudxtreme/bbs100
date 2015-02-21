@@ -2503,7 +2503,7 @@ char buf[MAX_LONGLINE], *p;
 			"Display.c",
 			"patchlist.c",
 			"helper.c",
-			"BinAlloc.c",
+			"Slub.c",
 			"DirList.c",
 			"NewUserLog.c",
 			"main.c",

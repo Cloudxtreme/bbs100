@@ -66,12 +66,12 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-AC_MSG_CHECKING(whether to enable the bin allocator)
-AC_ARG_ENABLE(binalloc, [  --enable-binalloc=[yes/no]   turn on bin allocator [default=no]],, enable_binalloc=no)
+AC_MSG_CHECKING(whether to disable the slub allocator)
+AC_ARG_ENABLE(slub, [  --disable-slub     disable the SLUB allocator], slub=no, slub=yes)
 
-if test "x$enable_binalloc" = "xyes"
+if test "x$slub" = "xyes"
 then
-	CFLAGS="$CFLAGS -DUSE_BINALLOC"
+	CFLAGS="$CFLAGS -DUSE_SLUB"
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)

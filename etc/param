@@ -101,7 +101,6 @@ have_homeroom           yes
 have_mailroom           yes
 have_category           yes
 have_wrapper_all        yes
-have_binalloc           no
 have_filecache          yes
 have_resident_info      yes
 have_disabled_msg       yes
