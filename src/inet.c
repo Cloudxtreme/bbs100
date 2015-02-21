@@ -580,8 +580,10 @@ char input_char[2];
 	strange, select() got some other error
 */
 		log_err("select() got errno %d", errno);
+/*
 		log_err("exiting and restarting ; killing myself with SIGINT");
 		kill(0, SIGINT);
+*/
 	}
 }
 
