@@ -11,7 +11,7 @@ bindir                  bin/
 confdir                 etc/
 helpdir                 etc/help/
 feelingsdir             etc/feelings/
-zoneinfodir             etc/zoneinfo/
+zoneinfodir             /usr/share/zoneinfo/
 userdir                 users/
 roomdir                 rooms/
 trashdir                trash/
