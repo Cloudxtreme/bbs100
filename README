@@ -150,12 +150,6 @@ Files under etc/ have special meaning:
     These are feelings, which are displayed when a user presses '*'.
     Feelings can be added, removed, edited, etc., from the Sysop menu.
 
-    etc/zoneinfo/*
-
-    These are timezone files. They are used by the world clock in the
-    calendar (press 't' for Time).
-    These zoneinfo files come from a debian GNU/Linux system.
-
 
 SIGNALS
 The BBS responds to certain Unix signals.
