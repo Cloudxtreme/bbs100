@@ -52,6 +52,12 @@ YOU WILL HAVE TO CHECK THIS YOURSELF WHEN UPGRADING (and please excuse me
 for using caps).
 You can find all important recent changes in the ChangeLog file.
 
+Note that if you use 'sudo make install', files will be owned by root.
+If you run bbs100 under a 'bbs' user, with /home/bbs as homedir, you will
+have to chown the files yourself. Like so:
+
+    $ sudo chown -R bbs.bbs /home/bbs
+
 
 
 The rest of the INSTALL is for users that have never before run bbs100.
