@@ -361,7 +361,7 @@ unsigned long addr;
 
 void memcache_free(void *addr) {
 SlubPageTable *p;
-unsigned int idx;
+int idx;
 
 	if (addr == NULL) {
 		return;
@@ -374,6 +374,17 @@ unsigned int idx;
 	sort_pagetable();
 	p = bsearch(addr, pagetable, pagetable_size, sizeof(SlubPageTable), cmp_address);
 	if (p != NULL) {
+		/* first do bookkeeping */
+		idx = (p->memcache - memcaches) / sizeof(MemCache);
+		if (idx < 0 || idx >= NUM_MEMCACHES) {
+			log_err("memcache_free(): invalid memcache index: %d", idx);
+			abort();
+		}
+		memcache_info.nr_cache[idx]--;
+		memcache_info.nr_cache_all--;
+		memcache_info.cache_bytes -= p->memcache->size;
+
+		/* free it */
 		if (MemCache_free(p->memcache, p->slub, addr)) {
 			/* slab was freed, now clean up pagetable entry */
 			p->page = NULL;
@@ -381,10 +392,6 @@ unsigned int idx;
 			p->slub = NULL;
 			needs_sorting = 1;
 		}
-		idx = (p->memcache - memcaches) / sizeof(MemCache);
-		memcache_info.nr_cache[idx]--;
-		memcache_info.nr_cache_all--;
-		memcache_info.cache_bytes -= p->memcache->size;
 	} else {
 		/*
 			not found; must have been malloc()ed or calloc()ed
