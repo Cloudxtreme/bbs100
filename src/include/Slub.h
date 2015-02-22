@@ -55,6 +55,16 @@ typedef struct {
 	Slub *slub;
 } SlubPageTable;
 
+typedef struct {
+	int nr_cache[NUM_MEMCACHES];
+	int nr_cache_all;
+	int nr_pages;
+	int nr_foreign;
+	long cache_bytes;
+} MemCacheInfo;
+
+extern MemCacheInfo memcache_info;
+
 void init_MemCache(void);
 
 void *memcache_alloc(unsigned int);

@@ -34,6 +34,8 @@ static SlubPageTable *pagetable = NULL;
 static unsigned int pagetable_size = 0;
 static int needs_sorting = 0;
 
+MemCacheInfo memcache_info;
+
 
 void init_MemCache(void) {
 int i;
@@ -51,6 +53,10 @@ int i;
 		abort();
 	}
 	memset(pagetable, 0, sizeof(SlubPageTable) * pagetable_size);
+
+	memset(&memcache_info, 0, sizeof(MemCacheInfo));
+	/* count the pagetable allocation we just did */
+	memcache_info.nr_foreign = 1;
 }
 
 Slub *new_Slub(unsigned int objsize) {
@@ -67,16 +73,16 @@ unsigned int i;
 		log_err("new_Slub(): out of memory");
 		return NULL;
 	}
+	memset(page, 0, SLUB_PAGESIZE);
+	memcache_info.nr_pages++;
 
 	if ((s = (Slub *)malloc(sizeof(Slub))) == NULL) {
 		log_err("new_Slub(): out of memory");
 		free(page);
 		return NULL;
 	}
-	
-	memset(page, 0, SLUB_PAGESIZE);
 	memset(s, 0, sizeof(Slub));
-
+	s->page = page;
 	s->numfree = SLUB_PAGESIZE / objsize;
 	/* init free list */
 	s->first = 0;
@@ -86,8 +92,6 @@ unsigned int i;
 		p += objsize;
 	}
 	*(unsigned int *)p = 0xffff;	/* end marker */
-
-	s->page = page;
 	return s;
 }
 
@@ -97,6 +101,7 @@ void destroy_Slub(Slub *s) {
 		if (s->page != NULL) {
 			free(s->page);
 			s->page = NULL;
+			memcache_info.nr_pages--;
 		}
 		s->first = s->numfree = 0;
 		free(s);
@@ -322,6 +327,7 @@ int idx;
 	}
 
 	if (size >= MAX_SLUB_OBJSIZE) {
+		memcache_info.nr_foreign++;
 		return calloc(1, size);
 	}
 
@@ -330,6 +336,9 @@ int idx;
 		log_err("memcache_alloc(): how did this happen? size == %u", size);
 		abort();
 	}
+	memcache_info.nr_cache[idx]++;
+	memcache_info.nr_cache_all++;
+	memcache_info.cache_bytes += memcaches[idx].size;
 	return MemCache_alloc(&memcaches[idx]);
 }
 
@@ -352,6 +361,7 @@ unsigned long addr;
 
 void memcache_free(void *addr) {
 SlubPageTable *p;
+unsigned int idx;
 
 	if (addr == NULL) {
 		return;
@@ -371,9 +381,18 @@ SlubPageTable *p;
 			p->slub = NULL;
 			needs_sorting = 1;
 		}
+		idx = (p->memcache - memcaches) / sizeof(MemCache);
+		memcache_info.nr_cache[idx]--;
+		memcache_info.nr_cache_all--;
+		memcache_info.cache_bytes -= p->memcache->size;
 	} else {
-		/* not found; must have been malloc()ed or calloc()ed */
+		/*
+			not found; must have been malloc()ed or calloc()ed
+			too bad we don't know the size of this allocation,
+			now we can't count the usage
+		*/
 		free(addr);
+		memcache_info.nr_foreign--;
 	}
 }
 
