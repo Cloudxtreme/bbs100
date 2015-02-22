@@ -251,32 +251,33 @@ void *MemCache_alloc(MemCache *m) {
 void *addr;
 Slub *s;
 
-	if (m->partial == NULL) {
+	if (m->partial.head == NULL) {
 		/*
 			no empty slots available
 			get a new slab
 		*/
-		if ((m->partial = new_Slub(m->size)) == NULL) {
+		if ((s = new_Slub(m->size)) == NULL) {
 			return NULL;
 		}
+		(void)add_Slub(&m->partial, s);
 
 		/* register it in pagetable */
-		register_Slub(m->partial, m);
+		register_Slub(s, m);
 	}
 
-	addr = Slub_alloc(m->partial, m->size);
+	addr = Slub_alloc((Slub *)m->partial.head, m->size);
 	if (addr == NULL) {
 		log_err("MemCache_alloc(): failed to allocate %u bytes", m->size);
 		abort();
 	}
 
-	if (!m->partial->numfree) {
+	if (!((Slub *)(m->partial.head))->numfree) {
 		/*
 			slab is now full
-			so move it to the full list
+			so move it from the partial list to the full list
 		*/
-		s = remove_Slub(&m->partial, m->partial);
-		s = prepend_Slub(&m->full, s);
+		s = remove_Slub(&m->partial, m->partial.head);
+		(void)add_Slub(&m->full, s);
 	}
 	return addr;
 }
@@ -291,10 +292,10 @@ int MemCache_free(MemCache *m, Slub *s, void *addr) {
 		Slub_free(s, addr, m->size);
 		/*
 			slab is now partially full
-			let's move it to the partial list
+			move it from the full list to the partial list
 		*/
 		s = remove_Slub(&m->full, s);
-		s = prepend_Slub(&m->partial, s);
+		(void)add_Slub(&m->partial, s);
 	} else {
 		/* slub must be on the partial list */
 		Slub_free(s, addr, m->size);

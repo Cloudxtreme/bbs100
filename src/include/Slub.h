@@ -20,10 +20,10 @@
 #ifndef SLUB_H_WJ115
 #define SLUB_H_WJ115	1
 
-#include "List.h"
+#include "Queue.h"
 
-#define prepend_Slub(x,y)	(Slub *)prepend_List((x), (y))
-#define remove_Slub(x,y)	(Slub *)remove_List((x), (y))
+#define add_Slub(x,y)		(Slub *)add_Queue((x), (y))
+#define remove_Slub(x,y)	(Slub *)remove_Queue((x), (y))
 
 #define SLUB_PAGESIZE		4096
 
@@ -42,9 +42,11 @@ struct Slub_tag {
 	void *page;
 };
 
+typedef QueueType SlubQueue;
+
 typedef struct {
 	unsigned int size;
-	Slub *full, *partial;
+	SlubQueue full, partial;
 } MemCache;
 
 typedef struct {
