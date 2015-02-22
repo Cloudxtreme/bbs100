@@ -40,7 +40,11 @@
 #define STATE_DELETE_ROOM_NAME			state_delete_room_name
 #define STATE_DELETE_ROOM_YESNO			state_delete_room_yesno
 #define STATE_UNCACHE_FILE				state_uncache_file
+
+#ifdef USE_SLUB
 #define STATE_MALLOC_STATUS				state_malloc_status
+#endif	/* USE_SLUB */
+
 #define STATE_SCREENS_MENU				state_screens_menu
 #define STATE_SCREEN_ACTION				state_screen_action
 #define STATE_HELP_FILES				state_help_files
@@ -171,7 +175,11 @@ void state_create_room(User *, char);
 void state_delete_room_name(User *, char);
 void state_delete_room_yesno(User *, char);
 void state_uncache_file(User *, char);
+
+#ifdef USE_SLUB
 void state_malloc_status(User *, char);
+#endif	/* USE_SLUB */
+
 void state_screens_menu(User *usr, char);
 void state_screen_action(User *usr, char);
 void screen_menu(User *, char *, char *);

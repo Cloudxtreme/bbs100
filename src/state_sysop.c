@@ -52,6 +52,7 @@
 #include "Category.h"
 #include "Wrapper.h"
 #include "Signals.h"
+#include "Slub.h"
 #include "memset.h"
 #include "bufprintf.h"
 #include "NewUserLog.h"
@@ -99,8 +100,11 @@ void state_sysop_menu(User *usr, char c) {
 
 			if (PARAM_HAVE_FILECACHE)
 				Put(usr, "<hotkey>Uncache file                      ");
+#ifdef USE_SLUB
+			Print(usr, "<hotkey>Memory allocation status\n");
+#else
 			Put(usr, "\n");
-
+#endif	/* USE_SLUB */
 			Print(usr, "\n"
 				"<white>Ctrl-<hotkey>P<magenta>arameters                   %s <hotkey>password\n"
 				"\n",
@@ -197,6 +201,12 @@ void state_sysop_menu(User *usr, char c) {
 		case 'U':
 			Put(usr, "Uncache file\n");
 			CALL(usr, STATE_UNCACHE_FILE);
+			Return;
+
+		case 'm':
+		case 'M':
+			Put(usr, "Memory allocation status\n");
+			CALL(usr, STATE_MALLOC_STATUS);
 			Return;
 
 		case 's':
@@ -1792,6 +1802,61 @@ int r;
 	}
 	Return;
 }
+
+#ifdef USE_SLUB
+void state_malloc_status(User *usr, char c) {
+int i, j, num_columns, idx;
+char num_buf[MAX_NUMBER];
+
+	if (usr == NULL)
+		return;
+
+	Enter(state_malloc_status);
+
+	switch(c) {
+		case INIT_PROMPT:
+			break;
+
+		case INIT_STATE:
+			Put(usr, "\n");
+			buffer_text(usr);
+
+			Put(usr, "<yellow>Slab cache statistics\n<green>");
+
+			/* print in 4 columns */
+			num_columns = NUM_MEMCACHES / 4;
+			for(j = 0; j < num_columns; j++) {
+				for(i = 0; i < 4; i++) {
+					idx = i * 4 + j;
+					if (idx >= NUM_MEMCACHES) {
+						continue;
+					}
+					Print(usr, " cache<yellow>[%3d]<white> %4d<green> ", (idx+1) * SLUB_SIZESTEP,
+						memcache_info.nr_cache[idx]);
+				}
+				Put(usr, "\n");
+			}
+			Put(usr, "\n");
+
+			Print(usr, " # of cache allocations<yellow>   %8d    %s kB<green>\n", memcache_info.nr_cache_all,
+				print_number((unsigned long)memcache_info.cache_bytes / 1024UL, num_buf, sizeof(num_buf)));
+			Print(usr, " # of allocated pages<yellow>     %8d    %s kB<green>\n", memcache_info.nr_pages,
+				print_number((unsigned long)memcache_info.nr_pages * SLUB_PAGESIZE / 1024UL, num_buf, sizeof(num_buf)));
+			Print(usr, " # of foreign allocations<yellow> %8d\n", memcache_info.nr_foreign);
+
+			read_menu(usr);
+			Return;
+		
+		default:
+			wipe_line(usr);
+			RET(usr);
+			Return;
+	}
+	Put(usr, "<white>\n"
+		"[Press a key]");
+	Return;
+}
+#endif	/* USE_SLUB */
 
 void state_screens_menu(User *usr, char c) {
 	if (usr == NULL)
