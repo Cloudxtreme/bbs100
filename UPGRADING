@@ -4,13 +4,24 @@ bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
 
-UPGRADING FROM bbs100 3.2
+UPGRADING FROM bbs100 3.2 TO 3.3
 
-Parameter have_binalloc has been removed, so you can delete the parameter
-from etc/param
+Timezone information can be read directly from /usr/share/zoneinfo/
+(if you have that directory). Put in etc/param:
+
+  zoneinfodir       /usr/share/zoneinfo/
+
+Two parameters were removed, so you can delete these from etc/param:
+  have_binalloc
+  chunk_size
+
+The people at GNU have a new address. You should install the updated version
+of the GPLv2 that is supplied as etc/GPL.
 
 
-UPGRADING FROM bbs100 3.0 or 3.1
+--
+
+UPGRADING FROM bbs100 3.0 or 3.1 TO 3.2
 
 bbs100 3.2 contains a new menu-driven online Help system.
 The Help files reside under $basedir/etc/help/

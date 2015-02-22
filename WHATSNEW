@@ -4,7 +4,15 @@ bbs100 COMES WITH NO WARRANTY. bbs100 IS FREE SOFTWARE.
 bbs100 is distributed under terms described in the GNU General Public License.
 
 
-bbs100 version 3.2 is a minor update to version 3.1. Most important changes are:
+bbs100 version 3.3 changes:
+ * SLUB memory allocator is good for small allocations (and there are many!)
+ * Sysop can review the slab cache statistics in the Sysop menu
+ * default files for worldclock are in /usr/share/zoneinfo
+
+
+--
+
+bbs100 version 3.2 is a minor update to version 3.1. Most important changes:
  * fixed a bug that could crash the BBS
  * the Help function is now a menu system; update any custom Help files
    if you have them

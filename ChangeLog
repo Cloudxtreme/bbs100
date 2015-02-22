@@ -1,3 +1,6 @@
+Changes as of February 22nd 2015
+- view slab cache stats in Sysop menu
+
 Changes as of February 21st 2015
 - implemented a SLUB allocator
 
