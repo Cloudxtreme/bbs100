@@ -18,6 +18,8 @@
 	Slub allocator for bbs100
 	The bbs makes tons of tiny memory allocations
 	Slub helps fragmentation
+
+	Note the old-fashioned code style. Because all of bbs100 is like this
 */
 
 #include "Slub.h"
