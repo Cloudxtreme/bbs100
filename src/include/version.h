@@ -1,2 +1,2 @@
 #define VERSION "3.3"
-#define SYSTEM "unknown"
+#define SYSTEM "unknown-system"
