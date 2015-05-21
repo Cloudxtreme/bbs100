@@ -155,6 +155,10 @@ char *obj;
 }
 
 void Slub_free(Slub *s, void *addr, unsigned int objsize) {
+#ifdef DEBUG
+unsigned int slot;
+#endif	/* DEBUG */
+
 unsigned int nextfree;
 char *p;
 
@@ -182,6 +186,21 @@ char *p;
 	if (addr < s->page || addr > s->page + SLUB_PAGESIZE - objsize) {
 		log_err("Slub_free(): invalid address");
 		abort();
+	}
+
+	/*
+		if this object is already present in the free list,
+		it is a double free (which is a program bug, of course)
+	*/
+	slot = ((char *)addr - (char *)s->page) / objsize;
+	nextfree = s->first;
+	while (nextfree != 0xffff) {	/* freelist end marker */
+		if (nextfree == slot) {
+			log_err("Slub_free(): double free detected");
+			abort();
+		}
+		p = (char *)s->page + nextfree * objsize;
+		nextfree = *(unsigned int *)p;
 	}
 #endif	/* DEBUG */
 
