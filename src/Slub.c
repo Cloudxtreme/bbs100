@@ -104,6 +104,12 @@ void destroy_Slub(Slub *s) {
 			free(s->page);
 			s->page = NULL;
 			memcache_info.nr_pages--;
+#ifdef DEBUG
+			if (memcache_info.nr_pages < 0) {
+				log_err("destroy_Slub(): negative nr_pages: %d", memcache_info.nr_pages);
+				abort();
+			}
+#endif	/* DEBUG */
 		}
 		s->first = s->numfree = 0;
 		free(s);
@@ -405,6 +411,21 @@ int idx;
 		memcache_info.nr_cache_all--;
 		memcache_info.cache_bytes -= p->memcache->size;
 
+#ifdef DEBUG
+		if (memcache_info.nr_cache[idx] < 0) {
+			log_err("memcache_free(): negative nr_cache[%d]: %d", idx, memcache_info.nr_cache[idx]);
+			abort();
+		}
+		if (memcache_info.nr_cache_all < 0) {
+			log_err("memcache_free(): negative nr_cache_all: %d", memcache_info.nr_cache_all);
+			abort();
+		}
+		if (memcache_info.cache_bytes < 0L) {
+			log_err("memcache_free(): negative cache_bytes: %ld", memcache_info.cache_bytes);
+			abort();
+		}
+#endif	/* DEBUG */
+
 		/* free it */
 		if (MemCache_free(p->memcache, p->slub, addr)) {
 			/* slab was freed, now clean up pagetable entry */
@@ -421,6 +442,13 @@ int idx;
 		*/
 		free(addr);
 		memcache_info.nr_foreign--;
+
+#ifdef DEBUG
+		if (memcache_info.nr_foreign < 0) {
+			log_err("memcache_free(): negative nr_foreign: %d", memcache_info.nr_foreign);
+			abort();
+		}
+#endif	/* DEBUG */
 	}
 }
 
