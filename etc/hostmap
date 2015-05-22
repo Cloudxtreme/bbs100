@@ -2,11 +2,11 @@
 #	bbs100 hostmap file	WJ100
 #
 
-localhost		the local machine <white>bbs100<yellow> runs on			# comment
-127.0.0.1		the local machine <white>bbs100<yellow> runs on
-::ffff:127.0.0.1	the local machine <white>bbs100<yellow> runs on		# IPv4 on IPv6
-::1				the local machine <white>bbs100<yellow> runs on			# IPv6
-ip6-localhost	the local machine <white>bbs100<yellow> runs on			# IPv6
+localhost		the <white>bbs100<yellow> server itself		# comment
+127.0.0.1		the <white>bbs100<yellow> server itself
+::ffff:127.0.0.1	the <white>bbs100<yellow> server itself	# IPv4 on IPv6
+::1				the <white>bbs100<yellow> server itself		# IPv6
+ip6-localhost	the <white>bbs100<yellow> server itself		# IPv6
 
 #.com			commercial site
 #.org			an organization
@@ -15,6 +15,7 @@ ip6-localhost	the local machine <white>bbs100<yellow> runs on			# IPv6
 .nasa.gov		the NASA
 .fbi			the Federal Bureau of Investigations (FBI)
 .net			somewhere deep within the net
+.xxx			a very hot place
 
 .fsf.org		the Free Software Foundation
 .gnu.org        the GNU zoo
@@ -81,5 +82,7 @@ ip6-localhost	the local machine <white>bbs100<yellow> runs on			# IPv6
 .us  the United States
 .yu  Yugoslavia
 .zr  Zaire
+
+.eu  The European Union
 
 # EOB
