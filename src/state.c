@@ -361,6 +361,9 @@ char version_buf[MAX_LONGLINE];
 #ifdef USE_BINALLOC
 		cstrcat(version_buf, "[BINALLOC] ", MAX_LONGLINE);
 #endif
+#ifdef USE_SLUB
+		cstrcat(version_buf, "[SLUB] ", MAX_LONGLINE);
+#endif
 		if (*version_buf)
 			Print(usr, "<green>Compile flags:<yellow> %s\n", version_buf);
 
