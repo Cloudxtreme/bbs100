@@ -203,11 +203,13 @@ void state_sysop_menu(User *usr, char c) {
 			CALL(usr, STATE_UNCACHE_FILE);
 			Return;
 
+#ifdef USE_SLUB
 		case 'm':
 		case 'M':
 			Put(usr, "Memory allocation status\n");
 			CALL(usr, STATE_MALLOC_STATUS);
 			Return;
+#endif	/* USE_SLUB */
 
 		case 's':
 		case 'S':
