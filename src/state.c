@@ -358,9 +358,6 @@ char version_buf[MAX_LONGLINE];
 #ifdef DEBUG
 		cstrcat(version_buf, "[DEBUG] ", MAX_LONGLINE);
 #endif
-#ifdef USE_BINALLOC
-		cstrcat(version_buf, "[BINALLOC] ", MAX_LONGLINE);
-#endif
 #ifdef USE_SLUB
 		cstrcat(version_buf, "[SLUB] ", MAX_LONGLINE);
 #endif
