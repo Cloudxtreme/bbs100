@@ -2105,6 +2105,7 @@ int r;
 	PEEK_ARG(usr, &dl, sizeof(DirList *));
 	if (dl == NULL || dl->list == NULL) {
 		Perror(usr, "The zoneinfo listing has disappeared");
+		POP_ARG(usr, &dl, sizeof(DirList *));
 		destroy_DirList(dl);
 		RET(usr);
 		Return;
@@ -2156,6 +2157,7 @@ int r;
 					if ((dl2 = list_DirList(dirname, IGNORE_HIDDEN|NO_DIRS)) == NULL) {
 						log_err("state_tz_continent(): list_DirList(%s) failed", dirname);
 						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
+						POP_ARG(usr, &dl, sizeof(DirList *));
 						destroy_DirList(dl);
 						RET(usr);
 						Return;
@@ -2164,6 +2166,7 @@ int r;
 						log_warn("state_tz_continent(): zoneinfo files are missing from %s", dirname);
 						Put(usr, "<red>Sorry, the time zone system appears to be offline\n\n");
 						destroy_DirList(dl2);
+						POP_ARG(usr, &dl, sizeof(DirList *));
 						destroy_DirList(dl);
 						RET(usr);
 						Return;
@@ -2171,8 +2174,9 @@ int r;
 					Free(usr->tmpbuf[TMP_NAME]);
 					if ((usr->tmpbuf[TMP_NAME] = cstrdup(sl->str)) == NULL) {
 						Perror(usr, "Out of memory");
-						destroy_DirList(dl);
 						destroy_DirList(dl2);
+						POP_ARG(usr, &dl, sizeof(DirList *));
+						destroy_DirList(dl);
 						RET(usr);
 						Return;
 					}
@@ -2206,6 +2210,7 @@ char zonename[MAX_PATHLEN], *p;
 	PEEK_ARG(usr, &dl, sizeof(DirList *));
 	if (dl == NULL || dl->list == NULL) {
 		Perror(usr, "The zoneinfo listing has disappeared");
+		POP_ARG(usr, &dl, sizeof(DirList *));
 		destroy_DirList(dl);
 		Free(usr->tmpbuf[0]);
 		usr->tmpbuf[0] = NULL;
@@ -2214,6 +2219,7 @@ char zonename[MAX_PATHLEN], *p;
 	}
 	if (usr->tmpbuf[0] == NULL) {
 		Perror(usr, "Can't remember what your previous choice was!");
+		POP_ARG(usr, &dl, sizeof(DirList *));
 		destroy_DirList(dl);
 		RET(usr);
 		Return;
