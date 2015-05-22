@@ -23,6 +23,7 @@
 */
 
 #include "Slub.h"
+#include "debug.h"
 #include "log.h"
 #include "calloc.h"
 
@@ -121,7 +122,7 @@ char *obj;
 
 #ifdef DEBUG
 	if (objsize > SLUB_PAGESIZE) {
-		log_err("Slub_alloc(): invalid object size requested");
+		log_err("Slub_alloc(): invalid object size requested: %u", objsize);
 		abort();
 	}
 	if (s == NULL) {
@@ -137,11 +138,11 @@ char *obj;
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_alloc(): s->numfree has invalid value");
+		log_err("Slub_alloc(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
-	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		log_err("Slub_alloc(): s->first has invalid value");
+	if (s->first >= SLUB_PAGESIZE / objsize) {
+		log_err("Slub_alloc(): s->first has invalid value: %u", s->first);
 		abort();
 	}
 #endif	/* DEBUG */
@@ -151,7 +152,7 @@ char *obj;
 #ifdef DEBUG
 	if (!s->numfree) {
 		if (s->first != 0xffff) {
-			log_err("Slub_alloc(): invalid end marker");
+			log_err("Slub_alloc(): invalid end marker: %04x", s->first);
 			abort();
 		}
 	}
@@ -182,11 +183,11 @@ char *p;
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_free(): s->numfree has invalid value");
+		log_err("Slub_free(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
 	if (objsize > SLUB_PAGESIZE) {
-		log_err("Slub_free(): invalid object size requested");
+		log_err("Slub_free(): invalid object size requested: %u", objsize);
 		abort();
 	}
 	if (addr < s->page || addr > s->page + SLUB_PAGESIZE - objsize) {
@@ -219,11 +220,11 @@ char *p;
 
 #ifdef DEBUG
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_free(): s->numfree has invalid value");
+		log_err("Slub_free(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
-	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		log_err("Slub_free(): s->first has invalid value");
+	if (s->first >= SLUB_PAGESIZE / objsize) {
+		log_err("Slub_free(): s->first has invalid value: %u", s->first);
 		abort();
 	}
 #endif	/* DEBUG */
@@ -349,7 +350,7 @@ void *memcache_alloc(unsigned int size) {
 int idx;
 
 	if (!size) {
-		log_err("memcache_alloc(): invalid size requested");
+		log_err("memcache_alloc(): invalid size requested: %u", size);
 		abort();
 	}
 
