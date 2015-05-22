@@ -40,6 +40,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+static int console_log = 0;
 
 StringList *internal_log = NULL;
 int internal_log_len = 0;
@@ -95,8 +96,11 @@ struct tm *tm;
 	logrotate_timer->sleeptime = SECS_IN_DAY - tm->tm_hour * SECS_IN_HOUR - tm->tm_min * SECS_IN_MIN - tm->tm_sec;
 }
 
-int init_log(void) {
+int init_log(int debugger) {
 int fd;
+
+	if (debugger > 0)
+		console_log = 1;
 
 	if (logrotate_timer == NULL) {
 		if ((logrotate_timer = new_Timer(SECS_IN_DAY, logrotate_timerfunc, TIMER_RESTART)) == NULL) {
@@ -106,28 +110,29 @@ int fd;
 		logrotate_reset_timer();
 		add_Timer(&timerq, logrotate_timer);
 	}
-	if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
-		log_err("failed to open logfile %s", PARAM_SYSLOG);
-		return -1;
-	}
+	if (!console_log) {
+		if ((fd = open(PARAM_SYSLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
+			log_err("failed to open logfile %s", PARAM_SYSLOG);
+			return -1;
+		}
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
-	close(fileno(stdout));
-	dup2(fd, fileno(stdout));
-	close(fd);
+		close(fileno(stdout));
+		dup2(fd, fileno(stdout));
+		close(fd);
 
-	if ((fd = open(PARAM_AUTHLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
-		log_err("failed to open logfile %s\n", PARAM_AUTHLOG);
-		return -1;
-	}
+		if ((fd = open(PARAM_AUTHLOG, O_WRONLY | O_CREAT | O_APPEND, (mode_t)0640)) == -1) {
+			log_err("failed to open logfile %s\n", PARAM_AUTHLOG);
+			return -1;
+		}
 #ifndef HAVE_DUP2
 #error This platform has no dup2() function
 #endif
-	close(fileno(stderr));
-	dup2(fd, fileno(stderr));
-	close(fd);
-
+		close(fileno(stderr));
+		dup2(fd, fileno(stderr));
+		close(fd);
+	}
 	if (!cstricmp(PARAM_LOGROTATE, "none")) {		/* old; backwards compatibility */
 		Free(PARAM_LOGROTATE);
 		PARAM_LOGROTATE = cstrdup("never");
@@ -279,7 +284,7 @@ void log_rotate(void) {
 
 	move_log(PARAM_SYSLOG);
 	move_log(PARAM_AUTHLOG);
-	init_log();		/* create new logfiles */
+	init_log(-1);		/* create new logfiles */
 
 	log_info("start of new log");
 	log_auth("start of new log");

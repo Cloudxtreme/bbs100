@@ -277,7 +277,7 @@ char buf[MAX_LONGLINE];
 	if (debugger)
 		printf("running under debugger, signal handling disabled\n\n");
 
-	if (init_log())					/* start logging to files */
+	if (init_log(debugger))			/* start logging to files */
 		exit_program(SHUTDOWN);
 
  	log_info("bbs restart");
