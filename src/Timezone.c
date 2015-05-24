@@ -104,7 +104,7 @@ int i;
 	path_strip(filename);
 
 	if ((f = openfile(filename, "r")) == NULL) {
-		log_err("load_Timezone(): failed to open file %s", filename);
+		log_warn("load_Timezone(): failed to open file %s", filename);
 		return NULL;
 	}
 	if ((tz = new_Timezone()) == NULL) {
