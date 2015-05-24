@@ -81,6 +81,20 @@ void destroy_DST_Transition(DST_Transition *dst) {
 	Free(dst);
 }
 
+static int cmp_dst_transition(const void *a, const void *b) {
+const DST_Transition *t1, *t2;
+
+	t1 = (const DST_Transition *)a;
+	t2 = (const DST_Transition *)b;
+	
+	if ((unsigned long)t1->when < (unsigned long)t2->when) {
+		return -1;
+	}
+	if ((unsigned long)t1->when > (unsigned long)t2->when) {
+		return 1;
+	}
+	return 0;
+}
 
 /*
 	load_Timezone() is used when someone logs in and wants to use a timezone
@@ -375,6 +389,8 @@ int i;
 		int n;
 		unsigned long in_two_years;
 		DST_Transition *trans;
+
+		qsort(tz->transitions, tz->num_trans, sizeof(DST_Transition), cmp_dst_transition);
 
 		while((tz->curr_idx+1) < tz->num_trans && tz->transitions[tz->curr_idx+1].when <= rtc)
 			tz->curr_idx++;
