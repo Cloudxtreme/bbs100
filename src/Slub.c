@@ -395,7 +395,7 @@ SlubPageTable *table;
 	if (addr < (unsigned long)table->page) {
 		return -1;
 	}
-	if (addr > (unsigned long)table->page + SLUB_PAGESIZE) {
+	if (addr >= (unsigned long)table->page + SLUB_PAGESIZE) {
 		return 1;
 	}
 	/* address is in this page */
