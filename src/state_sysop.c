@@ -1401,6 +1401,7 @@ char total_buf[MAX_LINE];
 	}
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
+		clear_password_buffer(usr);
 		if (reboot_timer != NULL)
 			Put(usr, "<red>Aborted, but note that another reboot procedure is already running\n");
 		else
@@ -1417,6 +1418,7 @@ char total_buf[MAX_LINE];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
 			POP(usr);				/* get out of sysop menu */
@@ -1424,10 +1426,13 @@ char total_buf[MAX_LINE];
 			Return;
 		}
 		if (verify_phrase(usr->edit_buf, pwd)) {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			RET(usr);
 			Return;
 		}
+		clear_password_buffer(usr);
+
 		if (reboot_timer != NULL) {
 /* this code is never reached any more */
 			reboot_timer->maxtime = r;
@@ -1522,6 +1527,7 @@ char total_buf[MAX_LINE];
 	}
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK || (r == EDIT_RETURN && !usr->edit_buf[0])) {
+		clear_password_buffer(usr);
 		if (shutdown_timer != NULL)
 			Put(usr, "<red>Aborted, but note that another shutdown procedure is already running\n");
 		else
@@ -1538,6 +1544,7 @@ char total_buf[MAX_LINE];
 
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {				/* not allowed to enter sysop commands! (how did we get here?) */
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			usr->runtime_flags &= ~RTF_SYSOP;
 			POP(usr);					/* drop out of sysop menu */
@@ -1545,10 +1552,13 @@ char total_buf[MAX_LINE];
 			Return;
 		}
 		if (verify_phrase(usr->edit_buf, pwd)) {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			RET(usr);
 			Return;
 		}
+		clear_password_buffer(usr);
+
 		if (shutdown_timer != NULL) {
 /* this code is never reached any more */
 			shutdown_timer->maxtime = r;
@@ -1629,6 +1639,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		RET(usr);
 	}
 	if (r == EDIT_RETURN) {
@@ -1640,13 +1651,16 @@ int r;
 		}
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
+			clear_password_buffer(usr);
 			Print(usr, "\n\n<red>You are not allowed to become <yellow>%s<red> any longer\n", PARAM_NAME_SYSOP);
 			RET(usr);
 			Return;
 		}
 		if (!verify_phrase(usr->edit_buf, pwd)) {
+			clear_password_buffer(usr);
 			JMP(usr, STATE_CHANGE_SU_PASSWD);
 		} else {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			RET(usr);
 		}
@@ -1671,6 +1685,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		Put(usr, "<red>Password not changed\n");
 		RET(usr);
 		Return;
@@ -1682,6 +1697,7 @@ int r;
 		}
 		if (usr->tmpbuf[TMP_PASSWD] == NULL) {
 			if (strlen(usr->edit_buf) < 5) {
+				clear_password_buffer(usr);
 				Put(usr, "<red>That password is too short\n");
 				CURRENT_STATE(usr);
 				Return;
@@ -1689,12 +1705,12 @@ int r;
 			Put(usr, "<red>Enter it again <white>(<red>for verification<white>):<red> ");
 
 			if ((usr->tmpbuf[TMP_PASSWD] = cstrdup(usr->edit_buf)) == NULL) {
+				clear_password_buffer(usr);
 				Perror(usr, "Out of memory");
 				RET(usr);
 				Return;
 			}
-			usr->edit_buf[0] = 0;
-			usr->edit_pos = 0;
+			clear_password_buffer(usr);
 		} else {
 			if (!strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
 				char crypted[MAX_CRYPTED], *p;
@@ -1703,10 +1719,13 @@ int r;
 				crypt_phrase(usr->edit_buf, crypted);
 
 				if (verify_phrase(usr->edit_buf, crypted)) {
+					clear_password_buffer(usr);
 					Perror(usr, "bug in password encryption -- please choose an other password");
 					CURRENT_STATE(usr);
 					Return;
 				}
+				clear_password_buffer(usr);
+
 				for(su = su_passwd; su != NULL; su = su->next) {
 					if (!strcmp(su->key, usr->name)) {
 						if ((p = cstrdup(crypted)) == NULL) {
@@ -1732,9 +1751,10 @@ int r;
 				Print(usr, "<red>You are not allowed to change the <yellow>%s<red> mode password anymore\n", PARAM_NAME_SYSOP);
 				usr->runtime_flags &= ~RTF_SYSOP;
 				POP(usr);
-			} else
+			} else {
+				clear_password_buffer(usr);
 				Print(usr, "<red>Passwords didn't match; <yellow>%s<red> mode password NOT changed\n", PARAM_NAME_SYSOP);
-
+			}
 			Free(usr->tmpbuf[TMP_PASSWD]);
 			usr->tmpbuf[TMP_PASSWD] = NULL;
 

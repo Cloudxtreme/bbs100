@@ -1707,6 +1707,7 @@ int r;
 
 	r = edit_password(usr, c);
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		RET(usr);
 		Return;
 	}
@@ -1716,15 +1717,18 @@ int r;
 		pwd = get_su_passwd(usr->name);
 		if (pwd == NULL) {
 			Print(usr, "\n\n<red>You are not allowed to become <yellow>%s<red> any longer\n", PARAM_NAME_SYSOP);
+			clear_password_buffer(usr);
 			RET(usr);
 			Return;
 		}
 		if (!verify_phrase(usr->edit_buf, pwd)) {
+			clear_password_buffer(usr);
 			usr->runtime_flags |= RTF_SYSOP;
 			Print(usr, "\n<red>*** <white>NOTE: You are now in <yellow>%s<white> mode <red>***\n", PARAM_NAME_SYSOP);
 
 			log_msg("SYSOP %s entered %s mode", usr->name, PARAM_NAME_SYSOP);
 		} else {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 
 			log_msg("SYSOP %s entered wrong %s mode password", usr->name, PARAM_NAME_SYSOP);
@@ -2269,8 +2273,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
-		usr->edit_buf[0] = 0;
-		usr->edit_pos = 0;
+		clear_password_buffer(usr);
 
 		Put(usr, "\n<red>Enter password to unlock: ");
 
@@ -2293,6 +2296,7 @@ int r;
 			pwd = usr->passwd;
 
 		if (!verify_phrase(usr->edit_buf, pwd)) {
+			clear_password_buffer(usr);
 			Put(usr, "<yellow>Unlocked\n\n");
 
 			usr->runtime_flags &= ~(RTF_BUSY | RTF_LOCKED);
@@ -2310,13 +2314,12 @@ int r;
 
 			notify_unlocked(usr);
 			RET(usr);
-		} else
+		} else {
+			clear_password_buffer(usr);
 			Put(usr, "Wrong password\n"
 				"\n"
 				"Enter password to unlock: ");
-
-		usr->edit_pos = 0;
-		usr->edit_buf[0] = 0;
+		}
 	}
 	Return;
 }

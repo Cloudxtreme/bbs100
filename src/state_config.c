@@ -667,6 +667,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		Put(usr, "<red>Password not changed\n");
 		RET(usr);
 		Return;
@@ -676,9 +677,11 @@ int r;
 			RET(usr);
 			Return;
 		}
-		if (!verify_phrase(usr->edit_buf, usr->passwd))
+		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
+			clear_password_buffer(usr);
 			JMP(usr, STATE_CHANGE_PASSWORD);
-		else {
+		} else {
+			clear_password_buffer(usr);
 			Put(usr, "<red>Wrong password\n");
 			RET(usr);
 		}
@@ -703,6 +706,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		Put(usr, "<red>Password not changed\n");
 		RET(usr);
 		Return;
@@ -714,6 +718,7 @@ int r;
 		}
 		if (usr->tmpbuf[TMP_PASSWD] == NULL) {
 			if (strlen(usr->edit_buf) < 5) {
+				clear_password_buffer(usr);
 				Put(usr, "<red>That password is too short\n");
 				CURRENT_STATE(usr);
 				Return;
@@ -725,6 +730,7 @@ int r;
 				RET(usr);
 				Return;
 			}
+			clear_password_buffer(usr);
 			usr->edit_buf[0] = 0;
 			usr->edit_pos = 0;
 		} else {
@@ -735,16 +741,19 @@ int r;
 				crypted[MAX_CRYPTED_PASSWD-1] = 0;
 
 				if (verify_phrase(usr->edit_buf, crypted)) {
+					clear_password_buffer(usr);
 					Perror(usr, "bug in password encryption -- please choose an other password");
 					CURRENT_STATE(usr);
 					Return;
 				}
+				clear_password_buffer(usr);
 				cstrcpy(usr->passwd, crypted, MAX_CRYPTED_PASSWD);
 				Put(usr, "Password changed\n");
 				usr->runtime_flags |= RTF_CONFIG_EDITED;
-			} else
+			} else {
+				clear_password_buffer(usr);
 				Put(usr, "<red>Passwords didn't match; password NOT changed\n");
-
+			}
 			Free(usr->tmpbuf[TMP_PASSWD]);
 			usr->tmpbuf[TMP_PASSWD] = NULL;
 			RET(usr);

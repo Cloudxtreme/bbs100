@@ -748,7 +748,6 @@ int edit_password(User *usr, char c) {
 			Put(usr, "\n");
 			return EDIT_RETURN;
 
-
 		case KEY_BS:
 			if (usr->edit_pos) {
 				usr->edit_pos--;
@@ -786,6 +785,11 @@ int edit_password(User *usr, char c) {
 			}
 	}
 	return 0;
+}
+
+void clear_password_buffer(User *usr) {
+	memset(usr->edit_buf, 0, MAX_LINE);
+	usr->edit_pos = 0;
 }
 
 int edit_line(User *usr, char c) {

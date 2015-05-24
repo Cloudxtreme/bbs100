@@ -50,6 +50,7 @@ int edit_tabname(User *, char);
 int edit_roomname(User *, char);
 int edit_caps_line(User *, char);
 int edit_password(User *, char);
+void clear_password_buffer(User *);
 int edit_line(User *, char);
 int edit_chatline(User *, char, char *);
 int edit_x(User *, char);

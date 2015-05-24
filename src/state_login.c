@@ -253,6 +253,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		Print(usr, "\nBye, and have a nice life!\n");
 		close_connection(usr, "user hit break on the login prompt");
 		Return;
@@ -261,6 +262,8 @@ int r;
 		if (!verify_phrase(usr->edit_buf, usr->passwd)) {
 			User *u;
 			int load_flags;
+
+			clear_password_buffer(usr);
 
 			load_flags = LOAD_USER_ALL;
 			if (!PARAM_HAVE_RESIDENT_INFO)				/* deferred loading of profile */
@@ -288,6 +291,7 @@ int r;
 
 			JMP(usr, STATE_DISPLAY_MOTD);
 		} else {
+			clear_password_buffer(usr);
 			Put(usr, "Wrong password!\n\n");
 			log_auth("WRONGPASSWD %s (%s)", usr->tmpbuf[TMP_NAME], usr->conn->hostname);
 			JMP(usr, STATE_LOGIN_PROMPT);
@@ -751,6 +755,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		JMP(usr, STATE_LOGIN_PROMPT);
 		Return;
 	}
@@ -760,22 +765,26 @@ int r;
 			Return;
 		}
 		if (strlen(usr->edit_buf) < 5) {
+			clear_password_buffer(usr);
 			Put(usr, "\nThat password is too short\n");
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
 		}
 /* check passwd same as username */
 		if (!cstricmp(usr->edit_buf, usr->tmpbuf[TMP_NAME])) {
+			clear_password_buffer(usr);
 			Put(usr, "\nThat password is not good enough\n");
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
 		}
 		Free(usr->tmpbuf[TMP_PASSWD]);
 		if ((usr->tmpbuf[TMP_PASSWD] = cstrdup(usr->edit_buf)) == NULL) {
+			clear_password_buffer(usr);
 			Perror(usr, "Out of memory");
 			close_connection(usr, "out of memory");
 			Return;
 		}
+		clear_password_buffer(usr);
 		JMP(usr, STATE_NEW_PASSWORD_AGAIN);
 	}
 	Return;
@@ -795,6 +804,7 @@ int r;
 	r = edit_password(usr, c);
 
 	if (r == EDIT_BREAK) {
+		clear_password_buffer(usr);
 		Print(usr, "\nBye, and have a nice life!\n");
 		close_connection(usr, "user hit break on the login prompt");
 		Return;
@@ -811,6 +821,7 @@ int r;
 		Put(usr, "\n");
 
 		if (strcmp(usr->edit_buf, usr->tmpbuf[TMP_PASSWD])) {
+			clear_password_buffer(usr);
 			Put(usr, "Passwords didn't match!\n");
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
@@ -830,10 +841,12 @@ int r;
 		crypted[MAX_CRYPTED_PASSWD-1] = 0;
 
 		if (verify_phrase(usr->edit_buf, crypted)) {
+			clear_password_buffer(usr);
 			Perror(usr, "bug in password encryption -- please choose an other password");
 			JMP(usr, STATE_NEW_PASSWORD_PROMPT);
 			Return;
 		}
+		clear_password_buffer(usr);
 		cstrcpy(usr->passwd, crypted, MAX_CRYPTED_PASSWD);
 
 		bufprintf(dirname, sizeof(dirname), "%s/%c/%s", PARAM_USERDIR, usr->name[0], usr->name);
