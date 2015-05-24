@@ -62,6 +62,22 @@ int i;
 	memcache_info.nr_foreign = 1;
 }
 
+void dump_Memcache(void) {
+int i;
+
+	log_debug("memcache_info {");
+	for(i = 0; i < NUM_MEMCACHES; i++) {
+		log_debug("  nr_cache[%2d]: %d", i, memcache_info.nr_cache[i]);
+		log_debug("  memcache[%2d] %3d  F: %d  P: %d", i, memcaches[i].size,
+			memcaches[i].full.count, memcaches[i].partial.count);
+	}
+	log_debug("  nr_cache_all: %d", memcache_info.nr_cache_all);
+	log_debug("  nr_pages: %d", memcache_info.nr_pages);
+	log_debug("  nr_foreign: %d", memcache_info.nr_foreign);
+	log_debug("  cache_bytes: %ld", memcache_info.cache_bytes);
+	log_debug("}");
+}
+
 Slub *new_Slub(unsigned int objsize) {
 Slub *s;
 char *page;

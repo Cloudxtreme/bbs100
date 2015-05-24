@@ -21,6 +21,7 @@
 #define MEMORY_H_WJ100
 
 #include "Types.h"
+#include "debug.h"
 
 /*
 	all routines use Malloc() and Free()
@@ -51,6 +52,10 @@ void *memalloc(size_t);
 #endif	/* USE_SLUB */
 
 int init_Memory(void);
+
+#ifdef DEBUG
+void test_Memory(void);
+#endif	/* DEBUG */
 
 #endif	/* MEMORY_H_WJ100 */
 
