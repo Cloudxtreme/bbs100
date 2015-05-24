@@ -386,10 +386,12 @@ int idx;
 	return MemCache_alloc(&memcaches[idx]);
 }
 
-static int cmp_address(const void *a, const SlubPageTable *table) {
+static int cmp_address(const void *a, const void *b /* const SlubPageTable *table */) {
 unsigned long addr;
+SlubPageTable *table;
 
 	addr = (unsigned long)a;
+	table = (SlubPageTable *)b;
 	if (addr < (unsigned long)table->page) {
 		return -1;
 	}
@@ -398,21 +400,6 @@ unsigned long addr;
 	}
 	/* address is in this page */
 	return 0;
-}
-
-static SlubPageTable *search_pagetable(void *addr) {
-int i;
-
-	/* dumb linear search */
-	for(i = 0; i < pagetable_size; i++) {
-		if (pagetable[i].page == NULL) {
-			continue;
-		}
-		if (!cmp_address(addr, &pagetable[i])) {
-			return &pagetable[i];
-		}
-	}
-	return NULL;
 }
 
 void memcache_free(void *addr) {
@@ -428,7 +415,7 @@ int idx;
 		first find the memcache
 	*/
 	sort_pagetable();
-	p = search_pagetable(addr);
+	p = bsearch(addr, pagetable, pagetable_size, sizeof(SlubPageTable), cmp_address);
 	if (p != NULL) {
 		/* first do bookkeeping */
 		idx = ((int)p->memcache - (int)memcaches) / sizeof(MemCache);
