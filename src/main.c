@@ -144,6 +144,8 @@ char buf[MAX_LONGLINE];
 	}
 	Enter(main);
 
+	rtc = time(NULL);
+
 	if (init_Memory()) {
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
@@ -185,8 +187,6 @@ char buf[MAX_LONGLINE];
 		exit(-1);
 	}
 	sleep(2);							/* display banner */
-
-	rtc = time(NULL);
 
 #ifdef SETVBUF_REVERSED
 	setvbuf(stdout, _IOLBF, NULL, 256);
