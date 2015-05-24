@@ -431,7 +431,7 @@ int idx;
 	p = search_pagetable(addr);
 	if (p != NULL) {
 		/* first do bookkeeping */
-		idx = (p->memcache - memcaches) / sizeof(MemCache);
+		idx = ((int)p->memcache - (int)memcaches) / sizeof(MemCache);
 		if (idx < 0 || idx >= NUM_MEMCACHES) {
 			log_err("memcache_free(): invalid memcache index: %d", idx);
 			abort();
