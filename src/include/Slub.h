@@ -66,7 +66,7 @@ typedef struct {
 extern MemCacheInfo memcache_info;
 
 void init_MemCache(void);
-
+void dump_Memcache(void);
 void *memcache_alloc(unsigned int);
 void memcache_free(void *);
 

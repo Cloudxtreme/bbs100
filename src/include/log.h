@@ -22,7 +22,7 @@
 
 #define MAX_INTERNAL_LOG	50
 
-int init_log(void);
+int init_log(int);
 void log_entry(FILE *, char *, char, va_list);
 void log_msg(char *, ...);
 void log_info(char *, ...);

@@ -4698,7 +4698,7 @@ char *new_val;
 */
 			if (usr->runtime_flags & RTF_WRAPPER_EDITED) {
 				usr->runtime_flags &= ~RTF_WRAPPER_EDITED;
-				init_log();
+				init_log(-1);
 			}
 			RET(usr);
 			Return;

@@ -23,6 +23,7 @@
 */
 
 #include "Slub.h"
+#include "debug.h"
 #include "log.h"
 #include "calloc.h"
 
@@ -59,6 +60,22 @@ int i;
 	memset(&memcache_info, 0, sizeof(MemCacheInfo));
 	/* count the pagetable allocation we just did */
 	memcache_info.nr_foreign = 1;
+}
+
+void dump_Memcache(void) {
+int i;
+
+	log_debug("memcache_info {");
+	for(i = 0; i < NUM_MEMCACHES; i++) {
+		log_debug("  nr_cache[%2d]: %d", i, memcache_info.nr_cache[i]);
+		log_debug("  memcache[%2d] %3d  F: %d  P: %d", i, memcaches[i].size,
+			memcaches[i].full.count, memcaches[i].partial.count);
+	}
+	log_debug("  nr_cache_all: %d", memcache_info.nr_cache_all);
+	log_debug("  nr_pages: %d", memcache_info.nr_pages);
+	log_debug("  nr_foreign: %d", memcache_info.nr_foreign);
+	log_debug("  cache_bytes: %ld", memcache_info.cache_bytes);
+	log_debug("}");
 }
 
 Slub *new_Slub(unsigned int objsize) {
@@ -104,6 +121,12 @@ void destroy_Slub(Slub *s) {
 			free(s->page);
 			s->page = NULL;
 			memcache_info.nr_pages--;
+#ifdef DEBUG
+			if (memcache_info.nr_pages < 0) {
+				log_err("destroy_Slub(): negative nr_pages: %d", memcache_info.nr_pages);
+				abort();
+			}
+#endif	/* DEBUG */
 		}
 		s->first = s->numfree = 0;
 		free(s);
@@ -115,7 +138,7 @@ char *obj;
 
 #ifdef DEBUG
 	if (objsize > SLUB_PAGESIZE) {
-		log_err("Slub_alloc(): invalid object size requested");
+		log_err("Slub_alloc(): invalid object size requested: %u", objsize);
 		abort();
 	}
 	if (s == NULL) {
@@ -131,11 +154,11 @@ char *obj;
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_alloc(): s->numfree has invalid value");
+		log_err("Slub_alloc(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
-	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		log_err("Slub_alloc(): s->first has invalid value");
+	if (s->first >= SLUB_PAGESIZE / objsize) {
+		log_err("Slub_alloc(): s->first has invalid value: %u", s->first);
 		abort();
 	}
 #endif	/* DEBUG */
@@ -145,7 +168,7 @@ char *obj;
 #ifdef DEBUG
 	if (!s->numfree) {
 		if (s->first != 0xffff) {
-			log_err("Slub_alloc(): invalid end marker");
+			log_err("Slub_alloc(): invalid end marker: %04x", s->first);
 			abort();
 		}
 	}
@@ -155,6 +178,10 @@ char *obj;
 }
 
 void Slub_free(Slub *s, void *addr, unsigned int objsize) {
+#ifdef DEBUG
+unsigned int slot;
+#endif	/* DEBUG */
+
 unsigned int nextfree;
 char *p;
 
@@ -172,16 +199,31 @@ char *p;
 		abort();
 	}
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_free(): s->numfree has invalid value");
+		log_err("Slub_free(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
 	if (objsize > SLUB_PAGESIZE) {
-		log_err("Slub_free(): invalid object size requested");
+		log_err("Slub_free(): invalid object size requested: %u", objsize);
 		abort();
 	}
 	if (addr < s->page || addr > s->page + SLUB_PAGESIZE - objsize) {
 		log_err("Slub_free(): invalid address");
 		abort();
+	}
+
+	/*
+		if this object is already present in the free list,
+		it is a double free (which is a program bug, of course)
+	*/
+	slot = ((char *)addr - (char *)s->page) / objsize;
+	nextfree = s->first;
+	while (nextfree != 0xffff) {	/* freelist end marker */
+		if (nextfree == slot) {
+			log_err("Slub_free(): double free detected");
+			abort();
+		}
+		p = (char *)s->page + nextfree * objsize;
+		nextfree = *(unsigned int *)p;
 	}
 #endif	/* DEBUG */
 
@@ -194,11 +236,11 @@ char *p;
 
 #ifdef DEBUG
 	if (s->numfree > SLUB_PAGESIZE / SLUB_SIZESTEP) {
-		log_err("Slub_free(): s->numfree has invalid value");
+		log_err("Slub_free(): s->numfree has invalid value: %u", s->numfree);
 		abort();
 	}
-	if (s->first > SLUB_PAGESIZE / MAX_SLUB_OBJSIZE) {
-		log_err("Slub_free(): s->first has invalid value");
+	if (s->first >= SLUB_PAGESIZE / objsize) {
+		log_err("Slub_free(): s->first has invalid value: %u", s->first);
 		abort();
 	}
 #endif	/* DEBUG */
@@ -324,7 +366,7 @@ void *memcache_alloc(unsigned int size) {
 int idx;
 
 	if (!size) {
-		log_err("memcache_alloc(): invalid size requested");
+		log_err("memcache_alloc(): invalid size requested: %u", size);
 		abort();
 	}
 
@@ -344,17 +386,16 @@ int idx;
 	return MemCache_alloc(&memcaches[idx]);
 }
 
-static int cmp_address(const void *a, const void *b) {
-SlubPageTable *p;
+static int cmp_address(const void *a, const void *b /* const SlubPageTable *table */) {
 unsigned long addr;
+SlubPageTable *table;
 
 	addr = (unsigned long)a;
-	p = (SlubPageTable *)b;
-
-	if (addr < (unsigned long)p->page) {
+	table = (SlubPageTable *)b;
+	if (addr < (unsigned long)table->page) {
 		return -1;
 	}
-	if (addr > (unsigned long)p->page + SLUB_PAGESIZE) {
+	if (addr > (unsigned long)table->page + SLUB_PAGESIZE) {
 		return 1;
 	}
 	/* address is in this page */
@@ -377,7 +418,7 @@ int idx;
 	p = bsearch(addr, pagetable, pagetable_size, sizeof(SlubPageTable), cmp_address);
 	if (p != NULL) {
 		/* first do bookkeeping */
-		idx = (p->memcache - memcaches) / sizeof(MemCache);
+		idx = ((int)p->memcache - (int)memcaches) / sizeof(MemCache);
 		if (idx < 0 || idx >= NUM_MEMCACHES) {
 			log_err("memcache_free(): invalid memcache index: %d", idx);
 			abort();
@@ -385,6 +426,21 @@ int idx;
 		memcache_info.nr_cache[idx]--;
 		memcache_info.nr_cache_all--;
 		memcache_info.cache_bytes -= p->memcache->size;
+
+#ifdef DEBUG
+		if (memcache_info.nr_cache[idx] < 0) {
+			log_err("memcache_free(): negative nr_cache[%d]: %d", idx, memcache_info.nr_cache[idx]);
+			abort();
+		}
+		if (memcache_info.nr_cache_all < 0) {
+			log_err("memcache_free(): negative nr_cache_all: %d", memcache_info.nr_cache_all);
+			abort();
+		}
+		if (memcache_info.cache_bytes < 0L) {
+			log_err("memcache_free(): negative cache_bytes: %ld", memcache_info.cache_bytes);
+			abort();
+		}
+#endif	/* DEBUG */
 
 		/* free it */
 		if (MemCache_free(p->memcache, p->slub, addr)) {
@@ -402,6 +458,13 @@ int idx;
 		*/
 		free(addr);
 		memcache_info.nr_foreign--;
+
+#ifdef DEBUG
+		if (memcache_info.nr_foreign < 0) {
+			log_err("memcache_free(): negative nr_foreign: %d", memcache_info.nr_foreign);
+			abort();
+		}
+#endif	/* DEBUG */
 	}
 }
 

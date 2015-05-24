@@ -144,6 +144,8 @@ char buf[MAX_LONGLINE];
 	}
 	Enter(main);
 
+	rtc = time(NULL);
+
 	if (init_Memory()) {
 		fprintf(stderr, "bbs100: out of memory (?)\n");
 		exit(-1);
@@ -185,8 +187,6 @@ char buf[MAX_LONGLINE];
 		exit(-1);
 	}
 	sleep(2);							/* display banner */
-
-	rtc = time(NULL);
 
 #ifdef SETVBUF_REVERSED
 	setvbuf(stdout, _IOLBF, NULL, 256);
@@ -277,7 +277,7 @@ char buf[MAX_LONGLINE];
 	if (debugger)
 		printf("running under debugger, signal handling disabled\n\n");
 
-	if (init_log())					/* start logging to files */
+	if (init_log(debugger))			/* start logging to files */
 		exit_program(SHUTDOWN);
 
  	log_info("bbs restart");

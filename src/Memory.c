@@ -31,7 +31,7 @@
 int init_Memory(void) {
 #ifdef USE_SLUB
 	init_MemCache();
-#endif
+#endif /* USE_SLUB */
 	return 0;
 }
 
@@ -39,6 +39,34 @@ int init_Memory(void) {
 void *memalloc(size_t n) {
 	return calloc(1, n);
 }
-#endif
+#endif	/* USE_SLUB */
+
+#ifdef DEBUG
+void test_Memory(void) {
+char *p;
+int i;
+
+	dump_Memcache();
+	p = (char *)Malloc(12, TYPE_CHAR);
+	Free(p);
+	dump_Memcache();
+
+	for(i = 0; i < 1024; i++) {
+		p = Malloc(12, TYPE_CHAR);
+		Free(p);
+		p = Malloc(36, TYPE_CHAR);
+		Free(p);
+		p = Malloc(78, TYPE_CHAR);
+		Free(p);
+		p = Malloc(148, TYPE_CHAR);
+		Free(p);
+		p = Malloc(262, TYPE_CHAR);
+		Free(p);
+		p = Malloc(522, TYPE_CHAR);
+		Free(p);
+	}
+	dump_Memcache();
+}
+#endif	/* DEBUG */
 
 /* EOB */
