@@ -206,7 +206,7 @@ char *p;
 		log_err("Slub_free(): invalid object size requested: %u", objsize);
 		abort();
 	}
-	if (addr < s->page || addr > s->page + SLUB_PAGESIZE - objsize) {
+	if ((unsigned long)addr < (unsigned long)s->page || (unsigned long)addr > (unsigned long)s->page + SLUB_PAGESIZE - objsize) {
 		log_err("Slub_free(): invalid address");
 		abort();
 	}
