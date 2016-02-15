@@ -655,7 +655,7 @@ int r;
 		Return;
 	}
 	if (r == EDIT_RETURN) {
-		if (!usr->edit_buf) {
+		if (!usr->edit_buf[0]) {
 			RET(usr);
 			Return;
 		}
